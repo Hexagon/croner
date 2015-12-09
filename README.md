@@ -31,7 +31,8 @@ console.log(scheduler.msToNext());`
 
 
 # Pattern
-```┌──────────────── sec (0 - 59)
+```
+┌──────────────── sec (0 - 59)
 | ┌────────────── min (0 - 59)
 | │ ┌──────────── hour (0 - 23)
 | │ │ ┌────────── day of month (1 - 31)
@@ -39,7 +40,8 @@ console.log(scheduler.msToNext());`
 | │ │ │ │ ┌────── day of week (0 - 6) 
 | │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
 | │ │ │ │ │
-* * * * * *^```
+* * * * * *
+```
 
 
 # License
