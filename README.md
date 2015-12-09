@@ -3,7 +3,7 @@
 
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/thinker-fts) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner)
 
-Isomorphic JavaScript cron parser.
+Pure JavaScript Isomorphic cron parser without dependencies.
 
 
 #Installation:
