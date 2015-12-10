@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Isomorphic JavaScript cron parser and scheduler.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [{
