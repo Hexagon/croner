@@ -22,7 +22,10 @@ Download lib/croner.js and import with script-tag or AMD as usual.
 var o = cron( <string pattern> );
 o.next( [ <date previous> ] );
 o.msToNext();
-o.schedule( [ { startAt: <date>, stopAt: <date>, maxRuns: <integer> } ,] callback);
+var job = o.schedule( [ { startAt: <date>, stopAt: <date>, maxRuns: <integer> } ,] callback);
+job.pause();
+job.resume();
+job.stop();
 
 ```
 
