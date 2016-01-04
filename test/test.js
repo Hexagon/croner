@@ -27,6 +27,24 @@ THE SOFTWARE.
 var should = require('should'),
 	cron = require('../index.js');
 
+describe('Module', function () {
+
+	it('new cron(...) should not throw', function () {
+		(function(){
+		  var 	scheduler = new cron('* * * * * *'),
+		  		nextRun = scheduler.next();
+		}).should.not.throw();
+	});
+
+	it('cron(...) without `new` should not throw', function () {
+		(function(){
+		  var 	scheduler = cron('* * * * * *'),
+		  		nextRun = scheduler.next();
+		}).should.not.throw();
+	});
+
+});
+
 describe('Parser', function () {
 
 	it('Clean pattern should not throw', function () {
