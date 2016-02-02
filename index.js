@@ -1,3 +1,3 @@
-var croner = require('./lib/croner.js');
+var croner = require("./lib/croner.js");
 
 module.exports = croner;
