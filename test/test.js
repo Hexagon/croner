@@ -52,132 +52,154 @@ describe("Parser", function () {
     it("Clean pattern should not throw", function () {
         (function(){
           var scheduler = new Cron("* * * * * *");
+          scheduler.next();
         }).should.not.throw();
     });
     
     it("Short pattern should throw", function () {
         (function(){
           var scheduler = new Cron("* * * * *");
+          scheduler.next();
         }).should.throw();
     });
     
     it("Long pattern should throw", function () {
         (function(){
           var scheduler = new Cron("* * * * * * *");
+          scheduler.next();
         }).should.throw();
     });
     
     it("Letter in pattern should throw", function () {
         (function(){
           var scheduler = new Cron("* a * * * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Missing lower range should throw", function () {
         (function(){
           var scheduler = new Cron("* -9 * * * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Missing upper range should throw", function () {
         (function(){
           var scheduler = new Cron("* 0- * * * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Valid range should not throw", function () {
         (function(){
           var scheduler = new Cron("* 0-9 * * * *");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Valid seconds should not throw", function () {
         (function(){
           var scheduler = new Cron("0-59 * * * * *");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Too high second should throw", function () {
         (function(){
           var scheduler = new Cron("0-60 * * * * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Valid minutes should not throw", function () {
         (function(){
           var scheduler = new Cron("* 0-59 * * * *");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Too high minute should throw", function () {
         (function(){
           var scheduler = new Cron("* 0-5,55,60 * * * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Valid hours should not throw", function () {
         (function(){
           var scheduler = new Cron("* * 0-23 * * *");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Too high hours minute should throw", function () {
         (function(){
           var scheduler = new Cron("* * 0,23,24 * * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Valid days should not throw", function () {
         (function(){
           var scheduler = new Cron("* * * 1-31 * *");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Too high days should throw", function () {
         (function(){
           var scheduler = new Cron("* * * 32 * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Too low days should throw", function () {
         (function(){
           var scheduler = new Cron("* * * 0 * *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Valid months should not throw", function () {
         (function(){
           var scheduler = new Cron("* * * * 1,2,3,4,5,6,7,8,9,10,11,12 *");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Too high months should throw", function () {
         (function(){
           var scheduler = new Cron("* * * * 7-13 *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Too low months should throw", function () {
         (function(){
           var scheduler = new Cron("* * * * 0-3 *");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Valid weekdays should not throw", function () {
         (function(){
           var scheduler = new Cron("* * * * * 0,1,2,3,4,5,6,7");
+          scheduler.next();
         }).should.not.throw();
     });
 
     it("Too high weekday should throw", function () {
         (function(){
           var scheduler = new Cron("* * * * * 8");
+          scheduler.next();
         }).should.throw();
     });
 
     it("Too low weekday should throw", function () {
         (function(){
           var scheduler = new Cron("* * * * * -1");
+          scheduler.next();
         }).should.throw();
     });
 
@@ -245,4 +267,4 @@ describe("Scheduler", function () {
 
     });
     
-})
+});
