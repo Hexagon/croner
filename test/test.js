@@ -246,12 +246,12 @@ describe("Scheduler", function () {
 
     });
 
-    it("0 * * * * * with 40 iterations should return 40 minutes from now", function () {
+    it("0 * * * * * with 40 iterations should return 45 minutes from now", function () {
         var scheduler = new Cron("0 * * * * *"),
             prevRun = new Date(),
             nextRun,
-            iterations = 40,
-            compareDay = new Date(new Date().getTime()+40*60*1000);     // Add one day
+            iterations = 45,
+            compareDay = new Date(new Date().getTime()+45*60*1000);
 
         while(iterations-->0) {
             nextRun = scheduler.next(prevRun),
@@ -266,5 +266,5 @@ describe("Scheduler", function () {
         nextRun.getTime().should.equal(compareDay.getTime());
 
     });
-    
+
 });
