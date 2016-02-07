@@ -302,7 +302,7 @@ describe("Comprehensive testing ( will fail first day of the year)", function ()
 		
 		target.getTime().should.equal(scheduler.next().getTime());
 		
-		if(target.getTime() == scheduler.next().getTime()) {
+		if(target.getTime() === scheduler.next().getTime()) {
 			while(prevRun < target) {
 				left = scheduler.msToNext(prevRun);
 				diff = Math.abs((target.getTime() - prevRun.getTime())-left);
