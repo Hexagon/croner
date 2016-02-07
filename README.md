@@ -4,7 +4,7 @@
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
+Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids.
 
 
 # Installation
@@ -17,43 +17,50 @@ Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
 
 Download lib/croner.min.js and import with script-tag or AMD as usual.
 
-
-# Usage
-```javascript
-var o = cron( <string pattern> );
-o.next( [ <date previous> ] );
-o.msToNext();
-var job = o.schedule( [ { startAt: <date>, stopAt: <date>, maxRuns: <integer> } ,] callback);
-job.pause();
-job.resume();
-job.stop();
-
-```
-
-
 # Examples 
 
-# Parsing only
+## Minimalist scheduling
 ```javascript
+// Run a function each second
+Cron('* * * * * *', function () {
+	console.log('This will run every second');
+});
+```
 
-// Parse 14:00:00 at next sunday
-var parser = cron('0 0 14 * * 7');
+## Minimalist scheduling with options
+```javascript
+// Run a function each second
+Cron('* * * * * *', { maxRuns: 5 }, function () {
+	console.log('This will run each second, but only five times.');
+});
+```
 
-// Log the actual date object of next run
-console.log(parser.next());
+## Minimalist scheduling with controls
+```javascript
+// Run a function each second
+var job = Cron('* * * * * *', function () {
+	console.log('This will run each second, but only five times.');
+});
 
-// Log number of milliseconds to next run
-console.log(parser.msToNext());`
+// Pause job
+job.pause();
+
+// Resume job
+job.resume();
+
+// Stop job
+job.stop();
+
 ```
 
 ## Basic scheduling
 ```javascript
 
 // Run every minute
-var scheduler = cron('0 * * * * *');
+var scheduler = Cron('0 * * * * *');
 
 scheduler.schedule(function() {
-	console.log('This will run every minute.');
+	console.log('This will run every minute');
 });
 ```
 
@@ -61,12 +68,53 @@ scheduler.schedule(function() {
 ```javascript
 
 // Run every minute
-var scheduler = cron('0 * * * * *');
+var scheduler = Cron('0 * * * * *');
 
 // Schedule with options (all options are optional)
 scheduler.schedule({ maxRuns: 5 }, function() {
 	console.log('This will run every minute.');
 });
+```
+## Scheduling with controls
+```javascript
+
+// Run every minute
+var scheduler = Cron('0 * * * * *');
+
+// Schedule with options (all options are optional)
+var job = scheduler.schedule({ maxRuns: 5 }, function() {
+	console.log('This will run every minute.');
+});
+
+// Pause job
+job.pause();
+
+// Resume job
+job.resume();
+
+// Stop job
+job.stop();
+
+
+# Full API
+```javascript
+
+var o = Cron( <string pattern>[, <object options>] [, <function callback> ] );
+
+// If Cron is initialized without a scheduled function, cron itself is returned
+// and the following member functions is available.
+o.next( [ <date previous> ] );
+o.msToNext();
+
+// If Cron is initialized _with_ a scheduled function, the job is retured instead.
+// Otherwise you get a reference to the job when scheduling a new job.
+var job = o.schedule( [ { startAt: <date>, stopAt: <date>, maxRuns: <integer> } ,] callback);
+
+// These self-explanatory functions is available to control the job
+job.pause();
+job.resume();
+job.stop();
+
 ```
 
 
