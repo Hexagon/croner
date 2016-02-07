@@ -22,249 +22,249 @@ THE SOFTWARE.
 
 */
 
-/* global describe, it */
+/* eslint no-unused-vars: 0 */
 
 "use strict";
 
 var should = require("should"),
-    Cron = require("../index.js");
+	Cron = require("../index.js");
 
 describe("Module", function () {
 
-    it("new Cron(...) should not throw", function () {
-        (function(){
-          var   scheduler = new Cron("* * * * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("new Cron(...) should not throw", function () {
+		(function(){
+			var   scheduler = new Cron("* * * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("cron(...) without `new` should not throw", function () {
-        (function(){
-          var   scheduler = Cron("* * * * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("cron(...) without `new` should not throw", function () {
+		(function(){
+			var   scheduler = Cron("* * * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
 });
 
 describe("Parser", function () {
 
-    it("Clean pattern should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
-    
-    it("Short pattern should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
-    
-    it("Long pattern should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
-    
-    it("Letter in pattern should throw", function () {
-        (function(){
-          var scheduler = new Cron("* a * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Clean pattern should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
+	
+	it("Short pattern should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+	
+	it("Long pattern should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+	
+	it("Letter in pattern should throw", function () {
+		(function(){
+			var scheduler = new Cron("* a * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Missing lower range should throw", function () {
-        (function(){
-          var scheduler = new Cron("* -9 * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Missing lower range should throw", function () {
+		(function(){
+			var scheduler = new Cron("* -9 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Missing upper range should throw", function () {
-        (function(){
-          var scheduler = new Cron("* 0- * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Missing upper range should throw", function () {
+		(function(){
+			var scheduler = new Cron("* 0- * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Valid range should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* 0-9 * * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid range should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* 0-9 * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Valid seconds should not throw", function () {
-        (function(){
-          var scheduler = new Cron("0-59 * * * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid seconds should not throw", function () {
+		(function(){
+			var scheduler = new Cron("0-59 * * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Too high second should throw", function () {
-        (function(){
-          var scheduler = new Cron("0-60 * * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too high second should throw", function () {
+		(function(){
+			var scheduler = new Cron("0-60 * * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Valid minutes should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* 0-59 * * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid minutes should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* 0-59 * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Too high minute should throw", function () {
-        (function(){
-          var scheduler = new Cron("* 0-5,55,60 * * * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too high minute should throw", function () {
+		(function(){
+			var scheduler = new Cron("* 0-5,55,60 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Valid hours should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* * 0-23 * * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid hours should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* * 0-23 * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Too high hours minute should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * 0,23,24 * * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too high hours minute should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * 0,23,24 * * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Valid days should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * 1-31 * *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid days should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * 1-31 * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Too high days should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * 32 * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too high days should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * 32 * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Too low days should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * 0 * *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too low days should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * 0 * *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Valid months should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * 1,2,3,4,5,6,7,8,9,10,11,12 *");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid months should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * 1,2,3,4,5,6,7,8,9,10,11,12 *");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Too high months should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * 7-13 *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too high months should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * 7-13 *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Too low months should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * 0-3 *");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too low months should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * 0-3 *");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Valid weekdays should not throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * * 0,1,2,3,4,5,6,7");
-          scheduler.next();
-        }).should.not.throw();
-    });
+	it("Valid weekdays should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * * 0,1,2,3,4,5,6,7");
+			scheduler.next();
+		}).should.not.throw();
+	});
 
-    it("Too high weekday should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * * 8");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too high weekday should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * * 8");
+			scheduler.next();
+		}).should.throw();
+	});
 
-    it("Too low weekday should throw", function () {
-        (function(){
-          var scheduler = new Cron("* * * * * -1");
-          scheduler.next();
-        }).should.throw();
-    });
+	it("Too low weekday should throw", function () {
+		(function(){
+			var scheduler = new Cron("* * * * * -1");
+			scheduler.next();
+		}).should.throw();
+	});
 
 });
 
 describe("Scheduler", function () {
 
-    it("0 0 0 * * * should return tomorrow, at 00:00:00", function () {
-        var scheduler = new Cron("0 0 0 * * *"),
-            nextRun = scheduler.next(),
-            nextDay = new Date(new Date().getTime()+24*60*60*1000);     // Add one day
+	it("0 0 0 * * * should return tomorrow, at 00:00:00", function () {
+		var scheduler = new Cron("0 0 0 * * *"),
+			nextRun = scheduler.next(),
+			nextDay = new Date(new Date().getTime()+24*60*60*1000);     // Add one day
 
-        // Set seconds, minutes and hours to 00:00:00
-        nextDay.setMilliseconds(0);
-        nextDay.setSeconds(0);
-        nextDay.setMinutes(0);
-        nextDay.setHours(0);
+		// Set seconds, minutes and hours to 00:00:00
+		nextDay.setMilliseconds(0);
+		nextDay.setSeconds(0);
+		nextDay.setMinutes(0);
+		nextDay.setHours(0);
 
-        // Do comparison
-        nextRun.getTime().should.equal(nextDay.getTime());
+		// Do comparison
+		nextRun.getTime().should.equal(nextDay.getTime());
 
-    });
+	});
 
-    it("0 0 0 * * * with 40 iterations should return 40 days from now, at 00:00:00", function () {
-        var scheduler = new Cron("0 0 0 * * *"),
-            prevRun = new Date(),
-            nextRun,
-            iterations = 40,
-            compareDay = new Date(new Date().getTime()+40*24*60*60*1000);   // Add one day
+	it("0 0 0 * * * with 40 iterations should return 40 days from now, at 00:00:00", function () {
+		var scheduler = new Cron("0 0 0 * * *"),
+			prevRun = new Date(),
+			nextRun,
+			iterations = 40,
+			compareDay = new Date(new Date().getTime()+40*24*60*60*1000);   // Add one day
 
-        while(iterations-->0) {
-            nextRun = scheduler.next(prevRun),
-            prevRun = nextRun;
-        }
+		while(iterations-->0) {
+			nextRun = scheduler.next(prevRun),
+			prevRun = nextRun;
+		}
 
-        // Set seconds, minutes and hours to 00:00:00
-        compareDay.setMilliseconds(0);
-        compareDay.setSeconds(0);
-        compareDay.setMinutes(0);
-        compareDay.setHours(0);
+		// Set seconds, minutes and hours to 00:00:00
+		compareDay.setMilliseconds(0);
+		compareDay.setSeconds(0);
+		compareDay.setMinutes(0);
+		compareDay.setHours(0);
 
-        // Do comparison
-        nextRun.getTime().should.equal(compareDay.getTime());
+		// Do comparison
+		nextRun.getTime().should.equal(compareDay.getTime());
 
-    });
+	});
 
-    it("0 * * * * * with 40 iterations should return 45 minutes from now", function () {
-        var scheduler = new Cron("0 * * * * *"),
-            prevRun = new Date(),
-            nextRun,
-            iterations = 45,
-            compareDay = new Date(new Date().getTime()+45*60*1000);
+	it("0 * * * * * with 40 iterations should return 45 minutes from now", function () {
+		var scheduler = new Cron("0 * * * * *"),
+			prevRun = new Date(),
+			nextRun,
+			iterations = 45,
+			compareDay = new Date(new Date().getTime()+45*60*1000);
 
-        while(iterations-->0) {
-            nextRun = scheduler.next(prevRun),
-            prevRun = nextRun;
-        }
+		while(iterations-->0) {
+			nextRun = scheduler.next(prevRun),
+			prevRun = nextRun;
+		}
 
-        // Set seconds, minutes and hours to 00:00:00
-        compareDay.setMilliseconds(0);
-        compareDay.setSeconds(0);
+		// Set seconds, minutes and hours to 00:00:00
+		compareDay.setMilliseconds(0);
+		compareDay.setSeconds(0);
 
-        // Do comparison
-        nextRun.getTime().should.equal(compareDay.getTime());
+		// Do comparison
+		nextRun.getTime().should.equal(compareDay.getTime());
 
-    });
+	});
 
 });
