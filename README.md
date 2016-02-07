@@ -29,7 +29,7 @@ Cron('* * * * * *', function () {
 
 ## Minimalist scheduling with options
 ```javascript
-// Run a function each second
+// Run a function each second, limit to five runs
 Cron('* * * * * *', { maxRuns: 5 }, function () {
 	console.log('This will run each second, but only five times.');
 });
@@ -37,9 +37,9 @@ Cron('* * * * * *', { maxRuns: 5 }, function () {
 
 ## Minimalist scheduling with controls
 ```javascript
-// Run a function each second
+// Run a function each second, get reference to job
 var job = Cron('* * * * * *', function () {
-	console.log('This will run each second, but only five times.');
+	console.log('This will run each second.');
 });
 
 // Pause job
@@ -94,12 +94,12 @@ job.resume();
 
 // Stop job
 job.stop();
-
+```
 
 # Full API
 ```javascript
 
-var o = Cron( <string pattern>[, <object options>] [, <function callback> ] );
+var o = Cron( <string pattern> [, <object options>] [, <function callback> ] );
 
 // If Cron is initialized without a scheduled function, cron itself is returned
 // and the following member functions is available.
