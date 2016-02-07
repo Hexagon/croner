@@ -223,7 +223,7 @@ describe("Scheduler", function () {
 
 	});
 
-	it("0 0 0 * * * with 40 iterations should return 40 days from now, at 00:00:00", function () {
+	it("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
 		var scheduler = new Cron("0 0 0 * * *"),
 			prevRun = new Date(),
 			nextRun,
@@ -267,4 +267,49 @@ describe("Scheduler", function () {
 
 	});
 
+});
+
+describe("Comprehensive testing ( will fail first day of the year)", function () {
+	it("Test milliseconds to 01:01:91 XXXX-01-01 (most often next year), 1000s steps", function () {
+
+		var prevRun = new Date(new Date().setMilliseconds(0)),
+			target = new Date(new Date((prevRun.getFullYear()+1) + "-01-01 01:01:01").getTime()),
+			scheduler = new Cron("1 1 1 1 1 *"),
+			nextRun,
+			left,
+			diff;
+
+		target.getTime().should.equal(scheduler.next().getTime());
+
+		if(target.getTime() == scheduler.next().getTime()) {
+			while(prevRun < target) {
+				left = scheduler.msToNext(prevRun);
+				diff = Math.abs((target.getTime() - prevRun.getTime())-left);
+				diff.should.be.below(1001);
+				prevRun = new Date(prevRun.getTime() + 1000000);
+			}
+		}
+
+	});
+	it("Test milliseconds to 23:59:59 XXXX-01-01 (most often next year), 1000s steps", function () {
+
+		var prevRun = new Date(new Date().setMilliseconds(0)),
+			target = new Date(new Date((prevRun.getFullYear()+1) + "-01-01 23:59:59").getTime()),
+			scheduler = new Cron("59 59 23 1 1 *"),
+			nextRun,
+			left,
+			diff;
+		
+		target.getTime().should.equal(scheduler.next().getTime());
+		
+		if(target.getTime() == scheduler.next().getTime()) {
+			while(prevRun < target) {
+				left = scheduler.msToNext(prevRun);
+				diff = Math.abs((target.getTime() - prevRun.getTime())-left);
+				diff.should.be.below(1001);
+				prevRun = new Date(prevRun.getTime() + 1000000);
+			}
+		}
+
+	});
 });
