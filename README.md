@@ -15,7 +15,7 @@ Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
 
 ## Browser (AMD and regular usage) 
 
-Download lib/croner.js and import with script-tag or AMD as usual.
+Download lib/croner.min.js and import with script-tag or AMD as usual.
 
 
 # Usage
