@@ -77,6 +77,55 @@ describe("Parser", function () {
 		}).should.throw();
 	});
 
+	it("Slash in pattern should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* */5 * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
+
+	it("Slash in pattern without following number should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */ * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with preceding number should throw", function () {
+		(function(){
+			var scheduler = new Cron("* 1/5 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with wildcards both pre and post should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */* * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with zero stepping should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */0 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with letter after should throw should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */a * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with too high stepping should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */61 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
 	it("Missing lower range should throw", function () {
 		(function(){
 			var scheduler = new Cron("* -9 * * * *");

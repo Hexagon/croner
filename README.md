@@ -27,6 +27,22 @@ Cron('* * * * * *', function () {
 });
 ```
 
+## Minimalist scheduling with stepping
+```javascript
+// Run a function each second
+Cron('*/5 * * * * *', function () {
+	console.log('This will run every fifth second');
+});
+```
+
+## Minimalist scheduling with range
+```javascript
+// Run a function each second
+Cron('0-4 * * * * *', function () {
+	console.log('This will run the first five seconds every minute');
+});
+```
+
 ## Minimalist scheduling with options
 ```javascript
 // Run a function each second, limit to five runs
