@@ -77,6 +77,55 @@ describe("Parser", function () {
 		}).should.throw();
 	});
 
+	it("Slash in pattern should not throw", function () {
+		(function(){
+			var scheduler = new Cron("* */5 * * * *");
+			scheduler.next();
+		}).should.not.throw();
+	});
+
+	it("Slash in pattern without following number should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */ * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with preceding number should throw", function () {
+		(function(){
+			var scheduler = new Cron("* 1/5 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with wildcards both pre and post should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */* * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with zero stepping should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */0 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with letter after should throw should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */a * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
+	it("Slash in pattern with too high stepping should throw", function () {
+		(function(){
+			var scheduler = new Cron("* */61 * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
 	it("Missing lower range should throw", function () {
 		(function(){
 			var scheduler = new Cron("* -9 * * * *");
@@ -223,12 +272,50 @@ describe("Scheduler", function () {
 
 	});
 
+	it("0 0 12 * * * with startdate tomorrow should return day after tomorrow, at 12:00:00", function () {
+		var 
+			nextDay = new Date(new Date().getTime()+24*60*60*1000),		// Add one day
+			dayAfterNext = new Date(new Date().getTime()+48*60*60*1000),// Add two days
+			scheduler,
+			nextRun;
+
+		// Set a fixed hour later than startAt, to be sure that the days doesn't overlap
+		nextDay =  new Date(nextDay.setHours(13));
+		dayAfterNext = new Date(dayAfterNext.setHours(13));
+
+		scheduler = new Cron("0 0 12 * * *", { startAt: nextDay });
+		nextRun = scheduler.next();
+
+		// Set seconds, minutes and hours to 00:00:00
+		dayAfterNext.setMilliseconds(0);
+		dayAfterNext.setSeconds(0);
+		dayAfterNext.setMinutes(0);
+		dayAfterNext.setHours(12);
+
+		// Do comparison
+		nextRun.getTime().should.equal(dayAfterNext.getTime());
+		
+
+	});
+
+	it("0 0 12 * * * with stopdate yesterday should return undefined", function () {
+		var 
+			dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
+			scheduler = new Cron("0 0 12 * * *", { stopAt: dayBefore }),
+			nextRun = scheduler.next();
+
+		// Do comparison
+		should.equal(nextRun, undefined);
+
+	});
+
 	it("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
-		var scheduler = new Cron("0 0 0 * * *"),
+		var scheduler = new Cron("0 0 12 * * *"),
 			prevRun = new Date(),
 			nextRun,
 			iterations = 40,
 			compareDay = new Date(new Date().getTime()+40*24*60*60*1000);   // Add one day
+		
 
 		while(iterations-->0) {
 			nextRun = scheduler.next(prevRun),
@@ -239,7 +326,7 @@ describe("Scheduler", function () {
 		compareDay.setMilliseconds(0);
 		compareDay.setSeconds(0);
 		compareDay.setMinutes(0);
-		compareDay.setHours(0);
+		compareDay.setHours(12);
 
 		// Do comparison
 		nextRun.getTime().should.equal(compareDay.getTime());
