@@ -84,6 +84,13 @@ describe("Parser", function () {
 		}).should.not.throw();
 	});
 
+	it("Slash in pattern with number first should xthrow", function () {
+		(function(){
+			var scheduler = new Cron("* 5/* * * * *");
+			scheduler.next();
+		}).should.throw();
+	});
+
 	it("Slash in pattern without following number should throw", function () {
 		(function(){
 			var scheduler = new Cron("* */ * * * *");
@@ -352,6 +359,88 @@ describe("Scheduler", function () {
 		// Do comparison
 		nextRun.getTime().should.equal(compareDay.getTime());
 
+	});
+
+	it("Valid startAt with Date should not throw", function () {
+		(function ()  {
+			var 
+				dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
+				scheduler = new Cron("0 0 12 * * *", { startAt: dayBefore }),
+				nextRun = scheduler.next();
+			}).should.not.throw();
+	});
+
+	it("Valid startAt with DateTime string should not throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01 00:00:00" }),
+				nextRun = scheduler.next();
+			}).should.not.throw();
+	});
+
+	it("Valid startAt with Date string should not throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01" }),
+				nextRun = scheduler.next();
+			}).should.not.throw();
+	});
+
+	it("Invalid startat should throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { startAt: "hellu throw" }),
+				nextRun = scheduler.next();
+			}).should.throw();
+	});
+
+	it("startAt with time only should throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { startAt: "00:35:00" }),
+				nextRun = scheduler.next();
+			}).should.throw();
+	});
+
+	it("Valid stopAt with Date should not throw", function () {
+		(function ()  {
+			var 
+				dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
+				scheduler = new Cron("0 0 12 * * *", { stopAt: dayBefore }),
+				nextRun = scheduler.next();
+			}).should.not.throw();
+	});
+
+	it("Valid stopAt with DateTime string should not throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01 00:00:00" }),
+				nextRun = scheduler.next();
+			}).should.not.throw();
+	});
+
+	it("Valid stopAt with Date string should not throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01" }),
+				nextRun = scheduler.next();
+			}).should.not.throw();
+	});
+
+	it("Invalid stopAt should throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { stopAt: "hellu throw" }),
+				nextRun = scheduler.next();
+			}).should.throw();
+	});
+
+	it("stopAt with time only should throw", function () {
+		(function ()  {
+			var 
+				scheduler = new Cron("0 0 12 * * *", { stopAt: "00:35:00" }),
+				nextRun = scheduler.next();
+			}).should.throw();
 	});
 
 });
