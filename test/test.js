@@ -84,7 +84,7 @@ describe("Parser", function () {
 		}).should.not.throw();
 	});
 
-	it("Slash in pattern with number first should xthrow", function () {
+	it("Slash in pattern with number first should throw", function () {
 		(function(){
 			var scheduler = new Cron("* 5/* * * * *");
 			scheduler.next();
