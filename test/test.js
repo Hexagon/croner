@@ -266,13 +266,22 @@ describe("Scheduler", function () {
 	it("0 0 0 * * * should return tomorrow, at 00:00:00", function () {
 		var scheduler = new Cron("0 0 0 * * *"),
 			nextRun = scheduler.next(),
+
+			// ToDay/nextDay is a fix for DST in test
+			toDay = new Date(),
 			nextDay = new Date(new Date().getTime()+24*60*60*1000);     // Add one day
 
 		// Set seconds, minutes and hours to 00:00:00
+		toDay.setMilliseconds(0);
+		toDay.setSeconds(0);
+		toDay.setMinutes(0);
+		toDay.setHours(0);
+		nextDay = new Date(toDay.getTime()+36*60*60*1000);
 		nextDay.setMilliseconds(0);
 		nextDay.setSeconds(0);
 		nextDay.setMinutes(0);
 		nextDay.setHours(0);
+
 
 		// Do comparison
 		nextRun.getTime().should.equal(nextDay.getTime());
@@ -441,6 +450,25 @@ describe("Scheduler", function () {
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "00:35:00" }),
 				nextRun = scheduler.next();
 			}).should.throw();
+	});
+
+	it("Weekday 0 (sunday) and weekday 7 (sunday) should both be valid patterns", function () {
+		(function ()  {
+			var 
+				scheduler0 = new Cron("0 0 0 * * 0"),
+				nextRun0 = scheduler0.next(),
+				scheduler7 = new Cron("0 0 0 * * 7"),
+				nextRun7 = scheduler7.next();
+			}).should.not.throw();
+	});
+
+	it("Weekday 0 (sunday) and weekday 7 (sunday) should give the same run time", function () {
+		var 
+			scheduler0 = new Cron("0 0 0 * * 0"),
+			scheduler7 = new Cron("0 0 0 * * 7"),
+			nextRun0 = scheduler0.next(),
+			nextRun7 = scheduler7.next();
+		nextRun0.getTime().should.equal(nextRun7.getTime());
 	});
 
 });
