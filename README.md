@@ -6,16 +6,44 @@
 
 Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids.
 
+```html
+<script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
+```
+
+```javascript
+// Run a function each second
+Cron('* * * * * *', function () {
+	console.log('This will run every second');
+});
+```
 
 # Installation
 
-## Node.js 
+## Node.js (server)
 
 ```npm install croner```
 
-## Browser (AMD and regular usage) 
+### cdn (client)
 
-Download lib/croner.min.js and import with script-tag or AMD as usual.
+Copy and paste one of the following script tags.
+
+**Minified**
+
+```html
+<script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
+```
+
+**Full**
+
+```html
+<script src="//cdn.56k.guru/js/croner/latest/croner.js"></script>
+```
+
+### Manual (server/client)
+
+ * Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
+ * Unpack
+ * Grab croner.js (or croner.min.js) from the [lib/](/lib) folder
 
 # Examples 
 
