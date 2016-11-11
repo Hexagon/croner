@@ -314,6 +314,32 @@ describe("Scheduler", function () {
 
 	});
 
+	it("0 0 0 * * * with startdate yesterday should return tomorrow, at 12:00:00", function () {
+		var 
+			dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
+			nextDay = new Date(new Date().getTime()+24*60*60*1000),// Add two days
+			scheduler,
+			nextRun;
+
+		// Set a fixed hour later than startAt, to be sure that the days doesn't overlap
+		dayBefore =  new Date(dayBefore.setHours(0));
+		nextDay = new Date(nextDay.setHours(0));
+
+		scheduler = new Cron("0 0 0 * * *", { startAt: dayBefore });
+		nextRun = scheduler.next();
+
+		// Set seconds, minutes and hours to 00:00:00
+		nextDay.setMilliseconds(0);
+		nextDay.setSeconds(0);
+		nextDay.setMinutes(0);
+		nextDay.setHours(0);
+
+		// Do comparison
+		nextRun.getTime().should.equal(nextDay.getTime());
+		
+
+	});
+
 	it("0 0 12 * * * with stopdate yesterday should return undefined", function () {
 		var 
 			dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
@@ -326,13 +352,12 @@ describe("Scheduler", function () {
 	});
 
 	it("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
-		var scheduler = new Cron("0 0 12 * * *"),
+		var scheduler = new Cron("0 0 0 * * *"),
 			prevRun = new Date(),
 			nextRun,
 			iterations = 40,
 			compareDay = new Date(new Date().getTime()+40*24*60*60*1000);   // Add one day
 		
-
 		while(iterations-->0) {
 			nextRun = scheduler.next(prevRun),
 			prevRun = nextRun;
@@ -342,7 +367,7 @@ describe("Scheduler", function () {
 		compareDay.setMilliseconds(0);
 		compareDay.setSeconds(0);
 		compareDay.setMinutes(0);
-		compareDay.setHours(12);
+		compareDay.setHours(0);
 
 		// Do comparison
 		nextRun.getTime().should.equal(compareDay.getTime());
