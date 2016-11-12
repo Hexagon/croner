@@ -55,6 +55,13 @@ describe("Parser", function () {
 			scheduler.next();
 		}).should.not.throw();
 	});
+
+	it("String object pattern should not throw", function () {
+		(function(){
+			var scheduler = new Cron(new String("* * * * * *"));
+			scheduler.next();
+		}).should.not.throw();
+	});
 	
 	it("Short pattern should throw", function () {
 		(function(){
@@ -288,6 +295,31 @@ describe("Scheduler", function () {
 
 	});
 
+	it("new String(\"0 0 0 * * *\") should return tomorrow, at 00:00:00", function () {
+		var scheduler = new Cron(new String("0 0 0 * * *")),
+			nextRun = scheduler.next(),
+
+			// ToDay/nextDay is a fix for DST in test
+			toDay = new Date(),
+			nextDay = new Date(new Date().getTime()+24*60*60*1000);     // Add one day
+
+		// Set seconds, minutes and hours to 00:00:00
+		toDay.setMilliseconds(0);
+		toDay.setSeconds(0);
+		toDay.setMinutes(0);
+		toDay.setHours(0);
+		nextDay = new Date(toDay.getTime()+36*60*60*1000);
+		nextDay.setMilliseconds(0);
+		nextDay.setSeconds(0);
+		nextDay.setMinutes(0);
+		nextDay.setHours(0);
+
+
+		// Do comparison
+		nextRun.getTime().should.equal(nextDay.getTime());
+
+	});
+
 	it("0 0 12 * * * with startdate tomorrow should return day after tomorrow, at 12:00:00", function () {
 		var 
 			nextDay = new Date(new Date().getTime()+24*60*60*1000),		// Add one day
@@ -347,7 +379,7 @@ describe("Scheduler", function () {
 			nextRun = scheduler.next();
 
 		// Do comparison
-		should.equal(nextRun, undefined);
+		should.equal(nextRun, void 0);
 
 	});
 
