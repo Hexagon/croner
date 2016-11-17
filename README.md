@@ -4,7 +4,7 @@
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1322c32f48454df5b7e28ea641dd13e7)](https://www.codacy.com/app/robinnilsson/croner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids.
+Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. Support node.js, requirejs or stand alone usage.
 
 ```html
 <script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
@@ -17,13 +17,15 @@ Cron('* * * * * *', function () {
 });
 ```
 
+
 # Installation
 
 ## Node.js (server)
 
 ```npm install croner```
 
-### cdn (client)
+
+## cdn (client)
 
 Copy and paste one of the following script tags.
 
@@ -39,11 +41,52 @@ Copy and paste one of the following script tags.
 <script src="//cdn.56k.guru/js/croner/latest/croner.js"></script>
 ```
 
-### Manual (server/client)
+
+## Manual (server/client)
 
  * Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
  * Unpack
  * Grab croner.js (or croner.min.js) from the [lib/](/lib) folder
+
+
+
+# Usage
+
+## Node.js
+
+```javascript
+var Cron = require('croner');
+
+Cron('* * * * * *', function () {
+	console.log('This will run every second');
+});
+```
+
+## Browser, stand-alone
+
+Include croner.min.js fron cdn or manually, installation section above. Croner registers itself globally as 'Cron'.
+
+```javascript
+// Run a function each second
+Cron('* * * * * *', function () {
+	console.log('This will run every second');
+});
+```
+
+## Browser, require.js
+
+Include croner.js in your preferred way, it will register itself as a require.js module.
+
+```javascript
+define(["croner"], function(Cron) {
+
+	Cron('* * * * * *', function () {
+		console.log('This will run every second');
+	});
+
+});
+```
+
 
 # Examples 
 
@@ -163,6 +206,7 @@ job.stop();
 
 
 # Pattern
+
 ```
 ┌──────────────── sec (0 - 59)
 │ ┌────────────── min (0 - 59)
@@ -174,6 +218,7 @@ job.stop();
 │ │ │ │ │ │
 * * * * * *
 ```
+
 
 
 # License
