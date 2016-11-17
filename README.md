@@ -4,7 +4,9 @@
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1322c32f48454df5b7e28ea641dd13e7)](https://www.codacy.com/app/robinnilsson/croner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. Support node.js, requirejs or stand alone usage.
+Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. 
+
+Supports node.js, require.js and stand alone usage.
 
 ```html
 <script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
@@ -64,7 +66,7 @@ Cron('* * * * * *', function () {
 
 ## Browser, stand-alone
 
-Include croner.min.js fron cdn or manually, installation section above. Croner registers itself globally as 'Cron'.
+Include croner.min.js fron cdn or manually, see installation section above. Croner registers itself globally as 'Cron'.
 
 ```javascript
 // Run a function each second
