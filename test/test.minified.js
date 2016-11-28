@@ -383,6 +383,19 @@ describe("Scheduler", function () {
 
 	});
 
+	it("* * * * * * with maxRuns: 1 should return undefined after 1.5 seconds", function (done) {
+		var 
+			scheduler = new Cron("* * * * * *"),
+			job = scheduler.schedule({ maxRuns: 1 }, function () {});
+		setTimeout(function () {
+			var nextRun = scheduler.next();
+			// Do comparison
+			should.equal(nextRun, void 0);
+			done();
+		},1500);
+
+	});
+
 	it("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
 		var scheduler = new Cron("0 0 0 * * *"),
 			prevRun = new Date(),
