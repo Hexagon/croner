@@ -22,7 +22,7 @@ Cron('* * * * * *', function () {
 
 # Installation
 
-## Node.js (server)
+## Node.js or browser ESM (e.g. WebPack)
 
 ```npm install croner```
 
@@ -54,7 +54,7 @@ Copy and paste one of the following script tags.
 
 # Usage
 
-## Node.js
+## Node.js commonjs
 
 ```javascript
 var Cron = require('croner');
@@ -63,6 +63,17 @@ Cron('* * * * * *', function () {
 	console.log('This will run every second');
 });
 ```
+
+## Node.js ESM, Browser ESM
+
+```javascript
+import { Cron } from 'croner';
+
+Cron('* * * * * *', function () {
+	console.log('This will run every second');
+});
+```
+
 
 ## Browser, stand-alone
 

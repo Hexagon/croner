@@ -16,6 +16,8 @@
     "test:lint:fix": "eslint --fix ./lib/croner.js"
   },
   "main": "index.js",
+  "type": "commonjs",
+  "module": "index.mjs",
   "browser": "./lib/croner.min.js",
   "repository": {
     "type": "git",
