@@ -1,6 +1,4 @@
 var croner = require("./lib/croner.js");
 
-module.exports = {
-    default: croner,
-    Cron: croner
-};
+module.exports = croner;
+module.exports.Cron = croner;
