@@ -18,8 +18,9 @@
         ],
         "complexity": [
             2,
-            15
-        ]
+            22
+        ],
+        "no-var": 1
     },
     "globals": {
         "define": false,

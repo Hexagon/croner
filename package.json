@@ -10,7 +10,10 @@
     }
   ],
   "scripts": {
-    "test": "mocha"
+    "test": "npm run test:lint && npm run test:mocha",
+    "test:mocha": "mocha",
+    "test:lint": "eslint ./lib/croner.js",
+    "test:lint:fix": "eslint --fix ./lib/croner.js"
   },
   "main": "index.js",
   "browser": "./lib/croner.min.js",
@@ -29,8 +32,8 @@
     "timer",
     "isomorphic"
   ],
-  "dependencies": {},
   "devDependencies": {
+    "eslint": "^7.32.0",
     "mocha": "*",
     "should": "*"
   },
