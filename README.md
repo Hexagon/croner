@@ -6,7 +6,7 @@
 
 Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. 
 
-Supports node.js, require.js and stand alone usage.
+Supports node.js, require.js, es-module and stand alone usage.
 
 ```html
 <script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
@@ -22,39 +22,37 @@ Cron('* * * * * *', function () {
 
 # Installation
 
-## Node.js or browser ESM (e.g. WebPack)
+## Node.js
 
 ```npm install croner```
 
 
-## cdn (client)
+## CDN
 
 Copy and paste one of the following script tags.
 
-**Minified**
+**Minified normal module (umd)**
 
 ```html
 <script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
 ```
 
-**Full**
+**Minified ESM-module**
 
-```html
-<script src="//cdn.56k.guru/js/croner/latest/croner.js"></script>
-```
+See usage-section for more examples, including ESM usage.
 
 
 ## Manual (server/client)
 
  * Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
  * Unpack
- * Grab croner.js (or croner.min.js) from the [lib/](/lib) folder
+ * Grab croner.min.js or croner.min.mjs from the [dist/](/dist) folder
 
 
 
 # Usage
 
-## Node.js commonjs
+## Node.js/CommonJS
 
 ```javascript
 var Cron = require('croner');
@@ -64,16 +62,40 @@ Cron('* * * * * *', function () {
 });
 ```
 
-## Node.js ESM, Browser ESM
+## Browser ESM
 
-```javascript
-import { Cron } from 'croner';
+Import croner.min.mjs from cdn or manually, see installation section above.
 
-Cron('* * * * * *', function () {
+```html
+<script type="module">
+import Cron from 'https://cdn.jsdelivr.net/npm/croner@1.1.27/dist/croner.min.mjs';
+
+Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
+</script>
 ```
 
+## Browser ESM with import-maps
+
+Import croner.min.mjs from cdn or manually, see installation section above.
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "croner": "https://cdn.jsdelivr.net/npm/croner@1.1.27/dist/croner.min.mjs"
+  }
+}
+</script>
+<script type="module">
+import Cron from 'croner';
+
+Cron('* * * * * *', () => {
+	console.log('This will run every second');
+});
+</script>
+```
 
 ## Browser, stand-alone
 
@@ -88,7 +110,7 @@ Cron('* * * * * *', function () {
 
 ## Browser, require.js
 
-Include croner.js in your preferred way, it will register itself as a require.js module.
+Include croner.min.js in your preferred way, it will register itself as a require.js module.
 
 ```javascript
 define(["croner"], function(Cron) {
