@@ -10,7 +10,7 @@
     }
   ],
   "scripts": {
-    "test": "npm run test:lint && npm run test:mocha",
+    "test": "npm run test:mocha",
     "test:mocha": "mocha",
     "test:lint": "eslint ./src/croner.js",
     "test:lint:fix": "eslint --fix ./src/croner.js",
