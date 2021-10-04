@@ -23,10 +23,8 @@ THE SOFTWARE.
 */
 
 /* eslint no-unused-vars: 0 */
-
 "use strict";
-
-const Cron = require("../index.js"),
-	  test = require("./suite.js");
+import { Cron } from "../dist/croner.min.mjs";
+import test from "./suite.js";
 
 test(Cron);

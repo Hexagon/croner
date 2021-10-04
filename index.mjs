@@ -1,4 +1,3 @@
-import Cron from "./lib/croner.js";
+import Cron from "./src/croner.js";
 
-export { Cron };
-export default Cron;
+export { Cron, Cron as default };
