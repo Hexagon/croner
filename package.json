@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "1.1.28",
+  "version": "1.1.29",
   "description": "Isomorphic JavaScript cron parser and scheduler.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -9,16 +9,6 @@
       "email": "github.com/unkelpehr"
     }
   ],
-  "scripts": {
-    "test": "npm run test:mocha",
-    "test:mocha": "mocha",
-    "test:lint": "eslint ./src/croner.js",
-    "test:lint:fix": "eslint --fix ./src/croner.js",
-    "build": "npm run test:lint && webpack && npm run test:mocha"
-  },
-  "main": "index.js",
-  "browser": "./dist/croner.min.js",
-  "module": "./dist/croner.min.mjs",
   "repository": {
     "type": "git",
     "url": "https://github.com/hexagon/croner"
@@ -34,10 +24,24 @@
     "timer",
     "isomorphic"
   ],
+  "scripts": {
+    "test": "npm run test:mocha",
+    "test:mocha": "mocha",
+    "test:lint": "eslint ./src/croner.js",
+    "test:lint:fix": "eslint --fix ./src/croner.js",
+    "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:mocha",
+    "build:webpack": "webpack",
+    "build:typings": "tsc"
+  },
+  "main": "index.js",
+  "browser": "./dist/croner.min.js",
+  "module": "./dist/croner.min.mjs",
+  "types": "./types/croner.d.ts",
   "devDependencies": {
     "eslint": "^7.32.0",
     "mocha": "*",
     "should": "*",
+    "typescript": "^4.4.3",
     "webpack": "^5.56.1",
     "webpack-cli": "^4.8.0"
   },

@@ -1,4 +1,3 @@
-
 # Croner
 
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
@@ -6,7 +5,9 @@
 
 Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. 
 
-Supports node.js, require.js, es-module and stand alone usage.
+Supports Node.js, requirejs, es-module and stand alone usage. 
+
+Documented with JSDoc for intellisense, and complete TypeScript typings for type checking.
 
 ```html
 <script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>

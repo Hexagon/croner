@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------------
 
-  Croner 1.1.21 - MIT License - Hexagon <github.com/Hexagon>
+  Croner 1.1.29 - MIT License - Hexagon <github.com/Hexagon>
 
   Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
 
@@ -10,7 +10,7 @@
 
 	MIT:
 
-	Copyright (c) 2015-2017 Hexagon <github.com/Hexagon>
+	Copyright (c) 2015-2021 Hexagon <github.com/Hexagon>
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,49 @@
 	THE SOFTWARE.
 
   ------------------------------------------------------------------------------------  */
+
+// ---- Type definitions ----------------------------------------------------------------
+
+
+/**
+ * @typedef {"seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek"} CronPatternPart
+ */
+
+/**
+ * @typedef {0 | -1} CronIndexOffset
+ */
+
+/**
+ * @typedef {Date | undefined} CronNextResult
+ */
+
+/**
+ * @typedef {Object} CronOptions - Cron scheduler options
+ * @property {boolean} [paused] - Job is paused
+ * @property {boolean} [kill] - Job is about to be killed
+ * @property {boolean} [rest] - Internal: Milliseconds left from previous run
+ * @property {number} [currentTimeout] - Internal: setTimeout "id"
+ * @property {CronNextResult} [previous] - Previous run time
+ * @property {string | Date} [startAt] - When to start running
+ * @property {string | Date} [stopAt] - When to stop running
+ */
+
+/**
+ * @typedef {Function} CronJobStop - Stop current job
+ * @returns {boolean} - If pause was successful
+ */
+
+/**
+ * @typedef {Function} CronJobResume - Resume current job
+ * @returns {boolean} - If resume was successful
+ */
+
+/**
+ * @typedef {Object} CronJob - Cron job control functions
+ * @property {CronJobStop} stop
+ * @property {CronJobResume} pause
+ * @property {Function} resume
+ */
 
 // Many JS engines stores the delay as a 32-bit signed integer internally.
 // This causes an integer overflow when using delays larger than 2147483647, 
@@ -65,6 +108,11 @@ function fill(arr, val) {
 // ---- CronDate  ---------------------------------------------------------------------
 //
 
+/**
+ * Converts date to CronDate
+ * @constructor
+ * @param {date} date - Input date
+ */
 function CronDate (date) {
 	this.milliseconds = date.getMilliseconds();
 	this.seconds = date.getSeconds() + 1;
@@ -75,10 +123,27 @@ function CronDate (date) {
 	this.years = date.getFullYear();
 }
 
+/**
+ * Increment to next run time
+ * 
+ * @param {string} pattern - The pattern used to increment current state
+ */
 CronDate.prototype.increment = function (pattern) {
 
 	let self = this,
 
+		
+		/**
+		 * Find next
+		 * 
+		 * @param {string} target
+		 * @param {string} pattern
+		 * @param {string} offset
+		 * @param {string} override
+		 * 
+		 * @returns {boolean}
+		 * 
+		 */
 		findNext = function (target, pattern, offset, override) {
 			
 			let startPos = (override === void 0) ? self[target] + offset : 0 + offset;
@@ -152,6 +217,12 @@ CronDate.prototype.increment = function (pattern) {
 
 };
 
+/**
+ * Convert current state back to a javascript Date()
+ * 
+ * @returns {date}
+ * 
+ */
 CronDate.prototype.getDate = function () {
 	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, 0);
 };
@@ -162,6 +233,11 @@ CronDate.prototype.getDate = function () {
 // ---- CronPattern  ---------------------------------------------------------------------
 //
 
+/**
+ * Create a CronPattern instance from pattern string ('* * * * * *')
+ * @constructor
+ * @param {string} pattern - Input pattern
+ */
 function CronPattern (pattern) {
 
 	this.pattern 		= pattern;
@@ -177,6 +253,9 @@ function CronPattern (pattern) {
 
 }
 
+/**
+ * Parse current pattern, will raise an error on failure
+ */
 CronPattern.prototype.parse = function () {
 
 	// Sanity check
@@ -233,6 +312,13 @@ CronPattern.prototype.parse = function () {
 
 };
 
+/**
+ * Convert current part (seconds/minutes etc) to an array of 1 or 0 depending on if the part is about to trigger a run or not.
+ * 
+ * @param {CronPatternPart} type - Seconds/minutes etc
+ * @param {string} conf - Current pattern part - *, 0-1 etc
+ * @param {CronIndexOffset} valueIndexOffset - 0 or -1. 0 for seconds,minutes, hours as they start on 1. -1 on days and months, as the start on 0
+ */
 CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 
 	let i,
@@ -343,7 +429,15 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 //
 // ---- Cron --------------------------------------------------------------------------
 //
-
+/**
+ * Cron entrypoint
+ * 
+ * @constructor
+ * @param {string} pattern - Input pattern
+ * @param {CronOptions | Function} [options] - Options
+ * @param {Function} [fn] - Function to be run each iteration of pattern
+ * @returns {Cron | CronJob}
+ */
 function Cron (pattern, options, fn) {
 	let self = this;
 	
@@ -352,8 +446,10 @@ function Cron (pattern, options, fn) {
 		return new Cron(pattern, options, fn);
 	}
 
+	/** @type {CronPattern} */
 	self.pattern = new CronPattern(pattern);
 
+	/** @type {CronOptions} */
 	self.schedulerDefaults = {
 		stopAt:     Infinity,
 		maxRuns:    Infinity,
@@ -367,6 +463,7 @@ function Cron (pattern, options, fn) {
 	}
 
 	// Store and validate options
+	/** @type {CronOptions} */
 	self.opts = self.validateOpts(options || {});
 
 	// Determine what to return, default is self
@@ -382,14 +479,24 @@ function Cron (pattern, options, fn) {
 
 }
 
-// "Exposed" version of next strips milliseconds
+/**
+ * Find next runtime, based on supplied date. Strips milliseconds.
+ * 
+ * @param {Date} prev - Input pattern
+ * @returns {CronNextResult} - Next run time
+ */
 Cron.prototype.next = function (prev) {
 	let dirtyDate = this._next(prev);
 	if (dirtyDate) dirtyDate.setMilliseconds(0);
 	return dirtyDate;
 };
 
-// Cron needs millseconds internally, hence _next
+/**
+ * Internal version of next. Cron needs millseconds internally, hence _next.
+ * 
+ * @param {Date} prev - Input pattern
+ * @returns {CronNextResult} - Next run time
+ */
 Cron.prototype._next = function (prev) {
 	
 	prev = prev || new Date();
@@ -419,6 +526,12 @@ Cron.prototype._next = function (prev) {
 	return !(stopAt && nextRun >= stopAt ) ? nextRun : void 0;
 };
 
+/**
+ * Validate (and cleans) options. Raises error on failure.
+ * 
+ * @param {CronOptions} opts - Input options
+ * @returns {CronOptions} - Clean and validated options.
+ */
 Cron.prototype.validateOpts = function (opts) {
 	// startAt is set, validate it
 	if( opts.startAt ) {
@@ -446,6 +559,12 @@ Cron.prototype.validateOpts = function (opts) {
 	return opts;
 };
 
+/**
+ * Returns number of milliseconds to next run
+ * 
+ * @param {CronNextResult} [prev=new Date()] - Starting date, defaults to now
+ * @returns {number | CronNextResult}
+ */
 Cron.prototype.msToNext = function (prev) {
 	prev = prev || new Date();
 	let next = this._next(prev);
@@ -456,6 +575,14 @@ Cron.prototype.msToNext = function (prev) {
 	}
 };
 
+/**
+ * Schedule a new job
+ * 
+ * @constructor
+ * @param {CronOptions | Function} [options] - Options
+ * @param {Function} [func] - Function to be run each iteration of pattern
+ * @returns {CronJob}
+ */
 Cron.prototype.schedule = function (opts, func) {
 
 	let self = this,
