@@ -42,7 +42,7 @@
     "mocha": "*",
     "should": "*",
     "typescript": "^4.4.3",
-    "webpack": "^5.56.1",
+    "webpack": "^5.57.1",
     "webpack-cli": "^4.8.0"
   },
   "license": "MIT"
