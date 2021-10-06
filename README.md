@@ -10,7 +10,7 @@ Supports Node.js, requirejs, es-module and stand alone usage.
 Documented with JSDoc for intellisense, and complete TypeScript typings for type checking.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@1.1.31/dist/croner.min.js"></script>
 ```
 
 ```javascript
@@ -35,7 +35,7 @@ Copy and paste one of the following script tags.
 **Minified normal module (umd)**
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@1.1.31/dist/croner.min.js"></script>
 ```
 
 **Minified ESM-module**
@@ -69,7 +69,7 @@ Import croner.min.mjs from cdn or manually, see installation section above.
 
 ```html
 <script type="module">
-import Cron from 'https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.mjs';
+import Cron from 'https://cdn.jsdelivr.net/npm/croner@1.1.31/dist/croner.min.mjs';
 
 Cron('* * * * * *', () => {
 	console.log('This will run every second');
@@ -85,7 +85,7 @@ Import croner.min.mjs from cdn or manually, see installation section above.
 <script type="importmap">
 {
   "imports": {
-    "croner": "https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.mjs"
+    "croner": "https://cdn.jsdelivr.net/npm/croner@1.1.31/dist/croner.min.mjs"
   }
 }
 </script>
