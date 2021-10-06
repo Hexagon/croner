@@ -1,7 +1,7 @@
 # Croner
 
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)[![jsdelivr](https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded)](https://www.jsdelivr.com/package/npm/croner)
 
 Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. 
 
@@ -10,7 +10,7 @@ Supports Node.js, requirejs, es-module and stand alone usage.
 Documented with JSDoc for intellisense, and complete TypeScript typings for type checking.
 
 ```html
-<script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.js"></script>
 ```
 
 ```javascript
@@ -35,7 +35,7 @@ Copy and paste one of the following script tags.
 **Minified normal module (umd)**
 
 ```html
-<script src="//cdn.56k.guru/js/croner/latest/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.js"></script>
 ```
 
 **Minified ESM-module**
@@ -69,7 +69,7 @@ Import croner.min.mjs from cdn or manually, see installation section above.
 
 ```html
 <script type="module">
-import Cron from 'https://cdn.jsdelivr.net/npm/croner@1.1.27/dist/croner.min.mjs';
+import Cron from 'https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.mjs';
 
 Cron('* * * * * *', () => {
 	console.log('This will run every second');
@@ -85,7 +85,7 @@ Import croner.min.mjs from cdn or manually, see installation section above.
 <script type="importmap">
 {
   "imports": {
-    "croner": "https://cdn.jsdelivr.net/npm/croner@1.1.27/dist/croner.min.mjs"
+    "croner": "https://cdn.jsdelivr.net/npm/croner@1.1.30/dist/croner.min.mjs"
   }
 }
 </script>
