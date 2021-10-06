@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "1.1.29",
+  "version": "1.1.30",
   "description": "Isomorphic JavaScript cron parser and scheduler.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -29,9 +29,10 @@
     "test:mocha": "mocha",
     "test:lint": "eslint ./src/croner.js",
     "test:lint:fix": "eslint --fix ./src/croner.js",
-    "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:mocha",
+    "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:mocha && npm run build:finalize",
     "build:webpack": "webpack",
-    "build:typings": "tsc"
+    "build:typings": "tsc",
+    "build:finalize": "echo \"All good\n\nHOWEVER. You now need to change export = Cron; to export { Cron, Cron as default }; in types/croner.d.ts before publishing."
   },
   "main": "index.js",
   "browser": "./dist/croner.min.js",

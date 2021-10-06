@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------------
 
-  Croner 1.1.29 - MIT License - Hexagon <github.com/Hexagon>
+  Croner 1.1.30 - MIT License - Hexagon <github.com/Hexagon>
 
   Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
 
@@ -115,7 +115,7 @@ function fill(arr, val) {
  */
 function CronDate (date) {
 	this.milliseconds = date.getMilliseconds();
-	this.seconds = date.getSeconds() + 1;
+	this.seconds = date.getSeconds();
 	this.minutes = date.getMinutes();
 	this.hours = date.getHours();
 	this.days = date.getDate();
@@ -129,6 +129,9 @@ function CronDate (date) {
  * @param {string} pattern - The pattern used to increment current state
  */
 CronDate.prototype.increment = function (pattern) {
+
+	this.seconds += 1;
+	this.milliseconds = 0;
 
 	let self = this,
 
@@ -224,7 +227,7 @@ CronDate.prototype.increment = function (pattern) {
  * 
  */
 CronDate.prototype.getDate = function () {
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, 0);
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
 };
 
 
@@ -492,6 +495,15 @@ Cron.prototype.next = function (prev) {
 };
 
 /**
+ * Return previos run time
+ * 
+ * @returns {Date?} - Previous run time
+ */
+Cron.prototype.previous = function () {
+	return this.opts.previous;
+};
+
+/**
  * Internal version of next. Cron needs millseconds internally, hence _next.
  * 
  * @param {Date} prev - Input pattern
@@ -628,17 +640,12 @@ Cron.prototype.schedule = function (opts, func) {
 		// Are we running? If waitMs is maxed out, this is a blank run
 		if( waitMs !== _maxDelay ) {
 
-			// Assume that the function was executed on the exakt time it should have
-			// ----
-			// DO NOT assume it was executed at new Date(), as this could lead to double
-			// runs in case of an early run
-			opts.previous = self._next(opts.previous);
-
 			if ( !opts.paused ) {
 				opts.maxRuns--;
 				func();	
 			}
-			
+
+			opts.previous = new Date();
 		}
 
 		// Recurse

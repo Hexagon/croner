@@ -533,6 +533,7 @@ module.exports = function (Cron) {
                     left = scheduler.msToNext(prevRun);
                     diff = Math.abs((target.getTime() - prevRun.getTime())-left);
                     diff.should.be.below(1001);
+                    diff.should.be.above(-1);
                     prevRun = new Date(prevRun.getTime() + 1000000);
                 }
             }
@@ -554,6 +555,7 @@ module.exports = function (Cron) {
                     left = scheduler.msToNext(prevRun);
                     diff = Math.abs((target.getTime() - prevRun.getTime())-left);
                     diff.should.be.below(1001);
+                    diff.should.be.above(-1);
                     prevRun = new Date(prevRun.getTime() + 1000000);
                 }
             }

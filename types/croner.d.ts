@@ -1,4 +1,4 @@
-export = Cron;
+export { Cron, Cron as default };
 /**
  * Cron entrypoint
  *
@@ -33,6 +33,12 @@ declare class Cron {
      * @returns {CronNextResult} - Next run time
      */
     next(prev: Date): CronNextResult;
+    /**
+     * Return previos run time
+     *
+     * @returns {Date?} - Previous run time
+     */
+    previous(): Date | null;
     /**
      * Internal version of next. Cron needs millseconds internally, hence _next.
      *

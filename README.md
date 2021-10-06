@@ -228,6 +228,7 @@ var o = Cron( <string pattern> [, <object options>] [, <function callback> ] );
 // and the following member functions is available.
 o.next( [ <date previous> ] );
 o.msToNext();
+o.previous();
 
 // If Cron is initialized _with_ a scheduled function, the job is retured instead.
 // Otherwise you get a reference to the job when scheduling a new job.
