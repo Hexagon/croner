@@ -8,7 +8,9 @@ module.exports = [
     output: {
         path: path.join(__dirname, "dist"),
         filename: "croner.min.js",
-        library: { type: "umd" },
+        library: "Cron",
+        libraryTarget: "umd" ,
+        libraryExport: "default",
         globalObject: 'this'
     }
   },

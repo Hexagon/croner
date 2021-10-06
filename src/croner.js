@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------------
 
-  Croner 1.1.31 - MIT License - Hexagon <github.com/Hexagon>
+  Croner 1.1.32 - MIT License - Hexagon <github.com/Hexagon>
 
   Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
 
