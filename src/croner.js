@@ -1,14 +1,12 @@
 /* ------------------------------------------------------------------------------------
 
-  Croner 1.1.32 - MIT License - Hexagon <github.com/Hexagon>
+  Croner - MIT License - Hexagon <github.com/Hexagon>
 
   Pure JavaScript Isomorphic cron parser and scheduler without dependencies.
 
   ------------------------------------------------------------------------------------
 
   License:
-
-	MIT:
 
 	Copyright (c) 2015-2021 Hexagon <github.com/Hexagon>
 
@@ -679,4 +677,3 @@ Cron.prototype.schedule = function (opts, func) {
 };
 
 module.exports = Cron;
-module.exports.default = Cron;

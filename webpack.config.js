@@ -4,23 +4,26 @@ const
 module.exports = [
   {
     mode: 'production',
-    entry: "./index.js",
+    entry: "./src/croner.js",
     output: {
         path: path.join(__dirname, "dist"),
         filename: "croner.min.js",
-        library: "Cron",
-        libraryTarget: "umd" ,
-        libraryExport: "default",
+        library: {
+          name: "Cron",
+          type: "umd"
+        },
         globalObject: 'this'
     }
   },
   {
     mode: 'production',
-    entry: "./index.mjs",
+    entry: "./esm/croner.mjs",
     output: {
         path: path.join(__dirname, "dist"),
         filename: "croner.min.mjs",
-        library: { "type": "module" }
+        library: {
+          type: "module"
+        }
     },
     experiments: {
       outputModule: true

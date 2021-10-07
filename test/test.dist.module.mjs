@@ -22,9 +22,9 @@ THE SOFTWARE.
 
 */
 
-/* eslint no-unused-vars: 0 */
-"use strict";
-import { Cron } from "../dist/croner.min.mjs";
+import Cron from "../dist/croner.min.mjs";
+import { Cron as Cron3 } from "../dist/croner.min.mjs";
 import test from "./suite.js";
 
 test(Cron);
+test(Cron3);

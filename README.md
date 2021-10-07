@@ -10,7 +10,7 @@ Supports Node.js, requirejs, es-module and stand alone usage.
 Documented with JSDoc for intellisense, and complete TypeScript typings for type checking.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@1.1.32/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@2/minified"></script>
 ```
 
 ```javascript
@@ -23,95 +23,72 @@ Cron('* * * * * *', function () {
 
 # Installation
 
-## Node.js
-
-```npm install croner```
-
-
-## CDN
-
-Copy and paste one of the following script tags.
-
-**Minified normal module (umd)**
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/croner@1.1.32/dist/croner.min.js"></script>
-```
-
-**Minified ESM-module**
-
-See usage-section for more examples, including ESM usage.
-
-
-## Manual (server/client)
+## Manual
 
  * Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
  * Unpack
  * Grab croner.min.js or croner.min.mjs from the [dist/](/dist) folder
 
+## Node.js
 
+```npm install croner --save```
+
+```javascript
+// ESM Import
+import Cron from "croner";
+
+// ... or
+
+// CommonJS Require
+
+const Cron = require("croner");
+```
+
+## CDN
+
+To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/croner@2/minified"></script>
+```
+
+To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+
+```html
+<script type="module">
+	import Cron from "https://cdn.jsdelivr.net/npm/croner@2/minified";
+
+	// ... see usage section ...
+</script>
+```
+
+... or a ES-module with [import-map](https://github.com/WICG/import-maps)
+```html
+<script type="importmap">
+	{
+		"imports": {
+			"croner": "https://cdn.jsdelivr.net/npm/croner@2/minified"
+		}
+	}
+</script>
+<script type="module">
+	import Cron from 'croner';
+
+	// ... see usage section ...
+</script>
+```
 
 # Usage
 
-## Node.js/CommonJS
-
 ```javascript
-var Cron = require('croner');
-
-Cron('* * * * * *', function () {
-	console.log('This will run every second');
-});
-```
-
-## Browser ESM
-
-Import croner.min.mjs from cdn or manually, see installation section above.
-
-```html
-<script type="module">
-import Cron from 'https://cdn.jsdelivr.net/npm/croner@1.1.32/dist/croner.min.mjs';
-
 Cron('* * * * * *', () => {
-	console.log('This will run every second');
-});
-</script>
-```
-
-## Browser ESM with import-maps
-
-Import croner.min.mjs from cdn or manually, see installation section above.
-
-```html
-<script type="importmap">
-{
-  "imports": {
-    "croner": "https://cdn.jsdelivr.net/npm/croner@1.1.32/dist/croner.min.mjs"
-  }
-}
-</script>
-<script type="module">
-import Cron from 'croner';
-
-Cron('* * * * * *', () => {
-	console.log('This will run every second');
-});
-</script>
-```
-
-## Browser, stand-alone
-
-Include croner.min.js fron cdn or manually, see installation section above. Croner registers itself globally as 'Cron'.
-
-```javascript
-// Run a function each second
-Cron('* * * * * *', function () {
 	console.log('This will run every second');
 });
 ```
 
 ## Browser, require.js
 
-Include croner.min.js in your preferred way, it will register itself as a require.js module.
+Include by CDN, or include croner.min.js in your preferred way, it will register itself as a require.js module.
 
 ```javascript
 define(["croner"], function(Cron) {
@@ -122,7 +99,6 @@ define(["croner"], function(Cron) {
 
 });
 ```
-
 
 # Examples 
 

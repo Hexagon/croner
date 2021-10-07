@@ -22,11 +22,10 @@ THE SOFTWARE.
 
 */
 
-/* eslint no-unused-vars: 0 */
+import Cron from "../esm/croner.mjs";
+import { Cron as Cron2 } from "../esm/croner.mjs";
 
-"use strict";
-
-const Cron = require("../src/croner.js"),
-	  test = require("./suite.js");
+import test from "./suite.js";
 
 test(Cron);
+test(Cron2);

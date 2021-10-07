@@ -22,6 +22,9 @@
         ],
         "no-var": 1
     },
+    "parserOptions": {
+        "sourceType": "module"
+    },
     "globals": {
         "define": false,
         "describe": false,
