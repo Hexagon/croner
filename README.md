@@ -5,12 +5,10 @@
 
 Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. 
 
-Supports Node.js, requirejs, es-module and stand alone usage. 
-
-Documented with JSDoc for intellisense, and complete TypeScript typings for type checking.
+Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@2/minified"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.js"></script>
 ```
 
 ```javascript
@@ -21,15 +19,15 @@ Cron('* * * * * *', function () {
 ```
 
 
-# Installation
+## Installation
 
-## Manual
+### Manual
 
  * Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
  * Unpack
- * Grab croner.min.js or croner.min.mjs from the [dist/](/dist) folder
+ * Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
 
-## Node.js
+### Node.js
 
 ```npm install croner --save```
 
@@ -44,19 +42,19 @@ import Cron from "croner";
 const Cron = require("croner");
 ```
 
-## CDN
+### CDN
 
 To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@2/minified"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.js"></script>
 ```
 
 To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
-	import Cron from "https://cdn.jsdelivr.net/npm/croner@2/minified";
+	import Cron from "https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.mjs";
 
 	// ... see usage section ...
 </script>
@@ -67,7 +65,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 <script type="importmap">
 	{
 		"imports": {
-			"croner": "https://cdn.jsdelivr.net/npm/croner@2/minified"
+			"croner": "https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.mjs"
 		}
 	}
 </script>
@@ -78,31 +76,9 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 </script>
 ```
 
-# Usage
+## Examples 
 
-```javascript
-Cron('* * * * * *', () => {
-	console.log('This will run every second');
-});
-```
-
-## Browser, require.js
-
-Include by CDN, or include croner.min.js in your preferred way, it will register itself as a require.js module.
-
-```javascript
-define(["croner"], function(Cron) {
-
-	Cron('* * * * * *', function () {
-		console.log('This will run every second');
-	});
-
-});
-```
-
-# Examples 
-
-## Minimalist scheduling
+### Minimalist scheduling
 ```javascript
 // Run a function each second
 Cron('* * * * * *', function () {
@@ -110,7 +86,7 @@ Cron('* * * * * *', function () {
 });
 ```
 
-## Minimalist scheduling with stepping
+### Minimalist scheduling with stepping
 ```javascript
 // Run a function every fifth second
 Cron('*/5 * * * * *', function () {
@@ -118,7 +94,7 @@ Cron('*/5 * * * * *', function () {
 });
 ```
 
-## Minimalist scheduling with range
+### Minimalist scheduling with range
 ```javascript
 // Run a function the first five seconds of a minute
 Cron('0-4 * * * * *', function () {
@@ -126,7 +102,7 @@ Cron('0-4 * * * * *', function () {
 });
 ```
 
-## Minimalist scheduling with options
+### Minimalist scheduling with options
 ```javascript
 // Run a function each second, limit to five runs
 Cron('* * * * * *', { maxRuns: 5 }, function () {
@@ -134,7 +110,7 @@ Cron('* * * * * *', { maxRuns: 5 }, function () {
 });
 ```
 
-## Minimalist scheduling with controls
+### Minimalist scheduling with job controls
 ```javascript
 // Run a function each second, get reference to job
 var job = Cron('* * * * * *', function () {
@@ -152,7 +128,7 @@ job.stop();
 
 ```
 
-## Basic scheduling
+### Basic scheduling
 ```javascript
 
 // Run every minute
@@ -163,7 +139,7 @@ scheduler.schedule(function() {
 });
 ```
 
-## Scheduling with options
+### Scheduling with options
 ```javascript
 
 // Run every minute
@@ -174,7 +150,7 @@ scheduler.schedule({ maxRuns: 5 }, function() {
 	console.log('This will run every minute.');
 });
 ```
-## Scheduling with controls
+### Scheduling with job controls
 ```javascript
 
 // Run every minute
@@ -195,11 +171,12 @@ job.resume();
 job.stop();
 ```
 
-# Full API
+## Full API
 ```javascript
 
 var o = Cron( <string pattern> [, <object options>] [, <function callback> ] );
-
+```
+```javascript
 // If Cron is initialized without a scheduled function, cron itself is returned
 // and the following member functions is available.
 o.next( [ <date previous> ] );
@@ -218,7 +195,7 @@ job.stop();
 ```
 
 
-# Pattern
+## Pattern
 
 ```
 ┌──────────────── second (0 - 59)
@@ -234,6 +211,6 @@ job.stop();
 
 
 
-# License
+## License
 
 MIT
