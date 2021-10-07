@@ -677,3 +677,6 @@ Cron.prototype.schedule = function (opts, func) {
 };
 
 module.exports = Cron;
+
+// Needed for TypeScript
+module.exports.default = Cron;
