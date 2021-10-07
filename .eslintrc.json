@@ -8,10 +8,6 @@
             2,
             "double"
         ],
-        "linebreak-style": [
-            2,
-            "windows"
-        ],
         "semi": [
             2,
             "always"
@@ -20,11 +16,13 @@
             2,
             22
         ],
+        "linebreak-style": 0,
         "no-var": 1
     },
     "parserOptions": {
         "sourceType": "module"
     },
+    "ignorePatterns": ["**/*.min.mjs", "**/*.min.js"],
     "globals": {
         "define": false,
         "describe": false,

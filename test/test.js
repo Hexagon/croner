@@ -26,7 +26,8 @@ THE SOFTWARE.
 
 "use strict";
 
-const Cron = require("../src/croner.js"),
-	  test = require("./suite.js");
+const
+	Cron = require("../src/croner.js"),
+	test = require("./suite.js");
 
 test(Cron);

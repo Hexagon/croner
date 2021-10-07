@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "2.0.36",
+  "version": "2.0.37",
   "description": "Isomorphic JavaScript cron parser and scheduler.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -27,8 +27,8 @@
   "scripts": {
     "test": "npm run test:mocha",
     "test:mocha": "mocha",
-    "test:lint": "eslint src/croner.js",
-    "test:lint:fix": "eslint --fix src/croner.js",
+    "test:lint": "eslint ./**/*.js ./**/*.mjs",
+    "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.mjs",
     "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:mocha && npm run build:finalize",
     "build:webpack": "webpack",
     "build:typings": "tsc",

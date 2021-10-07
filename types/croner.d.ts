@@ -71,7 +71,7 @@ declare class Cron {
     schedule(opts: any, func?: Function): CronJob;
 }
 declare namespace Cron {
-    export { CronPatternPart, CronIndexOffset, CronNextResult, CronOptions, CronJobStop, CronJobResume, CronJob };
+    export { Cron as default, CronPatternPart, CronIndexOffset, CronNextResult, CronOptions, CronJobStop, CronJobResume, CronJob };
 }
 /**
  * - Cron scheduler options

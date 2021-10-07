@@ -18,14 +18,13 @@ Cron('* * * * * *', function () {
 });
 ```
 
-
 ## Installation
 
 ### Manual
 
- * Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
- * Unpack
- * Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
+*	Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
+*	Unpack
+*	Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
 
 ### Node.js
 
@@ -194,10 +193,9 @@ job.stop();
 
 ```
 
-
 ## Pattern
 
-```
+```javascript
 ┌──────────────── second (0 - 59)
 │ ┌────────────── minute (0 - 59)
 │ │ ┌──────────── hour (0 - 23)
@@ -208,8 +206,6 @@ job.stop();
 │ │ │ │ │ │
 * * * * * *
 ```
-
-
 
 ## License
 
