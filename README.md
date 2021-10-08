@@ -8,7 +8,7 @@ Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.js"></script>
 ```
 
 ```javascript
@@ -46,14 +46,14 @@ const Cron = require("croner");
 To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.js"></script>
 ```
 
 To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
-	import Cron from "https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.mjs";
+	import Cron from "https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.mjs";
 
 	// ... see usage section ...
 </script>
@@ -64,7 +64,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 <script type="importmap">
 	{
 		"imports": {
-			"croner": "https://cdn.jsdelivr.net/npm/croner@2/dist/croner.min.mjs"
+			"croner": "https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.mjs"
 		}
 	}
 </script>
