@@ -610,7 +610,7 @@ Cron.prototype.schedule = function (opts, func) {
 	// Make opts optional
 	if( !func ) {
 		func = opts;
-		opts = {};
+		opts = self.opts;
 	}
 
 	// Keep options, or set defaults
