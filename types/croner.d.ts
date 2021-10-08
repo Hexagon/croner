@@ -1,4 +1,55 @@
-export = Cron;
+export type CronPatternPart = "seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek";
+export type CronIndexOffset = 0 | -1;
+export type CronNextResult = Date | undefined;
+/**
+ * - Cron scheduler options
+ */
+export type CronOptions = {
+    /**
+     * - Job is paused
+     */
+    paused?: boolean;
+    /**
+     * - Job is about to be killed
+     */
+    kill?: boolean;
+    /**
+     * - Internal: Milliseconds left from previous run
+     */
+    rest?: boolean;
+    /**
+     * - Internal: setTimeout "id"
+     */
+    currentTimeout?: number;
+    /**
+     * - Previous run time
+     */
+    previous?: CronNextResult;
+    /**
+     * - When to start running
+     */
+    startAt?: string | Date;
+    /**
+     * - When to stop running
+     */
+    stopAt?: string | Date;
+};
+/**
+ * - Stop current job
+ */
+export type CronJobStop = Function;
+/**
+ * - Resume current job
+ */
+export type CronJobResume = Function;
+/**
+ * - Cron job control functions
+ */
+export type CronJob = {
+    stop: CronJobStop;
+    pause: CronJobResume;
+    resume: Function;
+};
 /**
  * Cron entrypoint
  *
@@ -8,8 +59,8 @@ export = Cron;
  * @param {Function} [fn] - Function to be run each iteration of pattern
  * @returns {Cron | CronJob}
  */
-declare function Cron(pattern: string, options?: CronOptions | Function, fn?: Function): Cron | CronJob;
-declare class Cron {
+export function Cron(pattern: string, options?: CronOptions | Function, fn?: Function): Cron | CronJob;
+export class Cron {
     /**
      * Cron entrypoint
      *
@@ -70,50 +121,6 @@ declare class Cron {
      */
     schedule(opts: any, func?: Function): CronJob;
 }
-declare namespace Cron {
-    export { Cron as default, CronPatternPart, CronIndexOffset, CronNextResult, CronOptions, CronJobStop, CronJobResume, CronJob };
-}
-/**
- * - Cron scheduler options
- */
-type CronOptions = {
-    /**
-     * - Job is paused
-     */
-    paused?: boolean;
-    /**
-     * - Job is about to be killed
-     */
-    kill?: boolean;
-    /**
-     * - Internal: Milliseconds left from previous run
-     */
-    rest?: boolean;
-    /**
-     * - Internal: setTimeout "id"
-     */
-    currentTimeout?: number;
-    /**
-     * - Previous run time
-     */
-    previous?: CronNextResult;
-    /**
-     * - When to start running
-     */
-    startAt?: string | Date;
-    /**
-     * - When to stop running
-     */
-    stopAt?: string | Date;
-};
-/**
- * - Cron job control functions
- */
-type CronJob = {
-    stop: CronJobStop;
-    pause: CronJobResume;
-    resume: Function;
-};
 /**
  * Create a CronPattern instance from pattern string ('* * * * * *')
  * @constructor
@@ -147,14 +154,4 @@ declare class CronPattern {
      */
     partToArray(type: CronPatternPart, conf: string, valueIndexOffset: CronIndexOffset): void;
 }
-type CronNextResult = Date | undefined;
-type CronPatternPart = "seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek";
-type CronIndexOffset = 0 | -1;
-/**
- * - Stop current job
- */
-type CronJobStop = Function;
-/**
- * - Resume current job
- */
-type CronJobResume = Function;
+export { Cron as default };

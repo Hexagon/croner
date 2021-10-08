@@ -22,9 +22,10 @@ THE SOFTWARE.
 
 */
 
-import Cron from "../dist/croner.min.mjs";
-import { Cron as Cron3 } from "../dist/croner.min.mjs";
-import test from "./suite.js";
+/* eslint no-unused-vars: 0 */
 
+"use strict";
+const 
+	Cron = require("../dist-legacy/croner.cjs"),
+	test = require("./suite.cjs");
 test(Cron);
-test(Cron3);

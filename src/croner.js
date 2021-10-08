@@ -27,7 +27,7 @@
 	THE SOFTWARE.
 
   ------------------------------------------------------------------------------------  */
-
+  
 // ---- Type definitions ----------------------------------------------------------------
 
 
@@ -676,7 +676,4 @@ Cron.prototype.schedule = function (opts, func) {
 	};
 };
 
-module.exports = Cron;
-
-// Needed for TypeScript
-module.exports.default = Cron;
+export { Cron, Cron as default};
