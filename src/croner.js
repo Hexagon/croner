@@ -676,4 +676,6 @@ Cron.prototype.schedule = function (opts, func) {
 	};
 };
 
-export { Cron, Cron as default};
+
+export default Cron;
+export { Cron };

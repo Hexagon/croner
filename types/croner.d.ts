@@ -1,3 +1,4 @@
+export default Cron;
 export type CronPatternPart = "seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek";
 export type CronIndexOffset = 0 | -1;
 export type CronNextResult = Date | undefined;
@@ -154,4 +155,3 @@ declare class CronPattern {
      */
     partToArray(type: CronPatternPart, conf: string, valueIndexOffset: CronIndexOffset): void;
 }
-export { Cron as default };
