@@ -22,9 +22,16 @@ module.exports = function (Cron) {
 
 	describe("Parser", function () {
 
-		it("Clean pattern should not throw", function () {
+		it("Clean 6 part pattern should not throw", function () {
 			(function(){
 				let scheduler = new Cron("* * * * * *");
+				scheduler.next();
+			}).should.not.throw();
+		});
+
+		it("Clean 5 part pattern should not throw", function () {
+			(function(){
+				let scheduler = new Cron("* * * * *");
 				scheduler.next();
 			}).should.not.throw();
 		});
@@ -38,7 +45,7 @@ module.exports = function (Cron) {
         
 		it("Short pattern should throw", function () {
 			(function(){
-				let scheduler = new Cron("* * * * *");
+				let scheduler = new Cron("* * * *");
 				scheduler.next();
 			}).should.throw();
 		});

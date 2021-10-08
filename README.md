@@ -196,7 +196,7 @@ job.stop();
 ## Pattern
 
 ```javascript
-┌──────────────── second (0 - 59)
+┌──────────────── (optional) second (0 - 59)
 │ ┌────────────── minute (0 - 59)
 │ │ ┌──────────── hour (0 - 23)
 │ │ │ ┌────────── day of month (1 - 31)

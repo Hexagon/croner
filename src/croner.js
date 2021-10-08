@@ -274,8 +274,13 @@ CronPattern.prototype.parse = function () {
 		hasDates;
 
 	// Validite number of configuration entries
-	if( parts.length !== 6 ) {
-		raise("invalid configuration format ('" + this.pattern + "'), exacly five space separated parts required.");
+	if( parts.length < 5 || parts.length > 6 ) {
+		raise("invalid configuration format ('" + this.pattern + "'), exacly five or six space separated parts required.");
+	}
+
+	// If seconds is omitted, insert 0 for seconds
+	if( parts.length == 5) {
+		parts.unshift("0");
 	}
 
 	// Validate field content

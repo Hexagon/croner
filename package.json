@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "3.0.39",
+  "version": "3.0.40",
   "description": "Isomorphic JavaScript cron parser and scheduler.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -39,25 +39,25 @@
   "browser": "./dist/croner.min.js",
   "module": "./src/croner.js",
   "exports": {
-      ".": {
-          "import": "./src/croner.js",
-          "require": "./dist-legacy/croner.cjs",
-          "browser": "./dist/croner.min.js"
-      },
-      "./minified": {
-        "import": "./dist/croner.min.mjs",
-        "require": "./dist/croner.min.js",
-        "browser": "./dist/croner.min.js"
-      }
+    ".": {
+      "import": "./src/croner.js",
+      "require": "./dist-legacy/croner.cjs",
+      "browser": "./dist/croner.min.js"
+    },
+    "./minified": {
+      "import": "./dist/croner.min.mjs",
+      "require": "./dist/croner.min.js",
+      "browser": "./dist/croner.min.js"
+    }
   },
   "types": "types/croner.d.ts",
   "devDependencies": {
     "eslint": "^7.32.0",
-    "mocha": "*",
-    "should": "*",
+    "mocha": "^9.1.2",
+    "should": "^13.2.3",
     "typescript": "^4.4.3",
-    "webpack": "^5.57.1",
-    "webpack-cli": "^4.8.0"
+    "webpack": "^5.58.1",
+    "webpack-cli": "^4.9.0"
   },
   "license": "MIT"
 }
