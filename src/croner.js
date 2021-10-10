@@ -88,7 +88,7 @@ function Cron (pattern, options, fn) {
 	}
 
 	/** @type {CronPattern} */
-	self.pattern = new CronPattern(pattern, options);
+	self.pattern = new CronPattern(pattern);
 
 	/** @type {CronOptions} */
 	self.schedulerDefaults = {
@@ -213,20 +213,13 @@ Cron.prototype.msToNext = function (prev) {
  * @returns {CronJob}
  */
 Cron.prototype.schedule = function (opts, func) {
-
-	let self = this,
-		waitMs,
-
-		// Prioritize context before closure,
-		// to allow testing of maximum delay. 
-		_maxDelay = self.maxDelay || maxDelay;
-
+	
 	// Make opts optional
 	if( !func ) {
 		func = opts;
 
 		// If options isn't passed to schedule, use stored options
-		opts = self.opts;
+		opts = this.opts;
 	}
 
 	// Keep options, or set defaults
@@ -237,7 +230,29 @@ Cron.prototype.schedule = function (opts, func) {
 	}
 
 	// Store options
-	self.opts = self.validateOpts(opts || {});
+	this.opts = this.validateOpts(opts || {});
+
+	this._schedule(opts, func);
+};
+
+/**
+ * Schedule a new job
+ * 
+ * @constructor
+ * @param {CronOptions | Function} [options] - Options
+ * @param {Function} [func] - Function to be run each iteration of pattern
+ * @returns {CronJob}
+ */
+Cron.prototype._schedule = function (opts, func) {
+
+	let self = this,
+		waitMs,
+
+		// Prioritize context before closure,
+		// to allow testing of maximum delay. 
+		_maxDelay = self.maxDelay || maxDelay;
+
+	console.log(opts.previous);
 
 	// Get ms to next run
 	waitMs = this.msToNext(self.opts.previous);
@@ -263,11 +278,12 @@ Cron.prototype.schedule = function (opts, func) {
 				func();	
 			}
 
-			self.opts.previous = new CronDate(void 0, self.opts.timezone);
+			self.opts.previous = new CronDate(self.opts.previous, self.opts.timezone);
+
 		}
 
 		// Recurse
-		self.schedule(self.opts, func);
+		self._schedule(self.opts, func);
 
 	}, waitMs );
 
