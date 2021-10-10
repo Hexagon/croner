@@ -27,7 +27,6 @@
 	THE SOFTWARE.
 
   ------------------------------------------------------------------------------------  */
-
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
 
@@ -42,7 +41,10 @@ import { CronPattern } from "./pattern.js";
  * @property {CronNextResult} [previous] - Previous run time
  * @property {string | Date} [startAt] - When to start running
  * @property {string | Date} [stopAt] - When to stop running
- *
+ * @property {string} [timezone] - Time zone in Europe/Stockholm format
+ */
+
+/**
  * @typedef {Function} CronJobStop - Stop current job
  * @returns {boolean} - If pause was successful
  *
@@ -54,6 +56,7 @@ import { CronPattern } from "./pattern.js";
  * @property {CronJobResume} pause
  * @property {Function} resume
  */
+
 
 /**
  * Many JS engines stores the delay as a 32-bit signed integer internally.
@@ -85,7 +88,7 @@ function Cron (pattern, options, fn) {
 	}
 
 	/** @type {CronPattern} */
-	self.pattern = new CronPattern(pattern);
+	self.pattern = new CronPattern(pattern, options);
 
 	/** @type {CronOptions} */
 	self.schedulerDefaults = {
@@ -146,15 +149,15 @@ Cron.prototype.previous = function () {
  */
 Cron.prototype._next = function (prev) {
 	
-	prev = new CronDate(prev);
+	prev = new CronDate(prev, this.opts.timezone);
 
 	// Previous run should never be before startAt
 	if( this.opts.startAt && prev && prev.getTime() < this.opts.startAt.getTime() ) {
-		prev = new CronDate(this.opts.startAt);
+		prev = new CronDate(this.opts.startAt, this.opts.timezone);
 	}
 
 	// Calculate next run
-	let nextRun = new CronDate(prev).increment(this.pattern);
+	let nextRun = new CronDate(prev, this.opts.timezone).increment(this.pattern);
 
 	// Check for stop condition
 	if ((this.opts.maxRuns <= 0) ||	
@@ -165,7 +168,7 @@ Cron.prototype._next = function (prev) {
 		// All seem good, return next run
 		return nextRun;
 	}
-
+	
 };
 
 /**
@@ -177,10 +180,10 @@ Cron.prototype._next = function (prev) {
 Cron.prototype.validateOpts = function (opts) {
 	// startAt is set, validate it
 	if( opts.startAt ) {
-		opts.startAt = new CronDate(opts.startAt);
+		opts.startAt = new CronDate(opts.startAt, opts.timezone);
 	} 
 	if( opts.stopAt ) {
-		opts.stopAt = new CronDate(opts.stopAt);
+		opts.stopAt = new CronDate(opts.stopAt, opts.timezone);
 	}
 	return opts;
 };
@@ -192,7 +195,7 @@ Cron.prototype.validateOpts = function (opts) {
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {
-	prev = prev || new CronDate();
+	prev = prev || new CronDate(void 0, this.opts.timezone);
 	let next = this._next(prev);
 	if( next ) {
 		return (next.getTime() - prev.getTime());
@@ -237,7 +240,7 @@ Cron.prototype.schedule = function (opts, func) {
 	self.opts = self.validateOpts(opts || {});
 
 	// Get ms to next run
-	waitMs = this.msToNext(opts.previous);
+	waitMs = this.msToNext(self.opts.previous);
 
 	// Check for stop conditions
 	if  ( waitMs === null ) {
@@ -250,21 +253,21 @@ Cron.prototype.schedule = function (opts, func) {
 	}
 
 	// All ok, go go!
-	opts.currentTimeout = setTimeout(function () {
+	self.opts.currentTimeout = setTimeout(function () {
 
 		// Are we running? If waitMs is maxed out, this is a blank run
 		if( waitMs !== _maxDelay ) {
 
-			if ( !opts.paused ) {
-				opts.maxRuns--;
+			if ( !self.opts.paused ) {
+				self.opts.maxRuns--;
 				func();	
 			}
 
-			opts.previous = new CronDate();
+			self.opts.previous = new CronDate(void 0, self.opts.timezone);
 		}
 
 		// Recurse
-		self.schedule(opts, func);
+		self.schedule(self.opts, func);
 
 	}, waitMs );
 
@@ -273,21 +276,21 @@ Cron.prototype.schedule = function (opts, func) {
 
 		// Return undefined
 		stop: function() {
-			opts.kill = true;
+			self.opts.kill = true;
 			// Stop any awaiting call
-			if( opts.currentTimeout ) {
-				clearTimeout( opts.currentTimeout );
+			if( self.opts.currentTimeout ) {
+				clearTimeout( self.opts.currentTimeout );
 			}
 		},
 
 		// Return bool wether pause were successful
 		pause: function() {
-			return (opts.paused = true) && !opts.kill;
+			return (self.opts.paused = true) && !self.opts.kill;
 		},
 
 		// Return bool wether resume were successful
 		resume: function () {
-			return !(opts.paused = false) && !opts.kill;
+			return !(self.opts.paused = false) && !self.opts.kill;
 		}
 
 	};

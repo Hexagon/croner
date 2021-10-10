@@ -381,7 +381,9 @@ module.exports = function (Cron) {
 				prevRun = new Date(),
 				nextRun,
 				iterations = 40,
-				compareDay = new Date(new Date().getTime()+40*24*60*60*1000);   // Add one day
+				compareDay = new Date();
+				
+			compareDay.setDate(compareDay.getDate() + iterations);
             
 			while(iterations-->0) {
 				nextRun = scheduler.next(prevRun),

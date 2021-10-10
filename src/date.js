@@ -1,10 +1,15 @@
+import convertTZ from "./timezone.js";
+
 /**
  * Converts date to CronDate
  * @constructor
  * 
  * @param {date|string} [date] - Input date
+ * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
  */
-function CronDate (date) {
+function CronDate (date, timezone) {	
+
+	this.timezone = timezone;
 
 	if (date && date instanceof Date) {
 		this.fromDate(date);
@@ -20,12 +25,22 @@ function CronDate (date) {
 }
 
 /**
- * Sets internals using a Date
+ * Sets internals using a Date 
  * @private
  * 
  * @param {date} date - Input date
  */
 CronDate.prototype.fromDate = function (date) {
+
+
+	// This is the only way in for a pure date object, so this is where timezone should be applied
+	let originalUTCms = date.getTime();
+	if (this.timezone) {
+		date = convertTZ(date, this.timezone);
+	}
+	let convertedUTCms = date.getTime();
+	this.UTCmsOffset = convertedUTCms - originalUTCms;
+
 	this.milliseconds = date.getMilliseconds();
 	this.seconds = date.getSeconds();
 	this.minutes = date.getMinutes();
@@ -33,6 +48,7 @@ CronDate.prototype.fromDate = function (date) {
 	this.days = date.getDate();
 	this.months  = date.getMonth();
 	this.years = date.getFullYear();
+
 };
 
 /**
@@ -42,6 +58,9 @@ CronDate.prototype.fromDate = function (date) {
  * @param {CronDate} date - Input date
  */
 CronDate.prototype.fromCronDate = function (date) {
+
+	this.UTCmsOffset = date.UTCmsOffset;
+
 	this.milliseconds = date.milliseconds;
 	this.seconds = date.seconds;
 	this.minutes = date.minutes;
@@ -178,18 +197,18 @@ CronDate.prototype.increment = function (pattern) {
  * 
  */
 CronDate.prototype.getDate = function () {
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-this.UTCmsOffset);
 };
 
 /**
- * Convert current state back to a javascript Date()
+ * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
  * 
  * @returns {date}
  * 
  */
 CronDate.prototype.getTime = function () {
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds).getTime();
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-this.UTCmsOffset).getTime();
 };
 
 export { CronDate };

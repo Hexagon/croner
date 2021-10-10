@@ -85,10 +85,10 @@ Cron('* * * * * *', function () {
 });
 ```
 
-### Minimalist scheduling with stepping
+### Minimalist scheduling with stepping and custom timezone
 ```javascript
 // Run a function every fifth second
-Cron('*/5 * * * * *', function () {
+Cron('*/5 * * * * *', { timezone: 'Europe/Stockholm' } function () {
 	console.log('This will run every fifth second');
 });
 ```
@@ -184,7 +184,7 @@ o.previous();
 
 // If Cron is initialized _with_ a scheduled function, the job is retured instead.
 // Otherwise you get a reference to the job when scheduling a new job.
-var job = o.schedule( [ { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer> } ,] callback);
+var job = o.schedule( [ { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer>, timezone: <string> } ,] callback);
 
 // These self-explanatory functions is available to control the job
 job.pause();
@@ -195,7 +195,7 @@ job.stop();
 
 ## Pattern
 
-```javascript
+```
 ┌──────────────── (optional) second (0 - 59)
 │ ┌────────────── minute (0 - 59)
 │ │ ┌──────────── hour (0 - 23)

@@ -3,17 +3,21 @@
  * @constructor
  *
  * @param {date|string} [date] - Input date
+ * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
  */
-export function CronDate(date?: any): void;
+export function CronDate(date?: any, timezone?: string): void;
 export class CronDate {
     /**
      * Converts date to CronDate
      * @constructor
      *
      * @param {date|string} [date] - Input date
+     * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
      */
-    constructor(date?: any);
+    constructor(date?: any, timezone?: string);
+    timezone: string;
     private fromDate;
+    UTCmsOffset: any;
     milliseconds: any;
     seconds: any;
     minutes: any;
@@ -40,7 +44,7 @@ export class CronDate {
      */
     public getDate(): any;
     /**
-     * Convert current state back to a javascript Date()
+     * Convert current state back to a javascript Date() and return UTC milliseconds
      * @public
      *
      * @returns {date}

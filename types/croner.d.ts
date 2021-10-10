@@ -32,6 +32,10 @@ export type CronOptions = {
      * - When to stop running
      */
     stopAt?: string | Date;
+    /**
+     * - Time zone in Europe/Stockholm format
+     */
+    timezone?: string;
 };
 /**
  * - Stop current job
