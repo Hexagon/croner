@@ -37,7 +37,7 @@ import { CronPattern } from "./pattern.js";
  * @typedef {Object} CronOptions - Cron scheduler options
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed
- * @property {boolean} [rest] - Internal: Milliseconds left from previous run
+ * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [currentTimeout] - Internal: setTimeout "id"
  * @property {CronNextResult} [previous] - Previous run time
  * @property {string | Date} [startAt] - When to start running
