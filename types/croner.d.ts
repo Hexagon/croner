@@ -13,9 +13,9 @@ export type CronOptions = {
      */
     kill?: boolean;
     /**
-     * - Internal: Milliseconds left from previous run
+     * - Maximum nuber of executions
      */
-    rest?: boolean;
+    maxRuns?: number;
     /**
      * - Internal: setTimeout "id"
      */
