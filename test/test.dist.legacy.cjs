@@ -27,5 +27,5 @@ THE SOFTWARE.
 "use strict";
 const 
 	Cron = require("../dist-legacy/croner.cjs"),
-	test = require("./suite.cjs");
+	test = require("./src/suite.cjs");
 test(Cron);

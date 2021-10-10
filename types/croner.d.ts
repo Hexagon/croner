@@ -1,7 +1,5 @@
 export default Cron;
-export type CronPatternPart = "seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek";
-export type CronIndexOffset = 0 | -1;
-export type CronNextResult = Date | undefined;
+export type CronNextResult = CronDate | null;
 /**
  * - Cron scheduler options
  */
@@ -76,28 +74,31 @@ export class Cron {
     pattern: CronPattern;
     /** @type {CronOptions} */
     schedulerDefaults: CronOptions;
-    /** @type {CronOptions} */
+    /**
+     * Store and validate options
+     * @type {CronOptions}
+     */
     opts: CronOptions;
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
      * @param {Date} prev - Input pattern
-     * @returns {CronNextResult} - Next run time
+     * @returns {Date | null} - Next run time
      */
-    next(prev: Date): CronNextResult;
+    next(prev: Date): Date | null;
     /**
-     * Return previos run time
+     * Return previous run time
      *
-     * @returns {Date?} - Previous run time
+     * @returns {Date | null} - Previous run time
      */
     previous(): Date | null;
     /**
      * Internal version of next. Cron needs millseconds internally, hence _next.
      *
      * @param {Date} prev - Input pattern
-     * @returns {CronNextResult} - Next run time
+     * @returns {CronNextResult | null} - Next run time
      */
-    _next(prev: Date): CronNextResult;
+    _next(prev: Date): CronNextResult | null;
     /**
      * Validate (and cleans) options. Raises error on failure.
      *
@@ -108,10 +109,10 @@ export class Cron {
     /**
      * Returns number of milliseconds to next run
      *
-     * @param {CronNextResult} [prev=new Date()] - Starting date, defaults to now
-     * @returns {number | CronNextResult}
+     * @param {CronNextResult} [prev=new CronDate()] - Starting date, defaults to now
+     * @returns {number | null}
      */
-    msToNext(prev?: CronNextResult): number | CronNextResult;
+    msToNext(prev?: CronNextResult): number | null;
     /**
      * Schedule a new job
      *
@@ -122,36 +123,5 @@ export class Cron {
      */
     schedule(opts: any, func?: Function): CronJob;
 }
-/**
- * Create a CronPattern instance from pattern string ('* * * * * *')
- * @constructor
- * @param {string} pattern - Input pattern
- */
-declare function CronPattern(pattern: string): void;
-declare class CronPattern {
-    /**
-     * Create a CronPattern instance from pattern string ('* * * * * *')
-     * @constructor
-     * @param {string} pattern - Input pattern
-     */
-    constructor(pattern: string);
-    pattern: string;
-    seconds: any;
-    minutes: any;
-    hours: any;
-    days: any;
-    months: any;
-    daysOfWeek: any;
-    /**
-     * Parse current pattern, will raise an error on failure
-     */
-    parse(): void;
-    /**
-     * Convert current part (seconds/minutes etc) to an array of 1 or 0 depending on if the part is about to trigger a run or not.
-     *
-     * @param {CronPatternPart} type - Seconds/minutes etc
-     * @param {string} conf - Current pattern part - *, 0-1 etc
-     * @param {CronIndexOffset} valueIndexOffset - 0 or -1. 0 for seconds,minutes, hours as they start on 1. -1 on days and months, as the start on 0
-     */
-    partToArray(type: CronPatternPart, conf: string, valueIndexOffset: CronIndexOffset): void;
-}
+import { CronDate } from "./date.js";
+import { CronPattern } from "./pattern.js";

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import Cron from "../src/croner.js";
 import { Cron as Cron3 } from "../src/croner.js";
-import test from "./suite.cjs";
+import test from "./src/suite.cjs";
 test(Cron);
 test(Cron3);
 
