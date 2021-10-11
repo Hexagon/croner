@@ -252,8 +252,6 @@ Cron.prototype._schedule = function (opts, func) {
 		// to allow testing of maximum delay. 
 		_maxDelay = self.maxDelay || maxDelay;
 
-	console.log(opts.previous);
-
 	// Get ms to next run
 	waitMs = this.msToNext(self.opts.previous);
 
