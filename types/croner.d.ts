@@ -130,11 +130,10 @@ export class Cron {
      * Schedule a new job
      *
      * @constructor
-     * @param {CronOptions | Function} [options] - Options
      * @param {Function} [func] - Function to be run each iteration of pattern
      * @returns {CronJob}
      */
-    _schedule(opts: any, func?: Function): CronJob;
+    _schedule(func?: Function): CronJob;
 }
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";

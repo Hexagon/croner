@@ -214,6 +214,8 @@ Cron.prototype.msToNext = function (prev) {
  */
 Cron.prototype.schedule = function (opts, func) {
 	
+	let self = this;
+	
 	// Make opts optional
 	if( !func ) {
 		func = opts;
@@ -232,18 +234,42 @@ Cron.prototype.schedule = function (opts, func) {
 	// Store options
 	this.opts = this.validateOpts(opts || {});
 
-	this._schedule(opts, func);
+	this._schedule(func);
+
+	
+	// Return control functions
+	return {
+
+		// Return undefined
+		stop: function() {
+			self.opts.kill = true;
+			// Stop any awaiting call
+			if( self.opts.currentTimeout ) {
+				clearTimeout( self.opts.currentTimeout );
+			}
+		},
+
+		// Return bool wether pause were successful
+		pause: function() {
+			return (self.opts.paused = true) && !self.opts.kill;
+		},
+
+		// Return bool wether resume were successful
+		resume: function () {
+			return !(self.opts.paused = false) && !self.opts.kill;
+		}
+
+	};
 };
 
 /**
  * Schedule a new job
  * 
  * @constructor
- * @param {CronOptions | Function} [options] - Options
  * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {CronJob}
  */
-Cron.prototype._schedule = function (opts, func) {
+Cron.prototype._schedule = function (func) {
 
 	let self = this,
 		waitMs,
@@ -281,33 +307,10 @@ Cron.prototype._schedule = function (opts, func) {
 		}
 
 		// Recurse
-		self._schedule(self.opts, func);
+		self._schedule(func);
 
 	}, waitMs );
 
-	// Return control functions
-	return {
-
-		// Return undefined
-		stop: function() {
-			self.opts.kill = true;
-			// Stop any awaiting call
-			if( self.opts.currentTimeout ) {
-				clearTimeout( self.opts.currentTimeout );
-			}
-		},
-
-		// Return bool wether pause were successful
-		pause: function() {
-			return (self.opts.paused = true) && !self.opts.kill;
-		},
-
-		// Return bool wether resume were successful
-		resume: function () {
-			return !(self.opts.paused = false) && !self.opts.kill;
-		}
-
-	};
 };
 
 
