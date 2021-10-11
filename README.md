@@ -149,25 +149,20 @@ scheduler.schedule({ maxRuns: 5 }, function() {
 	console.log('This will run every minute.');
 });
 ```
-### Scheduling with job controls
+### Scheduling with job controls controlled by croner
 ```javascript
+let scheduler = Cron('* * * * * *')
 
-// Run every minute
-var scheduler = Cron('0 * * * * *');
-
-// Schedule with options (all options are optional)
-var job = scheduler.schedule({ maxRuns: 5 }, function() {
-	console.log('This will run every minute.');
+let job = scheduler.schedule(function () {
+	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
+	console.log('Current second: ', new Date().getSeconds());
+	console.log('Previous run: ' + scheduler.next());
+	console.log('Next run: ' + scheduler.next());
 });
 
-// Pause job
-job.pause();
-
-// Resume job
-job.resume();
-
-// Stop job
-job.stop();
+Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
+Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
+Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
 
 ## Full API

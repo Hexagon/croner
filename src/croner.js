@@ -215,7 +215,7 @@ Cron.prototype.msToNext = function (prev) {
 Cron.prototype.schedule = function (opts, func) {
 	
 	let self = this;
-	
+
 	// Make opts optional
 	if( !func ) {
 		func = opts;
@@ -302,7 +302,7 @@ Cron.prototype._schedule = function (func) {
 				func();	
 			}
 
-			self.opts.previous = new CronDate(self.opts.previous, self.opts.timezone);
+			self.opts.previous = new CronDate(void 0, self.opts.timezone);
 
 		}
 
