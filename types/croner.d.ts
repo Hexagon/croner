@@ -57,21 +57,37 @@ export type CronJob = {
  * Cron entrypoint
  *
  * @constructor
+ *
+ * @signature
  * @param {string} pattern - Input pattern
  * @param {CronOptions | Function} [options] - Options
  * @param {Function} [fn] - Function to be run each iteration of pattern
- * @returns {Cron | CronJob}
+ * @returns {Cron}
+ *
+ * @signature
+ * @param {string} pattern - Input pattern
+ * @param {CronOptions | Function} [options] - Options
+ * @param {Function} [fn] - Function to be run each iteration of pattern
+ * @returns {CronJob}
  */
-export function Cron(pattern: string, options?: CronOptions | Function, fn?: Function): Cron | CronJob;
+export function Cron(pattern: string, options?: CronOptions | Function, fn?: Function): Cron;
 export class Cron {
     /**
      * Cron entrypoint
      *
      * @constructor
+     *
+     * @signature
      * @param {string} pattern - Input pattern
      * @param {CronOptions | Function} [options] - Options
      * @param {Function} [fn] - Function to be run each iteration of pattern
-     * @returns {Cron | CronJob}
+     * @returns {Cron}
+     *
+     * @signature
+     * @param {string} pattern - Input pattern
+     * @param {CronOptions | Function} [options] - Options
+     * @param {Function} [fn] - Function to be run each iteration of pattern
+     * @returns {CronJob}
      */
     constructor(pattern: string, options?: CronOptions | Function, fn?: Function);
     /** @type {CronPattern} */
@@ -86,10 +102,10 @@ export class Cron {
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
-     * @param {Date} prev - Input pattern
+     * @param {Date} [prev] - Input pattern
      * @returns {Date | null} - Next run time
      */
-    next(prev: Date): Date | null;
+    next(prev?: Date): Date | null;
     /**
      * Return previous run time
      *
@@ -114,9 +130,11 @@ export class Cron {
     /**
      * Schedule a new job
      *
+     * @signature
      * @param {CronOptions | Function} [options] - Options
      * @param {Function} [func] - Function to be run each iteration of pattern
      * @returns {CronJob}
+     *
      */
     schedule(opts: any, func?: Function): CronJob;
     private _schedule;

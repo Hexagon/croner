@@ -74,10 +74,18 @@ const maxDelay = Math.pow(2, 32 - 1) - 1;
  * Cron entrypoint
  * 
  * @constructor
+ * 
+ * @signature
  * @param {string} pattern - Input pattern
  * @param {CronOptions | Function} [options] - Options
  * @param {Function} [fn] - Function to be run each iteration of pattern
- * @returns {Cron | CronJob}
+ * @returns {Cron}
+ * 
+ * @signature
+ * @param {string} pattern - Input pattern
+ * @param {CronOptions | Function} [options] - Options
+ * @param {Function} [fn] - Function to be run each iteration of pattern
+ * @returns {CronJob}
  */
 function Cron (pattern, options, fn) {
 	let self = this;
@@ -124,7 +132,7 @@ function Cron (pattern, options, fn) {
 /**
  * Find next runtime, based on supplied date. Strips milliseconds.
  * 
- * @param {Date} prev - Input pattern
+ * @param {Date} [prev] - Input pattern
  * @returns {Date | null} - Next run time
  */
 Cron.prototype.next = function (prev) {
@@ -208,9 +216,11 @@ Cron.prototype.msToNext = function (prev) {
 /**
  * Schedule a new job
  * 
+ * @signature
  * @param {CronOptions | Function} [options] - Options
  * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {CronJob}
+ * 
  */
 Cron.prototype.schedule = function (opts, func) {
 	
