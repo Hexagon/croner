@@ -143,6 +143,7 @@ Cron.prototype.previous = function () {
 
 /**
  * Internal version of next. Cron needs millseconds internally, hence _next.
+ * @private
  * 
  * @param {Date} prev - Input pattern
  * @returns {CronNextResult | null} - Next run time
@@ -207,7 +208,6 @@ Cron.prototype.msToNext = function (prev) {
 /**
  * Schedule a new job
  * 
- * @constructor
  * @param {CronOptions | Function} [options] - Options
  * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {CronJob}
@@ -264,8 +264,8 @@ Cron.prototype.schedule = function (opts, func) {
 
 /**
  * Schedule a new job
+ * @private
  * 
- * @constructor
  * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {CronJob}
  */

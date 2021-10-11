@@ -96,13 +96,7 @@ export class Cron {
      * @returns {Date | null} - Previous run time
      */
     previous(): Date | null;
-    /**
-     * Internal version of next. Cron needs millseconds internally, hence _next.
-     *
-     * @param {Date} prev - Input pattern
-     * @returns {CronNextResult | null} - Next run time
-     */
-    _next(prev: Date): CronNextResult | null;
+    private _next;
     /**
      * Validate (and cleans) options. Raises error on failure.
      *
@@ -120,20 +114,12 @@ export class Cron {
     /**
      * Schedule a new job
      *
-     * @constructor
      * @param {CronOptions | Function} [options] - Options
      * @param {Function} [func] - Function to be run each iteration of pattern
      * @returns {CronJob}
      */
     schedule(opts: any, func?: Function): CronJob;
-    /**
-     * Schedule a new job
-     *
-     * @constructor
-     * @param {Function} [func] - Function to be run each iteration of pattern
-     * @returns {CronJob}
-     */
-    _schedule(func?: Function): CronJob;
+    private _schedule;
 }
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
