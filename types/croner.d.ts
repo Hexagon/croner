@@ -56,15 +56,16 @@ export type CronJob = {
 /**
  * Cron entrypoint
  *
- * @constructor
  *
  * @signature
+ * @constructor
  * @param {string} pattern - Input pattern
  * @param {CronOptions | Function} [options] - Options
  * @param {Function} [fn] - Function to be run each iteration of pattern
  * @returns {Cron}
  *
  * @signature
+ * @constructor
  * @param {string} pattern - Input pattern
  * @param {CronOptions | Function} [options] - Options
  * @param {Function} [fn] - Function to be run each iteration of pattern
@@ -75,15 +76,16 @@ export class Cron {
     /**
      * Cron entrypoint
      *
-     * @constructor
      *
      * @signature
+     * @constructor
      * @param {string} pattern - Input pattern
      * @param {CronOptions | Function} [options] - Options
      * @param {Function} [fn] - Function to be run each iteration of pattern
      * @returns {Cron}
      *
      * @signature
+     * @constructor
      * @param {string} pattern - Input pattern
      * @param {CronOptions | Function} [options] - Options
      * @param {Function} [fn] - Function to be run each iteration of pattern
