@@ -152,10 +152,17 @@ CronDate.prototype.increment = function (pattern) {
 		// findNext sets the current member to next match in pattern
 		// If time is 00:00:01 and pattern says *:*:05, seconds will
 		// be set to 5
-		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
+
+		let orig = self[toDo[doing][0]],
+			foundMatch = findNext(toDo[doing][0], pattern, toDo[doing][2]),
+			currentChanged = orig !== self[toDo[doing][0]];
+
+		if(!foundMatch || currentChanged) {
 
 			// If pattern didn't provide a match, increment next vanlue (e.g. minues)
-			this[toDo[doing][1]]++;
+			if (!foundMatch) {
+				this[toDo[doing][1]]++;
+			}
 
 			// Now when we have gone to next minute, we have to set seconds to the first match
 			// Now we are at 00:01:05 following the same example.
