@@ -3,7 +3,7 @@
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded)](https://www.jsdelivr.com/package/npm/croner)
 
-Pure JavaScript minimal isomorphic cron parser and scheduler. Or simply speaking - setInterval on steroids. 
+Croner can be used to trigger functions in javascript using cron syntax. You can pause, resume or stop exection efter a task is scheduled. It's also useful for finding out first date of next month, find date of next tuesday. Supports scheduling in time of timezone, and more!
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
@@ -16,6 +16,9 @@ Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeS
 Cron('* * * * * *', function () {
 	console.log('This will run every second');
 });
+
+// What date is next sunday?
+console.log(Cron('0 0 0 * * 7').next().toLocaleDateString());
 ```
 
 ## Installation
@@ -83,6 +86,16 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 Cron('* * * * * *', function () {
 	console.log('This will run every second');
 });
+```
+
+### Find dates
+```javascript
+// Find next month
+let nextMonth = Cron('0 0 0 1 * *').next(),
+	nextSunday = Cron('0 0 0 * * 7').next();
+
+console.log("First day of next month: " +  nextMonth.toLocaleDateString());
+console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 ```
 
 ### Minimalist scheduling with stepping and custom timezone
