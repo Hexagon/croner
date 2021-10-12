@@ -174,7 +174,7 @@ let scheduler = Cron('* * * * * *')
 let job = scheduler.schedule(function () {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
-	console.log('Previous run: ' + scheduler.next());
+	console.log('Previous run: ' + scheduler.previous());
 	console.log('Next run: ' + scheduler.next());
 });
 
