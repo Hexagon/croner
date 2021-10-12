@@ -3,7 +3,12 @@
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded)](https://www.jsdelivr.com/package/npm/croner)
 
-Croner can be used to trigger functions in javascript using cron syntax. You can pause, resume or stop exection efter a task is scheduled. It's also useful for finding out first date of next month, find date of next tuesday. Supports scheduling in time of timezone, and more!
+* Trigger functions in javascript using [cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
+* Pause, resume or stop exection efter a task is scheduled.
+* Find first date of next month, find date of next tuesday, etc.
+* Schedule in an other timezone than default.
+* Support Node.js >4 to current. Both require (commonjs) and import (module)
+* Supports browser (standalone, requirejs, udm, es-module, etc)
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
