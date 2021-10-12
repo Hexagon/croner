@@ -8,7 +8,7 @@
 *	Find first date of next month, find date of next tuesday, etc.
 *	Schedule in other timezone than default.
 *	Supports Node.js from 4.0 to current. Both require (commonjs) and import (module).
-*	Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules), etc)
+*	Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
