@@ -25,7 +25,7 @@
     "isomorphic"
   ],
   "scripts": {
-    "test": "npm run test:mocha",
+    "test": "npm run test:coverage",
     "test:dist": "mocha",
     "test:coverage": "c8 --reporter=text mocha test/test.croner.js",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
