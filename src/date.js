@@ -60,14 +60,18 @@ CronDate.prototype.fromDate = function (date) {
 CronDate.prototype.fromCronDate = function (date) {
 
 	this.UTCmsOffset = date.UTCmsOffset;
+	this.timezone = date.timezone;
 
-	this.milliseconds = date.milliseconds;
-	this.seconds = date.seconds;
-	this.minutes = date.minutes;
-	this.hours = date.hours;
-	this.days = date.days;
-	this.months  = date.months;
-	this.years = date.years;
+	// Recreate date object to avoid getDate > 31 etc...
+	let newDate = new Date(date.years, date.months, date.days, date.hours, date.minutes, date.seconds, date.milliseconds);
+	
+	this.milliseconds = newDate.getMilliseconds();
+	this.seconds = newDate.getSeconds();
+	this.minutes = newDate.getMinutes();
+	this.hours = newDate.getHours();
+	this.days = newDate.getDate();
+	this.months  = newDate.getMonth();
+	this.years = newDate.getFullYear();
 };
 
 /**
@@ -93,11 +97,17 @@ CronDate.prototype.fromString = function (str) {
  * @public
  * 
  * @param {string} pattern - The pattern used to increment current state
- * @return {CronPattern} - Returns itself for chaining
+ * @param {boolean} [rerun=false] - If this is an internal incremental run
+ * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
  */
-CronDate.prototype.increment = function (pattern) {
+CronDate.prototype.increment = function (pattern, rerun) {
 
-	this.seconds += 1;
+	if (!rerun) {
+		this.seconds += 1;
+	}
+
+	let origTime = this.getTime();
+
 	this.milliseconds = 0;
 
 	let self = this,
@@ -119,14 +129,33 @@ CronDate.prototype.increment = function (pattern) {
 			let startPos = (override === void 0) ? self[target] + offset : 0 + offset;
 
 			for( let i = startPos; i < pattern[target].length; i++ ) {
+
 				if( pattern[target][i] ) {
 					self[target] = i-offset;
 					return true;
 				}
 			}
-
 			return false;
 
+		},
+		
+		resetPrevious = function () {
+			// Now when we have gone to next minute, we have to set seconds to the first match
+			// Now we are at 00:01:05 following the same example.
+			// 
+			// This goes all the way back to seconds, hence the reverse loop.
+			while(doing >= 0) {
+
+				// Ok, reset current member(e.g. seconds) to first match in pattern, using 
+				// the same method as aerlier
+				// 
+				// Note the fourth parameter, stating that we should start matching the pattern
+				// from zero, instead of current time.
+				findNext(toDo[doing][0], pattern, toDo[doing][2], 0);
+
+				// Go back up, days -> hours -> minutes -> seconds
+				doing--;
+			}
 		};
 
 	// Array of work to be done, consisting of subarrays described below:
@@ -153,33 +182,10 @@ CronDate.prototype.increment = function (pattern) {
 		// If time is 00:00:01 and pattern says *:*:05, seconds will
 		// be set to 5
 
-		let orig = self[toDo[doing][0]],
-			foundMatch = findNext(toDo[doing][0], pattern, toDo[doing][2]),
-			currentChanged = orig !== self[toDo[doing][0]];
-
-		if(!foundMatch || currentChanged) {
-
-			// If pattern didn't provide a match, increment next vanlue (e.g. minues)
-			if (!foundMatch) {
-				this[toDo[doing][1]]++;
-			}
-
-			// Now when we have gone to next minute, we have to set seconds to the first match
-			// Now we are at 00:01:05 following the same example.
-			// 
-			// This goes all the way back to seconds, hence the reverse loop.
-			while(doing >= 0) {
-
-				// Ok, reset current member(e.g. seconds) to first match in pattern, using 
-				// the same method as aerlier
-				// 
-				// Note the fourth parameter, stating that we should start matching the pattern
-				// from zero, instead of current time.
-				findNext(toDo[doing][0], pattern, toDo[doing][2], 0);
-
-				// Go back up, days -> hours -> minutes -> seconds
-				doing--;
-			}
+		// If pattern didn't provide a match, increment next vanlue (e.g. minues)
+		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
+			this[toDo[doing][1]]++;
+			resetPrevious();
 		}
 
 		// Gp down, seconds -> minutes -> hours -> days -> months -> year
@@ -190,9 +196,22 @@ CronDate.prototype.increment = function (pattern) {
 	// with weekday patterns, it's just to increment days until we get a match.
 	while (!pattern.daysOfWeek[this.getDate().getDay()]) {
 		this.days += 1;
+		doing = 2;
+		resetPrevious();
 	}
 
-	return this;
+	// If anything changed, recreate this CronDate and run again without incrementing
+	if (origTime != self.getTime()) {
+		self = new CronDate(self);
+		if (this.years >= 4000) {
+			// Stop incrementing, an impossible pattern is used
+			return null;
+		} else {
+			return self.increment(pattern, true);
+		}
+	} else {
+		return this;
+	}
 
 };
 

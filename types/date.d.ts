@@ -32,9 +32,10 @@ export class CronDate {
      * @public
      *
      * @param {string} pattern - The pattern used to increment current state
-     * @return {CronPattern} - Returns itself for chaining
+     * @param {boolean} [rerun=false] - If this is an internal incremental run
+     * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
      */
-    public increment(pattern: string): any;
+    public increment(pattern: string, rerun?: boolean): CronDate | null;
     /**
      * Convert current state back to a javascript Date()
      * @public

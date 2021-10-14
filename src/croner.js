@@ -102,31 +102,38 @@ function Cron (pattern, options, fn) {
 	/** @type {CronOptions} */
 	self.schedulerDefaults = {
 		maxRuns:    Infinity,
-		kill:       false
+		kill:       false,
+		paused:		false
 	};
 
 	// Make options optional
 	if( typeof options === "function" ) {
 		fn = options;
+		options = void 0;
+	}
+
+	if (options === void 0) {
 		options = {};
 	}
 
+	// Keep options, or set defaults
+	options.paused = (options.paused === void 0) ? self.schedulerDefaults.paused : options.paused;
+	options.maxRuns = (options.maxRuns === void 0) ? self.schedulerDefaults.maxRuns : options.maxRuns;
+	options.kill = this.schedulerDefaults.kill;
 	/** 
 	 * Store and validate options
 	 * @type {CronOptions} 
 	 */
-	self.opts = self.validateOpts(options || {});
+	self.opts = self.validateOpts(options);
 
-	// Determine what to return, default is self
-	if( fn === void 0 ) {
-		// Normal initialization, return self
-		return self;
-
-	} else {
-		// Shorthand schedule requested, return job
-		return this.schedule(options, fn);
-
+	/**
+	 * Allow shorthand scheduling
+	 */
+	if( fn !== void 0 ) {
+		this.schedule(fn);
 	}
+
+	return this;
 
 }
 
@@ -170,7 +177,8 @@ Cron.prototype._next = function (prev) {
 	let nextRun = new CronDate(prev, this.opts.timezone).increment(this.pattern);
 
 	// Check for stop condition
-	if ((this.opts.maxRuns <= 0) ||	
+	if ((nextRun === null) ||
+		(this.opts.maxRuns <= 0) ||	
 		(this.opts.kill) ||
 		(this.opts.stopAt && nextRun.getTime() >= this.opts.stopAt.getTime() )) {
 		return null;
@@ -215,87 +223,54 @@ Cron.prototype.msToNext = function (prev) {
 };
 
 /**
- * Schedule a new job
- * 
- * @signature
- * @param {CronOptions | Function} [options] - Options
- * @param {Function} [func] - Function to be run each iteration of pattern
- * @returns {CronJob}
- * 
+ * Stop execution 
+ * @public
  */
-Cron.prototype.schedule = function (opts, func) {
-	
-	let self = this;
-
-	// Make opts optional
-	if( !func ) {
-		func = opts;
-
-		// If options isn't passed to schedule, use stored options
-		opts = this.opts;
+Cron.prototype.stop = function () {
+	this.opts.kill = true;
+	// Stop any awaiting call
+	if( this.opts.currentTimeout ) {
+		clearTimeout( this.opts.currentTimeout );
 	}
+};
 
-	// Keep options, or set defaults
-	opts.paused = (opts.paused === void 0) ? false : opts.paused;
-	opts.kill = opts.kill || this.schedulerDefaults.kill;
-	if( !opts.maxRuns && opts.maxRuns !== 0 ) {
-		opts.maxRuns = this.schedulerDefaults.maxRuns;
-	}
+/**
+ * Pause execution
+ * @public
+ * 
+ * @returns {boolean} - Wether pause was successful
+ */
+Cron.prototype.pause = function () {
+	return (this.opts.paused = true) && !this.opts.kill;
+};
 
-	// Store options
-	this.opts = this.validateOpts(opts || {});
-
-	this._schedule(func);
-
-	
-	// Return control functions
-	return {
-
-		// Return undefined
-		stop: function() {
-			self.opts.kill = true;
-			// Stop any awaiting call
-			if( self.opts.currentTimeout ) {
-				clearTimeout( self.opts.currentTimeout );
-			}
-		},
-
-		// Return bool wether pause were successful
-		pause: function() {
-			return (self.opts.paused = true) && !self.opts.kill;
-		},
-
-		// Return bool wether resume were successful
-		resume: function () {
-			return !(self.opts.paused = false) && !self.opts.kill;
-		}
-
-	};
+/**
+ * Pause execution
+ * @public
+ * 
+ * @returns {boolean} - Wether resume was successful
+ */
+Cron.prototype.resume = function () {
+	return !(this.opts.paused = false) && !this.opts.kill;
 };
 
 /**
  * Schedule a new job
- * @private
+ * @public
  * 
- * @param {Function} [func] - Function to be run each iteration of pattern
+ * @param {Function} func - Function to be run each iteration of pattern
  * @returns {CronJob}
  */
-Cron.prototype._schedule = function (func) {
+Cron.prototype.schedule = function (func) {
 
 	let self = this,
-		waitMs,
+	
+		// Get ms to next run
+		waitMs = this.msToNext(self.opts.previous),
 
 		// Prioritize context before closure,
 		// to allow testing of maximum delay. 
 		_maxDelay = self.maxDelay || maxDelay;
-
-	// Get ms to next run
-	waitMs = this.msToNext(self.opts.previous);
-
-	// Check for stop conditions
-	if  ( waitMs === null ) {
-		return;  
-	} 
 
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
 	if( waitMs > _maxDelay ) {
@@ -303,27 +278,29 @@ Cron.prototype._schedule = function (func) {
 	}
 
 	// All ok, go go!
-	self.opts.currentTimeout = setTimeout(function () {
+	if  ( waitMs !== null ) {
+		self.opts.currentTimeout = setTimeout(function () {
 
-		// Are we running? If waitMs is maxed out, this is a blank run
-		if( waitMs !== _maxDelay ) {
+			// Are we running? If waitMs is maxed out, this is a blank run
+			if( waitMs !== _maxDelay ) {
 
-			if ( !self.opts.paused ) {
-				self.opts.maxRuns--;
-				func();	
+				if ( !self.opts.paused ) {
+					self.opts.maxRuns--;
+					func();	
+				}
+
+				self.opts.previous = new CronDate(void 0, self.opts.timezone);
 			}
 
-			self.opts.previous = new CronDate(void 0, self.opts.timezone);
+			// Recurse
+			self.schedule(func);
 
-		}
+		}, waitMs );
+	}
 
-		// Recurse
-		self._schedule(func);
-
-	}, waitMs );
+	return this;
 
 };
-
 
 export default Cron;
 export { Cron };

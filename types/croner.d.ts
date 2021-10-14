@@ -130,16 +130,32 @@ export class Cron {
      */
     msToNext(prev?: CronNextResult): number | null;
     /**
-     * Schedule a new job
-     *
-     * @signature
-     * @param {CronOptions | Function} [options] - Options
-     * @param {Function} [func] - Function to be run each iteration of pattern
-     * @returns {CronJob}
-     *
+     * Stop execution
+     * @public
      */
-    schedule(opts: any, func?: Function): CronJob;
-    private _schedule;
+    public stop(): void;
+    /**
+     * Pause execution
+     * @public
+     *
+     * @returns {boolean} - Wether pause was successful
+     */
+    public pause(): boolean;
+    /**
+     * Pause execution
+     * @public
+     *
+     * @returns {boolean} - Wether resume was successful
+     */
+    public resume(): boolean;
+    /**
+     * Schedule a new job
+     * @public
+     *
+     * @param {Function} func - Function to be run each iteration of pattern
+     * @returns {CronJob}
+     */
+    public schedule(func: Function): CronJob;
 }
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";

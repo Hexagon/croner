@@ -120,6 +120,13 @@ module.exports = function (Cron) {
 			}).should.throw();
 		});
 
+		it("Multiple stepping should throw", function () {
+			(function(){
+				let scheduler = new Cron("* */5/5 * * * *");
+				scheduler.next();
+			}).should.throw();
+		});
+
 		it("Missing lower range should throw", function () {
 			(function(){
 				let scheduler = new Cron("* -9 * * * *");
@@ -130,6 +137,27 @@ module.exports = function (Cron) {
 		it("Missing upper range should throw", function () {
 			(function(){
 				let scheduler = new Cron("* 0- * * * *");
+				scheduler.next();
+			}).should.throw();
+		});
+
+		it("Higher upper range than lower range should throw", function () {
+			(function(){
+				let scheduler = new Cron("* 12-2 * * * *");
+				scheduler.next();
+			}).should.throw();
+		});
+
+		it("Rangerange should throw", function () {
+			(function(){
+				let scheduler = new Cron("* 0-0-0 * * * *");
+				scheduler.next();
+			}).should.throw();
+		});
+
+		it("Invalid data type of pattern should throw", function () {
+			(function(){
+				let scheduler = new Cron(new Date());
 				scheduler.next();
 			}).should.throw();
 		});
@@ -180,6 +208,13 @@ module.exports = function (Cron) {
 			(function(){
 				let scheduler = new Cron("* * 0,23,24 * * *");
 				scheduler.next();
+			}).should.throw();
+		});
+		
+		it("Array passed as next date should throw", function () {
+			(function(){
+				let scheduler = new Cron("* * * * * *");
+				scheduler.next([]);
 			}).should.throw();
 		});
 
@@ -365,15 +400,14 @@ module.exports = function (Cron) {
 
 		it("* * * * * * with maxRuns: 1 should return undefined after 1.5 seconds", function (done) {
 			let 
-				scheduler = new Cron("* * * * * *");
-			scheduler.schedule({ maxRuns: 1 }, function () {});
+				scheduler = new Cron("* * * * * *", { maxRuns: 1 });
+			scheduler.schedule(function () {});
 			setTimeout(function () {
 				let nextRun = scheduler.next();
 				// Do comparison
 				should.equal(nextRun, void 0);
 				done();
 			},1500);
-
 		});
 
 		it("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
@@ -524,10 +558,7 @@ module.exports = function (Cron) {
 			nextRun0.getTime().should.equal(nextRun7.getTime());
 		});
 
-	});
-
-	describe("Comprehensive testing ( will fail first day of the year)", function () {
-		it("Test milliseconds to 01:01:91 XXXX-01-01 (most often next year), 1000s steps", function () {
+		it("Test milliseconds to 01:01:01 XXXX-01-01 (most often next year), 1000s steps", function () {
 
 			let prevRun = new Date(new Date().setMilliseconds(0)),
 				target = new Date(new Date((prevRun.getFullYear()+1) + "-01-01 01:01:01").getTime()),
@@ -568,6 +599,77 @@ module.exports = function (Cron) {
 				}
 			}
 
+		});
+		it("Test when next sunday 1st november occurr, starting from 2021-10-13 00:00:00", function () {
+			Cron("* * * 1 11 4").next(new Date(1634076000000)).getTime().should.equal(1888182000000);
+		});
+		it("getTime should return expcted difference with different timezones (now)", function () {
+			let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next(new Date()).getTime(),
+				timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next(new Date()).getTime();
+
+			// The time right now should be the same in utc wether in new york or stockholm
+			timeStockholm.should.be.above(timeNewYork-1000);
+			timeStockholm.should.be.below(timeNewYork+1000);
+		});
+		it("getTime should return expcted difference with different timezones (net sunday 1st november)", function () {
+			let timeStockholm = Cron("* * * 1 11 4", {timezone: "Europe/Stockholm"}).next(new Date(1634076000000)).getTime(),
+				timeNewYork = Cron("* * * 1 11 4", {timezone: "America/New_York"}).next(new Date(1634076000000)).getTime();
+
+			// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
+			timeStockholm.should.equal(timeNewYork-6*1000*3600);
+		});
+		it("maxRuns should be inherited from scheduler to job", function () {
+			let scheduler = Cron("* * * 1 11 4", {maxRuns: 14}),
+				job = scheduler.schedule(() => {});
+			job.opts.maxRuns.should.equal(14);
+			job.stop();
+		});
+		it("Next saturday at 29th of february should occur 2048", function () {
+			let nextSaturday29feb = Cron("0 0 0 29 2 6").next(new Date(1634076000000));
+			nextSaturday29feb.getFullYear().should.equal(2048);
+		});
+		it("Impossible combination should result in null", function () {
+			let impossible = Cron("0 0 0 30 2 6").next(new Date(1634076000000));
+			should.equal(null, impossible);
+		});
+		it("shorthand schedule without options should not throw, and execute", function (done) {
+			(function(){
+				let job = Cron("* * * * * *",() => { job.stop(); done(); });
+			}).should.not.throw();
+		});
+		it("sanity check start stop resume", function () {
+			let job = Cron("* * * 1 11 4",() => {});
+			(function(){
+				job.pause();
+				job.resume();
+				job.stop();
+			}).should.not.throw();
+		});
+		it("pause by options work", function (done) {
+			let job = Cron("* * * * * *",{paused:true},() => { throw new Error("This should not happen"); });
+			setTimeout(function () {
+				job.stop();
+				done();
+			},1500);
+		});
+		it("previous run time should be null if not yet executed", function () {
+			let job = Cron("* * * 1 11 4",() => {});
+			let result = job.previous();
+			should.equal(result,null);
+			job.stop();
+		});
+		it("previous run time should be set if executed", function (done) {
+			let 
+				scheduler = new Cron("* * * * * *", { maxRuns: 1 });
+			scheduler.schedule(function () {});
+			setTimeout(function () {
+				let previous = scheduler.previous();
+				// Do comparison
+				previous.should.be.above(new Date().getTime()-3000);
+				previous.should.be.below(new Date().getTime()+3000);
+				scheduler.stop();
+				done();
+			},1500);
 		});
 	});
 };

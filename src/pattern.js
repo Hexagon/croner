@@ -37,10 +37,7 @@ CronPattern.prototype.parse = function () {
 	let parts = this.pattern.trim().replace(/\s+/g, " ").split(" "),
 		part,
 		i,
-		reValidCron = /[^/*0-9,-]+/,
-		hasMonths,
-		hasDaysOfWeek,
-		hasDates;
+		reValidCron = /[^/*0-9,-]+/;
 
 	// Validite number of configuration entries
 	if( parts.length < 5 || parts.length > 6 ) {
@@ -60,16 +57,6 @@ CronPattern.prototype.parse = function () {
 		if( reValidCron.test(part) ) {
 			throw new TypeError("CronPattern: configuration entry " + (i + 1) + " (" + part + ") contains illegal characters.");
 		}
-	}
-
-	// Check that we dont have both months and daysofweek
-	hasMonths = (parts[4] !== "*");
-	hasDaysOfWeek = (parts[5] !== "*");
-	hasDates = (parts[3] !== "*");
-
-	// Month/Date and dayofweek is incompatible
-	if( hasDaysOfWeek && (hasMonths || hasDates) ) {
-		throw new TypeError("CronPattern: configuration invalid, you can not combine month/date with day of week.");
 	}
 
 	// Parse parts into arrays, validates as we go

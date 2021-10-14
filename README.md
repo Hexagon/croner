@@ -3,17 +3,17 @@
 [![Build status](https://travis-ci.org/Hexagon/croner.svg)](https://travis-ci.org/Hexagon/croner) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded)](https://www.jsdelivr.com/package/npm/croner)
 
-*	Trigger functions in javascript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
-*	Pause, resume or stop exection efter a task is scheduled.
-*	Find first date of next month, find date of next tuesday, etc.
-*	Schedule in other timezone than default.
-*	Supports Node.js from 4.0 to current. Both require (commonjs) and import (module).
-*	Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
+*   Trigger functions in javascript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
+*   Pause, resume or stop exection efter a task is scheduled.
+*   Find first date of next month, find date of next tuesday, etc.
+*   Schedule in other timezone than default.
+*   Supports Node.js from 4.0 to current. Both require (commonjs) and import (module).
+*   Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js"></script>
 ```
 
 ```javascript
@@ -30,9 +30,9 @@ console.log(Cron('0 0 0 * * 7').next().toLocaleDateString());
 
 ### Manual
 
-*	Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
-*	Unpack
-*	Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
+*   Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
+*   Unpack
+*   Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
 
 ### Node.js
 
@@ -54,14 +54,14 @@ const Cron = require("croner");
 To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js"></script>
 ```
 
 To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
-	import Cron from "https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.mjs";
+	import Cron from "https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs";
 
 	// ... see usage section ...
 </script>
@@ -72,7 +72,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 <script type="importmap">
 	{
 		"imports": {
-			"croner": "https://cdn.jsdelivr.net/npm/croner@3/dist/croner.min.mjs"
+			"croner": "https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs"
 		}
 	}
 </script>
@@ -106,7 +106,7 @@ console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 ### Minimalist scheduling with stepping and custom timezone
 ```javascript
 // Run a function every fifth second
-Cron('*/5 * * * * *', { timezone: 'Europe/Stockholm' } function () {
+Cron('*/5 * * * * *', { timezone: 'Europe/Stockholm' }, function () {
 	console.log('This will run every fifth second');
 });
 ```
@@ -160,49 +160,41 @@ scheduler.schedule(function() {
 ```javascript
 
 // Run every minute
-var scheduler = Cron('0 * * * * *');
+var scheduler = Cron('0 * * * * *', { maxRuns: 5 });
 
 // Schedule with options (all options are optional)
-scheduler.schedule({ maxRuns: 5 }, function() {
+scheduler.schedule(function() {
 	console.log('This will run every minute.');
 });
 ```
-### Scheduling with job controls controlled by croner
+### Scheduling with controls
 ```javascript
 let scheduler = Cron('* * * * * *')
 
-let job = scheduler.schedule(function () {
+scheduler.schedule(function () {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
 	console.log('Previous run: ' + scheduler.previous());
 	console.log('Next run: ' + scheduler.next());
 });
 
-Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
-Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
-Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
+Cron('10 * * * * *', {maxRuns: 1}, () => scheduler.pause());
+Cron('15 * * * * *', {maxRuns: 1}, () => scheduler.resume());
+Cron('20 * * * * *', {maxRuns: 1}, () => scheduler.stop());
 ```
 
 ## Full API
 ```javascript
 
-var o = Cron( <string pattern> [, <object options>] [, <function callback> ] );
-```
-```javascript
-// If Cron is initialized without a scheduled function, cron itself is returned
-// and the following member functions is available.
-o.next( [ <date previous> ] );
-o.msToNext();
-o.previous();
+var scheduler = Cron( <string pattern> [, { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer>, timezone: <string> } ] [, <function job> ] )
 
-// If Cron is initialized _with_ a scheduled function, the job is retured instead.
-// Otherwise you get a reference to the job when scheduling a new job.
-var job = o.schedule( [ { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer>, timezone: <string> } ,] callback);
-
-// These self-explanatory functions is available to control the job
-job.pause();
-job.resume();
-job.stop();
+scheduler.next( [ <date previous> ] );
+scheduler.msToNext( [ <date previous> ] );
+scheduler.previous();
+scheduler.schedule( <fn job> );
+scheduler.pause();
+scheduler.resume();
+scheduler.stop();
 
 ```
 
