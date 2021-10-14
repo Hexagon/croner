@@ -602,7 +602,7 @@ module.exports = function (Cron) {
 		});
 		it("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00", function () {
 			//Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getTime().should.equal(1888182000000);
-			Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear().should.equal("2029");
+			Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear().should.equal(2029);
 		});
 		it("getTime should return expcted difference with different timezones (now)", function () {
 			let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next(new Date()).getTime(),
