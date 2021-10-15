@@ -622,7 +622,7 @@ module.exports = function (Cron) {
 		it("maxRuns should be inherited from scheduler to job", function () {
 			let scheduler = Cron("* * * 1 11 4", {maxRuns: 14}),
 				job = scheduler.schedule(() => {});
-			job.opts.maxRuns.should.equal(14);
+			job.options.maxRuns.should.equal(14);
 			job.stop();
 		});
 		it("Next saturday at 29th of february should occur 2048", function () {

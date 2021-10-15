@@ -10,7 +10,7 @@ import convertTZ from "./timezone.js";
 function CronDate (date, timezone) {	
 
 	this.timezone = timezone;
-
+	
 	if (date && date instanceof Date) {
 		this.fromDate(date);
 	} else if (date === void 0) {
@@ -20,7 +20,7 @@ function CronDate (date, timezone) {
 	} else if (date instanceof CronDate) {
 		this.fromCronDate(date);
 	} else {
-		throw new TypeError("CronDate: Invalid type passed as parameter to CronDate constructor");
+		throw new TypeError("CronDate: Invalid type (" + typeof date + ") passed as parameter to CronDate constructor");
 	}
 }
 

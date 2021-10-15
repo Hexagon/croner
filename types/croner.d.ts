@@ -9,21 +9,13 @@ export type CronOptions = {
      */
     paused?: boolean;
     /**
-     * - Job is about to be killed
+     * - Job is about to be killed or killed
      */
     kill?: boolean;
     /**
      * - Maximum nuber of executions
      */
     maxRuns?: number;
-    /**
-     * - Internal: setTimeout "id"
-     */
-    currentTimeout?: number;
-    /**
-     * - Previous run time
-     */
-    previous?: CronNextResult;
     /**
      * - When to start running
      */
@@ -95,12 +87,13 @@ export class Cron {
     /** @type {CronPattern} */
     pattern: CronPattern;
     /** @type {CronOptions} */
-    schedulerDefaults: CronOptions;
+    options: CronOptions;
     /**
-     * Store and validate options
-     * @type {CronOptions}
+     *
+     * @param {CronOptions} options
+     * @returns {CronOptions}
      */
-    opts: CronOptions;
+    processOptions(options: CronOptions): CronOptions;
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
@@ -115,13 +108,6 @@ export class Cron {
      */
     previous(): Date | null;
     private _next;
-    /**
-     * Validate (and cleans) options. Raises error on failure.
-     *
-     * @param {CronOptions} opts - Input options
-     * @returns {CronOptions} - Clean and validated options.
-     */
-    validateOpts(opts: CronOptions): CronOptions;
     /**
      * Returns number of milliseconds to next run
      *

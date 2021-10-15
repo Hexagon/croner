@@ -1,7 +1,7 @@
 {
   "name": "croner",
-  "version": "4.0.52",
-  "description": "Isomorphic JavaScript cron parser and scheduler.",
+  "version": "4.0.53",
+  "description": "Trigger functions in javascript using Cron syntax. No deps. All features.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
     {

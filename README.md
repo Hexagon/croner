@@ -6,9 +6,9 @@
 *   Trigger functions in javascript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Pause, resume or stop exection efter a task is scheduled.
 *   Find first date of next month, find date of next tuesday, etc.
-*   Schedule in other timezone than default.
 *   Supports Node.js from 4.0 to current. Both require (commonjs) and import (module).
 *   Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
+*   *Experimental:* Schedule in other timezone than default.
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
