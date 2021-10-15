@@ -97,10 +97,12 @@ Cron('* * * * * *', function () {
 ```javascript
 // Find next month
 let nextMonth = Cron('0 0 0 1 * *').next(),
-	nextSunday = Cron('0 0 0 * * 7').next();
+	nextSunday = Cron('0 0 0 * * 7').next(),
+	nextSaturday29feb = Cron("0 0 0 29 2 6").next();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
+console.log("Next saturday at 29th of february: " +  nextSaturday29feb.toLocaleDateString());  // 2048-02-29
 ```
 
 ### Minimalist scheduling with stepping and custom timezone
@@ -211,6 +213,19 @@ scheduler.stop();
 │ │ │ │ │ │
 * * * * * *
 ```
+
+### Details
+
+| Field        | Required | Allowed values | Allowed special characters | Remarks                               |
+|--------------|----------|----------------|----------------------------|---------------------------------------|
+| Seconds      | Optional | 0-59           | * , - /                    |                                       |
+| Minutes      | Yes      | 0-59           | * , - /                    |                                       |
+| Hours        | Yes      | 0-23           | * , - /                    |                                       |
+| Day of Month | Yes      | 1-31           | * , - /                    |                                       |
+| Month        | Yes      | 1-12           | * , - /                    |                                       |
+| Day of Week  | Yes      | 0-7            | * , - /                    | 0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0 |
+
+Note: MON-SAT and JAN-DEC are supported in some implementations, but is not supported by croner. Yet.
 
 ## License
 
