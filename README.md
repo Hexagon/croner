@@ -4,11 +4,11 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded)](https://www.jsdelivr.com/package/npm/croner)
 
 *   Trigger functions in javascript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
-*   Pause, resume or stop exection efter a task is scheduled.
+*   Pause, resume or stop execution efter a task is scheduled.
 *   Find first date of next month, find date of next tuesday, etc.
 *   Supports Node.js from 4.0 to current. Both require (commonjs) and import (module).
 *   Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
-*   *Experimental:* Schedule in other timezone than default.
+*   **Experimental:** Schedule in other timezones than default.
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
@@ -225,7 +225,7 @@ scheduler.stop();
 | Month        | Yes      | 1-12           | * , - /                    |                                       |
 | Day of Week  | Yes      | 0-7            | * , - /                    | 0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0 |
 
-Note: MON-SAT and JAN-DEC are supported in some implementations, but is not supported by croner. Yet.
+Note: MON-SAT and JAN-DEC are supported in some implementations, but not by croner. Yet.
 
 ## License
 
