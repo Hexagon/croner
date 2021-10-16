@@ -23,7 +23,14 @@ Cron('* * * * * *', function () {
 });
 
 // What date is next sunday?
-console.log(Cron('0 0 0 * * 7').next().toLocaleDateString());
+let nextSunday = Cron('0 0 0 * * 7').next();
+
+console.log(nextSunday.toLocaleDateString());
+
+// How many days left to christmas eve?
+let msLeft = Cron('23 59 59 24 DEC *').next() - new Date();
+
+console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
 
 ## Installation
@@ -118,7 +125,8 @@ Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
 ### Options and separate scheduling
 ```javascript
 
-// Run every minute, 
+// Run every minute, if you pass 5 sections to croner, seconds will default to 0
+// * * * * * is equivalent to 0 * * * * *
 var job = Cron(
 	'* * * * *', 
 	{ 
