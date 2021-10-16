@@ -12,16 +12,23 @@
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js"></script>
-```
-
 ```javascript
-// Run a function each second
-let job = Cron('* * * * * *', function () {
+// Run a function at the interval set by a cron expression
+let job = Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
 
+// Control execution
+// job.pause();
+// job.resume();
+// job.stop();
+
+// Get info
+let next = job.next();
+let previous = job.previous();
+```
+
+```javascript
 // What date is next sunday?
 let nextSunday = Cron('0 0 0 * * 7').next();
 console.log(nextSunday.toLocaleDateString());
@@ -95,7 +102,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 ### Minimal
 ```javascript
 // Run a function each second
-Cron('* * * * * *', function () {
+Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
 ```
@@ -120,7 +127,7 @@ Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
 });
 ```
 
-### Options and separate scheduling
+### Options
 ```javascript
 
 // Run every minute, if you pass 5 sections to croner, seconds will default to 0
