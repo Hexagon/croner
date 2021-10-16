@@ -28,12 +28,6 @@ console.log(Cron('0 0 0 * * 7').next().toLocaleDateString());
 
 ## Installation
 
-### Manual
-
-*   Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
-*   Unpack
-*   Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
-
 ### Node.js
 
 ```npm install croner --save```
@@ -49,7 +43,15 @@ import Cron from "croner";
 const Cron = require("croner");
 ```
 
-### CDN
+### Browser 
+
+#### Manual
+
+*   Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
+*   Unpack
+*   Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
+
+#### CDN
 
 To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
 
@@ -85,7 +87,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 
 ## Examples 
 
-### Minimalist scheduling
+### Minimal
 ```javascript
 // Run a function each second
 Cron('* * * * * *', function () {
@@ -105,98 +107,58 @@ console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 console.log("Next saturday at 29th of february: " +  nextSaturday29feb.toLocaleDateString());  // 2048-02-29
 ```
 
-### Minimalist scheduling with stepping and custom timezone
-```javascript
-// Run a function every fifth second
-Cron('*/5 * * * * *', { timezone: 'Europe/Stockholm' }, function () {
-	console.log('This will run every fifth second');
-});
-```
-
-### Minimalist scheduling with range
+### Expressions
 ```javascript
 // Run a function the first five seconds of a minute
-Cron('0-4 * * * * *', function () {
-	console.log('This will run the first five seconds every minute');
+Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
+	console.log('This will run the first five seconds every fifth minute of hour 1,2 and 3 every saturday in January to March');
 });
 ```
 
-### Minimalist scheduling with options
+### Options and separate scheduling
 ```javascript
-// Run a function each second, limit to five runs
-Cron('* * * * * *', { maxRuns: 5 }, function () {
-	console.log('This will run each second, but only five times.');
-});
+
+// Run every minute, 
+var job = Cron(
+	'* * * * *', 
+	{ 
+		maxRuns: 5, 
+		startAt: "2021-11-01 00:00:00", 
+		stopAt: "2021-12-01 00:00:00",
+		timezone: "Europe/Stockholm"
+	},
+	function() {
+		console.log('This will run every minute.');
+	}
+);
 ```
 
-### Minimalist scheduling with job controls
+### Job controls
 ```javascript
-// Run a function each second, get reference to job
-var job = Cron('* * * * * *', function () {
-	console.log('This will run each second.');
-});
-
-// Pause job
-job.pause();
-
-// Resume job
-job.resume();
-
-// Stop job
-job.stop();
-
-```
-
-### Basic scheduling
-```javascript
-
-// Run every minute
-var scheduler = Cron('0 * * * * *');
-
-scheduler.schedule(function() {
-	console.log('This will run every minute');
-});
-```
-
-### Scheduling with options
-```javascript
-
-// Run every minute
-var scheduler = Cron('0 * * * * *', { maxRuns: 5 });
-
-// Schedule with options (all options are optional)
-scheduler.schedule(function() {
-	console.log('This will run every minute.');
-});
-```
-### Scheduling with controls
-```javascript
-let scheduler = Cron('* * * * * *')
-
-scheduler.schedule(function () {
+let job = Cron('* * * * * *', () => {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
-	console.log('Previous run: ' + scheduler.previous());
-	console.log('Next run: ' + scheduler.next());
+	console.log('Previous run: ' + job.previous());
+	console.log('Next run: ' + job.next());
 });
 
-Cron('10 * * * * *', {maxRuns: 1}, () => scheduler.pause());
-Cron('15 * * * * *', {maxRuns: 1}, () => scheduler.resume());
-Cron('20 * * * * *', {maxRuns: 1}, () => scheduler.stop());
+Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
+Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
+Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
 
 ## Full API
 ```javascript
 
-var scheduler = Cron( <string pattern> [, { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer>, timezone: <string> } ] [, <function job> ] )
+var job = Cron( <string pattern> [, { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer>, timezone: <string> } ] [, <function job> ] );
 
-scheduler.next( [ <date previous> ] );
-scheduler.msToNext( [ <date previous> ] );
-scheduler.previous();
-scheduler.schedule( <fn job> );
-scheduler.pause();
-scheduler.resume();
-scheduler.stop();
+job.next( [ <date previous> ] );
+job.msToNext( [ <date previous> ] );
+job.previous();
+job.schedule( <fn job> );
+job.pause();
+job.resume();
+job.stop();
 
 ```
 
