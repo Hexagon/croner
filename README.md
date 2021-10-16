@@ -18,18 +18,16 @@ Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeS
 
 ```javascript
 // Run a function each second
-Cron('* * * * * *', function () {
+let job = Cron('* * * * * *', function () {
 	console.log('This will run every second');
 });
 
 // What date is next sunday?
 let nextSunday = Cron('0 0 0 * * 7').next();
-
 console.log(nextSunday.toLocaleDateString());
 
 // How many days left to christmas eve?
-let msLeft = Cron('23 59 59 24 DEC *').next() - new Date();
-
+let msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
 
