@@ -625,8 +625,8 @@ module.exports = function (Cron) {
 			job.options.maxRuns.should.equal(14);
 			job.stop();
 		});
-		it("Next saturday at 29th of february should occur 2048", function () {
-			let nextSaturday29feb = Cron("0 0 0 29 2 6").next(new Date(1634076000000));
+		it("Next saturday at 29th of february should occur 2048. Also test weekday an month names and case insensitivity", function () {
+			let nextSaturday29feb = Cron("0 0 0 29 feb SAT").next(new Date(1634076000000));
 			nextSaturday29feb.getFullYear().should.equal(2048);
 		});
 		it("Impossible combination should result in null", function () {

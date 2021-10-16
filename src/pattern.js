@@ -25,6 +25,7 @@ function CronPattern (pattern) {
 
 /**
  * Parse current pattern, will raise an error on failure
+ * @private
  */
 CronPattern.prototype.parse = function () {
 
@@ -34,10 +35,7 @@ CronPattern.prototype.parse = function () {
 	}
 
 	// Split configuration on whitespace
-	let parts = this.pattern.trim().replace(/\s+/g, " ").split(" "),
-		part,
-		i,
-		reValidCron = /[^/*0-9,-]+/;
+	let parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
 
 	// Validite number of configuration entries
 	if( parts.length < 5 || parts.length > 6 ) {
@@ -49,15 +47,13 @@ CronPattern.prototype.parse = function () {
 		parts.unshift("0");
 	}
 
-	// Validate field content
-	for( i = 0; i < parts.length; i++ ) {
-		part = parts[i].trim();
+	
+	// Replace alpha representations
+	parts[4] = this.replaceAlphaMonths(parts[4]);
+	parts[5] = this.replaceAlphaDays(parts[5]);
 
-		// Check that part only contain legal characters ^[0-9-,]+$
-		if( reValidCron.test(part) ) {
-			throw new TypeError("CronPattern: configuration entry " + (i + 1) + " (" + part + ") contains illegal characters.");
-		}
-	}
+	// Check part content
+	this.throwAtIllegalCharacters(parts);
 
 	// Parse parts into arrays, validates as we go
 	this.partToArray("seconds",    parts[0], 0);
@@ -76,6 +72,7 @@ CronPattern.prototype.parse = function () {
 
 /**
  * Convert current part (seconds/minutes etc) to an array of 1 or 0 depending on if the part is about to trigger a run or not.
+ * @private
  * 
  * @param {CronPatternPart} type - Seconds/minutes etc
  * @param {string} conf - Current pattern part - *, 0-1 etc
@@ -85,9 +82,6 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 
 	let i,
 		split,
-		lower,
-		upper,
-		steps,
 		arr = this[type];
 
 	// First off, handle wildcard
@@ -98,92 +92,174 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 		return;
 	}
 
-	// Recurse into comma separated entries
+	// Handle separated entries (,) by recursion
 	split = conf.split(",");
 	if( split.length > 1 ) {
 		for( i = 0; i < split.length; i++ ) {
 			this.partToArray(type, split[i], valueIndexOffset);
 		}
-	
-		return;
+
+	// Handle range (-)
+	} else if( conf.indexOf("-") !== -1 ) {
+		this.handleRange(conf, type, valueIndexOffset);
+
+	// Handle stepping (/)
+	} else if( conf.indexOf("/") !== -1 ) {
+		this.handleStepping(conf, type, valueIndexOffset);
+
+	// Handle pure number
+	} else {
+		this.handleNumber(conf, type, valueIndexOffset);
 	}
 
-	// Didn't need to recurse, determine if this is a range, steps or a number
-	// - Got a range
-	if( conf.indexOf("-") !== -1 ) {
+};
 
-		split = conf.split("-");
-
-		if( split.length !== 2 ) {
-			throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
+/**
+ * After converting JAN-DEC, SUN-SAT only 0-9 * , / - are allowed, throw if anything else pops up
+ * @private
+ * 
+ * @param {string[]} parts - Each part split as strings
+ */
+CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
+	let reValidCron = /[^/*0-9,-]+/;
+	for(let i = 0; i < parts.length; i++) {
+		if( reValidCron.test(parts[i]) ) {
+			throw new TypeError("CronPattern: configuration entry " + i + " (" + parts[i] + ") contains illegal characters.");
 		}
+	}
+};
 
-		lower = parseInt(split[0], 10) + valueIndexOffset;
+/**
+ * Nothing but a number left, handle that
+ * @private
+ * 
+ * @param {string} conf - Current part, expected to be a number, as a string
+ * @param {string} type - One of "seconds", "minutes" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ */
+CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
+	let i = (parseInt(conf, 10) + valueIndexOffset);
+
+	if( i < 0 || i >= this[type].length ) {
+		throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
+	}
+
+	this[type][i] = 1;
+};
+
+
+/**
+ * Take care of ranges (e.g. 1-20)
+ * @private
+ * 
+ * @param {string} conf - Current part, expected to be a string like 1-20
+ * @param {string} type - One of "seconds", "minutes" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ */
+CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
+	let split = conf.split("-");
+
+	if( split.length !== 2 ) {
+		throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
+	}
+
+	let lower = parseInt(split[0], 10) + valueIndexOffset,
 		upper = parseInt(split[1], 10) + valueIndexOffset;
 
-		if( isNaN(lower) ) {
-			throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
-		} else if( isNaN(upper) ) {
-			throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
-		}
-
-		// Check that value is within range
-		if( lower < 0 || upper >= arr.length ) {
-			throw new TypeError("CronPattern: Value out of range: '" + conf + "'");
-		}
-
-		//
-		if( lower > upper ) {
-			throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
-		}
-
-		for( i = lower; i <= upper; i++ ) {
-			arr[(i + valueIndexOffset)] = 1;
-		}
-
-	// - Got stepping
-	} else if( conf.indexOf("/") !== -1 ) {
-		
-		split = conf.split("/");
-
-		if( split.length !== 2 ) {
-			throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
-		}
-
-		if( split[0] !== "*" ) {
-			throw new TypeError("CronPattern: Syntax error, left part of / needs to be * : '" + conf + "'");
-		}
-
-		steps = parseInt(split[1], 10);
-
-		if( isNaN(steps) ) {
-			throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
-		}
-
-		if( steps === 0 ) {
-			throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
-		}
-
-		if( steps > arr.length ) {
-			throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+arr.length+")");
-		}
-
-		for( i = 0; i < arr.length; i+= steps ) {
-			arr[(i + valueIndexOffset)] = 1;
-		}
-
-	// - Got a number
-	} else {
-
-		i = (parseInt(conf, 10) + valueIndexOffset);
-
-		if( i < 0 || i >= arr.length ) {
-			throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
-		}
-
-		arr[i] = 1;
+	if( isNaN(lower) ) {
+		throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
+	} else if( isNaN(upper) ) {
+		throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
 	}
 
+	// Check that value is within range
+	if( lower < 0 || upper >= this[type].length ) {
+		throw new TypeError("CronPattern: Value out of range: '" + conf + "'");
+	}
+
+	//
+	if( lower > upper ) {
+		throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
+	}
+
+	for( let i = lower; i <= upper; i++ ) {
+		this[type][(i + valueIndexOffset)] = 1;
+	}
+};
+
+/**
+ * Handle stepping (e.g. * / 14)
+ * @private
+ * 
+ * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
+ * @param {string} type - One of "seconds", "minutes" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ */
+CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset) {
+
+	let split = conf.split("/");
+
+	if( split.length !== 2 ) {
+		throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
+	}
+
+	if( split[0] !== "*" ) {
+		throw new TypeError("CronPattern: Syntax error, left part of / needs to be * : '" + conf + "'");
+	}
+
+	let steps = parseInt(split[1], 10);
+
+	if( isNaN(steps) ) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
+	if( steps === 0 ) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
+	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
+
+	for( let i = 0; i < this[type].length; i+= steps ) {
+		this[type][(i + valueIndexOffset)] = 1;
+	}
+};
+
+
+/**
+ * Replace day name with day numbers
+ * @private
+ * 
+ * @param {string} conf - Current part, expected to be a string that might contain sun,mon etc.
+ * 
+ * @returns {string} - conf with 0 instead of sun etc.
+ */
+CronPattern.prototype.replaceAlphaDays = function (conf) {
+	return conf
+		.replace(/sun/gi, "0")
+		.replace(/mon/gi, "1")
+		.replace(/tue/gi, "2")
+		.replace(/wed/gi, "3")
+		.replace(/thu/gi, "4")
+		.replace(/fri/gi, "5")
+		.replace(/sat/gi, "6");
+};
+
+/**
+ * Replace month name with month numbers
+ * @private
+ * 
+ * @param {string} conf - Current part, expected to be a string that might contain jan,feb etc.
+ * 
+ * @returns {string} - conf with 0 instead of sun etc.
+ */
+CronPattern.prototype.replaceAlphaMonths = function (conf) {
+	return conf
+		.replace(/jan/gi, "1")
+		.replace(/feb/gi, "2")
+		.replace(/mar/gi, "3")
+		.replace(/apr/gi, "4")
+		.replace(/may/gi, "5")
+		.replace(/jun/gi, "6")
+		.replace(/jul/gi, "7")
+		.replace(/aug/gi, "8")
+		.replace(/sep/gi, "9")
+		.replace(/oct/gi, "10")
+		.replace(/nov/gi, "11")
+		.replace(/dec/gi, "12");
 };
 
 export { CronPattern };

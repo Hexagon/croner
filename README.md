@@ -207,8 +207,8 @@ scheduler.stop();
 │ ┌────────────── minute (0 - 59)
 │ │ ┌──────────── hour (0 - 23)
 │ │ │ ┌────────── day of month (1 - 31)
-│ │ │ │ ┌──────── month (1 - 12)
-│ │ │ │ │ ┌────── day of week (0 - 6) 
+│ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
+│ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
 │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
 │ │ │ │ │ │
 * * * * * *
@@ -222,10 +222,10 @@ scheduler.stop();
 | Minutes      | Yes      | 0-59           | * , - /                    |                                       |
 | Hours        | Yes      | 0-23           | * , - /                    |                                       |
 | Day of Month | Yes      | 1-31           | * , - /                    |                                       |
-| Month        | Yes      | 1-12           | * , - /                    |                                       |
-| Day of Week  | Yes      | 0-7            | * , - /                    | 0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0 |
+| Month        | Yes      | 1-12 or JAN-DEC| * , - /                    |                                       |
+| Day of Week  | Yes      | 0-7 or SUN-MON| * , - /                    | 0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0 |
 
-Note: MON-SAT and JAN-DEC are supported in some implementations, but not by croner. Yet.
+**Note**: Weekday and month names are case insensitive. Both MON and mon works.
 
 ## License
 

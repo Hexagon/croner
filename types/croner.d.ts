@@ -103,10 +103,11 @@ export class Cron {
     next(prev?: Date): Date | null;
     /**
      * Return previous run time
+     * @public
      *
      * @returns {Date | null} - Previous run time
      */
-    previous(): Date | null;
+    public previous(): Date | null;
     private _next;
     /**
      * Returns number of milliseconds to next run

@@ -158,6 +158,7 @@ Cron.prototype.next = function (prev) {
 
 /**
  * Return previous run time
+ * @public
  * 
  * @returns {Date | null} - Previous run time
  */
@@ -283,7 +284,7 @@ Cron.prototype.schedule = function (func) {
 				self.previousrun = new CronDate(void 0, self.options.timezone);
 			}
 
-			// Recurseg
+			// Recurse
 			self.schedule(func);
 
 		}, waitMs );
