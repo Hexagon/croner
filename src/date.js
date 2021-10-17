@@ -194,7 +194,7 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 	// This is a special case for weekday, as the user isn't able to combine date/month patterns 
 	// with weekday patterns, it's just to increment days until we get a match.
-	while (!pattern.daysOfWeek[this.getDate().getDay()]) {
+	while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
 		this.days += 1;
 		doing = 2;
 		resetPrevious();
@@ -219,22 +219,26 @@ CronDate.prototype.increment = function (pattern, rerun) {
  * Convert current state back to a javascript Date()
  * @public
  * 
+ * @param {boolean} internal - If this is an internal call
  * @returns {date}
  * 
  */
-CronDate.prototype.getDate = function () {
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-this.UTCmsOffset);
+CronDate.prototype.getDate = function (internal) {
+	let offset = internal ? 0 : this.UTCmsOffset;
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset);
 };
 
 /**
  * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
  * 
+ * @param {boolean} internal - If this is an internal call
  * @returns {date}
  * 
  */
-CronDate.prototype.getTime = function () {
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-this.UTCmsOffset).getTime();
+CronDate.prototype.getTime = function (internal) {
+	let offset = internal ? 0 : this.UTCmsOffset;
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset).getTime();
 };
 
 export { CronDate };
