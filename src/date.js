@@ -232,13 +232,11 @@ CronDate.prototype.getDate = function (internal) {
  * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
  * 
- * @param {boolean} internal - If this is an internal call
  * @returns {date}
  * 
  */
-CronDate.prototype.getTime = function (internal) {
-	let offset = internal ? 0 : this.UTCmsOffset;
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset).getTime();
+CronDate.prototype.getTime = function () {
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-this.UTCmsOffset).getTime();
 };
 
 export { CronDate };
