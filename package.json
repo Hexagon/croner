@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "4.0.54",
+  "version": "4.0.55",
   "description": "Trigger functions in javascript using Cron syntax. No deps. All features.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [

@@ -135,13 +135,13 @@ Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
 var job = Cron(
 	'* * * * *', 
 	{ 
-		maxRuns: 5, 
+		maxRuns: Infinity, 
 		startAt: "2021-11-01 00:00:00", 
 		stopAt: "2021-12-01 00:00:00",
 		timezone: "Europe/Stockholm"
 	},
 	function() {
-		console.log('This will run every minute.');
+		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00 in Europe/Stockholm.');
 	}
 );
 ```

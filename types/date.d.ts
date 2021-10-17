@@ -40,10 +40,11 @@ export class CronDate {
      * Convert current state back to a javascript Date()
      * @public
      *
+     * @param {boolean} internal - If this is an internal call
      * @returns {date}
      *
      */
-    public getDate(): any;
+    public getDate(internal: boolean): any;
     /**
      * Convert current state back to a javascript Date() and return UTC milliseconds
      * @public
