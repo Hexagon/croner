@@ -609,15 +609,16 @@ module.exports = function (Cron) {
 				timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next(new Date()).getTime();
 
 			// The time right now should be the same in utc wether in new york or stockholm
-			timeStockholm.should.be.above(timeNewYork-1000);
-			timeStockholm.should.be.below(timeNewYork+1000);
+			timeStockholm.should.be.above(timeNewYork-4000);
+			timeStockholm.should.be.below(timeNewYork+4000);
 		});
 		it("getTime should return expcted difference with different timezones (net sunday 1st november)", function () {
 			let timeStockholm = Cron("* * * 1 11 4", {timezone: "Europe/Stockholm"}).next(new Date(1634076000000)).getTime(),
-				timeNewYork = Cron("* * * 1 11 4", {timezone: "America/New_York"}).next(new Date(1634076000000)).getTime();
+				timeNewYork = Cron("* * * 1 11 4", {timezone: "America/New_York"}).next(new Date(1634076000000)).getTime(),
+				diff = (timeNewYork-timeStockholm)/1000/3600;
 
 			// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
-			timeStockholm.should.equal(timeNewYork-6*1000*3600);
+			diff.should.equal(6);
 		});
 		it("maxRuns should be inherited from scheduler to job", function () {
 			let scheduler = Cron("* * * 1 11 4", {maxRuns: 14}),
