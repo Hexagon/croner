@@ -4,7 +4,7 @@ import convertTZ from "./timezone.js";
  * Converts date to CronDate
  * @constructor
  * 
- * @param {date|string} [date] - Input date
+ * @param {date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
  * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
  */
 function CronDate (date, timezone) {	
@@ -29,17 +29,22 @@ function CronDate (date, timezone) {
  * @private
  * 
  * @param {date} date - Input date
+ * @param {boolean} [fromLocal] - Input date already in target timezone
  */
-CronDate.prototype.fromDate = function (date) {
+CronDate.prototype.fromDate = function (date, fromLocal) {
 
 
 	// This is the only way in for a pure date object, so this is where timezone should be applied
-	let originalUTCms = date.getTime();
 	if (this.timezone) {
-		date = convertTZ(date, this.timezone);
+		let originalUTCms = date.getTime(),
+			convertedDate = convertTZ(date, this.timezone);
+		if (!fromLocal) {
+			date = convertedDate;
+		}
+		this.UTCmsOffset = convertedDate.getTime() - originalUTCms;
+	} else {
+		this.UTCmsOffset = 0;
 	}
-	let convertedUTCms = date.getTime();
-	this.UTCmsOffset = convertedUTCms - originalUTCms;
 
 	this.milliseconds = date.getMilliseconds();
 	this.seconds = date.getSeconds();
@@ -82,14 +87,14 @@ CronDate.prototype.fromCronDate = function (date) {
  */
 CronDate.prototype.fromString = function (str) {
 
-	let parsedDateUTCms = Date.parse(str);
+	let parsedDateUTCms = this.parseISOLocal(str);
 
 	// Throw if we did get an invalid date
 	if( isNaN(parsedDateUTCms) ) {
 		throw new TypeError("CronDate: Provided string value for CronDate could not be parsed as date.");
 	}
 	
-	this.fromDate(new Date(parsedDateUTCms));
+	this.fromDate(new Date(parsedDateUTCms), true);
 };
 
 /**
@@ -231,12 +236,45 @@ CronDate.prototype.getDate = function (internal) {
 /**
  * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
- * 
+ * @param {boolean} internal - If this is an internal call
  * @returns {date}
  * 
  */
-CronDate.prototype.getTime = function () {
-	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-this.UTCmsOffset).getTime();
+CronDate.prototype.getTime = function (internal) {
+	let offset = internal ? 0 : this.UTCmsOffset;
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset).getTime();
+};
+
+/**
+ * parseISOLocal
+ * @private
+ * 
+ * @param {string} s - an ISO 8001 format date and time string
+ *                      with all components, e.g. 2015-11-24T19:40:00
+ * @returns {Date|number} - Date instance from parsing the string. May be NaN.
+ */
+CronDate.prototype.parseISOLocal = function (s) {
+	let b = s.split(/\D/);
+
+	// Check for completeness
+	if (b.length < 6) {
+		return NaN;
+	}
+
+	let
+		year = parseInt(b[0]),
+		month = parseInt(b[1]),
+		day = parseInt(b[2]),
+		hour = parseInt(b[3]),
+		minute = parseInt(b[4]),
+		second = parseInt(b[5]);
+
+	// Check parts for numeric
+	if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {
+		return NaN;
+	} else {
+		return new Date(year, month-1, day, hour, minute, second);
+	}
 };
 
 export { CronDate };

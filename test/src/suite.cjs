@@ -343,21 +343,18 @@ module.exports = function (Cron) {
 				nextRun;
 
 			// Set a fixed hour later than startAt, to be sure that the days doesn't overlap
-			nextDay =  new Date(nextDay.setHours(13));
-			dayAfterNext = new Date(dayAfterNext.setHours(13));
-
-			scheduler = new Cron("0 0 12 * * *", { startAt: nextDay });
+			nextDay =  new Date(nextDay.setUTCHours(13));
+			scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: nextDay.toISOString() });
 			nextRun = scheduler.next();
 
 			// Set seconds, minutes and hours to 00:00:00
 			dayAfterNext.setMilliseconds(0);
-			dayAfterNext.setSeconds(0);
-			dayAfterNext.setMinutes(0);
-			dayAfterNext.setHours(12);
+			dayAfterNext.setUTCSeconds(0);
+			dayAfterNext.setUTCMinutes(0);
+			dayAfterNext.setUTCHours(12);	
 
 			// Do comparison
 			nextRun.getTime().should.equal(dayAfterNext.getTime());
-            
 
 		});
 
@@ -390,7 +387,7 @@ module.exports = function (Cron) {
 		it("0 0 12 * * * with stopdate yesterday should return undefined", function () {
 			let 
 				dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
-				scheduler = new Cron("0 0 12 * * *", { stopAt: dayBefore }),
+				scheduler = new Cron("0 0 12 * * *", { timezone: "Etc/UTC", stopAt: dayBefore.toISOString() }),
 				nextRun = scheduler.next();
 
 			// Do comparison
@@ -456,15 +453,6 @@ module.exports = function (Cron) {
 
 		});
 
-		it("Valid startAt with Date should not throw", function () {
-			(function ()  {
-				let 
-					dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
-					scheduler = new Cron("0 0 12 * * *", { startAt: dayBefore });
-				scheduler.next();
-			}).should.not.throw();
-		});
-
 		it("Valid startAt with DateTime string should not throw", function () {
 			(function ()  {
 				let 
@@ -473,12 +461,12 @@ module.exports = function (Cron) {
 			}).should.not.throw();
 		});
 
-		it("Valid startAt with Date string should not throw", function () {
+		it("startAt with Date string should throw", function () {
 			(function ()  {
 				let 
 					scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01" });
 				scheduler.next();
-			}).should.not.throw();
+			}).should.throw();
 		});
 
 		it("Invalid startat should throw", function () {
@@ -514,12 +502,12 @@ module.exports = function (Cron) {
 			}).should.not.throw();
 		});
 
-		it("Valid stopAt with Date string should not throw", function () {
+		it("Valid stopAt with Date string should throw", function () {
 			(function ()  {
 				let 
 					scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01" });
 				scheduler.next();
-			}).should.not.throw();
+			}).should.throw();
 		});
 
 		it("Invalid stopAt should throw", function () {

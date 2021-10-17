@@ -38,6 +38,8 @@ let msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
 
+More [#examples](examples)...
+
 ## Installation
 
 ### Node.js
@@ -97,6 +99,91 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 </script>
 ```
 
+## Signature
+
+Cron takes three arguments; [#pattern](pattern), [#options](options) (optional) and a scheduled function (optional).
+
+```javascript
+
+var scheduler = Cron( <string pattern> [, { ... } ] [, <function toBeRun> ] );
+
+```
+
+Cron return a scheduler, which can be used in a couple of different ways.
+
+```javascript
+job.next( [ <date previous> ] );		// Get a Date object with next run time according 
+										// to pattern relative to previous, or now if omitted
+
+job.msToNext( [ <date previous> ] );    // Get milliseconds left to next execution
+
+job.previous();							// Gets a Date object with previous run time, or null
+
+job.schedule( <fn job> );				// If you didn't pass a function to constructor, you can do it here
+
+job.pause();							// Pause execution
+job.resume();							// Resume execution
+job.stop();								// Stop execution
+```
+
+## Options
+
+Options are optional, and passed as the second parameter of cron.
+
+Example:
+
+```javascript
+Cron( '* * * * * *', { maxRuns: 4 } );
+```
+
+| Key          | Default value  | Data type      | Remarks                               |
+|--------------|----------------|----------------|---------------------------------------|
+| maxRuns      | Infinite       | Number         |                                       |
+| timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
+| startAt      | undefined      | String         | ISO 8001 formatted date (2021-10-17T23:43:00)|
+|              |                |                | in local or specified timezone |
+| stopAt       | undefined      | String         | ISO 8001 formatted date (2021-10-17T23:43:00)|
+|              |                |                | in local timezone |
+| paused       | false          | Boolean        | If the job should be paused from start. |
+
+## Pattern
+
+Pattern is mandatory, and passed as the first argument of Cron.
+
+Example:
+
+```javascript
+Cron( '* * * * * *', () => {} );
+```
+
+Composition:
+
+```
+┌──────────────── (optional) second (0 - 59)
+│ ┌────────────── minute (0 - 59)
+│ │ ┌──────────── hour (0 - 23)
+│ │ │ ┌────────── day of month (1 - 31)
+│ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
+│ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
+│ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
+│ │ │ │ │ │
+* * * * * *
+```
+
+Details:
+
+| Field        | Required | Allowed values | Allowed special characters | Remarks                               |
+|--------------|----------|----------------|----------------------------|---------------------------------------|
+| Seconds      | Optional | 0-59           | * , - /                    |                                       |
+| Minutes      | Yes      | 0-59           | * , - /                    |                                       |
+| Hours        | Yes      | 0-23           | * , - /                    |                                       |
+| Day of Month | Yes      | 1-31           | * , - /                    |                                       |
+| Month        | Yes      | 1-12 or JAN-DEC| * , - /                    |                                       |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - /                    | 0 to 6 are Sunday to Saturday;        |
+|              |          |                |                            | 7 is Sunday, the same as 0            |
+
+**Note**: Weekday and month names are case insensitive. Both MON and mon works.
+
 ## Examples 
 
 ### Minimal
@@ -107,37 +194,36 @@ Cron('* * * * * *', () => {
 });
 ```
 
+### Expressions
+```javascript
+// Run a function the first five seconds of a minute
+Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
+	console.log('This will run the first five seconds every fifth minute');
+	console.log('of hour 1,2 and 3 every saturday in January to March.');
+});
+```
+
 ### Find dates
 ```javascript
 // Find next month
 let nextMonth = Cron('0 0 0 1 * *').next(),
 	nextSunday = Cron('0 0 0 * * 7').next(),
-	nextSaturday29feb = Cron("0 0 0 29 2 6").next();
+	nextSat29feb = Cron("0 0 0 29 2 6").next();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
-console.log("Next saturday at 29th of february: " +  nextSaturday29feb.toLocaleDateString());  // 2048-02-29
+console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateString());  // 2048-02-29
 ```
 
-### Expressions
-```javascript
-// Run a function the first five seconds of a minute
-Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
-	console.log('This will run the first five seconds every fifth minute of hour 1,2 and 3 every saturday in January to March');
-});
-```
-
-### Options
+### With options
 ```javascript
 
-// Run every minute, if you pass 5 sections to croner, seconds will default to 0
-// * * * * * is equivalent to 0 * * * * *
 var job = Cron(
 	'* * * * *', 
 	{ 
 		maxRuns: Infinity, 
-		startAt: "2021-11-01 00:00:00", 
-		stopAt: "2021-12-01 00:00:00",
+		startAt: "2021-11-01T00:00:00", 
+		stopAt: "2021-12-01T00:00:00",
 		timezone: "Europe/Stockholm"
 	},
 	function() {
@@ -159,48 +245,6 @@ Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
 Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
 Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
-
-## Full API
-```javascript
-
-var job = Cron( <string pattern> [, { startAt: <date|string>, stopAt: <date|string>, maxRuns: <integer>, timezone: <string> } ] [, <function job> ] );
-
-job.next( [ <date previous> ] );
-job.msToNext( [ <date previous> ] );
-job.previous();
-job.schedule( <fn job> );
-job.pause();
-job.resume();
-job.stop();
-
-```
-
-## Pattern
-
-```
-┌──────────────── (optional) second (0 - 59)
-│ ┌────────────── minute (0 - 59)
-│ │ ┌──────────── hour (0 - 23)
-│ │ │ ┌────────── day of month (1 - 31)
-│ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
-│ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
-│ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
-│ │ │ │ │ │
-* * * * * *
-```
-
-### Details
-
-| Field        | Required | Allowed values | Allowed special characters | Remarks                               |
-|--------------|----------|----------------|----------------------------|---------------------------------------|
-| Seconds      | Optional | 0-59           | * , - /                    |                                       |
-| Minutes      | Yes      | 0-59           | * , - /                    |                                       |
-| Hours        | Yes      | 0-23           | * , - /                    |                                       |
-| Day of Month | Yes      | 1-31           | * , - /                    |                                       |
-| Month        | Yes      | 1-12 or JAN-DEC| * , - /                    |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON| * , - /                    | 0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0 |
-
-**Note**: Weekday and month names are case insensitive. Both MON and mon works.
 
 ## License
 

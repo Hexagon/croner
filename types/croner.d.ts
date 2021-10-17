@@ -122,7 +122,7 @@ export class Cron {
      */
     public stop(): void;
     /**
-     * Pause execution
+     * Pause executionR
      * @public
      *
      * @returns {boolean} - Wether pause was successful

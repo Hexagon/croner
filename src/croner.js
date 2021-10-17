@@ -178,18 +178,17 @@ Cron.prototype._next = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
 
 	// Previous run should never be before startAt
-	if( this.options.startAt && prev && prev.getTime() < this.options.startAt.getTime() ) {
+	if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
 		prev = new CronDate(this.options.startAt, this.options.timezone);
 	}
 
 	// Calculate next run
 	let nextRun = new CronDate(prev, this.options.timezone).increment(this.pattern);
 
-	// Check for stop condition
 	if ((nextRun === null) ||
 		(this.options.maxRuns <= 0) ||	
 		(this.options.kill) ||
-		(this.options.stopAt && nextRun.getTime() >= this.options.stopAt.getTime() )) {
+		(this.options.stopAt && nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
 		return null;
 	} else {
 		// All seem good, return next run
@@ -208,7 +207,7 @@ Cron.prototype.msToNext = function (prev) {
 	prev = prev || new CronDate(void 0, this.options.timezone);
 	let next = this._next(prev);
 	if( next ) {
-		return (next.getTime() - prev.getTime());
+		return (next.getTime(true) - prev.getTime(true));
 	} else {
 		return null;
 	}
@@ -227,7 +226,7 @@ Cron.prototype.stop = function () {
 };
 
 /**
- * Pause execution
+ * Pause executionR
  * @public
  * 
  * @returns {boolean} - Wether pause was successful
