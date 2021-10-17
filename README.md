@@ -12,6 +12,8 @@
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
+Quick demo:
+
 ```javascript
 // Run a function at the interval set by a cron expression
 let job = Cron('* * * * * *', () => {
@@ -38,7 +40,7 @@ let msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
 
-More [#examples](examples)...
+More [examples](#examples)...
 
 ## Installation
 
@@ -101,7 +103,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 
 ## Signature
 
-Cron takes three arguments; [#pattern](pattern), [#options](options) (optional) and a scheduled function (optional).
+Cron takes three arguments; [pattern](#pattern), [options](#options) (optional) and a scheduled function (optional).
 
 ```javascript
 
@@ -112,18 +114,18 @@ var scheduler = Cron( <string pattern> [, { ... } ] [, <function toBeRun> ] );
 Cron return a scheduler, which can be used in a couple of different ways.
 
 ```javascript
-job.next( [ <date previous> ] );		// Get a Date object with next run time according 
-										// to pattern relative to previous, or now if omitted
+job.next( [ <date previous> ] );	// Get a Date object with next run time according 
+					// to pattern relative to previous, or now if omitted
 
 job.msToNext( [ <date previous> ] );    // Get milliseconds left to next execution
 
-job.previous();							// Gets a Date object with previous run time, or null
+job.previous();				// Gets a Date object with previous run time, or null
 
-job.schedule( <fn job> );				// If you didn't pass a function to constructor, you can do it here
+job.schedule( <fn job> );		// If you didn't pass a function to constructor, you can do it here
 
-job.pause();							// Pause execution
-job.resume();							// Resume execution
-job.stop();								// Stop execution
+job.pause();				// Pause execution
+job.resume();				// Resume execution
+job.stop();				// Stop execution
 ```
 
 ## Options
@@ -140,10 +142,8 @@ Cron( '* * * * * *', { maxRuns: 4 } );
 |--------------|----------------|----------------|---------------------------------------|
 | maxRuns      | Infinite       | Number         |                                       |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
-| startAt      | undefined      | String         | ISO 8001 formatted date (2021-10-17T23:43:00)|
-|              |                |                | in local or specified timezone |
-| stopAt       | undefined      | String         | ISO 8001 formatted date (2021-10-17T23:43:00)|
-|              |                |                | in local timezone |
+| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
+| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 
 ## Pattern
@@ -179,8 +179,7 @@ Details:
 | Hours        | Yes      | 0-23           | * , - /                    |                                       |
 | Day of Month | Yes      | 1-31           | * , - /                    |                                       |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - /                    |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - /                    | 0 to 6 are Sunday to Saturday;        |
-|              |          |                |                            | 7 is Sunday, the same as 0            |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - /                    | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
 
 **Note**: Weekday and month names are case insensitive. Both MON and mon works.
 
