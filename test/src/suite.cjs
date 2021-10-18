@@ -555,14 +555,15 @@ module.exports = function (Cron) {
 				diff;
 
 			target.getTime().should.equal(scheduler.next().getTime());
-
 			if(target.getTime() === scheduler.next().getTime()) {
 				while(prevRun < target) {
 					left = scheduler.msToNext(prevRun);
 					diff = Math.abs((target.getTime() - prevRun.getTime())-left);
 					diff.should.be.below(1001);
 					diff.should.be.above(-1);
-					prevRun = new Date(prevRun.getTime() + 1000000);
+
+					// Advance 1000s
+					prevRun.setMilliseconds(1000000);
 				}
 			}
 
@@ -583,7 +584,9 @@ module.exports = function (Cron) {
 					diff = Math.abs((target.getTime() - prevRun.getTime())-left);
 					diff.should.be.below(1001);
 					diff.should.be.above(-1);
-					prevRun = new Date(prevRun.getTime() + 1000000);
+
+					// Advance 1000s
+					prevRun.setMilliseconds(1000000);
 				}
 			}
 

@@ -1,5 +1,4 @@
 import convertTZ from "./timezone.js";
-
 /**
  * Converts date to CronDate
  * @constructor
@@ -262,12 +261,12 @@ CronDate.prototype.parseISOLocal = function (s) {
 	}
 
 	let
-		year = parseInt(b[0]),
-		month = parseInt(b[1]),
-		day = parseInt(b[2]),
-		hour = parseInt(b[3]),
-		minute = parseInt(b[4]),
-		second = parseInt(b[5]);
+		year = parseInt(b[0], 10),
+		month = parseInt(b[1], 10),
+		day = parseInt(b[2], 10),
+		hour = parseInt(b[3], 10),
+		minute = parseInt(b[4], 10),
+		second = parseInt(b[5], 10);
 
 	// Check parts for numeric
 	if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {

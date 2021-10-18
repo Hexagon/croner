@@ -152,6 +152,7 @@ Cron.prototype.processOptions = function (options) {
  * @returns {Date | null} - Next run time
  */
 Cron.prototype.next = function (prev) {
+	prev = new CronDate(prev, this.options.timezone);
 	let next = this._next(prev);
 	return next ? next.getDate() : null;
 };
@@ -160,7 +161,7 @@ Cron.prototype.next = function (prev) {
  * Return previous run time
  * @public
  * 
- * @returns {Date | null} - Previous run time
+ * @returns {CronDate | null} - Previous run time
  */
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
@@ -170,12 +171,10 @@ Cron.prototype.previous = function () {
  * Internal version of next. Cron needs millseconds internally, hence _next.
  * @private
  * 
- * @param {Date} prev - Input pattern
+ * @param {CronDate} prev - Input pattern
  * @returns {CronDate | null} - Next run time
  */
 Cron.prototype._next = function (prev) {
-
-	prev = new CronDate(prev, this.options.timezone);
 
 	// Previous run should never be before startAt
 	if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
@@ -199,12 +198,13 @@ Cron.prototype._next = function (prev) {
 
 /**
  * Returns number of milliseconds to next run
+ * @public
  * 
  * @param {CronNextResult} [prev=new CronDate()] - Starting date, defaults to now
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {
-	prev = prev || new CronDate(void 0, this.options.timezone);
+	prev = new CronDate(prev, this.options.timezone);
 	let next = this._next(prev);
 	if( next ) {
 		return (next.getTime(true) - prev.getTime(true));

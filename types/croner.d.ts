@@ -105,17 +105,18 @@ export class Cron {
      * Return previous run time
      * @public
      *
-     * @returns {Date | null} - Previous run time
+     * @returns {CronDate | null} - Previous run time
      */
-    public previous(): Date | null;
+    public previous(): CronDate | null;
     private _next;
     /**
      * Returns number of milliseconds to next run
+     * @public
      *
      * @param {CronNextResult} [prev=new CronDate()] - Starting date, defaults to now
      * @returns {number | null}
      */
-    msToNext(prev?: CronNextResult): number | null;
+    public msToNext(prev?: CronNextResult): number | null;
     /**
      * Stop execution
      * @public
