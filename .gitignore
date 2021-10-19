@@ -27,4 +27,3 @@ build/Release
 node_modules
 testing.js
 test.js
-package-lock.json
