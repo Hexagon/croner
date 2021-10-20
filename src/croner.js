@@ -31,8 +31,6 @@ import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
 
 /**
- * @typedef {CronDate | null} CronNextResult
- *
  * @typedef {Object} CronOptions - Cron scheduler options
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
@@ -161,7 +159,7 @@ Cron.prototype.next = function (prev) {
  * Return previous run time
  * @public
  * 
- * @returns {CronDate | null} - Previous run time
+ * @returns {Date | null} - Previous run time
  */
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
@@ -200,7 +198,7 @@ Cron.prototype._next = function (prev) {
  * Returns number of milliseconds to next run
  * @public
  * 
- * @param {CronNextResult} [prev=new CronDate()] - Starting date, defaults to now
+ * @param {CronDate | null} [prev=new CronDate()] - Starting date, defaults to now
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {
