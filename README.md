@@ -1,15 +1,14 @@
 
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/docs/croner.png" alt="Croner" width="150" height="150">
+  <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/docs/croner.png" alt="Croner" width="150" height="150"><br>
+  Trigger functions in javascript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
-<p align="center">
-  Trigger functions in javascript using Cron syntax
-</p>
+
+
+# Croner
 
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded)](https://www.jsdelivr.com/package/npm/croner)
-
-# Croner
 
 *   Trigger functions in javascript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Pause, resume or stop execution efter a task is scheduled.
