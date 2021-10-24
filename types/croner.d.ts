@@ -1,5 +1,4 @@
 export default Cron;
-export type CronNextResult = CronDate | null;
 /**
  * - Cron scheduler options
  */
@@ -105,18 +104,18 @@ export class Cron {
      * Return previous run time
      * @public
      *
-     * @returns {CronDate | null} - Previous run time
+     * @returns {Date | null} - Previous run time
      */
-    public previous(): CronDate | null;
+    public previous(): Date | null;
     private _next;
     /**
      * Returns number of milliseconds to next run
      * @public
      *
-     * @param {CronNextResult} [prev=new CronDate()] - Starting date, defaults to now
+     * @param {CronDate | null} [prev=new CronDate()] - Starting date, defaults to now
      * @returns {number | null}
      */
-    public msToNext(prev?: CronNextResult): number | null;
+    public msToNext(prev?: CronDate | null): number | null;
     /**
      * Stop execution
      * @public
@@ -145,5 +144,5 @@ export class Cron {
      */
     public schedule(func: Function): CronJob;
 }
-import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
+import { CronDate } from "./date.js";

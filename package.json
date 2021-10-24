@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "4.0.60",
+  "version": "4.0.61",
   "description": "Trigger functions in javascript using Cron syntax. No deps. All features.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -32,15 +32,14 @@
     "isomorphic"
   ],
   "scripts": {
-    "test": "npm run test:coverage",
-    "test:dist": "mocha",
-    "test:coverage": "c8 --reporter=text mocha test/test.croner.js",
+    "test": "uvu test test.croner.js",
+    "test:dist": "uvu test",
+    "test:coverage": "c8 --include=src npm test",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
-    "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:coverage && npm run build:finalize",
+    "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:coverage",
     "build:webpack": "webpack",
-    "build:typings": "tsc",
-    "build:finalize": "echo \"All good\""
+    "build:typings": "tsc"
   },
   "type": "module",
   "main": "./dist-legacy/croner.cjs",
@@ -61,12 +60,11 @@
   "types": "types/croner.d.ts",
   "devDependencies": {
     "c8": "^7.10.0",
-    "eslint": "^7.32.0",
-    "mocha": "^9.1.2",
-    "should": "^13.2.3",
-    "typescript": "^4.4.3",
-    "webpack": "^5.58.1",
-    "webpack-cli": "^4.9.0"
+    "eslint": "^8.1.0",
+    "typescript": "^4.4.4",
+    "uvu": "^0.5.2",
+    "webpack": "^5.59.1",
+    "webpack-cli": "^4.9.1"
   },
   "license": "MIT"
 }
