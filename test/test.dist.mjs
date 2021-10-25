@@ -22,10 +22,8 @@ THE SOFTWARE.
 
 */
 
-/* eslint no-unused-vars: 0 */
-
-"use strict";
-const 
-	Cron = require("../dist-legacy/croner.cjs"),
-	test = require("./src/suite.cjs");
+import Cron from "../dist/croner.min.mjs";
+import { Cron as Cron2 } from "../dist/croner.min.mjs";
+import test from "./src/suite.cjs";
 test(Cron);
+test(Cron2);

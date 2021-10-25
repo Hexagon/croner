@@ -23,8 +23,8 @@ THE SOFTWARE.
 */
 
 import Cron from "../src/croner.js";
-import { Cron as Cron3 } from "../src/croner.js";
+import { Cron as Cron2 } from "../src/croner.js";
 import test from "./src/suite.cjs";
 test(Cron);
-test(Cron3);
+test(Cron2);
 

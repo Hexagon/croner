@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "4.0.62",
+  "version": "4.0.63",
   "description": "Trigger functions in javascript using Cron syntax. No deps. All features.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -37,18 +37,21 @@
     "test:coverage": "c8 --include=src npm test",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
-    "build": "npm run test:lint && npm run build:typings && npm run build:webpack && npm run test:coverage",
-    "build:webpack": "webpack",
-    "build:typings": "tsc"
+    "build": "npm run test:lint && npm run build:typings && npm run build:dist && npm run build:minify && npm run build:cleanup && npm run test:coverage && npm run test:dist",
+    "build:dist": "rollup -c ./rollup.config.js",
+    "build:minify": "uglifyjs dist/croner.cjs --source-map -o dist/croner.min.js && uglifyjs dist/croner.mjs --source-map -o dist/croner.min.mjs",
+    "build:typings": "tsc",
+    "build:cleanup": "(rm dist/croner.mjs || del dist\\croner.mjs)"
   },
   "type": "module",
-  "main": "./dist-legacy/croner.cjs",
+  "main": "./dist/croner.cjs",
   "browser": "./dist/croner.min.js",
   "module": "./src/croner.js",
+  "types": "types/croner.d.ts",
   "exports": {
     ".": {
       "import": "./src/croner.js",
-      "require": "./dist-legacy/croner.cjs",
+      "require": "./dist/croner.cjs",
       "browser": "./dist/croner.min.js"
     },
     "./minified": {
@@ -57,14 +60,13 @@
       "browser": "./dist/croner.min.js"
     }
   },
-  "types": "types/croner.d.ts",
   "devDependencies": {
     "c8": "^7.10.0",
     "eslint": "^8.1.0",
+    "rollup": "^2.58.1",
     "typescript": "^4.4.4",
-    "uvu": "^0.5.2",
-    "webpack": "^5.59.1",
-    "webpack-cli": "^4.9.1"
+    "uglify-js": "^3.14.2",
+    "uvu": "^0.5.2"
   },
   "license": "MIT"
 }

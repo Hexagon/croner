@@ -22,12 +22,12 @@ export class CronPattern {
      */
     constructor(pattern: string);
     pattern: string;
-    seconds: any[];
-    minutes: any[];
-    hours: any[];
-    days: any[];
-    months: any[];
-    daysOfWeek: any[];
+    seconds: any;
+    minutes: any;
+    hours: any;
+    days: any;
+    months: any;
+    daysOfWeek: any;
     private parse;
     private partToArray;
     private throwAtIllegalCharacters;

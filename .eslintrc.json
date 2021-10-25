@@ -22,7 +22,7 @@
     "parserOptions": {
         "sourceType": "module"
     },
-    "ignorePatterns": ["**/*.min.mjs", "**/*.min.js","**/*.min.cjs","dist-legacy/*"],
+    "ignorePatterns": ["dist-legacy/*","dist/*"],
     "globals": {
         "define": false,
         "describe": false,
