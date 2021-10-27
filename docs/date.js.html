@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: date.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: date.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import convertTZ from "./timezone.js";
+/**
+ * Converts date to CronDate
+ * @constructor
+ * 
+ * @param {date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
+ * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
+ */
+function CronDate (date, timezone) {	
+
+	this.timezone = timezone;
+	
+	if (date &amp;&amp; date instanceof Date) {
+		this.fromDate(date);
+	} else if (date === void 0) {
+		this.fromDate(new Date());
+	} else if (date &amp;&amp; typeof date === "string") {
+		this.fromString(date);
+	} else if (date instanceof CronDate) {
+		this.fromCronDate(date);
+	} else {
+		throw new TypeError("CronDate: Invalid type (" + typeof date + ") passed as parameter to CronDate constructor");
+	}
+}
+
+/**
+ * Sets internals using a Date 
+ * @private
+ * 
+ * @param {date} date - Input date
+ * @param {boolean} [fromLocal] - Input date already in target timezone
+ */
+CronDate.prototype.fromDate = function (date, fromLocal) {
+
+
+	// This is the only way in for a pure date object, so this is where timezone should be applied
+	if (this.timezone) {
+		let originalUTCms = date.getTime(),
+			convertedDate = convertTZ(date, this.timezone);
+		if (!fromLocal) {
+			date = convertedDate;
+		}
+		this.UTCmsOffset = convertedDate.getTime() - originalUTCms;
+	} else {
+		this.UTCmsOffset = 0;
+	}
+
+	this.milliseconds = date.getMilliseconds();
+	this.seconds = date.getSeconds();
+	this.minutes = date.getMinutes();
+	this.hours = date.getHours();
+	this.days = date.getDate();
+	this.months  = date.getMonth();
+	this.years = date.getFullYear();
+
+};
+
+/**
+ * Sets internals by deep copying another CronDate
+ * @private
+ * 
+ * @param {CronDate} date - Input date
+ */
+CronDate.prototype.fromCronDate = function (date) {
+
+	this.UTCmsOffset = date.UTCmsOffset;
+	this.timezone = date.timezone;
+
+	// Recreate date object to avoid getDate > 31 etc...
+	let newDate = new Date(date.years, date.months, date.days, date.hours, date.minutes, date.seconds, date.milliseconds);
+	
+	this.milliseconds = newDate.getMilliseconds();
+	this.seconds = newDate.getSeconds();
+	this.minutes = newDate.getMinutes();
+	this.hours = newDate.getHours();
+	this.days = newDate.getDate();
+	this.months  = newDate.getMonth();
+	this.years = newDate.getFullYear();
+};
+
+/**
+ * Sets internals by parsing a string
+ * @private
+ * 
+ * @param {date} date - Input date
+ */
+CronDate.prototype.fromString = function (str) {
+
+	let parsedDateUTCms = this.parseISOLocal(str);
+
+	// Throw if we did get an invalid date
+	if( isNaN(parsedDateUTCms) ) {
+		throw new TypeError("CronDate: Provided string value for CronDate could not be parsed as date.");
+	}
+	
+	this.fromDate(new Date(parsedDateUTCms), true);
+};
+
+/**
+ * Increment to next run time
+ * @public
+ * 
+ * @param {string} pattern - The pattern used to increment current state
+ * @param {boolean} [rerun=false] - If this is an internal incremental run
+ * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
+ */
+CronDate.prototype.increment = function (pattern, rerun) {
+
+	if (!rerun) {
+		this.seconds += 1;
+	}
+
+	let origTime = this.getTime();
+
+	this.milliseconds = 0;
+
+	let self = this,
+
+		
+		/**
+		 * Find next
+		 * 
+		 * @param {string} target
+		 * @param {string} pattern
+		 * @param {string} offset
+		 * @param {string} override
+		 * 
+		 * @returns {boolean}
+		 * 
+		 */
+		findNext = function (target, pattern, offset, override) {
+			
+			let startPos = (override === void 0) ? self[target] + offset : 0 + offset;
+
+			for( let i = startPos; i &lt; pattern[target].length; i++ ) {
+
+				if( pattern[target][i] ) {
+					self[target] = i-offset;
+					return true;
+				}
+			}
+			return false;
+
+		},
+		
+		resetPrevious = function () {
+			// Now when we have gone to next minute, we have to set seconds to the first match
+			// Now we are at 00:01:05 following the same example.
+			// 
+			// This goes all the way back to seconds, hence the reverse loop.
+			while(doing >= 0) {
+
+				// Ok, reset current member(e.g. seconds) to first match in pattern, using 
+				// the same method as aerlier
+				// 
+				// Note the fourth parameter, stating that we should start matching the pattern
+				// from zero, instead of current time.
+				findNext(toDo[doing][0], pattern, toDo[doing][2], 0);
+
+				// Go back up, days -> hours -> minutes -> seconds
+				doing--;
+			}
+		};
+
+	// Array of work to be done, consisting of subarrays described below:
+	// [
+	//   First item is which member to process,
+	//   Second item is which member to increment if we didn't find a mathch in current item,
+	//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
+	//   from pattern. Offset should be -1
+	// ]
+	let toDo = [
+			["seconds", "minutes", 0],
+			["minutes", "hours", 0],
+			["hours", "days", 0],
+			["days", "months", -1],
+			["months", "years", 0]
+		],
+		doing = 0;
+
+	// Ok, we're working our way trough the toDo array, top to bottom
+	// If we reach 5, work is done
+	while(doing &lt; 5) {
+
+		// findNext sets the current member to next match in pattern
+		// If time is 00:00:01 and pattern says *:*:05, seconds will
+		// be set to 5
+
+		// If pattern didn't provide a match, increment next vanlue (e.g. minues)
+		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
+			this[toDo[doing][1]]++;
+			resetPrevious();
+		}
+
+		// Gp down, seconds -> minutes -> hours -> days -> months -> year
+		doing++;
+	}
+
+	// This is a special case for weekday, as the user isn't able to combine date/month patterns 
+	// with weekday patterns, it's just to increment days until we get a match.
+	while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
+		this.days += 1;
+		doing = 2;
+		resetPrevious();
+	}
+
+	// If anything changed, recreate this CronDate and run again without incrementing
+	if (origTime != self.getTime()) {
+		self = new CronDate(self);
+		if (this.years >= 4000) {
+			// Stop incrementing, an impossible pattern is used
+			return null;
+		} else {
+			return self.increment(pattern, true);
+		}
+	} else {
+		return this;
+	}
+
+};
+
+/**
+ * Convert current state back to a javascript Date()
+ * @public
+ * 
+ * @param {boolean} internal - If this is an internal call
+ * @returns {date}
+ */
+CronDate.prototype.getDate = function (internal) {
+	let offset = internal ? 0 : this.UTCmsOffset;
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset);
+};
+
+/**
+ * Convert current state back to a javascript Date() and return UTC milliseconds
+ * @public
+ * 
+ * @param {boolean} internal - If this is an internal call
+ * @returns {date}
+ */
+CronDate.prototype.getTime = function (internal) {
+	let offset = internal ? 0 : this.UTCmsOffset;
+	return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset).getTime();
+};
+
+/**
+ * Takes a iso 8001 local date time string and creates a Date object
+ * @private
+ * 
+ * @param {string} s - an ISO 8001 format date and time string
+ *                      with all components, e.g. 2015-11-24T19:40:00
+ * @returns {Date|number} - Date instance from parsing the string. May be NaN.
+ */
+CronDate.prototype.parseISOLocal = function (s) {
+	let b = s.split(/\D/);
+
+	// Check for completeness
+	if (b.length &lt; 6) {
+		return NaN;
+	}
+
+	let
+		year = parseInt(b[0], 10),
+		month = parseInt(b[1], 10),
+		day = parseInt(b[2], 10),
+		hour = parseInt(b[3], 10),
+		minute = parseInt(b[4], 10),
+		second = parseInt(b[5], 10);
+
+	// Check parts for numeric
+	if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {
+		return NaN;
+	} else {
+		return new Date(year, month-1, day, hour, minute, second);
+	}
+};
+
+export { CronDate };</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Cron.html">Cron</a></li><li><a href="CronDate.html">CronDate</a></li><li><a href="CronPattern.html">CronPattern</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Oct 28 2021 00:21:44 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

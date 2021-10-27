@@ -679,5 +679,19 @@ module.exports = function (Cron) {
 		},1500);
 	}));
 
+	test("Isrunning should not throw, and return correct value after control functions is used", function () {
+		let 
+			scheduler0 = new Cron("0 0 0 * * 0");
+		assert.equal(scheduler0.running(), false);
+		scheduler0.schedule(() => {});
+		assert.equal(scheduler0.running(), true);
+		scheduler0.pause();
+		assert.equal(scheduler0.running(), false);
+		scheduler0.resume();
+		assert.equal(scheduler0.running(), true);
+		scheduler0.stop();
+		assert.equal(scheduler0.running(), false);
+	});
+
 	test.run();
 };

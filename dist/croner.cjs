@@ -632,7 +632,6 @@
 	/**
 	 * Cron entrypoint
 	 * 
-	 * 
 	 * @signature
 	 * @constructor
 	 * @param {string} pattern - Input pattern
@@ -671,7 +670,8 @@
 		 * Allow shorthand scheduling
 		 */
 		if( fn !== void 0 ) {
-			this.schedule(fn);
+			this.fn = fn;
+			this.schedule();
 		}
 
 		return this;
@@ -679,6 +679,8 @@
 	}
 
 	/**
+	 * Internal function that validates options, and sets defaults
+	 * @private
 	 * 
 	 * @param {CronOptions} options 
 	 * @returns {CronOptions}
@@ -716,6 +718,18 @@
 		prev = new CronDate(prev, this.options.timezone);
 		let next = this._next(prev);
 		return next ? next.getDate() : null;
+	};
+
+	/**
+	 * Is running?
+	 * @public
+	 * 
+	 * @returns {Boolean} - Running or not
+	 */
+	Cron.prototype.running = function () {
+		let msLeft = this.msToNext(this.previousrun);
+		let running = !this.options.paused && this.fn !== void 0;
+		return msLeft !== null && running;
 	};
 
 	/**
@@ -829,6 +843,11 @@
 			waitMs = _maxDelay;
 		}
 
+		// Update function if passed
+		if (func) {
+			self.fn = func;
+		}
+
 		// All ok, go go!
 		if  ( waitMs !== null ) {
 			self.currentTimeout = setTimeout(function () {
@@ -838,14 +857,14 @@
 
 					if ( !self.options.paused ) {
 						self.options.maxRuns--;
-						func();	
+						self.fn();	
 					}
 
 					self.previousrun = new CronDate(void 0, self.options.timezone);
 				}
 
 				// Recurse
-				self.schedule(func);
+				self.schedule();
 
 			}, waitMs );
 		}

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/docs/croner.png" alt="Croner" width="150" height="108"><br>
+  Trigger functions in javascript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+</p>
+<h1>Croner</h1>
+<p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <a href="https://badge.fury.io/js/croner"><img src="https://badge.fury.io/js/croner.svg" alt="npm version"></a> <a href="https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff" alt="Codacy Badge"></a>
+<a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a> <a href="https://www.jsdelivr.com/package/npm/croner"><img src="https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded" alt="jsdelivr"></a></p>
+<ul>
+<li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax</li>
+<li>Pause, resume or stop execution efter a task is scheduled</li>
+<li>Find first date of next month, find date of next tuesday, etc.</li>
+<li>Works in Node.js &gt;=4.0 (require and import)</li>
+<li>Works in browsers as standalone, UMD or ES-module.</li>
+<li><strong>Experimental feature:</strong> Schedule in other timezones than default</li>
+<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings</li>
+</ul>
+<p>Quick examples:</p>
+<pre class="prettyprint source lang-javascript"><code>// Run a function at the interval set by a cron expression
+let job = Cron('* * * * * *', () => {
+	console.log('This will run every second');
+});
+
+// What date is next sunday?
+let nextSunday = Cron('0 0 0 * * 7').next();
+console.log(nextSunday.toLocaleDateString());
+
+// How many days left to christmas eve?
+let msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
+console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas eve&quot;);
+</code></pre>
+<p>More <a href="#examples">examples</a>...</p>
+<h2>Installation</h2>
+<h3>Node.js</h3>
+<p><code>npm install croner --save</code></p>
+<pre class="prettyprint source lang-javascript"><code>// ESM Import ...
+import Cron from &quot;croner&quot;;
+
+// ... or CommonJS Require
+const Cron = require(&quot;croner&quot;);
+</code></pre>
+<h3>Browser</h3>
+<h4>Manual</h4>
+<ul>
+<li>Download latest <a href="https://github.com/Hexagon/croner/archive/refs/heads/master.zip">zipball</a></li>
+<li>Unpack</li>
+<li>Grab <code>croner.min.js</code> (UMD and standalone) or <code>croner.min.mjs</code> (ES-module) from the <a href="/dist">dist/</a> folder</li>
+</ul>
+<h4>CDN</h4>
+<p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js&quot;>&lt;/script>
+</code></pre>
+<p>To use as a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
+<pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
+	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs&quot;;
+
+	// ... see usage section ...
+&lt;/script>
+</code></pre>
+<h2>Signature</h2>
+<p>Cron takes three arguments</p>
+<ul>
+<li><a href="#pattern">pattern</a></li>
+<li><a href="#options">options</a> (optional)</li>
+<li>scheduled function (optional)</li>
+</ul>
+<pre class="prettyprint source lang-javascript"><code>var job = Cron(&quot;* * * * * *&quot; , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
+
+// If function is omitted in constructor, it can be scheduled later
+job.schedule(() => {});		
+
+// States
+let nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+let prevRun = job.previous( );	
+let msToNext = job.msToNext( /*optional*/ previosRun ); // Milliseconds left to next execution
+let isRunning = job.isRunning();
+
+// Control scheduled execution
+job.pause();				
+job.resume();
+job.stop();
+
+</code></pre>
+<h3>Options</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default value</th>
+<th>Data type</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>maxRuns</td>
+<td>Infinite</td>
+<td>Number</td>
+<td></td>
+</tr>
+<tr>
+<td>timezone</td>
+<td>undefined</td>
+<td>String</td>
+<td>Timezone in Europe/Stockholm format</td>
+</tr>
+<tr>
+<td>startAt</td>
+<td>undefined</td>
+<td>String</td>
+<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
+</tr>
+<tr>
+<td>stopAt</td>
+<td>undefined</td>
+<td>String</td>
+<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
+</tr>
+<tr>
+<td>paused</td>
+<td>false</td>
+<td>Boolean</td>
+<td>If the job should be paused from start.</td>
+</tr>
+</tbody>
+</table>
+<h3>Pattern</h3>
+<pre class="prettyprint source lang-javascript"><code>// ┌──────────────── (optional) second (0 - 59)
+// │ ┌────────────── minute (0 - 59)
+// │ │ ┌──────────── hour (0 - 23)
+// │ │ │ ┌────────── day of month (1 - 31)
+// │ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
+// │ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
+// │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
+// │ │ │ │ │ │
+// * * * * * *
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Allowed values</th>
+<th>Allowed special characters</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seconds</td>
+<td>Optional</td>
+<td>0-59</td>
+<td>* , - /</td>
+<td></td>
+</tr>
+<tr>
+<td>Minutes</td>
+<td>Yes</td>
+<td>0-59</td>
+<td>* , - /</td>
+<td></td>
+</tr>
+<tr>
+<td>Hours</td>
+<td>Yes</td>
+<td>0-23</td>
+<td>* , - /</td>
+<td></td>
+</tr>
+<tr>
+<td>Day of Month</td>
+<td>Yes</td>
+<td>1-31</td>
+<td>* , - /</td>
+<td></td>
+</tr>
+<tr>
+<td>Month</td>
+<td>Yes</td>
+<td>1-12 or JAN-DEC</td>
+<td>* , - /</td>
+<td></td>
+</tr>
+<tr>
+<td>Day of Week</td>
+<td>Yes</td>
+<td>0-7 or SUN-MON</td>
+<td>* , - /</td>
+<td>0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: Weekday and month names are case insensitive. Both MON and mon works.</p>
+<h2>Examples</h2>
+<h3>Expressions</h3>
+<pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
+Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
+	console.log('This will run the first five seconds every fifth minute');
+	console.log('of hour 1,2 and 3 every saturday in January to March.');
+});
+</code></pre>
+<h3>Find dates</h3>
+<pre class="prettyprint source lang-javascript"><code>// Find next month
+let nextMonth = Cron('0 0 0 1 * *').next(),
+	nextSunday = Cron('0 0 0 * * 7').next(),
+	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next();
+
+console.log(&quot;First day of next month: &quot; +  nextMonth.toLocaleDateString());
+console.log(&quot;Next sunday: &quot; +  nextSunday.toLocaleDateString());
+console.log(&quot;Next saturday at 29th of february: &quot; +  nextSat29feb.toLocaleDateString());  // 2048-02-29
+</code></pre>
+<h3>With options</h3>
+<pre class="prettyprint source lang-javascript"><code>
+var job = Cron(
+	'* * * * *', 
+	{ 
+		maxRuns: Infinity, 
+		startAt: &quot;2021-11-01T00:00:00&quot;, 
+		stopAt: &quot;2021-12-01T00:00:00&quot;,
+		timezone: &quot;Europe/Stockholm&quot;
+	},
+	function() {
+		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00 in Europe/Stockholm.');
+	}
+);
+</code></pre>
+<h3>Job controls</h3>
+<pre class="prettyprint source lang-javascript"><code>let job = Cron('* * * * * *', () => {
+	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
+	console.log('Current second: ', new Date().getSeconds());
+	console.log('Previous run: ' + job.previous());
+	console.log('Next run: ' + job.next());
+});
+
+Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
+Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
+Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
+</code></pre>
+<h2>License</h2>
+<p>MIT</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Cron.html">Cron</a></li><li><a href="CronDate.html">CronDate</a></li><li><a href="CronPattern.html">CronPattern</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Oct 28 2021 00:21:44 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

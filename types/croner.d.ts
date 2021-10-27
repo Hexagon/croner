@@ -47,7 +47,6 @@ export type CronJob = {
 /**
  * Cron entrypoint
  *
- *
  * @signature
  * @constructor
  * @param {string} pattern - Input pattern
@@ -66,7 +65,6 @@ export function Cron(pattern: string, options?: CronOptions | Function, fn?: Fun
 export class Cron {
     /**
      * Cron entrypoint
-     *
      *
      * @signature
      * @constructor
@@ -87,12 +85,8 @@ export class Cron {
     pattern: CronPattern;
     /** @type {CronOptions} */
     options: CronOptions;
-    /**
-     *
-     * @param {CronOptions} options
-     * @returns {CronOptions}
-     */
-    processOptions(options: CronOptions): CronOptions;
+    fn: Function;
+    private processOptions;
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
@@ -100,6 +94,13 @@ export class Cron {
      * @returns {Date | null} - Next run time
      */
     next(prev?: Date): Date | null;
+    /**
+     * Is running?
+     * @public
+     *
+     * @returns {Boolean} - Running or not
+     */
+    public running(): boolean;
     /**
      * Return previous run time
      * @public
