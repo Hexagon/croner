@@ -11,7 +11,8 @@
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax
 *   Pause, resume or stop execution efter a task is scheduled
 *   Find first date of next month, find date of next tuesday, etc.
-*   Supports Node.js >=4.0. Both require (commonjs) and import (module)
+*   Works in Node.js >=4.0 (require and import)
+*   Works in browsers as standalone, UMD or ES-module.
 *   **Experimental feature:** Schedule in other timezones than default
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings
 
@@ -54,7 +55,7 @@ const Cron = require("croner");
 
 *   Download latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip)
 *   Unpack
-*   Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
+*   Grab ```croner.min.js``` (UMD and standalone) or ```croner.min.mjs``` (ES-module) from the [dist/](/dist) folder
 
 #### CDN
 
@@ -76,7 +77,11 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 
 ## Signature
 
-Cron takes three arguments; [pattern](#pattern), [options](#options) (optional) and a scheduled function (optional).
+Cron takes three arguments
+
+*   [pattern](#pattern)
+*   [options](#options) (optional) 
+*   scheduled function (optional)
 
 ```javascript
 var job = Cron("* * * * * *" , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
@@ -97,7 +102,7 @@ job.stop();
 
 ```
 
-## Options
+### Options
 
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
@@ -107,9 +112,7 @@ job.stop();
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 
-## Pattern
-
-Pattern is mandatory, and passed as the first argument of Cron.
+### Pattern
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
