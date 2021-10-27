@@ -1,9 +1,7 @@
-
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/docs/croner.png" alt="Croner" width="150" height="150"><br>
+  <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/docs/croner.png" alt="Croner" width="150" height="108"><br>
   Trigger functions in javascript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
-
 
 # Croner
 
@@ -13,13 +11,13 @@
 *   Trigger functions in javascript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Pause, resume or stop execution efter a task is scheduled.
 *   Find first date of next month, find date of next tuesday, etc.
-*   Supports Node.js from 4.0 to current. Both require (commonjs) and import (module).
-*   Supports browser use ([UMD](https://github.com/umdjs/umd) (standalone, requirejs etc.), [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
+*   Supports Node.js >=4.0. Both require (commonjs) and import (module).
+*   Supports browser use, ```croner.min.js``` is a ([UMD](https://github.com/umdjs/umd))-module and ```croner.min.mjs``` is a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)).
 *   **Experimental:** Schedule in other timezones than default.
 
 Documented with [JSDoc](https://jsdoc.app/) for intellisense, and include [TypeScript](https://www.typescriptlang.org/) typings.
 
-Quick demo:
+Quick examples:
 
 ```javascript
 // Run a function at the interval set by a cron expression
@@ -27,17 +25,6 @@ let job = Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
 
-// Control execution
-// job.pause();
-// job.resume();
-// job.stop();
-
-// Get info
-let next = job.next();
-let previous = job.previous();
-```
-
-```javascript
 // What date is next sunday?
 let nextSunday = Cron('0 0 0 * * 7').next();
 console.log(nextSunday.toLocaleDateString());
@@ -56,13 +43,10 @@ More [examples](#examples)...
 ```npm install croner --save```
 
 ```javascript
-// ESM Import
+// ESM Import ...
 import Cron from "croner";
 
-// ... or
-
-// CommonJS Require
-
+// ... or CommonJS Require
 const Cron = require("croner");
 ```
 
@@ -70,7 +54,7 @@ const Cron = require("croner");
 
 #### Manual
 
-*   Download latest [zipball](http://github.com/Hexagon/croner/zipball/master/)
+*   Download latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip)
 *   Unpack
 *   Grab ```croner.min.js``` ([UMD](https://github.com/umdjs/umd)) or ```croner.min.mjs``` ([ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) from the [dist/](/dist) folder
 
@@ -92,58 +76,30 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 </script>
 ```
 
-... or a ES-module with [import-map](https://github.com/WICG/import-maps)
-```html
-<script type="importmap">
-	{
-		"imports": {
-			"croner": "https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs"
-		}
-	}
-</script>
-<script type="module">
-	import Cron from 'croner';
-
-	// ... see usage section ...
-</script>
-```
-
 ## Signature
 
 Cron takes three arguments; [pattern](#pattern), [options](#options) (optional) and a scheduled function (optional).
 
 ```javascript
+var job = Cron("* * * * * *" , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
-var scheduler = Cron( <string pattern> [, { ... } ] [, <function toBeRun> ] );
+// If function is omitted in constructor, it can be scheduled later
+job.schedule(() => {});		
 
-```
+// States
+let nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+let prevRun = job.previous( );	
+let msToNext = job.msToNext( /*optional*/ previosRun ); // Milliseconds left to next execution
+let isRunning = job.isRunning();
 
-Cron return a scheduler, which can be used in a couple of different ways.
+// Control scheduled execution
+job.pause();				
+job.resume();
+job.stop();
 
-```javascript
-job.next( [ <date previous> ] );	// Get a Date object with next run time according 
-					// to pattern relative to previous, or now if omitted
-
-job.msToNext( [ <date previous> ] );    // Get milliseconds left to next execution
-
-job.previous();				// Gets a Date object with previous run time, or null
-
-job.schedule( <fn job> );		// If you didn't pass a function to constructor, you can do it here
-
-job.pause();				// Pause execution
-job.resume();				// Resume execution
-job.stop();				// Stop execution
 ```
 
 ## Options
-
-Options are optional, and passed as the second parameter of cron.
-
-Example:
-
-```javascript
-Cron( '* * * * * *', { maxRuns: 4 } );
-```
 
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
@@ -157,27 +113,17 @@ Cron( '* * * * * *', { maxRuns: 4 } );
 
 Pattern is mandatory, and passed as the first argument of Cron.
 
-Example:
-
 ```javascript
-Cron( '* * * * * *', () => {} );
+// ┌──────────────── (optional) second (0 - 59)
+// │ ┌────────────── minute (0 - 59)
+// │ │ ┌──────────── hour (0 - 23)
+// │ │ │ ┌────────── day of month (1 - 31)
+// │ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
+// │ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
+// │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
+// │ │ │ │ │ │
+// * * * * * *
 ```
-
-Composition:
-
-```
-┌──────────────── (optional) second (0 - 59)
-│ ┌────────────── minute (0 - 59)
-│ │ ┌──────────── hour (0 - 23)
-│ │ │ ┌────────── day of month (1 - 31)
-│ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
-│ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
-│ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
-│ │ │ │ │ │
-* * * * * *
-```
-
-Details:
 
 | Field        | Required | Allowed values | Allowed special characters | Remarks                               |
 |--------------|----------|----------------|----------------------------|---------------------------------------|
@@ -192,17 +138,9 @@ Details:
 
 ## Examples 
 
-### Minimal
-```javascript
-// Run a function each second
-Cron('* * * * * *', () => {
-	console.log('This will run every second');
-});
-```
-
 ### Expressions
 ```javascript
-// Run a function the first five seconds of a minute
+// Run a function according to pattern
 Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
 	console.log('This will run the first five seconds every fifth minute');
 	console.log('of hour 1,2 and 3 every saturday in January to March.');

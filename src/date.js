@@ -225,7 +225,6 @@ CronDate.prototype.increment = function (pattern, rerun) {
  * 
  * @param {boolean} internal - If this is an internal call
  * @returns {date}
- * 
  */
 CronDate.prototype.getDate = function (internal) {
 	let offset = internal ? 0 : this.UTCmsOffset;
@@ -235,9 +234,9 @@ CronDate.prototype.getDate = function (internal) {
 /**
  * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
+ * 
  * @param {boolean} internal - If this is an internal call
  * @returns {date}
- * 
  */
 CronDate.prototype.getTime = function (internal) {
 	let offset = internal ? 0 : this.UTCmsOffset;
@@ -245,7 +244,7 @@ CronDate.prototype.getTime = function (internal) {
 };
 
 /**
- * parseISOLocal
+ * Takes a iso 8001 local date time string and creates a Date object
  * @private
  * 
  * @param {string} s - an ISO 8001 format date and time string

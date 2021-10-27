@@ -24,7 +24,7 @@ function CronPattern (pattern) {
 }
 
 /**
- * Parse current pattern, will raise an error on failure
+ * Parse current pattern, will throw on any type of failure
  * @private
  */
 CronPattern.prototype.parse = function () {

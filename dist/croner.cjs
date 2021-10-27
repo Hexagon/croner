@@ -5,7 +5,16 @@
 })(this, (function () { 'use strict';
 
 	/**
-	 * Converts a date to a specific time zone
+	 * "Converts" a date to a specific time zone
+	 * 
+	 * Note: This is only for specific and controlled usage, 
+	 * as the internal UTC time of the resulting object will be off.
+	 * 
+	 * Example:
+	 *   let normalDate = new Date(); // d is a normal Date instance, with local timezone and correct utc representation
+	 *       tzDate = convertTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours() 
+	 *                                                 (for example) will return local time in new york, but getUTCHours()
+	 *                                                 will return something irrelevant.
 	 * 
 	 * @param {date} date - Input date
 	 * @param {string} tzString - Timezone string in Europe/Stockholm format
@@ -241,7 +250,6 @@
 	 * 
 	 * @param {boolean} internal - If this is an internal call
 	 * @returns {date}
-	 * 
 	 */
 	CronDate.prototype.getDate = function (internal) {
 		let offset = internal ? 0 : this.UTCmsOffset;
@@ -251,9 +259,9 @@
 	/**
 	 * Convert current state back to a javascript Date() and return UTC milliseconds
 	 * @public
+	 * 
 	 * @param {boolean} internal - If this is an internal call
 	 * @returns {date}
-	 * 
 	 */
 	CronDate.prototype.getTime = function (internal) {
 		let offset = internal ? 0 : this.UTCmsOffset;
@@ -261,7 +269,7 @@
 	};
 
 	/**
-	 * parseISOLocal
+	 * Takes a iso 8001 local date time string and creates a Date object
 	 * @private
 	 * 
 	 * @param {string} s - an ISO 8001 format date and time string
@@ -318,7 +326,7 @@
 	}
 
 	/**
-	 * Parse current pattern, will raise an error on failure
+	 * Parse current pattern, will throw on any type of failure
 	 * @private
 	 */
 	CronPattern.prototype.parse = function () {
@@ -608,7 +616,6 @@
 	 * @property {CronJobResume} pause
 	 * @property {Function} resume
 	 */
-
 
 	/**
 	 * Many JS engines stores the delay as a 32-bit signed integer internally.

@@ -53,7 +53,6 @@ import { CronPattern } from "./pattern.js";
  * @property {Function} resume
  */
 
-
 /**
  * Many JS engines stores the delay as a 32-bit signed integer internally.
  * This causes an integer overflow when using delays larger than 2147483647, 

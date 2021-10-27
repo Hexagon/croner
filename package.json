@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "4.0.63",
+  "version": "4.0.64",
   "description": "Trigger functions in javascript using Cron syntax. No deps. All features.",
   "author": "Hexagon <github.com/hexagon>",
   "contributors": [
@@ -64,7 +64,7 @@
   "devDependencies": {
     "c8": "^7.10.0",
     "eslint": "^8.1.0",
-    "rollup": "^2.58.1",
+    "rollup": "^2.58.3",
     "typescript": "^4.4.4",
     "uglify-js": "^3.14.2",
     "uvu": "^0.5.2"
