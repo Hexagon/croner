@@ -76,7 +76,9 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 ```
 ## Documentation
 
-Below is a brief summary of the documentation, complete documentation as available at [https://hexagon.github.io/croner/Cron.html](hexgon.github.io/croner/Cron.html).
+Full documentation available [hexagon.github.io/croner](https://hexgon.github.io/croner/Cron.html).
+
+The short version follows: 
 
 ### Signature
 
@@ -140,9 +142,9 @@ job.stop();
 
 **Note**: Weekday and month names are case insensitive. Both MON and mon works.
 
-## Examples 
+### Examples 
 
-### Expressions
+#### Expressions
 ```javascript
 // Run a function according to pattern
 Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
@@ -151,7 +153,7 @@ Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
 });
 ```
 
-### Find dates
+#### Find dates
 ```javascript
 // Find next month
 let nextMonth = Cron('0 0 0 1 * *').next(),
@@ -163,7 +165,7 @@ console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateString());  // 2048-02-29
 ```
 
-### With options
+#### With options
 ```javascript
 
 var job = Cron(
@@ -180,7 +182,7 @@ var job = Cron(
 );
 ```
 
-### Job controls
+#### Job controls
 ```javascript
 let job = Cron('* * * * * *', () => {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
