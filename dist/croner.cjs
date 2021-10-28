@@ -301,8 +301,17 @@
 	};
 
 	/**
-	 * @typedef {"seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek"} CronPatternPart
-	 * @typedef {0 | -1} CronIndexOffset
+	 * Name for each part of the cron pattern
+	 * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+	 */
+
+	/**
+	 * Offset, 0 or -1. 
+	 * 
+	 * 0 for seconds,minutes and hours as they start on 1. 
+	 * -1 on days and months, as the start on 0
+	 * 
+	 * @typedef {Number} CronIndexOffset
 	 */
 
 	/**
@@ -378,7 +387,7 @@
 	 * 
 	 * @param {CronPatternPart} type - Seconds/minutes etc
 	 * @param {string} conf - Current pattern part - *, 0-1 etc
-	 * @param {CronIndexOffset} valueIndexOffset - 0 or -1. 0 for seconds,minutes, hours as they start on 1. -1 on days and months, as the start on 0
+	 * @param {CronIndexOffset} valueIndexOffset
 	 */
 	CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 
@@ -605,19 +614,6 @@
 	 */
 
 	/**
-	 * @typedef {Function} CronJobStop - Stop current job
-	 * @returns {boolean} - If pause was successful
-	 *
-	 * @typedef {Function} CronJobResume - Resume current job
-	 * @returns {boolean} - If resume was successful
-	 *
-	 * @typedef {Object} CronJob - Cron job control functions
-	 * @property {CronJobStop} stop
-	 * @property {CronJobResume} pause
-	 * @property {Function} resume
-	 */
-
-	/**
 	 * Many JS engines stores the delay as a 32-bit signed integer internally.
 	 * This causes an integer overflow when using delays larger than 2147483647, 
 	 * resulting in the timeout being executed immediately.
@@ -632,19 +628,11 @@
 	/**
 	 * Cron entrypoint
 	 * 
-	 * @signature
 	 * @constructor
 	 * @param {string} pattern - Input pattern
-	 * @param {CronOptions | Function} [options] - Options
+	 * @param {CronOptions} [options] - Options
 	 * @param {Function} [fn] - Function to be run each iteration of pattern
 	 * @returns {Cron}
-	 * 
-	 * @signature
-	 * @constructor
-	 * @param {string} pattern - Input pattern
-	 * @param {CronOptions | Function} [options] - Options
-	 * @param {Function} [fn] - Function to be run each iteration of pattern
-	 * @returns {CronJob}
 	 */
 	function Cron (pattern, options, fn) {
 		let self = this;
@@ -825,7 +813,7 @@
 	 * @public
 	 * 
 	 * @param {Function} func - Function to be run each iteration of pattern
-	 * @returns {CronJob}
+	 * @returns {Cron}
 	 */
 	Cron.prototype.schedule = function (func) {
 

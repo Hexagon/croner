@@ -1,8 +1,25 @@
-export type CronPatternPart = "seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek";
-export type CronIndexOffset = 0 | -1;
 /**
- * @typedef {"seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek"} CronPatternPart
- * @typedef {0 | -1} CronIndexOffset
+ * Name for each part of the cron pattern
+ */
+export type CronPatternPart = ("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek");
+/**
+ * Offset, 0 or -1.
+ *
+ * 0 for seconds,minutes and hours as they start on 1.
+ * -1 on days and months, as the start on 0
+ */
+export type CronIndexOffset = number;
+/**
+ * Name for each part of the cron pattern
+ * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+ */
+/**
+ * Offset, 0 or -1.
+ *
+ * 0 for seconds,minutes and hours as they start on 1.
+ * -1 on days and months, as the start on 0
+ *
+ * @typedef {Number} CronIndexOffset
  */
 /**
  * Create a CronPattern instance from pattern string ('* * * * * *')
@@ -12,8 +29,16 @@ export type CronIndexOffset = 0 | -1;
 export function CronPattern(pattern: string): void;
 export class CronPattern {
     /**
-     * @typedef {"seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek"} CronPatternPart
-     * @typedef {0 | -1} CronIndexOffset
+     * Name for each part of the cron pattern
+     * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+     */
+    /**
+     * Offset, 0 or -1.
+     *
+     * 0 for seconds,minutes and hours as they start on 1.
+     * -1 on days and months, as the start on 0
+     *
+     * @typedef {Number} CronIndexOffset
      */
     /**
      * Create a CronPattern instance from pattern string ('* * * * * *')

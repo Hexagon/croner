@@ -93,7 +93,7 @@ job.schedule(() => {});
 let nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
 let prevRun = job.previous( );	
 let msToNext = job.msToNext( /*optional*/ previosRun ); // Milliseconds left to next execution
-let isRunning = job.isRunning();
+let isRunning = job.running();
 
 // Control scheduled execution
 job.pause();				

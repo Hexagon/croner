@@ -29,58 +29,26 @@ export type CronOptions = {
     timezone?: string;
 };
 /**
- * - Stop current job
- */
-export type CronJobStop = Function;
-/**
- * - Resume current job
- */
-export type CronJobResume = Function;
-/**
- * - Cron job control functions
- */
-export type CronJob = {
-    stop: CronJobStop;
-    pause: CronJobResume;
-    resume: Function;
-};
-/**
  * Cron entrypoint
  *
- * @signature
  * @constructor
  * @param {string} pattern - Input pattern
- * @param {CronOptions | Function} [options] - Options
+ * @param {CronOptions} [options] - Options
  * @param {Function} [fn] - Function to be run each iteration of pattern
  * @returns {Cron}
- *
- * @signature
- * @constructor
- * @param {string} pattern - Input pattern
- * @param {CronOptions | Function} [options] - Options
- * @param {Function} [fn] - Function to be run each iteration of pattern
- * @returns {CronJob}
  */
-export function Cron(pattern: string, options?: CronOptions | Function, fn?: Function): Cron;
+export function Cron(pattern: string, options?: CronOptions, fn?: Function): Cron;
 export class Cron {
     /**
      * Cron entrypoint
      *
-     * @signature
      * @constructor
      * @param {string} pattern - Input pattern
-     * @param {CronOptions | Function} [options] - Options
+     * @param {CronOptions} [options] - Options
      * @param {Function} [fn] - Function to be run each iteration of pattern
      * @returns {Cron}
-     *
-     * @signature
-     * @constructor
-     * @param {string} pattern - Input pattern
-     * @param {CronOptions | Function} [options] - Options
-     * @param {Function} [fn] - Function to be run each iteration of pattern
-     * @returns {CronJob}
      */
-    constructor(pattern: string, options?: CronOptions | Function, fn?: Function);
+    constructor(pattern: string, options?: CronOptions, fn?: Function);
     /** @type {CronPattern} */
     pattern: CronPattern;
     /** @type {CronOptions} */
@@ -141,9 +109,9 @@ export class Cron {
      * @public
      *
      * @param {Function} func - Function to be run each iteration of pattern
-     * @returns {CronJob}
+     * @returns {Cron}
      */
-    public schedule(func: Function): CronJob;
+    public schedule(func: Function): Cron;
 }
 import { CronPattern } from "./pattern.js";
 import { CronDate } from "./date.js";
