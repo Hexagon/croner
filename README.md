@@ -74,8 +74,11 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 	// ... see usage section ...
 </script>
 ```
+## Documentation
 
-## Signature
+Below is a brief summary of the documentation, complete documentation as available at [https://hexagon.github.io/croner/Cron.html](hexgon.github.io/croner/Cron.html).
+
+### Signature
 
 Cron takes three arguments
 
@@ -102,7 +105,7 @@ job.stop();
 
 ```
 
-### Options
+#### Options
 
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
@@ -112,7 +115,7 @@ job.stop();
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 
-### Pattern
+#### Pattern
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
