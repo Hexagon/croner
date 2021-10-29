@@ -28,8 +28,8 @@
 	 * Converts date to CronDate
 	 * @constructor
 	 * 
-	 * @param {date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
-	 * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
+	 * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
+	 * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
 	 */
 	function CronDate (date, timezone) {	
 
@@ -53,21 +53,12 @@
 	 * @private
 	 * 
 	 * @param {date} date - Input date
-	 * @param {boolean} [fromLocal] - Input date already in target timezone
+	 * @param {boolean} fromLocal - Target already in local time 
 	 */
 	CronDate.prototype.fromDate = function (date, fromLocal) {
-
-
-		// This is the only way in for a pure date object, so this is where timezone should be applied
-		if (this.timezone) {
-			let originalUTCms = date.getTime(),
-				convertedDate = convertTZ(date, this.timezone);
-			if (!fromLocal) {
-				date = convertedDate;
-			}
-			this.UTCmsOffset = convertedDate.getTime() - originalUTCms;
-		} else {
-			this.UTCmsOffset = 0;
+		
+		if (this.timezone && !fromLocal) {
+			date = convertTZ(date, this.timezone);
 		}
 
 		this.milliseconds = date.getMilliseconds();
@@ -77,7 +68,6 @@
 		this.days = date.getDate();
 		this.months  = date.getMonth();
 		this.years = date.getFullYear();
-
 	};
 
 	/**
@@ -88,7 +78,6 @@
 	 */
 	CronDate.prototype.fromCronDate = function (date) {
 
-		this.UTCmsOffset = date.UTCmsOffset;
 		this.timezone = date.timezone;
 
 		// Recreate date object to avoid getDate > 31 etc...
@@ -252,8 +241,13 @@
 	 * @returns {date}
 	 */
 	CronDate.prototype.getDate = function (internal) {
-		let offset = internal ? 0 : this.UTCmsOffset;
-		return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset);
+		let targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
+		if (internal || !this.timezone) {
+			return targetDate;
+		} else {
+			let offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
+			return new Date(targetDate.getTime()-offset);
+		}
 	};
 
 	/**
@@ -264,8 +258,7 @@
 	 * @returns {date}
 	 */
 	CronDate.prototype.getTime = function (internal) {
-		let offset = internal ? 0 : this.UTCmsOffset;
-		return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds-offset).getTime();
+		return this.getDate(internal).getTime();
 	};
 
 	/**
@@ -608,8 +601,8 @@
 	 * @property {boolean} [paused] - Job is paused
 	 * @property {boolean} [kill] - Job is about to be killed or killed
 	 * @property {number} [maxRuns] - Maximum nuber of executions
-	 * @property {string | Date} [startAt] - When to start running
-	 * @property {string | Date} [stopAt] - When to stop running
+	 * @property {string | date} [startAt] - When to start running
+	 * @property {string | date} [stopAt] - When to stop running
 	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
 	 */
 
@@ -631,15 +624,15 @@
 	 * @constructor
 	 * @param {string} pattern - Input pattern
 	 * @param {CronOptions} [options] - Options
-	 * @param {Function} [fn] - Function to be run each iteration of pattern
+	 * @param {Function} [func] - Function to be run each iteration of pattern
 	 * @returns {Cron}
 	 */
-	function Cron (pattern, options, fn) {
+	function Cron (pattern, options, func) {
 		let self = this;
 		
 		// Optional "new" keyword
 		if( !(this instanceof Cron) ) {
-			return new Cron(pattern, options, fn);
+			return new Cron(pattern, options, func);
 		}
 
 		/** @type {CronPattern} */
@@ -647,7 +640,7 @@
 
 		// Make options optional
 		if( typeof options === "function" ) {
-			fn = options;
+			func = options;
 			options = void 0;
 		}
 
@@ -657,8 +650,8 @@
 		/**
 		 * Allow shorthand scheduling
 		 */
-		if( fn !== void 0 ) {
-			this.fn = fn;
+		if( func !== void 0 ) {
+			this.fn = func;
 			this.schedule();
 		}
 
@@ -699,8 +692,8 @@
 	/**
 	 * Find next runtime, based on supplied date. Strips milliseconds.
 	 * 
-	 * @param {Date} [prev] - Input pattern
-	 * @returns {Date | null} - Next run time
+	 * @param {date} [prev] - Input pattern
+	 * @returns {date | null} - Next run time
 	 */
 	Cron.prototype.next = function (prev) {
 		prev = new CronDate(prev, this.options.timezone);
@@ -712,7 +705,7 @@
 	 * Is running?
 	 * @public
 	 * 
-	 * @returns {Boolean} - Running or not
+	 * @returns {boolean} - Running or not
 	 */
 	Cron.prototype.running = function () {
 		let msLeft = this.msToNext(this.previousrun);
@@ -724,7 +717,7 @@
 	 * Return previous run time
 	 * @public
 	 * 
-	 * @returns {Date | null} - Previous run time
+	 * @returns {date | null} - Previous run time
 	 */
 	Cron.prototype.previous = function () {
 		return this.previousrun ? this.previousrun.getDate() : null;
@@ -763,7 +756,7 @@
 	 * Returns number of milliseconds to next run
 	 * @public
 	 * 
-	 * @param {CronDate | null} [prev=new CronDate()] - Starting date, defaults to now
+	 * @param {date} [prev] - Starting date, defaults to now
 	 * @returns {number | null}
 	 */
 	Cron.prototype.msToNext = function (prev) {

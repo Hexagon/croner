@@ -345,7 +345,7 @@ module.exports = function (Cron) {
 			nextRun;
 
 		// Set a fixed hour later than startAt, to be sure that the days doesn't overlap
-		nextDay =  new Date(nextDay.setUTCHours(13));
+		nextDay =  new Date(nextDay.setUTCHours(14));
 		scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: nextDay.toISOString() });
 		nextRun = scheduler.next();
 
@@ -353,7 +353,7 @@ module.exports = function (Cron) {
 		dayAfterNext.setMilliseconds(0);
 		dayAfterNext.setUTCSeconds(0);
 		dayAfterNext.setUTCMinutes(0);
-		dayAfterNext.setUTCHours(12);	
+		dayAfterNext.setUTCHours(12);
 
 		// Do comparison
 		assert.equal(nextRun.getTime(),dayAfterNext.getTime());
@@ -600,20 +600,28 @@ module.exports = function (Cron) {
 		assert.equal(Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear(), 2029);
 	});
 	test("getTime should return expcted difference with different timezones (now)", function () {
-		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next(new Date()).getTime(),
-			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next(new Date()).getTime();
+		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next().getTime(),
+			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next().getTime();
 
 		// The time right now should be the same in utc wether in new york or stockholm
 		assert.ok(timeStockholm>=timeNewYork-4000);
 		assert.ok(timeStockholm<=timeNewYork+4000);
 	});
-	test("getTime should return expcted difference with different timezones (net sunday 1st november)", function () {
-		let timeStockholm = Cron("* * * 1 11 4", {timezone: "Europe/Stockholm"}).next(new Date(1634076000000)).getTime(),
-			timeNewYork = Cron("* * * 1 11 4", {timezone: "America/New_York"}).next(new Date(1634076000000)).getTime(),
+	test("getTime should return expcted difference with different timezones (next 31st october)", function () {
+		let timeStockholm = Cron("0 0 0 31 10 *", {timezone: "Europe/Stockholm"}).next().getTime(),
+			timeNewYork = Cron("0 0 0 31 10 *", {timezone: "America/New_York"}).next().getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
 
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
 		assert.equal(diff,6);
+	});
+	test("getTime should return expcted difference with different timezones (next 1st november)", function () {
+		let timeStockholm = Cron("0 0 0 1 11 *", {timezone: "Europe/Stockholm"}).next().getTime(),
+			timeNewYork = Cron("0 0 0 1 11 *", {timezone: "America/New_York"}).next().getTime(),
+			diff = (timeNewYork-timeStockholm)/1000/3600;
+
+		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
+		assert.equal(diff,5);
 	});
 	test("maxRuns should be inherited from scheduler to job", function () {
 		let scheduler = Cron("* * * 1 11 4", {maxRuns: 14}),
@@ -691,6 +699,17 @@ module.exports = function (Cron) {
 		assert.equal(scheduler0.running(), true);
 		scheduler0.stop();
 		assert.equal(scheduler0.running(), false);
+	});
+
+	test("DST/Timezone", function () {
+		let 
+			dayOne = new Date("2021-10-31T20:00:00"), // Last day of DST
+			scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: dayOne }),
+			nextRun = scheduler.next(); // Next run in local time
+
+		// Do comparison
+		assert.equal(nextRun.getUTCHours(), 12);
+
 	});
 
 	test.run();

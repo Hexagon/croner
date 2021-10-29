@@ -13,7 +13,7 @@
 *   Find first date of next month, find date of next tuesday, etc.
 *   Works in Node.js >=4.0 (require and import)
 *   Works in browsers as standalone, UMD or ES-module.
-*   **Experimental feature:** Schedule in other timezones than default
+*   **Experimental feature:** Schedule in specific target timezones
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings
 
 Quick examples:

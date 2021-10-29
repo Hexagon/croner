@@ -18,11 +18,11 @@ export type CronOptions = {
     /**
      * - When to start running
      */
-    startAt?: string | Date;
+    startAt?: string | any;
     /**
      * - When to stop running
      */
-    stopAt?: string | Date;
+    stopAt?: string | any;
     /**
      * - Time zone in Europe/Stockholm format
      */
@@ -34,10 +34,10 @@ export type CronOptions = {
  * @constructor
  * @param {string} pattern - Input pattern
  * @param {CronOptions} [options] - Options
- * @param {Function} [fn] - Function to be run each iteration of pattern
+ * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {Cron}
  */
-export function Cron(pattern: string, options?: CronOptions, fn?: Function): Cron;
+export function Cron(pattern: string, options?: CronOptions, func?: Function): Cron;
 export class Cron {
     /**
      * Cron entrypoint
@@ -45,10 +45,10 @@ export class Cron {
      * @constructor
      * @param {string} pattern - Input pattern
      * @param {CronOptions} [options] - Options
-     * @param {Function} [fn] - Function to be run each iteration of pattern
+     * @param {Function} [func] - Function to be run each iteration of pattern
      * @returns {Cron}
      */
-    constructor(pattern: string, options?: CronOptions, fn?: Function);
+    constructor(pattern: string, options?: CronOptions, func?: Function);
     /** @type {CronPattern} */
     pattern: CronPattern;
     /** @type {CronOptions} */
@@ -58,33 +58,33 @@ export class Cron {
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
-     * @param {Date} [prev] - Input pattern
-     * @returns {Date | null} - Next run time
+     * @param {date} [prev] - Input pattern
+     * @returns {date | null} - Next run time
      */
-    next(prev?: Date): Date | null;
+    next(prev?: any): any | null;
     /**
      * Is running?
      * @public
      *
-     * @returns {Boolean} - Running or not
+     * @returns {boolean} - Running or not
      */
     public running(): boolean;
     /**
      * Return previous run time
      * @public
      *
-     * @returns {Date | null} - Previous run time
+     * @returns {date | null} - Previous run time
      */
-    public previous(): Date | null;
+    public previous(): any | null;
     private _next;
     /**
      * Returns number of milliseconds to next run
      * @public
      *
-     * @param {CronDate | null} [prev=new CronDate()] - Starting date, defaults to now
+     * @param {date} [prev] - Starting date, defaults to now
      * @returns {number | null}
      */
-    public msToNext(prev?: CronDate | null): number | null;
+    public msToNext(prev?: any): number | null;
     /**
      * Stop execution
      * @public
@@ -114,4 +114,3 @@ export class Cron {
     public schedule(func: Function): Cron;
 }
 import { CronPattern } from "./pattern.js";
-import { CronDate } from "./date.js";

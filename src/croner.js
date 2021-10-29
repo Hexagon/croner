@@ -35,8 +35,8 @@ import { CronPattern } from "./pattern.js";
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {number} [maxRuns] - Maximum nuber of executions
- * @property {string | Date} [startAt] - When to start running
- * @property {string | Date} [stopAt] - When to stop running
+ * @property {string | date} [startAt] - When to start running
+ * @property {string | date} [stopAt] - When to stop running
  * @property {string} [timezone] - Time zone in Europe/Stockholm format
  */
 
@@ -58,15 +58,15 @@ const maxDelay = Math.pow(2, 32 - 1) - 1;
  * @constructor
  * @param {string} pattern - Input pattern
  * @param {CronOptions} [options] - Options
- * @param {Function} [fn] - Function to be run each iteration of pattern
+ * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {Cron}
  */
-function Cron (pattern, options, fn) {
+function Cron (pattern, options, func) {
 	let self = this;
 	
 	// Optional "new" keyword
 	if( !(this instanceof Cron) ) {
-		return new Cron(pattern, options, fn);
+		return new Cron(pattern, options, func);
 	}
 
 	/** @type {CronPattern} */
@@ -74,7 +74,7 @@ function Cron (pattern, options, fn) {
 
 	// Make options optional
 	if( typeof options === "function" ) {
-		fn = options;
+		func = options;
 		options = void 0;
 	}
 
@@ -84,8 +84,8 @@ function Cron (pattern, options, fn) {
 	/**
 	 * Allow shorthand scheduling
 	 */
-	if( fn !== void 0 ) {
-		this.fn = fn;
+	if( func !== void 0 ) {
+		this.fn = func;
 		this.schedule();
 	}
 
@@ -126,8 +126,8 @@ Cron.prototype.processOptions = function (options) {
 /**
  * Find next runtime, based on supplied date. Strips milliseconds.
  * 
- * @param {Date} [prev] - Input pattern
- * @returns {Date | null} - Next run time
+ * @param {date} [prev] - Input pattern
+ * @returns {date | null} - Next run time
  */
 Cron.prototype.next = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
@@ -139,7 +139,7 @@ Cron.prototype.next = function (prev) {
  * Is running?
  * @public
  * 
- * @returns {Boolean} - Running or not
+ * @returns {boolean} - Running or not
  */
 Cron.prototype.running = function () {
 	let msLeft = this.msToNext(this.previousrun);
@@ -151,7 +151,7 @@ Cron.prototype.running = function () {
  * Return previous run time
  * @public
  * 
- * @returns {Date | null} - Previous run time
+ * @returns {date | null} - Previous run time
  */
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
@@ -190,7 +190,7 @@ Cron.prototype._next = function (prev) {
  * Returns number of milliseconds to next run
  * @public
  * 
- * @param {CronDate | null} [prev=new CronDate()] - Starting date, defaults to now
+ * @param {date} [prev] - Starting date, defaults to now
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {

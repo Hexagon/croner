@@ -2,8 +2,8 @@
  * Converts date to CronDate
  * @constructor
  *
- * @param {date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
- * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
+ * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
+ * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
  */
 export function CronDate(date?: any, timezone?: string): void;
 export class CronDate {
@@ -11,13 +11,12 @@ export class CronDate {
      * Converts date to CronDate
      * @constructor
      *
-     * @param {date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
-     * @param {string} [timezone] - String representation of timezone in Europe/Stockholm format.
+     * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
+     * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
      */
     constructor(date?: any, timezone?: string);
     timezone: string;
     private fromDate;
-    UTCmsOffset: any;
     milliseconds: any;
     seconds: any;
     minutes: any;
