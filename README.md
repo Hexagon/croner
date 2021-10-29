@@ -76,9 +76,9 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 ```
 ## Documentation
 
-Full documentation available [hexagon.github.io/croner](https://hexgon.github.io/croner/Cron.html).
+Full documentation available at [hexagon.github.io/croner](https://hexagon.github.io/croner/Cron.html).
 
-The short version follows: 
+The short version:
 
 ### Signature
 
