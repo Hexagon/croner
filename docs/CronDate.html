@@ -1,164 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>JSDoc: Class: CronDate</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  <title>
+      Croner - Documentation
+  </title>
+
+  <link href="https://www.braintreepayments.com/images/favicon-ccda0b14.png" rel="icon" type="image/png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link id="google-font" href="https://fonts.googleapis.com/css?family=Roboto+Mono|Cutive+Mono|Roboto:300,400,700" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="styles/highlight-themes/current.css">
+  <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  <link type="text/css" rel="stylesheet" href="styles/collapsible.css">
+  <link type="text/css" rel="stylesheet" href="styles/style-switcher.css">
+  <link type="text/css" rel="stylesheet" href="styles/selectric.css">
+  
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+  <script src="https://embed.runkit.com"></script>
+  <style id="style-switcher-styles">
+    nav {
+        background: #282c34;
+    }
+    .hljs {
+        background: #1d2027;
+    }
+    .nav-container > ul > li.active a {
+        color: #dcdcdc;
+    }
+    .nav-container > ul > li.active a:hover {
+        color: #f78200;
+    }
+    .nav-container > ul > li.active ul {
+        border-color: #f78200;
+    }
+    h4.name {
+        color: #f78200;
+    }
+    .params > div > code, .params > div > em {
+        color: #f78200;
+    }
+    a, a:active {
+        color: #f78200;
+    }
+    .hljs-doctag, .hljs-keyword, .hljs-formula {
+        color: #f78200;
+    }
+    nav ul a:hover, nav ul a:active {
+        color: #f78200;
+    }
+  </style>
 </head>
 
 <body>
+  <header class="header-fixed">
+      <h1>
+        <a href="index.html" title="modernTemplate.title">
+            
+                <img alt="Croner" src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" />
+            
+            Croner
+        </a>
+      </h1>
+      <div class="center-header">
+          <ul>
+            
+          </ul>
+      </div>
+      <div class="right-header">
+           
+                <a href="https://github.com/hexagon/croner" title="View it on Github" style="">
+                    <i class="fab fa-github-alt"></i>
+                </a>
+           
+                <a href="https://www.npmjs.com/package/croner" title="View it on NPM" style="font-size: 19px">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </a>
+           
+      </div>
+  </header>
 
-<div id="main">
+  <svg style="display: none;">
+    <defs>
+      <symbol id="linkIcon" fill="#706d77" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+      </symbol>
+    </defs>
+  </svg>
 
-    <h1 class="page-title">Class: CronDate</h1>
+  <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+  <label for="nav-trigger" class="navicon-button x">
+    <div class="navicon"></div>
+  </label>
+
+  <label for="nav-trigger" class="overlay"></label>
+
+  <nav>
+    <div id="menu-container" class="scrollbar-inner">
+        <div class="nav-container">
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+        </div>
+    </div>
+  </nav>
+
+  <div id="main">
+    
+      <h1 class="page-title">
+        CronDate
+      </h1>
+    
 
     
 
-
-
-
-<section>
-
-<header>
-    
-        <h2><span class="attribs"><span class="type-signature"></span></span>CronDate<span class="signature">(date<span class="signature-attributes">opt</span>, timezone<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
-        
-    
-</header>
-
-<article>
+<section id="section-container">
+  <article>
     <div class="container-overview">
-    
+      
         
 
-    
+        
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#CronDate">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="CronDate">
+      <span class="type-signature"></span>new CronDate<span class="signature">(date<span class="signature-attributes">opt</span>, timezone<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Converts date to CronDate</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<div class="params">
+     
+      <div>
+          
+               <code>date</code>
+               <em>(
+    <span class="param-type">
+      <a href="CronDate.html">CronDate</a>
+    </span>
+
+    |
+
+    <span class="param-type">
+      date
+    </span>
+
+    |
+
+    <span class="param-type">
+      string
+    </span>
 
     
-    <h4 class="name" id="CronDate"><span class="type-signature"></span>new CronDate<span class="signature">(date<span class="signature-attributes">opt</span>, timezone<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-    
+)</em>
+          
+
+          
+            <span class="attributes">
+              
+                &lt;optional><br>
+              
+
+              
+
+              
+            </span>
+          
+
+          <p>Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected</p>
+
+          
+
+      </div>
+      
+      <div>
+          
+               <code>timezone</code>
+               <em>(
+    <span class="param-type">
+      string
+    </span>
 
     
+)</em>
+          
 
+          
+            <span class="attributes">
+              
+                &lt;optional><br>
+              
 
+              
 
-<div class="description">
-    Converts date to CronDate
+              
+            </span>
+          
+
+          <p>String representation of target timezone in Europe/Stockholm format.</p>
+
+          
+
+      </div>
+      
 </div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>date</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="CronDate.html">CronDate</a></span>
-|
-
-<span class="param-type">date</span>
-|
-
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>timezone</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">String representation of target timezone in Europe/Stockholm format.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
 
 
 
@@ -166,42 +238,46 @@
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="date.js.html">date.js</a>, <a href="date.js.html#line9">line 9</a>
-    </li></ul></dd>
-    
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="date.js.html">date.js</a>, <a href="date.js.html#line9">line 9</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
+  
 
-    
+  
 </dl>
 
 
@@ -217,13 +293,7 @@
 
 
 
-
-
-
-
-
-
-    
+      
     </div>
 
     
@@ -232,90 +302,72 @@
 
     
 
-    
+     
 
     
 
     
 
     
+      <h3 class="subsection-title">Methods</h3>
 
-    
-        <h3 class="subsection-title">Methods</h3>
-
+      
         
-            
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#getDate">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="getDate">
+      <span class="type-signature"></span>.getDate<span class="signature">(internal)</span><span class="type-signature"> &rarr; {date}</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Convert current state back to a javascript Date()</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<div class="params">
+     
+      <div>
+          
+               <code>internal</code>
+               <em>(
+    <span class="param-type">
+      boolean
+    </span>
 
     
+)</em>
+          
 
-    
-    <h4 class="name" id="getDate"><span class="type-signature"></span>getDate<span class="signature">(internal)</span><span class="type-signature"> &rarr; {date}</span></h4>
-    
+          
 
-    
+          <p>If this is an internal call</p>
 
+          
 
-
-<div class="description">
-    Convert current state back to a javascript Date()
+      </div>
+      
 </div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>internal</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If this is an internal call</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
 
 
 
@@ -323,154 +375,118 @@
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="date.js.html">date.js</a>, <a href="date.js.html#line218">line 218</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">date</span>
-
-
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="date.js.html">date.js</a>, <a href="date.js.html#line218">line 218</a>
+        </li>
+      </ul>
     </dd>
+  
+
+  
+
+  
+
+  
 </dl>
 
-    
 
 
 
 
 
+
+
+
+
+
+
+
+
+      
         
-            
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#getTime">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="getTime">
+      <span class="type-signature"></span>.getTime<span class="signature">(internal)</span><span class="type-signature"> &rarr; {date}</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Convert current state back to a javascript Date() and return UTC milliseconds</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<div class="params">
+     
+      <div>
+          
+               <code>internal</code>
+               <em>(
+    <span class="param-type">
+      boolean
+    </span>
 
     
+)</em>
+          
 
-    
-    <h4 class="name" id="getTime"><span class="type-signature"></span>getTime<span class="signature">(internal)</span><span class="type-signature"> &rarr; {date}</span></h4>
-    
+          
 
-    
+          <p>If this is an internal call</p>
 
+          
 
-
-<div class="description">
-    Convert current state back to a javascript Date() and return UTC milliseconds
+      </div>
+      
 </div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>internal</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If this is an internal call</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
 
 
 
@@ -478,209 +494,156 @@
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="date.js.html">date.js</a>, <a href="date.js.html#line235">line 235</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">date</span>
-
-
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="date.js.html">date.js</a>, <a href="date.js.html#line235">line 235</a>
+        </li>
+      </ul>
     </dd>
+  
+
+  
+
+  
+
+  
 </dl>
 
-    
 
 
 
 
 
+
+
+
+
+
+
+
+
+      
         
-            
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#increment">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="increment">
+      <span class="type-signature"></span>.increment<span class="signature">(pattern, rerun<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="CronDate.html">CronDate</a>|null}</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Increment to next run time</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<div class="params">
+     
+      <div>
+          
+               <code>pattern</code>
+               <em>(
+    <span class="param-type">
+      string
+    </span>
 
     
+)</em>
+          
+
+          
+            <span class="attributes">
+              
+
+              
+
+              
+            </span>
+          
+
+          <p>The pattern used to increment current state</p>
+
+          
+
+      </div>
+      
+      <div>
+          
+               <code>rerun</code>
+               <em>(
+    <span class="param-type">
+      boolean
+    </span>
 
     
-    <h4 class="name" id="increment"><span class="type-signature"></span>increment<span class="signature">(pattern, rerun<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="CronDate.html">CronDate</a>|null}</span></h4>
-    
+)</em>
+          
 
-    
+          
+            <span class="attributes">
+              
+                &lt;optional><br>
+              
 
+              
 
+              
+            </span>
+          
 
-<div class="description">
-    Increment to next run time
+          <p>If this is an internal incremental run</p>
+
+          
+
+      </div>
+      
 </div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>pattern</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The pattern used to increment current state</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rerun</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">If this is an internal incremental run</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
 
 
 
@@ -688,114 +651,98 @@
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="date.js.html">date.js</a>, <a href="date.js.html#line96">line 96</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    - Returns itself for chaining, or null if increment wasnt possible
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="CronDate.html">CronDate</a></span>
-|
-
-<span class="param-type">null</span>
-
-
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="date.js.html">date.js</a>, <a href="date.js.html#line96">line 96</a>
+        </li>
+      </ul>
     </dd>
+  
+
+  
+
+  
+
+  
 </dl>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
     
 
-
-
-
-
-        
     
 
     
-
-    
-</article>
-
+  </article>
 </section>
 
 
 
 
-</div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Cron.html">Cron</a></li><li><a href="CronDate.html">CronDate</a></li><li><a href="CronPattern.html">CronPattern</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
-</nav>
+  <br class="clear">
 
-<br class="clear">
+  <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
+  </footer>
 
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Oct 30 2021 01:00:25 GMT+0200 (centraleuropeisk sommartid)
-</footer>
+    
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/pagelocation.js"></script>
+  <script src="scripts/scrollbar.js"></script>
+  <script src="scripts/collapsible.js"></script>
+  <script src="scripts/jquery.selectric.min.js"></script>
+  <script src="scripts/clipboard.min.js"></script>
+
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  
+  <script>
+      $(function () {
+          $('#menu-container').scrollbar();
+
+          
+      });
+    </script>
 </body>
 </html>

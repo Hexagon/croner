@@ -1,0 +1,104 @@
+.style-switcher {
+    position: fixed;
+    top: 85px;
+    right: 0;
+    width: 220px;
+    padding: 25px;
+    background: #fff;
+    box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+}
+
+.style-switcher-inner h3 {
+    font-size: 12px;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+.style-switcher-inner:first-child h3 {
+    margin-top: 0;
+}
+
+.style-switcher select {
+    width: 100%;
+}
+
+.scheme-box {
+    display: flex;
+    margin-bottom: 4px;
+    padding: 2px;
+    border: 1px solid #fff;
+}
+
+.scheme-box:hover {
+    border: 1px solid #eee;
+    cursor: pointer;
+}
+
+.scheme-box span {
+    flex: 1 0 0;
+    width: 20px;
+    height: 20px;
+}
+
+#style-switcher-viewer {
+    position: fixed;
+    background: #e4e4e4;
+    display: none;
+    top: 0; right: 0; left: 0; bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    font-family: 'Roboto', Helvetica, sans-serif;
+}
+
+#style-switcher-viewer.active {
+    display: block;
+}
+
+#style-switcher-viewer > a {
+    position: absolute;
+    top: 35px;
+    right: 35px;
+}
+
+#style-switcher-viewer-close {
+    display: inline-block;
+    font-size: 24px;
+}
+
+#style-switcher-viewer-close:hover {
+    cursor: pointer;
+}
+
+.style-switcher-viewer-container {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    margin: auto;
+    border: 1px solid #eee;
+    background-color: #fff;
+    width: 820px;
+    max-height: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+.style-switcher-viewer-container .prettyprint {
+    flex: 1;
+    position: relative;
+    overflow: scroll;
+    margin: 0;
+    background-color: #333 !important;
+}
+
+.style-switcher-viewer-container code {
+    font-family: 'Roboto Mono', Helvetica, sans-serif;
+    padding: 25px;
+    margin: 0;
+    overflow: hidden;
+    min-width: 2000px;
+    background-color: #333 !important;
+}
+
+.style-switcher-viewer-title {
+    padding: 0 30px;
+}

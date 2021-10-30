@@ -1,84 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  <title>
+      Croner - Documentation
+  </title>
+
+  <link href="https://www.braintreepayments.com/images/favicon-ccda0b14.png" rel="icon" type="image/png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link id="google-font" href="https://fonts.googleapis.com/css?family=Roboto+Mono|Cutive+Mono|Roboto:300,400,700" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="styles/highlight-themes/current.css">
+  <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  <link type="text/css" rel="stylesheet" href="styles/collapsible.css">
+  <link type="text/css" rel="stylesheet" href="styles/style-switcher.css">
+  <link type="text/css" rel="stylesheet" href="styles/selectric.css">
+  
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+  <script src="https://embed.runkit.com"></script>
+  <style id="style-switcher-styles">
+    nav {
+        background: #282c34;
+    }
+    .hljs {
+        background: #1d2027;
+    }
+    .nav-container > ul > li.active a {
+        color: #dcdcdc;
+    }
+    .nav-container > ul > li.active a:hover {
+        color: #f78200;
+    }
+    .nav-container > ul > li.active ul {
+        border-color: #f78200;
+    }
+    h4.name {
+        color: #f78200;
+    }
+    .params > div > code, .params > div > em {
+        color: #f78200;
+    }
+    a, a:active {
+        color: #f78200;
+    }
+    .hljs-doctag, .hljs-keyword, .hljs-formula {
+        color: #f78200;
+    }
+    nav ul a:hover, nav ul a:active {
+        color: #f78200;
+    }
+  </style>
 </head>
 
 <body>
+  <header class="header-fixed">
+      <h1>
+        <a href="index.html" title="modernTemplate.title">
+            
+                <img alt="Croner" src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" />
+            
+            Croner
+        </a>
+      </h1>
+      <div class="center-header">
+          <ul>
+            
+          </ul>
+      </div>
+      <div class="right-header">
+           
+                <a href="https://github.com/hexagon/croner" title="View it on Github" style="">
+                    <i class="fab fa-github-alt"></i>
+                </a>
+           
+                <a href="https://www.npmjs.com/package/croner" title="View it on NPM" style="font-size: 19px">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </a>
+           
+      </div>
+  </header>
 
-<div id="main">
+  <svg style="display: none;">
+    <defs>
+      <symbol id="linkIcon" fill="#706d77" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+      </symbol>
+    </defs>
+  </svg>
 
-    <h1 class="page-title">Global</h1>
+  <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+  <label for="nav-trigger" class="navicon-button x">
+    <div class="navicon"></div>
+  </label>
+
+  <label for="nav-trigger" class="overlay"></label>
+
+  <nav>
+    <div id="menu-container" class="scrollbar-inner">
+        <div class="nav-container">
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+        </div>
+    </div>
+  </nav>
+
+  <div id="main">
+    
+      <h1 class="page-title">
+        Global
+      </h1>
+    
 
     
 
-
-
-
-<section>
-
-<header>
-    
-        <h2></h2>
-        
-    
-</header>
-
-<article>
+<section id="section-container">
+  <article>
     <div class="container-overview">
-    
+      
         
 
         
-
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 </dl>
 
 
         
-    
+      
     </div>
 
     
@@ -87,9 +171,7 @@
 
     
 
-    
-
-    
+     
 
     
 
@@ -98,305 +180,165 @@
 
         
             
-<h4 class="name" id="maxDelay"><span class="type-signature">(constant) </span>maxDelay<span class="type-signature"> :number</span></h4>
+
+<h4 class="name" id="maxDelay">
+  <span class="type-signature">(constant) </span>maxDelay<span class="type-signature"> :number</span>
+</h4>
 
 
 
 
-<div class="description">
-    Many JS engines stores the delay as a 32-bit signed integer internally.
-This causes an integer overflow when using delays larger than 2147483647, 
-resulting in the timeout being executed immediately.
-
-All JS engines implements an immediate execution of delays larger that a 32-bit 
-int to keep the behaviour concistent.
-</div>
-
+  <div class="description">
+    <p>Many JS engines stores the delay as a 32-bit signed integer internally.
+This causes an integer overflow when using delays larger than 2147483647,
+resulting in the timeout being executed immediately.</p>
+<p>All JS engines implements an immediate execution of delays larger that a 32-bit
+int to keep the behaviour concistent.</p>
+  </div>
 
 
-    <h5>Type:</h5>
-    <ul>
+
+
+<dl class="details">
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
         <li>
-            
-<span class="param-type">number</span>
-
-
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line53">line 53</a>
         </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line53">line 53</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="convertTZ"><span class="type-signature"></span>convertTZ<span class="signature">(date, tzString)</span><span class="type-signature"> &rarr; {date}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    "Converts" a date to a specific time zone
-
-Note: This is only for specific and controlled usage, 
-as the internal UTC time of the resulting object will be off.
-
-Example:
-  let normalDate = new Date(); // d is a normal Date instance, with local timezone and correct utc representation
-      tzDate = convertTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours() 
-                                                (for example) will return local time in new york, but getUTCHours()
-                                                will return something irrelevant.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>date</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">date</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Input date</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tzString</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Timezone string in Europe/Stockholm format</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="timezone.js.html">timezone.js</a>, <a href="timezone.js.html#line17">line 17</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">date</span>
-
-
+      </ul>
     </dd>
+  
+
+  
+
+  
+
+  
 </dl>
 
-    
 
 
 
 
 
+          
         
     
 
     
-        <h3 class="subsection-title">Type Definitions</h3>
+      <h3 class="subsection-title">Methods</h3>
 
+      
         
-                
-<h4 class="name" id="CronIndexOffset">CronIndexOffset</h4>
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#convertTZ">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="convertTZ">
+      <span class="type-signature"></span>.convertTZ<span class="signature">(date, tzString)</span><span class="type-signature"> &rarr; {date}</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>&quot;Converts&quot; a date to a specific time zone</p>
+<p>Note: This is only for specific and controlled usage,
+as the internal UTC time of the resulting object will be off.</p>
+<p>Example:
+let normalDate = new Date(); // d is a normal Date instance, with local timezone and correct utc representation
+tzDate = convertTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours()
+(for example) will return local time in new york, but getUTCHours()
+will return something irrelevant.</p>
+  </div>
 
 
 
 
-<div class="description">
-    Offset, 0 or -1. 
 
-0 for seconds,minutes and hours as they start on 1. 
--1 on days and months, as the start on 0
+
+
+  <h5>Parameters:</h5>
+  
+
+<div class="params">
+     
+      <div>
+          
+               <code>date</code>
+               <em>(
+    <span class="param-type">
+      date
+    </span>
+
+    
+)</em>
+          
+
+          
+
+          <p>Input date</p>
+
+          
+
+      </div>
+      
+      <div>
+          
+               <code>tzString</code>
+               <em>(
+    <span class="param-type">
+      string
+    </span>
+
+    
+)</em>
+          
+
+          
+
+          <p>Timezone string in Europe/Stockholm format</p>
+
+          
+
+      </div>
+      
 </div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Number</span>
-
-
-        </li>
-    </ul>
 
 
 
@@ -404,42 +346,46 @@ Example:
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pattern.js.html">pattern.js</a>, <a href="pattern.js.html#line6">line 6</a>
-    </li></ul></dd>
-    
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="timezone.js.html">timezone.js</a>, <a href="timezone.js.html#line17">line 17</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
+  
 
-    
+  
 </dl>
 
 
@@ -447,251 +393,401 @@ Example:
 
 
 
-            
-                
-<h4 class="name" id="CronOptions">CronOptions</h4>
-
-
-
-
-<div class="description">
-    Cron scheduler options
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
 
 
 
 
 
-    <h5 class="subsection-title">Properties:</h5>
+
+
+
+      
+    
 
     
+      <h3 class="subsection-title">Type Definitions</h3>
+
+      
+          
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#CronIndexOffset">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="CronIndexOffset">
+      <span class="type-signature"></span>.CronIndexOffset<span class="type-signature"> :Number</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Offset, 0 or -1.</p>
+<p>0 for seconds,minutes and hours as they start on 1.
+-1 on days and months, as the start on 0</p>
+  </div>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="pattern.js.html">pattern.js</a>, <a href="pattern.js.html#line6">line 6</a>
+        </li>
+      </ul>
+    </dd>
+  
+
+  
+
+  
+
+  
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+          
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#CronOptions">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="CronOptions">
+      <span class="type-signature"></span>.CronOptions<span class="type-signature"> :Object</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Cron scheduler options</p>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h5 class="subsection-title">Properties:</h5>
+
+  
 
 <table class="props">
-    <thead>
+  <thead>
     <tr>
-        
+      
         <th>Name</th>
-        
+      
 
-        <th>Type</th>
+      <th>Type</th>
 
-        
+      
         <th>Attributes</th>
-        
+      
 
-        
+      
 
-        <th class="last">Description</th>
+      <th class="last">Description</th>
     </tr>
-    </thead>
+  </thead>
 
-    <tbody>
+  <tbody>
     
 
-        <tr>
-            
-                <td class="name"><code>paused</code></td>
-            
+    <tr>
+      
+        <td class="name"><code>paused</code></td>
+      
 
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Job is paused</td>
-        </tr>
+      <td class="type">
+        
+          
+    <span class="param-type">
+      boolean
+    </span>
 
     
 
-        <tr>
-            
-                <td class="name"><code>kill</code></td>
-            
+        
+      </td>
 
-            <td class="type">
+        
+          <td class="attributes">
             
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
+              &lt;optional><br>
             
 
             
+          </td>
+        
 
-            <td class="description last">Job is about to be killed or killed</td>
-        </tr>
+        
+
+        <td class="description last">
+          <p>Job is paused</p>
+          </td>
+    </tr>
+
+  
+
+    <tr>
+      
+        <td class="name"><code>kill</code></td>
+      
+
+      <td class="type">
+        
+          
+    <span class="param-type">
+      boolean
+    </span>
 
     
 
-        <tr>
-            
-                <td class="name"><code>maxRuns</code></td>
-            
+        
+      </td>
 
-            <td class="type">
+        
+          <td class="attributes">
             
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
+              &lt;optional><br>
             
 
             
+          </td>
+        
 
-            <td class="description last">Maximum nuber of executions</td>
-        </tr>
+        
+
+        <td class="description last">
+          <p>Job is about to be killed or killed</p>
+          </td>
+    </tr>
+
+  
+
+    <tr>
+      
+        <td class="name"><code>maxRuns</code></td>
+      
+
+      <td class="type">
+        
+          
+    <span class="param-type">
+      number
+    </span>
 
     
 
-        <tr>
+        
+      </td>
+
+        
+          <td class="attributes">
             
-                <td class="name"><code>startAt</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">date</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
+              &lt;optional><br>
             
 
             
+          </td>
+        
 
-            <td class="description last">When to start running</td>
-        </tr>
+        
+
+        <td class="description last">
+          <p>Maximum nuber of executions</p>
+          </td>
+    </tr>
+
+  
+
+    <tr>
+      
+        <td class="name"><code>startAt</code></td>
+      
+
+      <td class="type">
+        
+          
+    <span class="param-type">
+      string
+    </span>
+
+    |
+
+    <span class="param-type">
+      date
+    </span>
 
     
 
-        <tr>
+        
+      </td>
+
+        
+          <td class="attributes">
             
-                <td class="name"><code>stopAt</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">date</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
+              &lt;optional><br>
             
 
             
+          </td>
+        
 
-            <td class="description last">When to stop running</td>
-        </tr>
+        
+
+        <td class="description last">
+          <p>When to start running</p>
+          </td>
+    </tr>
+
+  
+
+    <tr>
+      
+        <td class="name"><code>stopAt</code></td>
+      
+
+      <td class="type">
+        
+          
+    <span class="param-type">
+      string
+    </span>
+
+    |
+
+    <span class="param-type">
+      date
+    </span>
 
     
 
-        <tr>
-            
-                <td class="name"><code>timezone</code></td>
-            
+        
+      </td>
 
-            <td class="type">
+        
+          <td class="attributes">
             
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
+              &lt;optional><br>
             
 
             
+          </td>
+        
 
-            <td class="description last">Time zone in Europe/Stockholm format</td>
-        </tr>
+        
+
+        <td class="description last">
+          <p>When to stop running</p>
+          </td>
+    </tr>
+
+  
+
+    <tr>
+      
+        <td class="name"><code>timezone</code></td>
+      
+
+      <td class="type">
+        
+          
+    <span class="param-type">
+      string
+    </span>
 
     
-    </tbody>
+
+        
+      </td>
+
+        
+          <td class="attributes">
+            
+              &lt;optional><br>
+            
+
+            
+          </td>
+        
+
+        
+
+        <td class="description last">
+          <p>Time zone in Europe/Stockholm format</p>
+          </td>
+    </tr>
+
+  
+  </tbody>
 </table>
 
 
@@ -699,42 +795,46 @@ Example:
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line33">line 33</a>
-    </li></ul></dd>
-    
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line33">line 33</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
+  
 
-    
+  
 </dl>
 
 
@@ -742,43 +842,43 @@ Example:
 
 
 
-            
-                
-<h4 class="name" id="CronPatternPart">CronPatternPart</h4>
 
 
 
 
-<div class="description">
-    Name for each part of the cron pattern
-</div>
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">"seconds"</span>
-|
 
-<span class="param-type">"minutes"</span>
-|
-
-<span class="param-type">"hours"</span>
-|
-
-<span class="param-type">"days"</span>
-|
-
-<span class="param-type">"months"</span>
-|
-
-<span class="param-type">"daysOfWeek"</span>
+        
+          
 
 
-        </li>
-    </ul>
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#CronPatternPart">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="CronPatternPart">
+      <span class="type-signature"></span>.CronPatternPart<span class="type-signature"> :"seconds"|"minutes"|"hours"|"days"|"months"|"daysOfWeek"</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Name for each part of the cron pattern</p>
+  </div>
+
+
+
+
+
 
 
 
@@ -786,42 +886,46 @@ Example:
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
     <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pattern.js.html">pattern.js</a>, <a href="pattern.js.html#line1">line 1</a>
-    </li></ul></dd>
-    
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="pattern.js.html">pattern.js</a>, <a href="pattern.js.html#line1">line 1</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
+  
 
-    
+  
 </dl>
 
 
@@ -829,30 +933,48 @@ Example:
 
 
 
-            
-    
+
+
+
+
+
+
+
+
+        
 
     
-</article>
-
+  </article>
 </section>
 
 
 
 
-</div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Cron.html">Cron</a></li><li><a href="CronDate.html">CronDate</a></li><li><a href="CronPattern.html">CronPattern</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
-</nav>
+  <br class="clear">
 
-<br class="clear">
+  <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
+  </footer>
 
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Oct 30 2021 01:00:24 GMT+0200 (centraleuropeisk sommartid)
-</footer>
+    
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/pagelocation.js"></script>
+  <script src="scripts/scrollbar.js"></script>
+  <script src="scripts/collapsible.js"></script>
+  <script src="scripts/jquery.selectric.min.js"></script>
+  <script src="scripts/clipboard.min.js"></script>
+
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  
+  <script>
+      $(function () {
+          $('#menu-container').scrollbar();
+
+          
+      });
+    </script>
 </body>
 </html>
