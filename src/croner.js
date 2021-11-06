@@ -272,7 +272,7 @@ Cron.prototype.schedule = function (func) {
 
 				if ( !self.options.paused ) {
 					self.options.maxRuns--;
-					self.fn();	
+					self.fn(self);
 				}
 
 				self.previousrun = new CronDate(void 0, self.options.timezone);

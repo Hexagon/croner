@@ -1,4 +1,3 @@
-
 let 
 	test = require("uvu").test,
 	assert = require("uvu/assert");
@@ -6,9 +5,12 @@ let
 // Convenience function for asynchronous testing
 const timeout = (timeoutMs, fn) => {
 	return () => { 
+		let to = void 0;
 		return new Promise((resolve, reject) => {
 			fn(resolve, reject);
-			setTimeout(() => { reject(new Error("Timeout")); }, timeoutMs);
+			to = setTimeout(() => { reject(new Error("Timeout")); }, timeoutMs);
+		}).finally(() => {
+			clearTimeout(to);
 		});
 	};
 };
@@ -412,6 +414,16 @@ module.exports = function (Cron) {
 		},1500);
 	}));
 
+	test("scheduler should be passed as first argument to triggered function",  timeout(2000, (resolve) => {
+		let 
+			scheduler = new Cron("* * * * * *", { maxRuns: 1 });
+		scheduler.schedule(function (self) {
+			assert.equal(self.options.maxRuns,0);
+			assert.equal(typeof self.pause, "function");
+			resolve();
+		});
+	}));
+
 	test("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
 		let scheduler = new Cron("0 0 0 * * *"),
 			prevRun = new Date(),
@@ -608,8 +620,12 @@ module.exports = function (Cron) {
 		assert.ok(timeStockholm<=timeNewYork+4000);
 	});
 	test("getTime should return expcted difference with different timezones (next 31st october)", function () {
-		let timeStockholm = Cron("0 0 0 31 10 *", {timezone: "Europe/Stockholm"}).next().getTime(),
-			timeNewYork = Cron("0 0 0 31 10 *", {timezone: "America/New_York"}).next().getTime(),
+		let refTime = new Date();
+		refTime.setFullYear(2021);
+		refTime.setMonth(9);
+		let
+			timeStockholm = Cron("0 0 0 31 10 *", {timezone: "Europe/Stockholm"}).next(refTime).getTime(),
+			timeNewYork = Cron("0 0 0 31 10 *", {timezone: "America/New_York"}).next(refTime).getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
 
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
