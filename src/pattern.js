@@ -1,13 +1,13 @@
 /**
  * Name for each part of the cron pattern
- * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+ * @typedef {("second" | "minute" | "hour" | "day" | "month" | "daysOfWeek")} CronPatternPart
  */
 
 /**
  * Offset, 0 or -1. 
  * 
- * 0 for seconds,minutes and hours as they start on 1. 
- * -1 on days and months, as the start on 0
+ * 0 for second,minute and hour as they start on 1. 
+ * -1 on day and month, as the start on 0
  * 
  * @typedef {Number} CronIndexOffset
  */
@@ -21,11 +21,11 @@ function CronPattern (pattern) {
 
 	this.pattern 		= pattern;
 
-	this.seconds        = Array(60).fill(0); // 0-59
-	this.minutes        = Array(60).fill(0); // 0-59
-	this.hours          = Array(24).fill(0); // 0-23
-	this.days           = Array(31).fill(0); // 0-30 in array, 1-31 in config
-	this.months         = Array(12).fill(0); // 0-11 in array, 1-12 in config
+	this.second        = Array(60).fill(0); // 0-59
+	this.minute        = Array(60).fill(0); // 0-59
+	this.hour          = Array(24).fill(0); // 0-23
+	this.day           = Array(31).fill(0); // 0-30 in array, 1-31 in config
+	this.month         = Array(12).fill(0); // 0-11 in array, 1-12 in config
 	this.daysOfWeek     = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 	this.parse();
@@ -51,7 +51,7 @@ CronPattern.prototype.parse = function () {
 		throw new TypeError("CronPattern: invalid configuration format ('" + this.pattern + "'), exacly five or six space separated parts required.");
 	}
 
-	// If seconds is omitted, insert 0 for seconds
+	// If second is omitted, insert 0 for second
 	if( parts.length === 5) {
 		parts.unshift("0");
 	}
@@ -65,25 +65,25 @@ CronPattern.prototype.parse = function () {
 	this.throwAtIllegalCharacters(parts);
 
 	// Parse parts into arrays, validates as we go
-	this.partToArray("seconds",    parts[0], 0);
-	this.partToArray("minutes",    parts[1], 0);
-	this.partToArray("hours",      parts[2], 0);
-	this.partToArray("days",       parts[3], -1);
-	this.partToArray("months",     parts[4], -1);
+	this.partToArray("second",    parts[0], 0);
+	this.partToArray("minute",    parts[1], 0);
+	this.partToArray("hour",      parts[2], 0);
+	this.partToArray("day",       parts[3], -1);
+	this.partToArray("month",     parts[4], -1);
 	this.partToArray("daysOfWeek", parts[5], 0);
 
 	// 0 = Sunday, 7 = Sunday
-	if( this.daysOfWeek[7] ) {
-		this.daysOfWeek[0] = 1;
+	if( this.daysOfWeek[0] ) {
+		this.daysOfWeek[7] = 1;
 	}
 
 };
 
 /**
- * Convert current part (seconds/minutes etc) to an array of 1 or 0 depending on if the part is about to trigger a run or not.
+ * Convert current part (second/minute etc) to an array of 1 or 0 depending on if the part is about to trigger a run or not.
  * @private
  * 
- * @param {CronPatternPart} type - Seconds/minutes etc
+ * @param {CronPatternPart} type - Seconds/minute etc
  * @param {string} conf - Current pattern part - *, 0-1 etc
  * @param {CronIndexOffset} valueIndexOffset
  */
@@ -143,8 +143,8 @@ CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
  * @private
  * 
  * @param {string} conf - Current part, expected to be a number, as a string
- * @param {string} type - One of "seconds", "minutes" etc
- * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ * @param {string} type - One of "second", "minute" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for second, hour, minute
  */
 CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
 	let i = (parseInt(conf, 10) + valueIndexOffset);
@@ -162,8 +162,8 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
  * @private
  * 
  * @param {string} conf - Current part, expected to be a string like 1-20
- * @param {string} type - One of "seconds", "minutes" etc
- * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ * @param {string} type - One of "second", "minute" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for second, hour, minute
  */
 CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
 	let split = conf.split("-");
@@ -201,8 +201,8 @@ CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
  * @private
  * 
  * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
- * @param {string} type - One of "seconds", "minutes" etc
- * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ * @param {string} type - One of "second", "minute" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for second, hour, minute
  */
 CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset) {
 

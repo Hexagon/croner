@@ -1,4 +1,5 @@
 import convertTZ from "./timezone.js";
+import { DateTime } from "luxon";
 /**
  * Converts date to CronDate
  * @constructor
@@ -10,10 +11,8 @@ function CronDate (date, timezone) {
 
 	this.timezone = timezone;
 	
-	if (date && date instanceof Date) {
+	if (!date || date instanceof Date) {
 		this.fromDate(date);
-	} else if (date === void 0) {
-		this.fromDate(new Date());
 	} else if (date && typeof date === "string") {
 		this.fromString(date);
 	} else if (date instanceof CronDate) {
@@ -30,19 +29,17 @@ function CronDate (date, timezone) {
  * @param {date} date - Input date
  * @param {boolean} fromLocal - Target already in local time 
  */
-CronDate.prototype.fromDate = function (date, fromLocal) {
-	
-	if (this.timezone && !fromLocal) {
-		date = convertTZ(date, this.timezone);
+CronDate.prototype.fromDate = function (date) {
+	let newDate;
+	if (date) {
+		newDate = DateTime.fromJSDate(date);
+	} else {
+		newDate = DateTime.now();
 	}
-
-	this.milliseconds = date.getMilliseconds();
-	this.seconds = date.getSeconds();
-	this.minutes = date.getMinutes();
-	this.hours = date.getHours();
-	this.days = date.getDate();
-	this.months  = date.getMonth();
-	this.years = date.getFullYear();
+	if (this.timezone) {
+		newDate = newDate.setZone(this.timezone);
+	}
+	this.to = newDate;
 };
 
 /**
@@ -52,19 +49,8 @@ CronDate.prototype.fromDate = function (date, fromLocal) {
  * @param {CronDate} date - Input date
  */
 CronDate.prototype.fromCronDate = function (date) {
-
 	this.timezone = date.timezone;
-
-	// Recreate date object to avoid getDate > 31 etc...
-	let newDate = new Date(date.years, date.months, date.days, date.hours, date.minutes, date.seconds, date.milliseconds);
-	
-	this.milliseconds = newDate.getMilliseconds();
-	this.seconds = newDate.getSeconds();
-	this.minutes = newDate.getMinutes();
-	this.hours = newDate.getHours();
-	this.days = newDate.getDate();
-	this.months  = newDate.getMonth();
-	this.years = newDate.getFullYear();
+	this.to = date.to;
 };
 
 /**
@@ -75,14 +61,17 @@ CronDate.prototype.fromCronDate = function (date) {
  */
 CronDate.prototype.fromString = function (str) {
 
-	let parsedDateUTCms = this.parseISOLocal(str);
+	let parsedLuxonDate = DateTime.fromISO(str);
 
 	// Throw if we did get an invalid date
-	if( isNaN(parsedDateUTCms) ) {
-		throw new TypeError("CronDate: Provided string value for CronDate could not be parsed as date.");
+	if( parsedLuxonDate.invalid ) {
+		throw new TypeError("CronDate: Luxon: " + parsedLuxonDate.invalid + ": " + parsedLuxonDate.reason);
 	}
-	
-	this.fromDate(new Date(parsedDateUTCms), true);
+	if (this.timezone) {
+		parsedLuxonDate = parsedLuxonDate.setZone(this.timezone);
+	}
+	this.to = parsedLuxonDate;
+
 };
 
 /**
@@ -96,12 +85,12 @@ CronDate.prototype.fromString = function (str) {
 CronDate.prototype.increment = function (pattern, rerun) {
 
 	if (!rerun) {
-		this.seconds += 1;
+		this.to = this.to.plus({second: 1});
 	}
 
-	let origTime = this.getTime();
+	this.to = this.to.set({millisecond: 0});
 
-	this.milliseconds = 0;
+	let origTime = this.to.ts;
 
 	let self = this,
 
@@ -118,18 +107,14 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		 * 
 		 */
 		findNext = function (target, pattern, offset, override) {
-			
-			let startPos = (override === void 0) ? self[target] + offset : 0 + offset;
-
+			let startPos = (override === void 0) ? self.to[target] + offset : 0 + offset;
 			for( let i = startPos; i < pattern[target].length; i++ ) {
-
 				if( pattern[target][i] ) {
-					self[target] = i-offset;
+					self.to = self.to.set({[target]:i-offset});
 					return true;
 				}
 			}
 			return false;
-
 		},
 		
 		resetPrevious = function () {
@@ -138,7 +123,6 @@ CronDate.prototype.increment = function (pattern, rerun) {
 			// 
 			// This goes all the way back to seconds, hence the reverse loop.
 			while(doing >= 0) {
-
 				// Ok, reset current member(e.g. seconds) to first match in pattern, using 
 				// the same method as aerlier
 				// 
@@ -159,11 +143,11 @@ CronDate.prototype.increment = function (pattern, rerun) {
 	//   from pattern. Offset should be -1
 	// ]
 	let toDo = [
-			["seconds", "minutes", 0],
-			["minutes", "hours", 0],
-			["hours", "days", 0],
-			["days", "months", -1],
-			["months", "years", 0]
+			["second", "minute", 0],
+			["minute", "hour", 0],
+			["hour", "day", 0],
+			["day", "month", -1],
+			["month", "year", -1]
 		],
 		doing = 0;
 
@@ -177,8 +161,13 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 		// If pattern didn't provide a match, increment next vanlue (e.g. minues)
 		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
-			this[toDo[doing][1]]++;
+			this.to = this.to.plus({[toDo[doing][1]]:1});
 			resetPrevious();
+		}
+
+		// Check for impossible combination
+		if (this.to.year >= 5000) {
+			return null;
 		}
 
 		// Gp down, seconds -> minutes -> hours -> days -> months -> year
@@ -187,16 +176,17 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 	// This is a special case for weekday, as the user isn't able to combine date/month patterns 
 	// with weekday patterns, it's just to increment days until we get a match.
-	while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
-		this.days += 1;
+	let weekdayChanged = false;
+	while (!pattern.daysOfWeek[this.to.weekday]) {
+		this.to = this.to.plus({day:1});
 		doing = 2;
 		resetPrevious();
+		weekdayChanged = true;
 	}
 
 	// If anything changed, recreate this CronDate and run again without incrementing
-	if (origTime != self.getTime()) {
-		self = new CronDate(self);
-		if (this.years >= 4000) {
+	if (weekdayChanged) {
+		if (this.to.year >= 5000) {
 			// Stop incrementing, an impossible pattern is used
 			return null;
 		} else {
@@ -212,60 +202,20 @@ CronDate.prototype.increment = function (pattern, rerun) {
  * Convert current state back to a javascript Date()
  * @public
  * 
- * @param {boolean} internal - If this is an internal call
  * @returns {date}
  */
-CronDate.prototype.getDate = function (internal) {
-	let targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
-	if (internal || !this.timezone) {
-		return targetDate;
-	} else {
-		let offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
-		return new Date(targetDate.getTime()-offset);
-	}
+CronDate.prototype.getDate = function () {
+	return new Date(this.to.toLocal().ts);
 };
 
 /**
  * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
  * 
- * @param {boolean} internal - If this is an internal call
  * @returns {date}
  */
-CronDate.prototype.getTime = function (internal) {
-	return this.getDate(internal).getTime();
-};
-
-/**
- * Takes a iso 8001 local date time string and creates a Date object
- * @private
- * 
- * @param {string} s - an ISO 8001 format date and time string
- *                      with all components, e.g. 2015-11-24T19:40:00
- * @returns {Date|number} - Date instance from parsing the string. May be NaN.
- */
-CronDate.prototype.parseISOLocal = function (s) {
-	let b = s.split(/\D/);
-
-	// Check for completeness
-	if (b.length < 6) {
-		return NaN;
-	}
-
-	let
-		year = parseInt(b[0], 10),
-		month = parseInt(b[1], 10),
-		day = parseInt(b[2], 10),
-		hour = parseInt(b[3], 10),
-		minute = parseInt(b[4], 10),
-		second = parseInt(b[5], 10);
-
-	// Check parts for numeric
-	if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {
-		return NaN;
-	} else {
-		return new Date(year, month-1, day, hour, minute, second);
-	}
+CronDate.prototype.getTime = function () {
+	return this.to.ts;
 };
 
 export { CronDate };

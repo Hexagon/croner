@@ -167,7 +167,7 @@ Cron.prototype.previous = function () {
 Cron.prototype._next = function (prev) {
 
 	// Previous run should never be before startAt
-	if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
+	if( this.options.startAt && prev && prev.getTime() < this.options.startAt.getTime() ) {
 		prev = new CronDate(this.options.startAt, this.options.timezone);
 	}
 
@@ -177,7 +177,7 @@ Cron.prototype._next = function (prev) {
 	if ((nextRun === null) ||
 		(this.options.maxRuns <= 0) ||	
 		(this.options.kill) ||
-		(this.options.stopAt && nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
+		(this.options.stopAt && nextRun.getTime() >= this.options.stopAt.getTime() )) {
 		return null;
 	} else {
 		// All seem good, return next run

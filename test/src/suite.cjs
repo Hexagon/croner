@@ -17,6 +17,7 @@ const timeout = (timeoutMs, fn) => {
 
 // Actual tests
 module.exports = function (Cron) {
+	
 	test("new Cron(...) should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * *");
@@ -39,10 +40,10 @@ module.exports = function (Cron) {
 	});
 
 	test("Clean 5 part pattern should not throw", function () {
-		assert.not.throws(() => {
+		
 			let scheduler = new Cron("* * * * *");
 			scheduler.next();
-		});
+		
 	});
 
 	test("String object pattern should not throw", function () {
@@ -72,7 +73,7 @@ module.exports = function (Cron) {
 			scheduler.next();
 		});
 	});
-
+	
 	test("Slash in pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* */5 * * * *");
@@ -349,6 +350,7 @@ module.exports = function (Cron) {
 		// Set a fixed hour later than startAt, to be sure that the days doesn't overlap
 		nextDay =  new Date(nextDay.setUTCHours(14));
 		scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: nextDay.toISOString() });
+		
 		nextRun = scheduler.next();
 
 		// Set seconds, minutes and hours to 00:00:00
@@ -446,7 +448,6 @@ module.exports = function (Cron) {
 
 		// Do comparison
 		assert.equal(nextRun.getTime(),compareDay.getTime());
-
 	});
 
 	test("0 * * * * * with 40 iterations should return 45 minutes from now", function () {
@@ -469,35 +470,17 @@ module.exports = function (Cron) {
 		assert.equal(nextRun.getTime(),compareDay.getTime());
 
 	});
-
 	test("Valid startAt with DateTime string should not throw", function () {
 		assert.not.throws(() => {
 			let 
-				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01 00:00:00" });
+				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01T00:00:00" });
 			scheduler.next();
 		});
 	});
-
-	test("startAt with Date string should throw", function () {
-		assert.throws(() => {
-			let 
-				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01" });
-			scheduler.next();
-		});
-	});
-
 	test("Invalid startat should throw", function () {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { startAt: "hellu throw" });
-			scheduler.next();
-		});
-	});
-
-	test("startAt with time only should throw", function () {
-		assert.throws(() => {
-			let 
-				scheduler = new Cron("0 0 12 * * *", { startAt: "00:35:00" });
 			scheduler.next();
 		});
 	});
@@ -510,19 +493,10 @@ module.exports = function (Cron) {
 			scheduler.next();
 		});
 	});
-
 	test("Valid stopAt with DateTime string should not throw", function () {
 		assert.not.throws(() => {
 			let 
-				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01 00:00:00" });
-			scheduler.next();
-		});
-	});
-
-	test("Valid stopAt with Date string should throw", function () {
-		assert.throws(() => {
-			let 
-				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01" });
+				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01T00:00:00" });
 			scheduler.next();
 		});
 	});
@@ -531,14 +505,6 @@ module.exports = function (Cron) {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "hellu throw" });
-			scheduler.next();
-		});
-	});
-
-	test("stopAt with time only should throw", function () {
-		assert.throws(() => {
-			let 
-				scheduler = new Cron("0 0 12 * * *", { stopAt: "00:35:00" });
 			scheduler.next();
 		});
 	});
@@ -585,6 +551,7 @@ module.exports = function (Cron) {
 		}
 
 	});
+
 	test("Test milliseconds to 23:59:59 XXXX-01-01 (most often next year), 1000s steps", function () {
 
 		let prevRun = new Date(new Date().setMilliseconds(0)),
@@ -719,7 +686,7 @@ module.exports = function (Cron) {
 
 	test("DST/Timezone", function () {
 		let 
-			dayOne = new Date("2021-10-31T20:00:00"), // Last day of DST
+			dayOne = new Date("2021-10-30T20:00:00Z"), // Last day of DST
 			scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: dayOne }),
 			nextRun = scheduler.next(); // Next run in local time
 
