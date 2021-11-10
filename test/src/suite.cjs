@@ -40,10 +40,10 @@ module.exports = function (Cron) {
 	});
 
 	test("Clean 5 part pattern should not throw", function () {
-		
+		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * *");
 			scheduler.next();
-		
+		});
 	});
 
 	test("String object pattern should not throw", function () {
@@ -73,7 +73,7 @@ module.exports = function (Cron) {
 			scheduler.next();
 		});
 	});
-	
+
 	test("Slash in pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* */5 * * * *");

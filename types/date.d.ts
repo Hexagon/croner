@@ -17,13 +17,7 @@ export class CronDate {
     constructor(date?: any, timezone?: string);
     timezone: string;
     private fromDate;
-    milliseconds: any;
-    seconds: any;
-    minutes: any;
-    hours: any;
-    days: any;
-    months: any;
-    years: any;
+    to: any;
     private fromCronDate;
     private fromString;
     /**
@@ -39,17 +33,14 @@ export class CronDate {
      * Convert current state back to a javascript Date()
      * @public
      *
-     * @param {boolean} internal - If this is an internal call
      * @returns {date}
      */
-    public getDate(internal: boolean): any;
+    public getDate(): any;
     /**
      * Convert current state back to a javascript Date() and return UTC milliseconds
      * @public
      *
-     * @param {boolean} internal - If this is an internal call
      * @returns {date}
      */
-    public getTime(internal: boolean): any;
-    private parseISOLocal;
+    public getTime(): any;
 }
