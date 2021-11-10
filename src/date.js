@@ -1,3 +1,4 @@
+import convertTZ from "./timezone.js";
 import { DateTime } from "luxon";
 /**
  * Converts date to CronDate
@@ -88,7 +89,9 @@ CronDate.prototype.increment = function (pattern, rerun) {
 	}
 
 	this.to = this.to.set({millisecond: 0});
-	
+
+	let origTime = this.to.ts;
+
 	let self = this,
 
 		

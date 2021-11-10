@@ -1,23 +1,23 @@
 /**
  * Name for each part of the cron pattern
  */
-export type CronPatternPart = ("second" | "minute" | "hour" | "day" | "month" | "daysOfWeek");
+export type CronPatternPart = ("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek");
 /**
  * Offset, 0 or -1.
  *
- * 0 for second,minute and hour as they start on 1.
- * -1 on day and month, as the start on 0
+ * 0 for seconds,minutes and hours as they start on 1.
+ * -1 on days and months, as the start on 0
  */
 export type CronIndexOffset = number;
 /**
  * Name for each part of the cron pattern
- * @typedef {("second" | "minute" | "hour" | "day" | "month" | "daysOfWeek")} CronPatternPart
+ * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
  */
 /**
  * Offset, 0 or -1.
  *
- * 0 for second,minute and hour as they start on 1.
- * -1 on day and month, as the start on 0
+ * 0 for seconds,minutes and hours as they start on 1.
+ * -1 on days and months, as the start on 0
  *
  * @typedef {Number} CronIndexOffset
  */
@@ -30,13 +30,13 @@ export function CronPattern(pattern: string): void;
 export class CronPattern {
     /**
      * Name for each part of the cron pattern
-     * @typedef {("second" | "minute" | "hour" | "day" | "month" | "daysOfWeek")} CronPatternPart
+     * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
      */
     /**
      * Offset, 0 or -1.
      *
-     * 0 for second,minute and hour as they start on 1.
-     * -1 on day and month, as the start on 0
+     * 0 for seconds,minutes and hours as they start on 1.
+     * -1 on days and months, as the start on 0
      *
      * @typedef {Number} CronIndexOffset
      */
@@ -47,12 +47,12 @@ export class CronPattern {
      */
     constructor(pattern: string);
     pattern: string;
-    second: any[];
-    minute: any[];
-    hour: any[];
-    day: any[];
-    month: any[];
-    daysOfWeek: any[];
+    seconds: any;
+    minutes: any;
+    hours: any;
+    days: any;
+    months: any;
+    daysOfWeek: any;
     private parse;
     private partToArray;
     private throwAtIllegalCharacters;
