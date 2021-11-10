@@ -25,6 +25,7 @@ export class CronDate {
     months: any;
     years: any;
     private fromCronDate;
+    private apply;
     private fromString;
     /**
      * Increment to next run time

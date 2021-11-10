@@ -1,4 +1,5 @@
 import convertTZ from "./timezone.js";
+
 /**
  * Converts date to CronDate
  * @constructor
@@ -52,11 +53,24 @@ CronDate.prototype.fromDate = function (date, fromLocal) {
  * @param {CronDate} date - Input date
  */
 CronDate.prototype.fromCronDate = function (date) {
-
 	this.timezone = date.timezone;
+	this.milliseconds = date.milliseconds;
+	this.seconds = date.seconds;
+	this.minutes = date.minutes;
+	this.hours = date.hours;
+	this.days = date.days;
+	this.months  = date.months;
+	this.years = date.years;
+};
 
-	// Recreate date object to avoid getDate > 31 etc...
-	let newDate = new Date(date.years, date.months, date.days, date.hours, date.minutes, date.seconds, date.milliseconds);
+/**
+ * Reset internal parameters (seconds, minutes, hours) that may have exceeded their ranges
+ * @private
+ * 
+ * @param {date} date - Input date
+ */
+CronDate.prototype.apply = function () {
+	let newDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
 	
 	this.milliseconds = newDate.getMilliseconds();
 	this.seconds = newDate.getSeconds();
@@ -75,14 +89,14 @@ CronDate.prototype.fromCronDate = function (date) {
  */
 CronDate.prototype.fromString = function (str) {
 
-	let parsedDateUTCms = this.parseISOLocal(str);
+	let parsedDate = this.parseISOLocal(str);
 
 	// Throw if we did get an invalid date
-	if( isNaN(parsedDateUTCms) ) {
+	if( isNaN(parsedDate) ) {
 		throw new TypeError("CronDate: Provided string value for CronDate could not be parsed as date.");
 	}
 	
-	this.fromDate(new Date(parsedDateUTCms), true);
+	this.fromDate(parsedDate, true);
 };
 
 /**
@@ -99,11 +113,10 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		this.seconds += 1;
 	}
 
-	let origTime = this.getTime();
-
 	this.milliseconds = 0;
 
 	let self = this,
+		origTime = self.getTime(),
 
 		
 		/**
@@ -181,6 +194,11 @@ CronDate.prototype.increment = function (pattern, rerun) {
 			resetPrevious();
 		}
 
+		// Bail out if an impossible pattern is used
+		if (this.years >= 4000) {
+			return null;
+		}
+
 		// Gp down, seconds -> minutes -> hours -> days -> months -> year
 		doing++;
 	}
@@ -195,13 +213,8 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 	// If anything changed, recreate this CronDate and run again without incrementing
 	if (origTime != self.getTime()) {
-		self = new CronDate(self);
-		if (this.years >= 4000) {
-			// Stop incrementing, an impossible pattern is used
-			return null;
-		} else {
-			return self.increment(pattern, true);
-		}
+		self.apply();
+		return self.increment(pattern, true);
 	} else {
 		return this;
 	}

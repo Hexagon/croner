@@ -234,6 +234,13 @@ module.exports = function (Cron) {
 		});
 	});
 
+	test("31st february should not be found", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* * * 31 2 *");
+			assert.equal(scheduler.next(),null);
+		});
+	});
+
 	test("Too high days should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * 32 * *");
