@@ -1,5 +1,5 @@
 {
-    "include": ["src/**/*","mod.ts"],
+    "include": ["src/**/*"],
     "compilerOptions": {
       "allowJs": true,
       "declaration": true,
