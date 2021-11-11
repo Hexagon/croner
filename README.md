@@ -11,7 +11,8 @@
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax
 *   Pause, resume or stop execution efter a task is scheduled
 *   Find first date of next month, find date of next tuesday, etc.
-*   Works in Node.js >=4.0 (require and import)
+*   Works in Node.js >=4.0 (both require and import)
+*   Works in Deno >=1.16
 *   Works in browsers as standalone, UMD or ES-module.
 *   **Experimental feature:** Schedule in specific target timezones
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings
@@ -47,6 +48,28 @@ import Cron from "croner";
 
 // ... or CommonJS Require
 const Cron = require("croner");
+```
+
+### Deno
+
+JavaScript
+
+```javascript
+import Cron from "https://cdn.jsdelivr.net/npm/croner@4/mod.ts";
+
+Cron("* * * * * *", () => {
+    console.log("This will run every second.");
+});
+```
+
+TypeScript
+
+```typescript
+import { Cron } from "https://cdn.jsdelivr.net/npm/croner@4/mod.ts";
+
+let scheduler : Cron = new Cron("* * * * * *", {}, () => {
+    console.log("This will run every second.");
+});
 ```
 
 ### Browser 

@@ -635,7 +635,7 @@
 	 * 
 	 * @constructor
 	 * @param {string} pattern - Input pattern
-	 * @param {CronOptions} [options] - Options
+	 * @param {CronOptions|Function} [options] - Options
 	 * @param {Function} [func] - Function to be run each iteration of pattern
 	 * @returns {Cron}
 	 */

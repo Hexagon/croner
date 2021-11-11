@@ -57,7 +57,7 @@ const maxDelay = Math.pow(2, 32 - 1) - 1;
  * 
  * @constructor
  * @param {string} pattern - Input pattern
- * @param {CronOptions} [options] - Options
+ * @param {CronOptions|Function} [options] - Options
  * @param {Function} [func] - Function to be run each iteration of pattern
  * @returns {Cron}
  */
