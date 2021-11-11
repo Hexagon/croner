@@ -55,7 +55,7 @@ const Cron = require("croner");
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner/src/croner.js";
+import Cron from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
 
 Cron("* * * * * *", () => {
     console.log("This will run every second.");
@@ -65,9 +65,9 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner/src/croner.js";
+import { Cron } from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
 
-let scheduler : Cron = new Cron("* * * * * *", {}, () => {
+let scheduler : Cron = new Cron("* * * * * *", () => {
     console.log("This will run every second.");
 });
 ```
