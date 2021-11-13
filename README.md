@@ -67,7 +67,7 @@ TypeScript
 ```typescript
 import { Cron } from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
 
-let scheduler : Cron = new Cron("* * * * * *", () => {
+const _scheduler : Cron = new Cron("* * * * * *", () => {
     console.log("This will run every second.");
 });
 ```
