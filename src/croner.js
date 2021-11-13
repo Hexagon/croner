@@ -34,6 +34,7 @@ import { CronPattern } from "./pattern.js";
  * @typedef {Object} CronOptions - Cron scheduler options
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
+ * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {string | date} [startAt] - When to start running
  * @property {string | date} [stopAt] - When to stop running
@@ -110,6 +111,7 @@ Cron.prototype.processOptions = function (options) {
 	// Keep options, or set defaults
 	options.paused = (options.paused === void 0) ? false : options.paused;
 	options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
+	options.catch = (options.catch === void 0) ? false : options.catch;
 	options.kill = false;
 
 	// startAt is set, validate it
@@ -272,7 +274,16 @@ Cron.prototype.schedule = function (func) {
 
 				if ( !self.options.paused ) {
 					self.options.maxRuns--;
-					self.fn(self);
+
+					if (self.options.catch) {
+						try {
+							self.fn(self);
+						} catch (_e) {
+							// Throw it away
+						}
+					} else {
+						self.fn(self);
+					}
 				}
 
 				self.previousrun = new CronDate(void 0, self.options.timezone);

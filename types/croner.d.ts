@@ -12,6 +12,10 @@ export type CronOptions = {
      */
     kill?: boolean;
     /**
+     * - Continue exection even if a unhandled error is thrown by triggered function
+     */
+    catch?: boolean;
+    /**
      * - Maximum nuber of executions
      */
     maxRuns?: number;

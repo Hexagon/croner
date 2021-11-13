@@ -660,6 +660,17 @@ module.exports = function (Cron) {
 		let impossible = Cron("0 0 0 30 2 6").next(new Date(1634076000000));
 		assert.equal(null, impossible);
 	});
+	test("scheduled job should not stop on unhandled error with option catch: true",  timeout(4000, (resolve) => {
+		let first = true;
+		let job = Cron("* * * * * *",{catch: true},() => { 
+			if (first) {
+				first = false;
+				throw new Error("E");
+			}
+			job.stop();
+			resolve(); 
+		});
+	}));
 	test("shorthand schedule without options should not throw, and execute",  timeout(2000, (resolve, reject) => {
 		try {
 			let job = Cron("* * * * * *",() => { job.stop(); resolve(); });

@@ -135,6 +135,7 @@ job.stop();
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
 | maxRuns      | Infinite       | Number         |                                       |
+| catch	       | false          | Boolean        | Catch and ignore unhandled errors in triggered function |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
 | startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
