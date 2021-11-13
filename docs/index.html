@@ -134,7 +134,8 @@
 <li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax</li>
 <li>Pause, resume or stop execution efter a task is scheduled</li>
 <li>Find first date of next month, find date of next tuesday, etc.</li>
-<li>Works in Node.js &gt;=4.0 (require and import)</li>
+<li>Works in Node.js &gt;=4.0 (both require and import)</li>
+<li>Works in Deno &gt;=1.16</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
 <li><strong>Experimental feature:</strong> Schedule in specific target timezones</li>
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings</li>
@@ -162,6 +163,21 @@ import Cron from &quot;croner&quot;;
 
 // ... or CommonJS Require
 const Cron = require(&quot;croner&quot;);
+</code></pre>
+<h3>Deno</h3>
+<p>JavaScript</p>
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+
+Cron(&quot;* * * * * *&quot;, () => {
+    console.log(&quot;This will run every second.&quot;);
+});
+</code></pre>
+<p>TypeScript</p>
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+
+let scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
+    console.log(&quot;This will run every second.&quot;);
+});
 </code></pre>
 <h3>Browser</h3>
 <h4>Manual</h4>
@@ -224,6 +240,12 @@ job.stop();
 <td>Infinite</td>
 <td>Number</td>
 <td></td>
+</tr>
+<tr>
+<td>catch</td>
+<td>false</td>
+<td>Boolean</td>
+<td>Catch and ignore unhandled errors in triggered function</td>
 </tr>
 <tr>
 <td>timezone</td>
@@ -352,11 +374,11 @@ var job = Cron(
 );
 </code></pre>
 <h4>Job controls</h4>
-<pre class="prettyprint source lang-javascript"><code>let job = Cron('* * * * * *', () => {
+<pre class="prettyprint source lang-javascript"><code>let job = Cron('* * * * * *', (self) => {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
-	console.log('Previous run: ' + job.previous());
-	console.log('Next run: ' + job.next());
+	console.log('Previous run: ' + self.previous());
+	console.log('Next run: ' + self.next());
 });
 
 Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
