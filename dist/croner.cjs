@@ -52,7 +52,7 @@
 	 * Sets internals using a Date 
 	 * @private
 	 * 
-	 * @param {date} date - Input date
+	 * @param {Date} date - Input date
 	 * @param {boolean} fromLocal - Target already in local time 
 	 */
 	CronDate.prototype.fromDate = function (date, fromLocal) {
@@ -91,7 +91,7 @@
 	 * Reset internal parameters (seconds, minutes, hours) that may have exceeded their ranges
 	 * @private
 	 * 
-	 * @param {date} date - Input date
+	 * @param {Date} date - Input date
 	 */
 	CronDate.prototype.apply = function () {
 		let newDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
@@ -109,7 +109,7 @@
 	 * Sets internals by parsing a string
 	 * @private
 	 * 
-	 * @param {date} date - Input date
+	 * @param {Date} date - Input date
 	 */
 	CronDate.prototype.fromString = function (str) {
 
@@ -250,7 +250,7 @@
 	 * @public
 	 * 
 	 * @param {boolean} internal - If this is an internal call
-	 * @returns {date}
+	 * @returns {Date}
 	 */
 	CronDate.prototype.getDate = function (internal) {
 		let targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
@@ -267,7 +267,7 @@
 	 * @public
 	 * 
 	 * @param {boolean} internal - If this is an internal call
-	 * @returns {date}
+	 * @returns {Date}
 	 */
 	CronDate.prototype.getTime = function (internal) {
 		return this.getDate(internal).getTime();
@@ -614,8 +614,8 @@
 	 * @property {boolean} [kill] - Job is about to be killed or killed
 	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
 	 * @property {number} [maxRuns] - Maximum nuber of executions
-	 * @property {string | date} [startAt] - When to start running
-	 * @property {string | date} [stopAt] - When to stop running
+	 * @property {string | Date} [startAt] - When to start running
+	 * @property {string | Date} [stopAt] - When to stop running
 	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
 	 */
 
@@ -706,8 +706,8 @@
 	/**
 	 * Find next runtime, based on supplied date. Strips milliseconds.
 	 * 
-	 * @param {date} [prev] - Input pattern
-	 * @returns {date | null} - Next run time
+	 * @param {Date} [prev] - Input pattern
+	 * @returns {Date | null} - Next run time
 	 */
 	Cron.prototype.next = function (prev) {
 		prev = new CronDate(prev, this.options.timezone);
@@ -731,7 +731,7 @@
 	 * Return previous run time
 	 * @public
 	 * 
-	 * @returns {date | null} - Previous run time
+	 * @returns {Date | null} - Previous run time
 	 */
 	Cron.prototype.previous = function () {
 		return this.previousrun ? this.previousrun.getDate() : null;
@@ -770,7 +770,7 @@
 	 * Returns number of milliseconds to next run
 	 * @public
 	 * 
-	 * @param {date} [prev] - Starting date, defaults to now
+	 * @param {Date} [prev] - Starting date, defaults to now
 	 * @returns {number | null}
 	 */
 	Cron.prototype.msToNext = function (prev) {

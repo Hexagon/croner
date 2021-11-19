@@ -22,11 +22,11 @@ export type CronOptions = {
     /**
      * - When to start running
      */
-    startAt?: string | any;
+    startAt?: string | Date;
     /**
      * - When to stop running
      */
-    stopAt?: string | any;
+    stopAt?: string | Date;
     /**
      * - Time zone in Europe/Stockholm format
      */
@@ -62,10 +62,10 @@ export class Cron {
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
-     * @param {date} [prev] - Input pattern
-     * @returns {date | null} - Next run time
+     * @param {Date} [prev] - Input pattern
+     * @returns {Date | null} - Next run time
      */
-    next(prev?: any): any | null;
+    next(prev?: Date): Date | null;
     /**
      * Is running?
      * @public
@@ -77,18 +77,18 @@ export class Cron {
      * Return previous run time
      * @public
      *
-     * @returns {date | null} - Previous run time
+     * @returns {Date | null} - Previous run time
      */
-    public previous(): any | null;
+    public previous(): Date | null;
     private _next;
     /**
      * Returns number of milliseconds to next run
      * @public
      *
-     * @param {date} [prev] - Starting date, defaults to now
+     * @param {Date} [prev] - Starting date, defaults to now
      * @returns {number | null}
      */
-    public msToNext(prev?: any): number | null;
+    public msToNext(prev?: Date): number | null;
     /**
      * Stop execution
      * @public

@@ -15,7 +15,7 @@
 *   Works in Deno >=1.16
 *   Works in browsers as standalone, UMD or ES-module.
 *   **Experimental feature:** Schedule in specific target timezones
-*   Includes [TypeScript](https://www.typescriptlang.org/) typings
+*   Includes [TypeScript](https://www.typescriptlang.org/) typings, see Usage/Typescript
 
 Quick examples:
 
@@ -42,6 +42,8 @@ More [examples](#examples)...
 
 ```npm install croner --save```
 
+JavaScript
+
 ```javascript
 // ESM Import ...
 import Cron from "croner";
@@ -49,6 +51,19 @@ import Cron from "croner";
 // ... or CommonJS Require
 const Cron = require("croner");
 ```
+
+TypeScript
+
+*Note that only default export is available in Node.js TypeScript, as the commonjs module is used internally.*
+
+```typescript
+import Cron from "croner";
+
+const scheduler : Cron = new Cron("* * * * * *", () => {
+    console.log("This will run every second.");
+});
+```
+
 
 ### Deno
 

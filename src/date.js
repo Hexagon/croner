@@ -28,7 +28,7 @@ function CronDate (date, timezone) {
  * Sets internals using a Date 
  * @private
  * 
- * @param {date} date - Input date
+ * @param {Date} date - Input date
  * @param {boolean} fromLocal - Target already in local time 
  */
 CronDate.prototype.fromDate = function (date, fromLocal) {
@@ -67,7 +67,7 @@ CronDate.prototype.fromCronDate = function (date) {
  * Reset internal parameters (seconds, minutes, hours) that may have exceeded their ranges
  * @private
  * 
- * @param {date} date - Input date
+ * @param {Date} date - Input date
  */
 CronDate.prototype.apply = function () {
 	let newDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
@@ -85,7 +85,7 @@ CronDate.prototype.apply = function () {
  * Sets internals by parsing a string
  * @private
  * 
- * @param {date} date - Input date
+ * @param {Date} date - Input date
  */
 CronDate.prototype.fromString = function (str) {
 
@@ -226,7 +226,7 @@ CronDate.prototype.increment = function (pattern, rerun) {
  * @public
  * 
  * @param {boolean} internal - If this is an internal call
- * @returns {date}
+ * @returns {Date}
  */
 CronDate.prototype.getDate = function (internal) {
 	let targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
@@ -243,7 +243,7 @@ CronDate.prototype.getDate = function (internal) {
  * @public
  * 
  * @param {boolean} internal - If this is an internal call
- * @returns {date}
+ * @returns {Date}
  */
 CronDate.prototype.getTime = function (internal) {
 	return this.getDate(internal).getTime();

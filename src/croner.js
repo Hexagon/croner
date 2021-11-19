@@ -36,8 +36,8 @@ import { CronPattern } from "./pattern.js";
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
  * @property {number} [maxRuns] - Maximum nuber of executions
- * @property {string | date} [startAt] - When to start running
- * @property {string | date} [stopAt] - When to stop running
+ * @property {string | Date} [startAt] - When to start running
+ * @property {string | Date} [stopAt] - When to stop running
  * @property {string} [timezone] - Time zone in Europe/Stockholm format
  */
 
@@ -128,8 +128,8 @@ Cron.prototype.processOptions = function (options) {
 /**
  * Find next runtime, based on supplied date. Strips milliseconds.
  * 
- * @param {date} [prev] - Input pattern
- * @returns {date | null} - Next run time
+ * @param {Date} [prev] - Input pattern
+ * @returns {Date | null} - Next run time
  */
 Cron.prototype.next = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
@@ -153,7 +153,7 @@ Cron.prototype.running = function () {
  * Return previous run time
  * @public
  * 
- * @returns {date | null} - Previous run time
+ * @returns {Date | null} - Previous run time
  */
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
@@ -192,7 +192,7 @@ Cron.prototype._next = function (prev) {
  * Returns number of milliseconds to next run
  * @public
  * 
- * @param {date} [prev] - Starting date, defaults to now
+ * @param {Date} [prev] - Starting date, defaults to now
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {

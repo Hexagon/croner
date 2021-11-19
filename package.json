@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "4.0.74",
+  "version": "4.0.75",
   "description": "Trigger functions in javascript using Cron syntax. No deps. All features.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://hexagon.github.io/croner",
@@ -52,7 +52,7 @@
   "main": "./dist/croner.cjs",
   "browser": "./dist/croner.min.js",
   "module": "./src/croner.js",
-  "types": "types/croner.d.ts",
+  "types": "types/croner.single.d.ts",
   "exports": {
     ".": {
       "import": "./src/croner.js",

@@ -41,16 +41,16 @@ export class CronDate {
      * @public
      *
      * @param {boolean} internal - If this is an internal call
-     * @returns {date}
+     * @returns {Date}
      */
-    public getDate(internal: boolean): any;
+    public getDate(internal: boolean): Date;
     /**
      * Convert current state back to a javascript Date() and return UTC milliseconds
      * @public
      *
      * @param {boolean} internal - If this is an internal call
-     * @returns {date}
+     * @returns {Date}
      */
-    public getTime(internal: boolean): any;
+    public getTime(internal: boolean): Date;
     private parseISOLocal;
 }
