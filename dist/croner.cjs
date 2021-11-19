@@ -414,17 +414,23 @@
 			for( i = 0; i < split.length; i++ ) {
 				this.partToArray(type, split[i], valueIndexOffset);
 			}
+		}
 
 		// Handle range (-)
-		} else if( conf.indexOf("-") !== -1 ) {
+		let handled = false;
+		if( conf.indexOf("-") !== -1 ) {
 			this.handleRange(conf, type, valueIndexOffset);
+			handled = true;
+		}
 
 		// Handle stepping (/)
-		} else if( conf.indexOf("/") !== -1 ) {
-			this.handleStepping(conf, type, valueIndexOffset);
+		if( conf.indexOf("/") !== -1 ) {
+			this.handleStepping(conf, type, valueIndexOffset, handled);
+			handled = true;
+		}
 
 		// Handle pure number
-		} else {
+		if (!handled) {
 			this.handleNumber(conf, type, valueIndexOffset);
 		}
 
@@ -437,7 +443,7 @@
 	 * @param {string[]} parts - Each part split as strings
 	 */
 	CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
-		let reValidCron = /[^/*0-9,-]+/;
+		const reValidCron = /[^/*0-9,-]+/;
 		for(let i = 0; i < parts.length; i++) {
 			if( reValidCron.test(parts[i]) ) {
 				throw new TypeError("CronPattern: configuration entry " + i + " (" + parts[i] + ") contains illegal characters.");
@@ -473,13 +479,13 @@
 	 * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
 	 */
 	CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
-		let split = conf.split("-");
+		const split = conf.split("-");
 
 		if( split.length !== 2 ) {
 			throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
 		}
 
-		let lower = parseInt(split[0], 10) + valueIndexOffset,
+		const lower = parseInt(split[0], 10) + valueIndexOffset,
 			upper = parseInt(split[1], 10) + valueIndexOffset;
 
 		if( isNaN(lower) ) {
@@ -510,27 +516,28 @@
 	 * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
 	 * @param {string} type - One of "seconds", "minutes" etc
 	 * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+	 * @param {boolean} combine - Combine stepping with a previously run handler
 	 */
-	CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset) {
+	CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset, combine) {
 
-		let split = conf.split("/");
+		const split = conf.split("/");
 
 		if( split.length !== 2 ) {
 			throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
 		}
 
-		if( split[0] !== "*" ) {
-			throw new TypeError("CronPattern: Syntax error, left part of / needs to be * : '" + conf + "'");
-		}
-
-		let steps = parseInt(split[1], 10);
+		const steps = parseInt(split[1], 10);
 
 		if( isNaN(steps) ) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
 		if( steps === 0 ) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
 		if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
 
-		for( let i = 0; i < this[type].length; i+= steps ) {
-			this[type][(i + valueIndexOffset)] = 1;
+		for( let i = 0; i < this[type].length; i++ ) {
+			if (i%steps===0) {
+				this[type][(i + valueIndexOffset)] = (combine === true) ? (this[type][(i + valueIndexOffset)] & 1) : 1;
+			} else {
+				this[type][(i + valueIndexOffset)] = 0;
+			}
 		}
 	};
 

@@ -94,8 +94,8 @@ module.exports = function (Cron) {
 		});
 	});
 
-	test("Slash in pattern with preceding number should throw", function () {
-		assert.throws(() => {
+	test("Slash in pattern with preceding number should not throw", function () {
+		assert.not.throws(() => {
 			let scheduler = new Cron("* 1/5 * * * *");
 			scheduler.next();
 		});
@@ -104,6 +104,13 @@ module.exports = function (Cron) {
 	test("Slash in pattern with wildcards both pre and post should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */* * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Slash in pattern with range pre and should not throw", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* 15-45/15 * * * *");
 			scheduler.next();
 		});
 	});

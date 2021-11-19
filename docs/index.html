@@ -138,7 +138,7 @@
 <li>Works in Deno &gt;=1.16</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
 <li><strong>Experimental feature:</strong> Schedule in specific target timezones</li>
-<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings</li>
+<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings, see Usage/Typescript</li>
 </ul>
 <p>Quick examples:</p>
 <pre class="prettyprint source lang-javascript"><code>// Run a function at the interval set by a cron expression
@@ -158,11 +158,20 @@ console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas
 <h2>Installation</h2>
 <h3>Node.js</h3>
 <p><code>npm install croner --save</code></p>
+<p>JavaScript</p>
 <pre class="prettyprint source lang-javascript"><code>// ESM Import ...
 import Cron from &quot;croner&quot;;
 
 // ... or CommonJS Require
 const Cron = require(&quot;croner&quot;);
+</code></pre>
+<p>TypeScript</p>
+<p><em>Note that only default export is available in Node.js TypeScript, as the commonjs module is used internally.</em></p>
+<pre class="prettyprint source lang-typescript"><code>import Cron from &quot;croner&quot;;
+
+const scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
+    console.log(&quot;This will run every second.&quot;);
+});
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
@@ -175,7 +184,7 @@ Cron(&quot;* * * * * *&quot;, () => {
 <p>TypeScript</p>
 <pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
 
-let scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
+const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
     console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
@@ -343,8 +352,9 @@ job.stop();
 <h3>Examples</h3>
 <h4>Expressions</h4>
 <pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
-Cron('0-4 */5 1,2,3 * JAN-MAR SAT', function () {
-	console.log('This will run the first five seconds every fifth minute');
+Cron('15-45/15 */5 1,2,3 * JAN-MAR SAT', function () {
+	console.log('This will run every fifteenth second between second 15-45');
+	console.log('of the first five seconds every fifth minute');
 	console.log('of hour 1,2 and 3 every saturday in January to March.');
 });
 </code></pre>
