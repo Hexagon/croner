@@ -15,7 +15,7 @@
 *   Works in Deno >=1.16
 *   Works in browsers as standalone, UMD or ES-module.
 *   **Experimental feature:** Schedule in specific target timezones
-*   Includes [TypeScript](https://www.typescriptlang.org/) typings, see Usage/Typescript
+*   Includes [TypeScript](https://www.typescriptlang.org/) typings
 
 Quick examples:
 
@@ -135,7 +135,7 @@ job.schedule(() => {});
 // States
 let nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
 let prevRun = job.previous( );	
-let msToNext = job.msToNext( /*optional*/ previosRun ); // Milliseconds left to next execution
+let msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
 let isRunning = job.running();
 
 // Control scheduled execution
@@ -188,8 +188,8 @@ job.stop();
 // Run a function according to pattern
 Cron('15-45/15 */5 1,2,3 * JAN-MAR SAT', function () {
 	console.log('This will run every fifteenth second between second 15-45');
-	console.log('of the first five seconds every fifth minute');
-	console.log('of hour 1,2 and 3 every saturday in January to March.');
+	console.log('every fifth minuteof hour 1,2 and 3');
+	console.log('every saturday in January to March.');
 });
 ```
 
