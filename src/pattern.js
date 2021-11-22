@@ -107,7 +107,10 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 		for( i = 0; i < split.length; i++ ) {
 			this.partToArray(type, split[i], valueIndexOffset);
 		}
-	}
+
+	// Handle range with stepping (x-y/z)
+	} else if( conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1 && conf.indexOf("-") < conf.indexOf("/")) {
+		this.handleRangeWithStepping(conf, type, valueIndexOffset);
 
 	// Handle range (-)
 	let handled = false;
@@ -162,6 +165,37 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
 	this[type][i] = 1;
 };
 
+/**
+ * Take care of ranges with stepping (e.g. 3-23/5)
+ * @private
+ *
+ * @param {string} conf - Current part, expected to be a string like 3-23/5
+ * @param {string} type - One of "seconds", "minutes" etc
+ * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
+ */
+CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset) {
+	let [, lower, upper, steps] = conf.match(/(\d+)-(\d+)\/(\d+)/);
+
+	if (lower === undefined || upper === undefined || steps === undefined) throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
+
+	lower = parseInt(lower, 10) + valueIndexOffset;
+	upper = parseInt(upper, 10) + valueIndexOffset;
+	steps = parseInt(steps, 10) + valueIndexOffset;
+
+	if( isNaN(lower) ) throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
+	if( isNaN(upper) ) throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
+	if( isNaN(steps) ) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
+
+	if( steps === 0 ) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
+	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
+
+	if( lower < 0 || upper >= this[type].length ) throw new TypeError("CronPattern: Value out of range: '" + conf + "'");
+	if( lower > upper ) throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
+
+	for (let i = lower; i <= upper; i += steps) {
+		this[type][(i + valueIndexOffset)] = 1;
+	}
+};
 
 /**
  * Take care of ranges (e.g. 1-20)
