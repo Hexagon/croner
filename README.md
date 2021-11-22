@@ -236,6 +236,10 @@ Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
 Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
 
+## Contributing
+
+See [Contribution Guide](https://github.com/Hexagon/croner/wiki/Contribution-Guide)
+
 ## License
 
 MIT
