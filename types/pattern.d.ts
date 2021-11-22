@@ -57,6 +57,7 @@ export class CronPattern {
     private partToArray;
     private throwAtIllegalCharacters;
     private handleNumber;
+    private handleRangeWithStepping;
     private handleRange;
     private handleStepping;
     private replaceAlphaDays;

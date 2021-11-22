@@ -186,9 +186,9 @@ job.stop();
 #### Expressions
 ```javascript
 // Run a function according to pattern
-Cron('15-45/15 */5 1,2,3 * JAN-MAR SAT', function () {
-	console.log('This will run every fifteenth second between second 15-45');
-	console.log('every fifth minuteof hour 1,2 and 3');
+Cron('15-45/10 */5 1,2,3 * JAN-MAR SAT', function () {
+	console.log('This will run every tenth second between second 15-45');
+	console.log('every fifth minute of hour 1,2 and 3');
 	console.log('every saturday in January to March.');
 });
 ```

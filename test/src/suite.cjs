@@ -96,7 +96,42 @@ module.exports = function (Cron) {
 
 	test("Slash in pattern with preceding number should not throw", function () {
 		assert.not.throws(() => {
-			let scheduler = new Cron("* 1/5 * * * *");
+			let scheduler = new Cron("* 5/5 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Slash in pattern with preceding letter should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* a/5 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Slash in pattern with preceding comma separated entries should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* 1,2/5 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Slash in pattern with preceding range should not throw", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* 1-15/5 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Slash in pattern with preceding range separated by comma should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* 1-15/5,6 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Range separated by comma should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* 1-15,17 * * * *");
 			scheduler.next();
 		});
 	});
@@ -108,7 +143,7 @@ module.exports = function (Cron) {
 		});
 	});
 
-	test("Slash in pattern with range pre and should not throw", function () {
+	test("Slash in pattern with range pre should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* 15-45/15 * * * *");
 			scheduler.next();
@@ -118,6 +153,27 @@ module.exports = function (Cron) {
 	test("Slash in pattern with zero stepping should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */0 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Range with stepping with zero stepping should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* 10-20/0 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Range with stepping with illegal upper range should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* 10-70/5 * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Range with stepping with illegal range should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* 50-40/5 * * * *");
 			scheduler.next();
 		});
 	});

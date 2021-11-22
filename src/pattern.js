@@ -86,48 +86,46 @@ CronPattern.prototype.parse = function () {
  * @param {CronPatternPart} type - Seconds/minutes etc
  * @param {string} conf - Current pattern part - *, 0-1 etc
  * @param {CronIndexOffset} valueIndexOffset
+ * @param {boolean} [recursed] - Is this a recursed call 
  */
-CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
+CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset, recursed) {
 
-	let i,
-		split,
-		arr = this[type];
+	const arr = this[type];
 
 	// First off, handle wildcard
 	if( conf === "*" ) {
-		for( i = 0; i < arr.length; i++ ) {
+		for( let i = 0; i < arr.length; i++ ) {
 			arr[i] = 1;
 		}
 		return;
 	}
 
 	// Handle separated entries (,) by recursion
-	split = conf.split(",");
+	const split = conf.split(",");
 	if( split.length > 1 ) {
-		for( i = 0; i < split.length; i++ ) {
-			this.partToArray(type, split[i], valueIndexOffset);
+		for( let i = 0; i < split.length; i++ ) {
+			this.partToArray(type, split[i], valueIndexOffset, true);
 		}
 
 	// Handle range with stepping (x-y/z)
 	} else if( conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1 ) {
+		if (recursed) throw new Error("CronPattern: Range with stepping cannot coexist with ,");
+
 		this.handleRangeWithStepping(conf, type, valueIndexOffset);
-	}
+	
+	// Handle range
+	} else if( conf.indexOf("-") !== -1 ) {
+		if (recursed) throw new Error("CronPattern: Range with stepping cannot coexist with ,");
 
-	// Handle range (-)
-	let handled = false;
-	if( conf.indexOf("-") !== -1 ) {
 		this.handleRange(conf, type, valueIndexOffset);
-		handled = true;
-	}
 
-	// Handle stepping (/)
-	if( conf.indexOf("/") !== -1 ) {
-		this.handleStepping(conf, type, valueIndexOffset, handled);
-		handled = true;
-	}
+	// Handle stepping
+	} else if( conf.indexOf("/") !== -1 ) {
+		if (recursed) throw new Error("CronPattern: Range with stepping cannot coexist with ,");
 
-	// Handle pure number
-	if (!handled) {
+		this.handleStepping(conf, type, valueIndexOffset);
+
+	} else {
 		this.handleNumber(conf, type, valueIndexOffset);
 	}
 
@@ -245,14 +243,18 @@ CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
  * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
  * @param {string} type - One of "seconds", "minutes" etc
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
- * @param {boolean} combine - Combine stepping with a previously run handler
  */
-CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset, combine) {
+CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset) {
 
 	const split = conf.split("/");
 
 	if( split.length !== 2 ) {
 		throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
+	}
+
+	let start = 0;
+	if( split[0] !== "*" ) {
+		start = parseInt(split[0], 10);
 	}
 
 	const steps = parseInt(split[1], 10);
@@ -261,12 +263,8 @@ CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset, c
 	if( steps === 0 ) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
 	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
 
-	for( let i = 0; i < this[type].length; i++ ) {
-		if (i%steps===0) {
-			this[type][(i + valueIndexOffset)] = (combine === true) ? (this[type][(i + valueIndexOffset)] & 1) : 1;
-		} else {
-			this[type][(i + valueIndexOffset)] = 0;
-		}
+	for( let i = start; i < this[type].length; i+= steps ) {
+		this[type][(i + valueIndexOffset)] = 1;
 	}
 };
 
