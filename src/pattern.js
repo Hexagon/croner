@@ -109,8 +109,9 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 		}
 
 	// Handle range with stepping (x-y/z)
-	} else if( conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1 && conf.indexOf("-") < conf.indexOf("/")) {
+	} else if( conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1 ) {
 		this.handleRangeWithStepping(conf, type, valueIndexOffset);
+	}
 
 	// Handle range (-)
 	let handled = false;
@@ -174,10 +175,11 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
  */
 CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset) {
-	let [, lower, upper, steps] = conf.match(/(\d+)-(\d+)\/(\d+)/);
+	let matches = conf.match(/^(\d+)-(\d+)\/(\d+)$/);
 
-	if (lower === undefined || upper === undefined || steps === undefined) throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
+	if( matches === null ) throw new TypeError("CronPattern: Syntax error, illegal range with stepping: '" + conf + "'");
 
+	let [, lower, upper, steps] = matches;
 	lower = parseInt(lower, 10) + valueIndexOffset;
 	upper = parseInt(upper, 10) + valueIndexOffset;
 	steps = parseInt(steps, 10) + valueIndexOffset;
