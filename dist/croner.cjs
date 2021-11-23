@@ -94,7 +94,7 @@
 	 * @param {Date} date - Input date
 	 */
 	CronDate.prototype.apply = function () {
-		let newDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
+		const newDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
 		
 		this.milliseconds = newDate.getMilliseconds();
 		this.seconds = newDate.getSeconds();
@@ -113,7 +113,7 @@
 	 */
 	CronDate.prototype.fromString = function (str) {
 
-		let parsedDate = this.parseISOLocal(str);
+		const parsedDate = this.parseISOLocal(str);
 
 		// Throw if we did get an invalid date
 		if( isNaN(parsedDate) ) {
@@ -139,9 +139,8 @@
 
 		this.milliseconds = 0;
 
-		let self = this,
-			origTime = self.getTime(),
-
+		const 
+			origTime = this.getTime(),
 			
 			/**
 			 * Find next
@@ -154,14 +153,14 @@
 			 * @returns {boolean}
 			 * 
 			 */
-			findNext = function (target, pattern, offset, override) {
+			findNext = (target, pattern, offset, override) => {
 				
-				let startPos = (override === void 0) ? self[target] + offset : 0 + offset;
+				const startPos = (override === void 0) ? this[target] + offset : 0 + offset;
 
 				for( let i = startPos; i < pattern[target].length; i++ ) {
 
 					if( pattern[target][i] ) {
-						self[target] = i-offset;
+						this[target] = i-offset;
 						return true;
 					}
 				}
@@ -169,7 +168,7 @@
 
 			},
 			
-			resetPrevious = function () {
+			resetPrevious = () => {
 				// Now when we have gone to next minute, we have to set seconds to the first match
 				// Now we are at 00:01:05 following the same example.
 				// 
@@ -195,17 +194,17 @@
 		//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
 		//   from pattern. Offset should be -1
 		// ]
-		let toDo = [
-				["seconds", "minutes", 0],
-				["minutes", "hours", 0],
-				["hours", "days", 0],
-				["days", "months", -1],
-				["months", "years", 0]
-			],
-			doing = 0;
+		const toDo = [
+			["seconds", "minutes", 0],
+			["minutes", "hours", 0],
+			["hours", "days", 0],
+			["days", "months", -1],
+			["months", "years", 0]
+		];
 
 		// Ok, we're working our way trough the toDo array, top to bottom
 		// If we reach 5, work is done
+		let doing = 0;
 		while(doing < 5) {
 
 			// findNext sets the current member to next match in pattern
@@ -236,9 +235,9 @@
 		}
 
 		// If anything changed, recreate this CronDate and run again without incrementing
-		if (origTime != self.getTime()) {
-			self.apply();
-			return self.increment(pattern, true);
+		if (origTime != this.getTime()) {
+			this.apply();
+			return this.increment(pattern, true);
 		} else {
 			return this;
 		}
@@ -253,11 +252,11 @@
 	 * @returns {Date}
 	 */
 	CronDate.prototype.getDate = function (internal) {
-		let targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
+		const targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
 		if (internal || !this.timezone) {
 			return targetDate;
 		} else {
-			let offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
+			const offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
 			return new Date(targetDate.getTime()-offset);
 		}
 	};
@@ -277,25 +276,25 @@
 	 * Takes a iso 8001 local date time string and creates a Date object
 	 * @private
 	 * 
-	 * @param {string} s - an ISO 8001 format date and time string
+	 * @param {string} dateTimeString - an ISO 8001 format date and time string
 	 *                      with all components, e.g. 2015-11-24T19:40:00
 	 * @returns {Date|number} - Date instance from parsing the string. May be NaN.
 	 */
-	CronDate.prototype.parseISOLocal = function (s) {
-		let b = s.split(/\D/);
+	CronDate.prototype.parseISOLocal = function (dateTimeString) {
+		const dateTimeStringSplit = dateTimeString.split(/\D/);
 
 		// Check for completeness
-		if (b.length < 6) {
+		if (dateTimeStringSplit.length < 6) {
 			return NaN;
 		}
 
-		let
-			year = parseInt(b[0], 10),
-			month = parseInt(b[1], 10),
-			day = parseInt(b[2], 10),
-			hour = parseInt(b[3], 10),
-			minute = parseInt(b[4], 10),
-			second = parseInt(b[5], 10);
+		const
+			year = parseInt(dateTimeStringSplit[0], 10),
+			month = parseInt(dateTimeStringSplit[1], 10),
+			day = parseInt(dateTimeStringSplit[2], 10),
+			hour = parseInt(dateTimeStringSplit[3], 10),
+			minute = parseInt(dateTimeStringSplit[4], 10),
+			second = parseInt(dateTimeStringSplit[5], 10);
 
 		// Check parts for numeric
 		if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {
@@ -351,7 +350,7 @@
 		}
 
 		// Split configuration on whitespace
-		let parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
+		const parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
 
 		// Validite number of configuration entries
 		if( parts.length < 5 || parts.length > 6 ) {
@@ -363,7 +362,6 @@
 			parts.unshift("0");
 		}
 
-		
 		// Replace alpha representations
 		parts[4] = this.replaceAlphaMonths(parts[4]);
 		parts[5] = this.replaceAlphaDays(parts[5]);
@@ -462,7 +460,7 @@
 	 * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
 	 */
 	CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
-		let i = (parseInt(conf, 10) + valueIndexOffset);
+		const i = (parseInt(conf, 10) + valueIndexOffset);
 
 		if( i < 0 || i >= this[type].length ) {
 			throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
@@ -480,7 +478,7 @@
 	 * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
 	 */
 	CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset) {
-		let matches = conf.match(/^(\d+)-(\d+)\/(\d+)$/);
+		const matches = conf.match(/^(\d+)-(\d+)\/(\d+)$/);
 
 		if( matches === null ) throw new TypeError("CronPattern: Syntax error, illegal range with stepping: '" + conf + "'");
 
@@ -682,15 +680,14 @@
 	 * @returns {Cron}
 	 */
 	function Cron (pattern, options, func) {
-		let self = this;
-		
+
 		// Optional "new" keyword
 		if( !(this instanceof Cron) ) {
 			return new Cron(pattern, options, func);
 		}
 
 		/** @type {CronPattern} */
-		self.pattern = new CronPattern(pattern);
+		this.pattern = new CronPattern(pattern);
 
 		// Make options optional
 		if( typeof options === "function" ) {
@@ -752,7 +749,7 @@
 	 */
 	Cron.prototype.next = function (prev) {
 		prev = new CronDate(prev, this.options.timezone);
-		let next = this._next(prev);
+		const next = this._next(prev);
 		return next ? next.getDate() : null;
 	};
 
@@ -763,8 +760,8 @@
 	 * @returns {boolean} - Running or not
 	 */
 	Cron.prototype.running = function () {
-		let msLeft = this.msToNext(this.previousrun);
-		let running = !this.options.paused && this.fn !== void 0;
+		const msLeft = this.msToNext(this.previousrun);
+		const running = !this.options.paused && this.fn !== void 0;
 		return msLeft !== null && running;
 	};
 
@@ -793,7 +790,7 @@
 		}
 
 		// Calculate next run
-		let nextRun = new CronDate(prev, this.options.timezone).increment(this.pattern);
+		const nextRun = new CronDate(prev, this.options.timezone).increment(this.pattern);
 
 		if ((nextRun === null) ||
 			(this.options.maxRuns <= 0) ||	
@@ -816,7 +813,7 @@
 	 */
 	Cron.prototype.msToNext = function (prev) {
 		prev = new CronDate(prev, this.options.timezone);
-		let next = this._next(prev);
+		const next = this._next(prev);
 		if( next ) {
 			return (next.getTime(true) - prev.getTime(true));
 		} else {
@@ -865,55 +862,53 @@
 	 */
 	Cron.prototype.schedule = function (func) {
 
-		let self = this,
-		
-			// Get ms to next run
-			waitMs = this.msToNext(self.previousrun),
+		// Update function if passed
+		if (func) {
+			this.fn = func;
+		}
 
-			// Prioritize context before closure,
-			// to allow testing of maximum delay. 
-			_maxDelay = self.maxDelay || maxDelay;
+		// Get ms to next run, bail out early if waitMs is null (no next run)
+		let waitMs = this.msToNext(this.previousrun);
+		if  ( waitMs === null )  return this;
+
+		// Prioritize context before closure,
+		// to allow testing of maximum delay. 	
+		const _maxDelay = this.maxDelay || maxDelay;
 
 		// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
 		if( waitMs > _maxDelay ) {
 			waitMs = _maxDelay;
 		}
 
-		// Update function if passed
-		if (func) {
-			self.fn = func;
-		}
+		// Ok, go!
+		const go = () => {
 
-		// All ok, go go!
-		if  ( waitMs !== null ) {
-			self.currentTimeout = setTimeout(function () {
+			if( waitMs !== _maxDelay && !this.options.paused ) {
 
-				// Are we running? If waitMs is maxed out, this is a blank run
-				if( waitMs !== _maxDelay ) {
+				this.options.maxRuns--;
 
-					if ( !self.options.paused ) {
-						self.options.maxRuns--;
-
-						if (self.options.catch) {
-							try {
-								self.fn(self);
-							} catch (_e) {
-								// Throw it away
-							}
-						} else {
-							self.fn(self);
-						}
+				// Always catch errors, but only re-throw if options.catch is not set
+				if (this.options.catch) {
+					try {
+						this.fn(this);
+					} catch (_e) {
+						// Ignore
 					}
-
-					self.previousrun = new CronDate(void 0, self.options.timezone);
+				} else {
+					this.fn(this);
 				}
 
-				// Recurse
-				self.schedule();
+				this.previousrun = new CronDate(void 0, this.options.timezone);
 
-			}, waitMs );
-		}
+			}
 
+			// Recurse
+			this.schedule();
+
+		};
+
+		this.currentTimeout = setTimeout(go, waitMs );
+		
 		return this;
 
 	};

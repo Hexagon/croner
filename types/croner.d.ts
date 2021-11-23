@@ -116,5 +116,8 @@ export class Cron {
      * @returns {Cron}
      */
     public schedule(func: Function): Cron;
+    previousrun: CronDate;
+    currentTimeout: number;
 }
 import { CronPattern } from "./pattern.js";
+import { CronDate } from "./date.js";

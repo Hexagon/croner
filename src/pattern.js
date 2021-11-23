@@ -44,7 +44,7 @@ CronPattern.prototype.parse = function () {
 	}
 
 	// Split configuration on whitespace
-	let parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
+	const parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
 
 	// Validite number of configuration entries
 	if( parts.length < 5 || parts.length > 6 ) {
@@ -56,7 +56,6 @@ CronPattern.prototype.parse = function () {
 		parts.unshift("0");
 	}
 
-	
 	// Replace alpha representations
 	parts[4] = this.replaceAlphaMonths(parts[4]);
 	parts[5] = this.replaceAlphaDays(parts[5]);
@@ -155,7 +154,7 @@ CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
  */
 CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
-	let i = (parseInt(conf, 10) + valueIndexOffset);
+	const i = (parseInt(conf, 10) + valueIndexOffset);
 
 	if( i < 0 || i >= this[type].length ) {
 		throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
@@ -173,7 +172,7 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
  */
 CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset) {
-	let matches = conf.match(/^(\d+)-(\d+)\/(\d+)$/);
+	const matches = conf.match(/^(\d+)-(\d+)\/(\d+)$/);
 
 	if( matches === null ) throw new TypeError("CronPattern: Syntax error, illegal range with stepping: '" + conf + "'");
 

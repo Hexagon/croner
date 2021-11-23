@@ -21,16 +21,16 @@ Quick examples:
 
 ```javascript
 // Run a function at the interval set by a cron expression
-let job = Cron('* * * * * *', () => {
+const job = Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
 
 // What date is next sunday?
-let nextSunday = Cron('0 0 0 * * 7').next();
+const nextSunday = Cron('0 0 0 * * 7').next();
 console.log(nextSunday.toLocaleDateString());
 
 // How many days left to christmas eve?
-let msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
+const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
 
@@ -63,7 +63,6 @@ const scheduler : Cron = new Cron("* * * * * *", () => {
     console.log("This will run every second.");
 });
 ```
-
 
 ### Deno
 
@@ -127,16 +126,16 @@ Cron takes three arguments
 *   scheduled function (optional)
 
 ```javascript
-var job = Cron("* * * * * *" , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
+const job = Cron("* * * * * *" , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
 job.schedule(() => {});		
 
 // States
-let nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-let prevRun = job.previous( );	
-let msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
-let isRunning = job.running();
+const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+const prevRun = job.previous( );	
+const msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
+const isRunning = job.running();
 
 // Control scheduled execution
 job.pause();				
@@ -196,7 +195,7 @@ Cron('15-45/10 */5 1,2,3 * JAN-MAR SAT', function () {
 #### Find dates
 ```javascript
 // Find next month
-let nextMonth = Cron('0 0 0 1 * *').next(),
+const nextMonth = Cron('0 0 0 1 * *').next(),
 	nextSunday = Cron('0 0 0 * * 7').next(),
 	nextSat29feb = Cron("0 0 0 29 2 6").next();
 
@@ -208,7 +207,7 @@ console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateSt
 #### With options
 ```javascript
 
-var job = Cron(
+const job = Cron(
 	'* * * * *', 
 	{ 
 		maxRuns: Infinity, 
@@ -224,7 +223,7 @@ var job = Cron(
 
 #### Job controls
 ```javascript
-let job = Cron('* * * * * *', (self) => {
+const job = Cron('* * * * * *', (self) => {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
 	console.log('Previous run: ' + self.previous());
