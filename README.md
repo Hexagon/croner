@@ -1,6 +1,6 @@
 <p align="center">
   <img src="/croner.png" alt="Croner" width="150" height="150"><br>
-  Trigger functions in javascript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+  Trigger functions in JavaScript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
 # Croner
@@ -8,19 +8,19 @@
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![jsdelivr](https://data.jsdelivr.com/v1/package/gh/hexagon/croner/badge?style=rounded)](https://www.jsdelivr.com/package/gh/hexagon/croner)
 
-*   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax
-*   Pause, resume or stop execution efter a task is scheduled
+*   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
+*   Pause, resume or stop execution after a task is scheduled.
 *   Find first date of next month, find date of next tuesday, etc.
-*   Works in Node.js >=4.0 (both require and import)
-*   Works in Deno >=1.16
+*   Works in Node.js >=4.0 (both require and import).
+*   Works in Deno >=1.16.
 *   Works in browsers as standalone, UMD or ES-module.
-*   **Experimental feature:** Schedule in specific target timezones
-*   Includes [TypeScript](https://www.typescriptlang.org/) typings
+*   **Experimental feature:** Schedule in specific target timezones.
+*   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 
 Quick examples:
 
 ```javascript
-// Run a function at the interval set by a cron expression
+// Run a function at the interval defined by a cron expression
 const job = Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
