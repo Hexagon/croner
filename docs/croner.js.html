@@ -187,15 +187,14 @@ const maxDelay = Math.pow(2, 32 - 1) - 1;
  * @returns {Cron}
  */
 function Cron (pattern, options, func) {
-	let self = this;
-	
+
 	// Optional "new" keyword
 	if( !(this instanceof Cron) ) {
 		return new Cron(pattern, options, func);
 	}
 
 	/** @type {CronPattern} */
-	self.pattern = new CronPattern(pattern);
+	this.pattern = new CronPattern(pattern);
 
 	// Make options optional
 	if( typeof options === "function" ) {
@@ -257,7 +256,7 @@ Cron.prototype.processOptions = function (options) {
  */
 Cron.prototype.next = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
-	let next = this._next(prev);
+	const next = this._next(prev);
 	return next ? next.getDate() : null;
 };
 
@@ -268,8 +267,8 @@ Cron.prototype.next = function (prev) {
  * @returns {boolean} - Running or not
  */
 Cron.prototype.running = function () {
-	let msLeft = this.msToNext(this.previousrun);
-	let running = !this.options.paused &amp;&amp; this.fn !== void 0;
+	const msLeft = this.msToNext(this.previousrun);
+	const running = !this.options.paused &amp;&amp; this.fn !== void 0;
 	return msLeft !== null &amp;&amp; running;
 };
 
@@ -298,7 +297,7 @@ Cron.prototype._next = function (prev) {
 	}
 
 	// Calculate next run
-	let nextRun = new CronDate(prev, this.options.timezone).increment(this.pattern);
+	const nextRun = new CronDate(prev, this.options.timezone).increment(this.pattern);
 
 	if ((nextRun === null) ||
 		(this.options.maxRuns &lt;= 0) ||	
@@ -321,7 +320,7 @@ Cron.prototype._next = function (prev) {
  */
 Cron.prototype.msToNext = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
-	let next = this._next(prev);
+	const next = this._next(prev);
 	if( next ) {
 		return (next.getTime(true) - prev.getTime(true));
 	} else {
@@ -370,55 +369,53 @@ Cron.prototype.resume = function () {
  */
 Cron.prototype.schedule = function (func) {
 
-	let self = this,
-	
-		// Get ms to next run
-		waitMs = this.msToNext(self.previousrun),
+	// Update function if passed
+	if (func) {
+		this.fn = func;
+	}
 
-		// Prioritize context before closure,
-		// to allow testing of maximum delay. 
-		_maxDelay = self.maxDelay || maxDelay;
+	// Get ms to next run, bail out early if waitMs is null (no next run)
+	let waitMs = this.msToNext(this.previousrun);
+	if  ( waitMs === null )  return this;
+
+	// Prioritize context before closure,
+	// to allow testing of maximum delay. 	
+	const _maxDelay = this.maxDelay || maxDelay;
 
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
 	if( waitMs > _maxDelay ) {
 		waitMs = _maxDelay;
 	}
 
-	// Update function if passed
-	if (func) {
-		self.fn = func;
-	}
+	// Ok, go!
+	const go = () => {
 
-	// All ok, go go!
-	if  ( waitMs !== null ) {
-		self.currentTimeout = setTimeout(function () {
+		if( waitMs !== _maxDelay &amp;&amp; !this.options.paused ) {
 
-			// Are we running? If waitMs is maxed out, this is a blank run
-			if( waitMs !== _maxDelay ) {
+			this.options.maxRuns--;
 
-				if ( !self.options.paused ) {
-					self.options.maxRuns--;
-
-					if (self.options.catch) {
-						try {
-							self.fn(self);
-						} catch (_e) {
-							// Throw it away
-						}
-					} else {
-						self.fn(self);
-					}
+			// Always catch errors, but only re-throw if options.catch is not set
+			if (this.options.catch) {
+				try {
+					this.fn(this);
+				} catch (_e) {
+					// Ignore
 				}
-
-				self.previousrun = new CronDate(void 0, self.options.timezone);
+			} else {
+				this.fn(this);
 			}
 
-			// Recurse
-			self.schedule();
+			this.previousrun = new CronDate(void 0, this.options.timezone);
 
-		}, waitMs );
-	}
+		}
 
+		// Recurse
+		this.schedule();
+
+	};
+
+	this.currentTimeout = setTimeout(go, waitMs );
+	
 	return this;
 
 };

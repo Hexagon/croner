@@ -124,34 +124,34 @@
   <section class="readme">
     <article>
       <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="108"><br>
-  Trigger functions in javascript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+  <img src="/croner.png" alt="Croner" width="150" height="150"><br>
+  Trigger functions in JavaScript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 <h1>Croner</h1>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <a href="https://badge.fury.io/js/croner"><img src="https://badge.fury.io/js/croner.svg" alt="npm version"></a> <a href="https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff" alt="Codacy Badge"></a>
-<a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a> <a href="https://www.jsdelivr.com/package/npm/croner"><img src="https://data.jsdelivr.com/v1/package/npm/croner/badge?style=rounded" alt="jsdelivr"></a></p>
+<a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a> <a href="https://www.jsdelivr.com/package/gh/hexagon/croner"><img src="https://data.jsdelivr.com/v1/package/gh/hexagon/croner/badge?style=rounded" alt="jsdelivr"></a></p>
 <ul>
-<li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax</li>
-<li>Pause, resume or stop execution efter a task is scheduled</li>
+<li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
+<li>Pause, resume or stop execution after a task is scheduled.</li>
 <li>Find first date of next month, find date of next tuesday, etc.</li>
-<li>Works in Node.js &gt;=4.0 (both require and import)</li>
-<li>Works in Deno &gt;=1.16</li>
+<li>Works in Node.js &gt;=4.0 (both require and import).</li>
+<li>Works in Deno &gt;=1.16.</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
-<li><strong>Experimental feature:</strong> Schedule in specific target timezones</li>
-<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings, see Usage/Typescript</li>
+<li><strong>Experimental feature:</strong> Schedule in specific target timezones.</li>
+<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
 </ul>
 <p>Quick examples:</p>
-<pre class="prettyprint source lang-javascript"><code>// Run a function at the interval set by a cron expression
-let job = Cron('* * * * * *', () => {
+<pre class="prettyprint source lang-javascript"><code>// Run a function at the interval defined by a cron expression
+const job = Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
 
 // What date is next sunday?
-let nextSunday = Cron('0 0 0 * * 7').next();
+const nextSunday = Cron('0 0 0 * * 7').next();
 console.log(nextSunday.toLocaleDateString());
 
 // How many days left to christmas eve?
-let msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
+const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas eve&quot;);
 </code></pre>
 <p>More <a href="#examples">examples</a>...</p>
@@ -216,16 +216,16 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <li><a href="#options">options</a> (optional)</li>
 <li>scheduled function (optional)</li>
 </ul>
-<pre class="prettyprint source lang-javascript"><code>var job = Cron(&quot;* * * * * *&quot; , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
+<pre class="prettyprint source lang-javascript"><code>const job = Cron(&quot;* * * * * *&quot; , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
 job.schedule(() => {});		
 
 // States
-let nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-let prevRun = job.previous( );	
-let msToNext = job.msToNext( /*optional*/ previosRun ); // Milliseconds left to next execution
-let isRunning = job.running();
+const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+const prevRun = job.previous( );	
+const msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
+const isRunning = job.running();
 
 // Control scheduled execution
 job.pause();				
@@ -352,15 +352,15 @@ job.stop();
 <h3>Examples</h3>
 <h4>Expressions</h4>
 <pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
-Cron('15-45/15 */5 1,2,3 * JAN-MAR SAT', function () {
-	console.log('This will run every fifteenth second between second 15-45');
-	console.log('of the first five seconds every fifth minute');
-	console.log('of hour 1,2 and 3 every saturday in January to March.');
+Cron('15-45/10 */5 1,2,3 * JAN-MAR SAT', function () {
+	console.log('This will run every tenth second between second 15-45');
+	console.log('every fifth minute of hour 1,2 and 3');
+	console.log('every saturday in January to March.');
 });
 </code></pre>
 <h4>Find dates</h4>
 <pre class="prettyprint source lang-javascript"><code>// Find next month
-let nextMonth = Cron('0 0 0 1 * *').next(),
+const nextMonth = Cron('0 0 0 1 * *').next(),
 	nextSunday = Cron('0 0 0 * * 7').next(),
 	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next();
 
@@ -370,7 +370,7 @@ console.log(&quot;Next saturday at 29th of february: &quot; +  nextSat29feb.toLo
 </code></pre>
 <h4>With options</h4>
 <pre class="prettyprint source lang-javascript"><code>
-var job = Cron(
+const job = Cron(
 	'* * * * *', 
 	{ 
 		maxRuns: Infinity, 
@@ -384,7 +384,7 @@ var job = Cron(
 );
 </code></pre>
 <h4>Job controls</h4>
-<pre class="prettyprint source lang-javascript"><code>let job = Cron('* * * * * *', (self) => {
+<pre class="prettyprint source lang-javascript"><code>const job = Cron('* * * * * *', (self) => {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
 	console.log('Previous run: ' + self.previous());
@@ -395,6 +395,8 @@ Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
 Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
 Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 </code></pre>
+<h2>Contributing</h2>
+<p>See <a href="https://github.com/Hexagon/croner/wiki/Contribution-Guide">Contribution Guide</a></p>
 <h2>License</h2>
 <p>MIT</p>
     </article>
