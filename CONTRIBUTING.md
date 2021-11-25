@@ -4,7 +4,6 @@
 
 To get an overview of the project, read the [README](README.md). Here are some resources to help you get started with open source contributions:
 
-- [Finding ways to contribute to open source on GitHub](https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github)
 - [Set up Git](https://docs.github.com/en/get-started/quickstart/set-up-git)
 - [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
 - [Collaborating with pull requests](https://docs.github.com/en/github/collaborating-with-pull-requests)
@@ -15,19 +14,17 @@ To get an overview of the project, read the [README](README.md). Here are some r
 
 #### Create a new issue
 
-If you spot a problem with the docs, [search if an issue already exists](https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests#search-by-the-title-body-or-comments). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/hexagon/croner/issues/new/choose). 
+If you spot a problem with Croner, [search if an issue already exists](https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests#search-by-the-title-body-or-comments). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/hexagon/croner/issues/new/choose). 
 
 #### Solve an issue
 
-Scan through our [existing issues](https://github.com/hexagon/croner/issues) to find one that interests you. You can narrow down the search using `labels` as filters. As a general rule, we don’t assign issues to anyone. If you find an issue to work on, you are welcome to open a PR with a fix.
+Scan through our [existing issues](https://github.com/hexagon/croner/issues) to find one that interests you. You can narrow down the search using `labels` as filters. If you find an issue to work on, make a note in the comments so er van assign it to you. Then you are welcome to open a PR with a fix.
 
 ### Make Changes
 
-#### Make changes in the UI
+#### Setting up the environment
 
-Click **Make a contribution** at the bottom of any docs page to make small changes such as a typo, sentence fix, or a broken link. This takes you to the `.md` file where you can make your changes and [create a pull request](#pull-request) for a review. 
-
-#### Make changes locally
+Se recommend using VS Code with eslint extensions, which will automatically check your code against THE defined rules as you write it.
 
 1. Fork the repository.
 - Using GitHub Desktop:
@@ -43,7 +40,9 @@ Click **Make a contribution** at the bottom of any docs page to make small chang
 
 ### Commit your update
 
-Please run ```npm run build``` before committing, to make sure every test and check passes.
+Please run ```npm run build``` before committing, to update the dist-files, and to make sure every test and check passes. If you make changes to any function Interface, or to JSDoc in general, you should also run ```npm run build:docs``` to update the generated documentation.
+
+See [package.json](/package.json) scripts section for all available scripts.
 
 Then, commit the changes once you are happy with them. 
 
