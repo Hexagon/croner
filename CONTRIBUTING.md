@@ -27,8 +27,6 @@ Scan through our [existing issues](https://github.com/hexagon/croner/issues) to 
 
 Click **Make a contribution** at the bottom of any docs page to make small changes such as a typo, sentence fix, or a broken link. This takes you to the `.md` file where you can make your changes and [create a pull request](#pull-request) for a review. 
 
- <img src="./assets/images/contribution_cta.png" width="300" height="150" /> 
-
 #### Make changes locally
 
 1. Fork the repository.
@@ -45,7 +43,9 @@ Click **Make a contribution** at the bottom of any docs page to make small chang
 
 ### Commit your update
 
-Commit the changes once you are happy with them. 
+Please run ```npm run build``` before committing, to make sure every test and check passes.
+
+Then, commit the changes once you are happy with them. 
 
 ### Pull Request
 
