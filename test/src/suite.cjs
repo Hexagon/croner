@@ -809,5 +809,18 @@ module.exports = function (Cron) {
 
 	});
 
+	test("Context is passed", timeout(2000, (resolve, reject) => {
+		const 
+			c = { a: "b" };
+		Cron("* * * * * *", { context: c }, (self, context) => {
+			self.stop();
+			if (!context || (context && context.a && context.a !== "b")) {
+				reject(new Error("Failure"));
+			} else {
+				resolve();
+			}
+		});
+	}));
+
 	test.run();
 };

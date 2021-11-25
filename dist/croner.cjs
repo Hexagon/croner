@@ -656,6 +656,7 @@
 	 * @property {string | Date} [startAt] - When to start running
 	 * @property {string | Date} [stopAt] - When to stop running
 	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
+	 * @property {?} [context] - Used to pass any object to scheduled function
 	 */
 
 	/**
@@ -890,12 +891,12 @@
 				// Always catch errors, but only re-throw if options.catch is not set
 				if (this.options.catch) {
 					try {
-						this.fn(this);
+						this.fn(this, this.options.context);
 					} catch (_e) {
 						// Ignore
 					}
 				} else {
-					this.fn(this);
+					this.fn(this, this.options.context);
 				}
 
 				this.previousrun = new CronDate(void 0, this.options.timezone);

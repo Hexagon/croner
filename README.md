@@ -130,7 +130,7 @@ Cron takes three arguments
 const job = Cron("* * * * * *" , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule(() => {});		
+job.schedule((/* optional */ job, /* optional */ context) => {});		
 
 // States
 const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
@@ -155,6 +155,7 @@ job.stop();
 | startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | paused       | false          | Boolean        | If the job should be paused from start. |
+| context      | undefined      | Any            | Passed as the second parameter to triggered function |
 
 #### Pattern
 
@@ -236,9 +237,26 @@ Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
 Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
 
+#### Passing a context
+```javascript
+const data = {
+	what: "stuff"
+};
+
+Cron('* * * * * *', { context: data }, (_self, context) => {
+	console.log('This will print stuff: ' + context.what);
+});
+
+Cron('*/5 * * * * *', { context: data }, (self, context) => {
+	console.log('After this, other stuff will be printed instead');
+	context.what = "other stuff";
+	self.stop();
+});
+```
+
 ## Contributing
 
-See [Contribution Guide](https://github.com/Hexagon/croner/wiki/Contribution-Guide)
+See [Contribution Guide](/CONTRIBUTING.md)
 
 ## License
 

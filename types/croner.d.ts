@@ -31,6 +31,10 @@ export type CronOptions = {
      * - Time zone in Europe/Stockholm format
      */
     timezone?: string;
+    /**
+     * - Used to pass any object to scheduled function
+     */
+    context?: unknown;
 };
 /**
  * Cron entrypoint
