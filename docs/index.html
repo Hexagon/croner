@@ -129,7 +129,8 @@
 </p>
 <h1>Croner</h1>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <a href="https://badge.fury.io/js/croner"><img src="https://badge.fury.io/js/croner.svg" alt="npm version"></a> <a href="https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff" alt="Codacy Badge"></a>
-<a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a> <a href="https://www.jsdelivr.com/package/gh/hexagon/croner"><img src="https://data.jsdelivr.com/v1/package/gh/hexagon/croner/badge?style=rounded" alt="jsdelivr"></a></p>
+<a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a> <a href="https://www.jsdelivr.com/package/gh/hexagon/croner"><img src="https://data.jsdelivr.com/v1/package/gh/hexagon/croner/badge?style=rounded" alt="jsdelivr"></a>
+<a href="https://discord.gg/VgpuJ48K8K"><img src="https://img.shields.io/discord/912830749948915713.svg?color=7289da&amp;label=Croner&amp;logo=discord&amp;style=flat-square" alt="Support Server"></a></p>
 <ul>
 <li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
 <li>Pause, resume or stop execution after a task is scheduled.</li>
@@ -219,7 +220,7 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <pre class="prettyprint source lang-javascript"><code>const job = Cron(&quot;* * * * * *&quot; , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule(() => {});		
+job.schedule((/* optional */ job, /* optional */ context) => {});		
 
 // States
 const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
@@ -279,6 +280,12 @@ job.stop();
 <td>false</td>
 <td>Boolean</td>
 <td>If the job should be paused from start.</td>
+</tr>
+<tr>
+<td>context</td>
+<td>undefined</td>
+<td>Any</td>
+<td>Passed as the second parameter to triggered function</td>
 </tr>
 </tbody>
 </table>
@@ -395,8 +402,23 @@ Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
 Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
 Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 </code></pre>
+<h4>Passing a context</h4>
+<pre class="prettyprint source lang-javascript"><code>const data = {
+	what: &quot;stuff&quot;
+};
+
+Cron('* * * * * *', { context: data }, (_self, context) => {
+	console.log('This will print stuff: ' + context.what);
+});
+
+Cron('*/5 * * * * *', { context: data }, (self, context) => {
+	console.log('After this, other stuff will be printed instead');
+	context.what = &quot;other stuff&quot;;
+	self.stop();
+});
+</code></pre>
 <h2>Contributing</h2>
-<p>See <a href="https://github.com/Hexagon/croner/wiki/Contribution-Guide">Contribution Guide</a></p>
+<p>See <a href="/CONTRIBUTING.md">Contribution Guide</a></p>
 <h2>License</h2>
 <p>MIT</p>
     </article>
