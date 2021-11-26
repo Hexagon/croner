@@ -48,10 +48,42 @@ Benchmark at 2021-11-26:
 
 Test: When is next saturday 29th of february, pattern '0 0 0 29 2 6'
 
-Node schedule: Sat Feb 05 2022 00:00:00 GMT+0100 (centraleuropeisk normaltid) in 49ms
-Node-cron:     ???                                                            in 7ms
-cron:          Sat Mar 05 2022 00:00:00 GMT+0100 (centraleuropeisk normaltid) in 2ms
-Croner:        Sat Feb 29 2048 00:00:00 GMT+0100 (centraleuropeisk normaltid) in 6ms
+node-schedule: 2022-02-05 00:00:00 in 37.77ms
+node-cron:     ???                 in 6.746ms
+cron:          2022-03-05 00:00:00 in 8.282ms
+croner:        2048-02-29 00:00:00 in 2.676ms
+
+> node cron-implementation-test.js
+
+Test: When is next 15th of february, pattern '0 0 0 15 2 *'
+
+node-schedule: 2022-02-15 00:00:00 in 91.834ms
+node-cron:     ???                 in 7.69ms
+cron:          2022-03-15 00:00:00 in 12.354ms
+croner:        2022-02-15 00:00:00 in 4.398ms
+
+Test: When is next monday in october, pattern '0 0 0 * 10 1'
+
+node-schedule: 2022-10-03 00:00:00 in 244.057ms
+node-cron:     ???                 in 12.001ms
+cron:          2021-11-29 00:00:00 in 19.322ms
+croner:        2022-10-03 00:00:00 in 5.394ms
+
+Test: When is next monday the 1st of any month, pattern '0 0 0 1 * 1'
+
+node-schedule: 2021-11-29 00:00:00 in 39.591ms
+node-cron:     ???                 in 7.078ms
+cron:          2021-11-29 00:00:00 in 10.107ms
+croner:        2022-08-01 00:00:00 in 9.473ms
+
+Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
+
+node-schedule: 2022-03-31 23:00:00 in 87.661ms
+node-cron:     ???                 in 10.299ms
+Month '3' is limited to '30' days.
+cron:          2022-04-01 23:00:00 in 25.756ms
+croner:        2022-03-31 23:00:00 in 5.569ms
+
 ```
   https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
 
