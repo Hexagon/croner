@@ -37,6 +37,24 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 
 More [examples](#examples)...
 
+## Why another javascript cron implemetation?
+
+Because the existing ones isn't good enough. They have serious bugs, use bloated dependencies, does not work in all environments and/or just doesn't work as expected.
+
+Benchmark at 2021-11-26:
+
+```
+> node cron-implementation-test.js
+
+Test: When is next saturday 29th of february, pattern '0 0 0 29 2 6'
+
+Node schedule: Sat Feb 05 2022 00:00:00 GMT+0100 (centraleuropeisk normaltid) in 49ms
+Node-cron:     ???                                                            in 7ms
+cron:          Sat Mar 05 2022 00:00:00 GMT+0100 (centraleuropeisk normaltid) in 2ms
+Croner:        Sat Feb 29 2048 00:00:00 GMT+0100 (centraleuropeisk normaltid) in 6ms
+```
+  https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
+
 ## Installation
 
 ### Node.js
