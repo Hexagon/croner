@@ -37,7 +37,7 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 
 More [examples](#examples)...
 
-## Why another javascript cron implementation?
+## Why another javascript cron implementation
 
 Because the existing ones isn't good enough. They have serious bugs, use bloated dependencies, does not work in all environments and/or just doesn't work as expected.
 
