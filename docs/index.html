@@ -156,7 +156,7 @@ const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas eve&quot;);
 </code></pre>
 <p>More <a href="#examples">examples</a>...</p>
-<h2>Why another javascript cron implementation?</h2>
+<h2>Why another javascript cron implementation</h2>
 <p>Because the existing ones isn't good enough. They have serious bugs, use bloated dependencies, does not work in all environments and/or just doesn't work as expected.</p>
 <p>Benchmark at 2021-11-26:</p>
 <pre class="prettyprint source"><code>> node cron-implementation-test.js
