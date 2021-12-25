@@ -863,8 +863,12 @@
 	 */
 	Cron.prototype.schedule = function (func) {
 
+		// If a function is already scheduled, bail out
+		if (func && this.fn) {
+			throw new Error("Cron: It is not allowed to schedule two functions using the same Croner instance.");
+		
 		// Update function if passed
-		if (func) {
+		} else if (func) {
 			this.fn = func;
 		}
 

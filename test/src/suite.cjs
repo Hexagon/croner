@@ -30,6 +30,21 @@ module.exports = function (Cron) {
 			scheduler.next();
 		});
 	});
+	
+	test("Scheduling two functions with the same instance is not allowed", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* * * * * *");
+			scheduler.schedule((self) => { self.stop(); });
+			scheduler.schedule((self) => { self.stop(); });
+		});
+	});
+
+	test("Scheduling two functions with the same instance is not allowed (shorthand)", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* * * * * *", (self) => { self.stop(); });
+			scheduler.schedule((self) => { self.stop(); });
+		});
+	});
 
 	test("Clean 6 part pattern should not throw", function () {
 		assert.not.throws(() => {
