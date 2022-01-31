@@ -786,9 +786,11 @@ module.exports = function (Cron) {
 		assert.ok(timeStockholm<=timeNewYork+4000);
 	});
 	test("getTime should return expcted difference with different timezones (next 31st october)", function () {
+
 		let refTime = new Date();
 		refTime.setFullYear(2021);
-		refTime.setMonth(9);
+		refTime.setMonth(8);
+
 		let
 			timeStockholm = Cron("0 0 0 31 10 *", {timezone: "Europe/Stockholm"}).next(refTime).getTime(),
 			timeNewYork = Cron("0 0 0 31 10 *", {timezone: "America/New_York"}).next(refTime).getTime(),
