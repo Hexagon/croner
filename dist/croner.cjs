@@ -194,7 +194,7 @@
 		//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
 		//   from pattern. Offset should be -1
 		// ]
-		const toDo = [
+		let toDo = [
 			["seconds", "minutes", 0],
 			["minutes", "hours", 0],
 			["hours", "days", 0],
@@ -211,12 +211,18 @@
 			// If time is 00:00:01 and pattern says *:*:05, seconds will
 			// be set to 5
 
-			// If pattern didn't provide a match, increment next vanlue (e.g. minues)
+			// If pattern didn't provide a match, increment next value (e.g. minues)
+			let originalValueCurrent = this[toDo[doing][0]];
 			if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
 				this[toDo[doing][1]]++;
 				resetPrevious();
+
+			// If pattern provided a match, but changed current value, reset previous levels
+			} else if (originalValueCurrent !== this[toDo[doing][0]]) {
+				resetPrevious();
 			}
 
+			
 			// Bail out if an impossible pattern is used
 			if (this.years >= 4000) {
 				return null;

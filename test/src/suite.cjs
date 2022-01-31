@@ -447,6 +447,87 @@ module.exports = function (Cron) {
 
 	});
 
+	test("* 17 * * * should return today, at 17:00:00 (if time is before 17:00:00)", function () {
+		let 
+			todayAt12 = new Date(), // Subtract one day
+			scheduler,
+			nextRun;
+
+		todayAt12.setHours(12);
+		todayAt12.setMinutes(34);
+		todayAt12.setMinutes(54);
+
+		scheduler = new Cron("* * 17 * * *");
+		nextRun = scheduler.next(todayAt12);
+
+		// Do comparison
+		assert.equal(nextRun.getHours(),17);
+		assert.equal(nextRun.getMinutes(),0);
+		assert.equal(nextRun.getMinutes(),0);
+
+	});
+
+	test("*/5 * 15 * * should return today, at 15:00:00 (if time is before 17:00:00)", function () {
+		let 
+			todayAt12 = new Date(), // Subtract one day
+			scheduler,
+			nextRun;
+
+		todayAt12.setHours(12);
+		todayAt12.setMinutes(34);
+		todayAt12.setMinutes(54);
+
+		scheduler = new Cron("*/5 * 15 * * *");
+		nextRun = scheduler.next(todayAt12);
+
+		// Do comparison
+		assert.equal(nextRun.getHours(),15);
+		assert.equal(nextRun.getMinutes(),0);
+		assert.equal(nextRun.getMinutes(),0);
+		
+	});
+
+	
+	test("* * 15 * * should return today, at 15:00:00 (if time is before 17:00:00)", function () {
+		let 
+			todayAt12 = new Date(), // Subtract one day
+			scheduler,
+			nextRun;
+
+		todayAt12.setHours(12);
+		todayAt12.setMinutes(34);
+		todayAt12.setMinutes(54);
+
+		scheduler = new Cron("* * 15 * * *");
+		nextRun = scheduler.next(todayAt12);
+
+		// Do comparison
+		assert.equal(nextRun.getHours(),15);
+		assert.equal(nextRun.getMinutes(),0);
+		assert.equal(nextRun.getMinutes(),0);
+		
+	});
+
+	test("*/5 * 11 * * should return next day, at 11:00:00, if time is 12", function () {
+		let 
+			todayAt12 = new Date(), // Subtract one day
+			scheduler,
+			nextRun;
+
+		todayAt12.setHours(12);
+		todayAt12.setMinutes(34);
+		todayAt12.setMinutes(54);
+
+		scheduler = new Cron("*/5 * 11 * * *");
+		nextRun = scheduler.next(todayAt12);
+
+		// Do comparison
+		assert.equal(nextRun.getHours(),11);
+		assert.equal(nextRun.getMinutes(),0);
+		assert.equal(nextRun.getMinutes(),0);
+		
+	});
+
 	test("0 0 0 * * * with startdate yesterday should return tomorrow, at 12:00:00", function () {
 		let 
 			dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
