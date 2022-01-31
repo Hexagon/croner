@@ -170,7 +170,7 @@ CronDate.prototype.increment = function (pattern, rerun) {
 	//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
 	//   from pattern. Offset should be -1
 	// ]
-	let toDo = [
+	const toDo = [
 		["seconds", "minutes", 0],
 		["minutes", "hours", 0],
 		["hours", "days", 0],
@@ -188,13 +188,13 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		// be set to 5
 
 		// If pattern didn't provide a match, increment next value (e.g. minues)
-		let originalValueCurrent = this[toDo[doing][0]];
+		let currentValue = this[toDo[doing][0]];
 		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
 			this[toDo[doing][1]]++;
 			resetPrevious();
 
 		// If pattern provided a match, but changed current value, reset previous levels
-		} else if (originalValueCurrent !== this[toDo[doing][0]]) {
+		} else if (currentValue !== this[toDo[doing][0]]) {
 			resetPrevious();
 		}
 

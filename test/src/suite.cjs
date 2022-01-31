@@ -777,7 +777,7 @@ module.exports = function (Cron) {
 	test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00", function () {
 		assert.equal(Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear(), 2029);
 	});
-	test("getTime should return expcted difference with different timezones (now)", function () {
+	test("getTime should return expected difference with different timezones (now)", function () {
 		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next().getTime(),
 			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next().getTime();
 
@@ -785,7 +785,7 @@ module.exports = function (Cron) {
 		assert.ok(timeStockholm>=timeNewYork-4000);
 		assert.ok(timeStockholm<=timeNewYork+4000);
 	});
-	test("getTime should return expcted difference with different timezones (next 31st october)", function () {
+	test("getTime should return expected difference with different timezones (next 31st october)", function () {
 
 		let refTime = new Date();
 		refTime.setFullYear(2021);
@@ -799,7 +799,7 @@ module.exports = function (Cron) {
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
 		assert.equal(diff,6);
 	});
-	test("getTime should return expcted difference with different timezones (next 1st november)", function () {
+	test("getTime should return expected difference with different timezones (next 1st november)", function () {
 		let timeStockholm = Cron("0 0 0 1 11 *", {timezone: "Europe/Stockholm"}).next().getTime(),
 			timeNewYork = Cron("0 0 0 1 11 *", {timezone: "America/New_York"}).next().getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
