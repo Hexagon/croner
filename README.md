@@ -52,7 +52,12 @@ node-schedule: 2022-02-05 00:00:00 in 55.13ms
 node-cron:     ???                 in 14.587ms
 cron:          2022-03-05 00:00:00 in 21.07ms
 croner:        2048-02-29 00:00:00 in 10.508ms
+```
 
+<details>
+	<summary>More test results</summary>
+	
+```
 Test: When is next 15th of february, pattern '0 0 0 15 2 *'
 
 node-schedule: 2022-02-15 00:00:00 in 13.306ms
@@ -75,7 +80,10 @@ Month '3' is limited to '30' days.
 cron:          2022-04-01 23:00:00 in 4.508ms
 croner:        2022-03-31 23:00:00 in 1.381ms
 ```
-  https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
+
+</details>
+
+ https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
 
 ## Installation
 
