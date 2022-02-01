@@ -128,13 +128,35 @@ Cron.prototype.processOptions = function (options) {
 /**
  * Find next runtime, based on supplied date. Strips milliseconds.
  * 
- * @param {Date} [prev] - Input pattern
+ * @param {Date} [prev] - Date to start from
  * @returns {Date | null} - Next run time
  */
 Cron.prototype.next = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
 	const next = this._next(prev);
 	return next ? next.getDate() : null;
+};
+
+/**
+ * Find next n runs, based on supplied date. Strips milliseconds.
+ * 
+ * @param {number} n - Number of runs to enumerate
+ * @param {Date} [prev] - Date to start from
+ * @returns {Date[]} - Next n run times
+ */
+Cron.prototype.enumerate = function (n, previous) {
+	let enumeration = [];
+
+	while(n--) {
+		previous = this.next(previous);
+		if (previous !== null) {
+			enumeration.push(previous);
+		} else {
+			break;
+		}
+	}
+
+	return enumeration;
 };
 
 /**

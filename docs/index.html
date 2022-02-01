@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
         </div>
     </div>
   </nav>
@@ -123,43 +123,53 @@
 
   <section class="readme">
     <article>
-      <p align="center">
-  <img src="/croner.png" alt="Croner" width="150" height="150"><br>
-  Trigger functions in JavaScript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
-</p>
-<h1>Croner</h1>
-<p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <a href="https://badge.fury.io/js/croner"><img src="https://badge.fury.io/js/croner.svg" alt="npm version"></a> <a href="https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff" alt="Codacy Badge"></a>
-<a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a> <a href="https://www.npmjs.org/package/croner"><img src="https://img.shields.io/npm/dm/croner.svg" alt="NPM Downloads"></a>
-<a href="https://discord.gg/VgpuJ48K8K"><img src="https://img.shields.io/discord/912830749948915713.svg?color=7289da&amp;label=Croner&amp;logo=discord&amp;style=flat-square" alt="Support Server"></a></p>
-<ul>
-<li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
-<li>Pause, resume or stop execution after a task is scheduled.</li>
-<li>Find first date of next month, find date of next tuesday, etc.</li>
-<li>Works in Node.js &gt;=4.0 (both require and import).</li>
-<li>Works in Deno &gt;=1.16.</li>
-<li>Works in browsers as standalone, UMD or ES-module.</li>
-<li><strong>Experimental feature:</strong> Schedule in specific target timezones.</li>
-<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
-</ul>
-<p>Quick examples:</p>
-<pre class="prettyprint source lang-javascript"><code>// Run a function at the interval defined by a cron expression
-const job = Cron('* * * * * *', () => {
+      <pre><code>&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/croner.png&quot; alt=&quot;Croner&quot; width=&quot;150&quot; height=&quot;150&quot;&gt;&lt;br&gt;
+Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. Node. Deno. Browser. &lt;br&gt;&lt;br&gt;Try it live on &lt;a href=&quot;https://jsfiddle.net/hexag0n/hoa8kwsb/&quot;&gt;jsfiddle&lt;/a&gt;.&lt;br&gt;
+&lt;/p&gt;
+
+# Croner
+
+![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;amp;utm_medium=referral&amp;amp;utm_content=Hexagon/croner&amp;amp;utm_campaign=Badge_Grade)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![NPM Downloads](https://img.shields.io/npm/dm/croner.svg)](https://www.npmjs.org/package/croner)
+![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
+
+*   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
+*   Find first date of next month, find date of next tuesday, etc.
+*   Pause, resume or stop execution after a task is scheduled.
+*   Works in Node.js &gt;=4.0 (both require and import).
+*   Works in Deno &gt;=1.16.
+*   Works in browsers as standalone, UMD or ES-module.
+*   **Experimental feature:** Schedule in specific target timezones.
+*   Includes [TypeScript](https://www.typescriptlang.org/) typings.
+
+Quick examples:
+
+```javascript
+// Run a function at the interval defined by a cron expression
+const job = Cron('* * * * * *', () =&gt; {
 	console.log('This will run every second');
 });
 
-// What date is next sunday?
-const nextSunday = Cron('0 0 0 * * 7').next();
-console.log(nextSunday.toLocaleDateString());
+// What dates do the next 100 sundays occur at?
+const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
+console.log(nextSundays);
 
 // How many days left to christmas eve?
 const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas eve&quot;);
-</code></pre>
-<p>More <a href="#examples">examples</a>...</p>
-<h2>Why another javascript cron implementation</h2>
-<p>Because the existing ones isn't good enough. They have serious bugs, use bloated dependencies, does not work in all environments and/or just doesn't work as expected.</p>
-<p>Benchmark at 2022-02-01:</p>
-<pre class="prettyprint source"><code>> node cron-implementation-test.js
+```
+
+More [examples](#examples)...
+
+## Why another javascript cron implementation
+
+Because the existing ones isn't good enough. They have serious bugs, use bloated dependencies, does not work in all environments and/or just doesn't work as expected.
+
+Benchmark at 2022-02-01:
+
+```
+&gt; node cron-implementation-test.js
 
 Test: When is next saturday 29th of february, pattern '0 0 0 29 2 6'
 
@@ -167,10 +177,13 @@ node-schedule: 2022-02-05 00:00:00 in 55.13ms
 node-cron:     ???                 in 14.587ms
 cron:          2022-03-05 00:00:00 in 21.07ms
 croner:        2048-02-29 00:00:00 in 10.508ms
-</code></pre>
-<details>
-	<summary>More test results</summary>
-<pre class="prettyprint source"><code>Test: When is next 15th of february, pattern '0 0 0 15 2 *'
+```
+
+&lt;details&gt;
+	&lt;summary&gt;More test results&lt;/summary&gt;
+	
+```
+Test: When is next 15th of february, pattern '0 0 0 15 2 *'
 
 node-schedule: 2022-02-15 00:00:00 in 13.306ms
 node-cron:     ???                 in 1.676ms
@@ -191,77 +204,110 @@ node-cron:     ???                 in 3.017ms
 Month '3' is limited to '30' days.
 cron:          2022-04-01 23:00:00 in 4.508ms
 croner:        2022-03-31 23:00:00 in 1.381ms
-</code></pre>
-</details>
-<p>https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70</p>
-<h2>Installation</h2>
-<h3>Node.js</h3>
-<p><code>npm install croner --save</code></p>
-<p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>// ESM Import ...
+```
+
+&lt;/details&gt;
+
+https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
+
+## Installation
+
+### Node.js
+
+```npm install croner --save```
+
+JavaScript
+
+```javascript
+// ESM Import ...
 import Cron from &quot;croner&quot;;
 
 // ... or CommonJS Require
 const Cron = require(&quot;croner&quot;);
-</code></pre>
-<p>TypeScript</p>
-<p><em>Note that only default export is available in Node.js TypeScript, as the commonjs module is used internally.</em></p>
-<pre class="prettyprint source lang-typescript"><code>import Cron from &quot;croner&quot;;
+```
 
-const scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
-    console.log(&quot;This will run every second.&quot;);
-});
-</code></pre>
-<h3>Deno</h3>
-<p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+TypeScript
 
-Cron(&quot;* * * * * *&quot;, () => {
-    console.log(&quot;This will run every second.&quot;);
-});
-</code></pre>
-<p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+*Note that only default export is available in Node.js TypeScript, as the commonjs module is used internally.*
 
-const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
-    console.log(&quot;This will run every second.&quot;);
+```typescript
+import Cron from &quot;croner&quot;;
+
+const scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () =&gt; {
+	console.log(&quot;This will run every second.&quot;);
 });
-</code></pre>
-<h3>Browser</h3>
-<h4>Manual</h4>
-<ul>
-<li>Download latest <a href="https://github.com/Hexagon/croner/archive/refs/heads/master.zip">zipball</a></li>
-<li>Unpack</li>
-<li>Grab <code>croner.min.js</code> (UMD and standalone) or <code>croner.min.mjs</code> (ES-module) from the <a href="/dist">dist/</a> folder</li>
-</ul>
-<h4>CDN</h4>
-<p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js&quot;>&lt;/script>
-</code></pre>
-<p>To use as a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
-<pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
+```
+
+### Deno
+
+JavaScript
+
+```javascript
+import Cron from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+
+Cron(&quot;* * * * * *&quot;, () =&gt; {
+	console.log(&quot;This will run every second.&quot;);
+});
+```
+
+TypeScript
+
+```typescript
+import { Cron } from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+
+const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () =&gt; {
+	console.log(&quot;This will run every second.&quot;);
+});
+```
+
+### Browser 
+
+#### Manual
+
+*   Download latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip)
+*   Unpack
+*   Grab ```croner.min.js``` (UMD and standalone) or ```croner.min.mjs``` (ES-module) from the [dist/](/dist) folder
+
+#### CDN
+
+To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
+
+```html
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js&quot;&gt;&lt;/script&gt;
+```
+
+To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+
+```html
+&lt;script type=&quot;module&quot;&gt;
 	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs&quot;;
 
 	// ... see usage section ...
-&lt;/script>
-</code></pre>
-<h2>Documentation</h2>
-<p>Full documentation available at <a href="https://hexagon.github.io/croner/Cron.html">hexagon.github.io/croner</a>.</p>
-<p>The short version:</p>
-<h3>Signature</h3>
-<p>Cron takes three arguments</p>
-<ul>
-<li><a href="#pattern">pattern</a></li>
-<li><a href="#options">options</a> (optional)</li>
-<li>scheduled function (optional)</li>
-</ul>
-<pre class="prettyprint source lang-javascript"><code>const job = Cron(&quot;* * * * * *&quot; , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
+&lt;/script&gt;
+```
+## Documentation
+
+Full documentation available at [hexagon.github.io/croner](https://hexagon.github.io/croner/Cron.html).
+
+The short version:
+
+### Signature
+
+Cron takes three arguments
+
+*   [pattern](#pattern)
+*   [options](#options) (optional) 
+*   scheduled function (optional)
+
+```javascript
+const job = Cron(&quot;* * * * * *&quot; , /*optional*/ { maxRuns: 1 } , /*optional*/ () =&gt; {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule((/* optional */ job, /* optional */ context) => {});		
+job.schedule((/* optional */ job, /* optional */ context) =&gt; {});		
 
 // States
 const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+const nextRuns = job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
 const prevRun = job.previous( );	
 const msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
 const isRunning = job.running();
@@ -271,64 +317,31 @@ job.pause();
 job.resume();
 job.stop();
 
-</code></pre>
-<h4>Options</h4>
-<table>
-<thead>
-<tr>
-<th>Key</th>
-<th>Default value</th>
-<th>Data type</th>
-<th>Remarks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>maxRuns</td>
-<td>Infinite</td>
-<td>Number</td>
-<td></td>
-</tr>
-<tr>
-<td>catch</td>
-<td>false</td>
-<td>Boolean</td>
-<td>Catch and ignore unhandled errors in triggered function</td>
-</tr>
-<tr>
-<td>timezone</td>
-<td>undefined</td>
-<td>String</td>
-<td>Timezone in Europe/Stockholm format</td>
-</tr>
-<tr>
-<td>startAt</td>
-<td>undefined</td>
-<td>String</td>
-<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
-</tr>
-<tr>
-<td>stopAt</td>
-<td>undefined</td>
-<td>String</td>
-<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
-</tr>
-<tr>
-<td>paused</td>
-<td>false</td>
-<td>Boolean</td>
-<td>If the job should be paused from start.</td>
-</tr>
-<tr>
-<td>context</td>
-<td>undefined</td>
-<td>Any</td>
-<td>Passed as the second parameter to triggered function</td>
-</tr>
-</tbody>
-</table>
-<h4>Pattern</h4>
-<pre class="prettyprint source lang-javascript"><code>// ┌──────────────── (optional) second (0 - 59)
+```
+
+#### Options
+
+| Key          | Default value  | Data type      | Remarks                               |
+|--------------|----------------|----------------|---------------------------------------|
+| maxRuns      | Infinite       | Number         |                                       |
+| catch	       | false          | Boolean        | Catch and ignore unhandled errors in triggered function |
+| timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
+| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)&lt;br&gt;in local or specified timezone |
+| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)&lt;br&gt;in local or specified timezone |
+| paused       | false          | Boolean        | If the job should be paused from start. |
+| context      | undefined      | Any            | Passed as the second parameter to triggered function |
+
+#### Expressions
+
+The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.
+
+*   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month.
+
+*   Croner expressions support the following additional modifiers
+	-   *`?`*: A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `&lt;any hour&gt;:08:25` at the time of `new Cron('? ? * * * *', &lt;...&gt;)`. The question mark can be used in any field.
+
+```javascript
+// ┌──────────────── (optional) second (0 - 59)
 // │ ┌────────────── minute (0 - 59)
 // │ │ ┌──────────── hour (0 - 23)
 // │ │ │ ┌────────── day of month (1 - 31)
@@ -337,74 +350,34 @@ job.stop();
 // │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
 // │ │ │ │ │ │
 // * * * * * *
-</code></pre>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Required</th>
-<th>Allowed values</th>
-<th>Allowed special characters</th>
-<th>Remarks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Seconds</td>
-<td>Optional</td>
-<td>0-59</td>
-<td>* , - /</td>
-<td></td>
-</tr>
-<tr>
-<td>Minutes</td>
-<td>Yes</td>
-<td>0-59</td>
-<td>* , - /</td>
-<td></td>
-</tr>
-<tr>
-<td>Hours</td>
-<td>Yes</td>
-<td>0-23</td>
-<td>* , - /</td>
-<td></td>
-</tr>
-<tr>
-<td>Day of Month</td>
-<td>Yes</td>
-<td>1-31</td>
-<td>* , - /</td>
-<td></td>
-</tr>
-<tr>
-<td>Month</td>
-<td>Yes</td>
-<td>1-12 or JAN-DEC</td>
-<td>* , - /</td>
-<td></td>
-</tr>
-<tr>
-<td>Day of Week</td>
-<td>Yes</td>
-<td>0-7 or SUN-MON</td>
-<td>* , - /</td>
-<td>0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Note</strong>: Weekday and month names are case insensitive. Both MON and mon works.</p>
-<h3>Examples</h3>
-<h4>Expressions</h4>
-<pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
-Cron('15-45/10 */5 1,2,3 * JAN-MAR SAT', function () {
+```
+
+| Field        | Required | Allowed values | Allowed special characters | Remarks                               |
+|--------------|----------|----------------|----------------------------|---------------------------------------|
+| Seconds      | Optional | 0-59           | * , - /                    |                                       |
+| Minutes      | Yes      | 0-59           | * , - /                    |                                       |
+| Hours        | Yes      | 0-23           | * , - /                    |                                       |
+| Day of Month | Yes      | 1-31           | * , - /                    |                                       |
+| Month        | Yes      | 1-12 or JAN-DEC| * , - /                    |                                       |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - /                    | 0 to 6 are Sunday to Saturday&lt;br&gt;7 is Sunday, the same as 0            |
+
+**Note**: Weekday and month names are case insensitive. Both MON and mon works.
+
+### Examples 
+
+#### Expressions
+```javascript
+// Run a function according to pattern
+Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 	console.log('This will run every tenth second between second 15-45');
-	console.log('every fifth minute of hour 1,2 and 3');
-	console.log('every saturday in January to March.');
+	console.log('every fifth minute of hour 1,2 and 3 when day of month');
+	console.log('is the same as when Cron started, every saturday in January to March.');
 });
-</code></pre>
-<h4>Find dates</h4>
-<pre class="prettyprint source lang-javascript"><code>// Find next month
+```
+
+#### Find dates
+```javascript
+// Find next month
 const nextMonth = Cron('0 0 0 1 * *').next(),
 	nextSunday = Cron('0 0 0 * * 7').next(),
 	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next();
@@ -412,9 +385,11 @@ const nextMonth = Cron('0 0 0 1 * *').next(),
 console.log(&quot;First day of next month: &quot; +  nextMonth.toLocaleDateString());
 console.log(&quot;Next sunday: &quot; +  nextSunday.toLocaleDateString());
 console.log(&quot;Next saturday at 29th of february: &quot; +  nextSat29feb.toLocaleDateString());  // 2048-02-29
-</code></pre>
-<h4>With options</h4>
-<pre class="prettyprint source lang-javascript"><code>
+```
+
+#### With options
+```javascript
+
 const job = Cron(
 	'* * * * *', 
 	{ 
@@ -427,38 +402,47 @@ const job = Cron(
 		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00 in Europe/Stockholm.');
 	}
 );
-</code></pre>
-<h4>Job controls</h4>
-<pre class="prettyprint source lang-javascript"><code>const job = Cron('* * * * * *', (self) => {
+```
+
+#### Job controls
+```javascript
+const job = Cron('* * * * * *', (self) =&gt; {
 	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
 	console.log('Current second: ', new Date().getSeconds());
 	console.log('Previous run: ' + self.previous());
 	console.log('Next run: ' + self.next());
 });
 
-Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
-Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
-Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
-</code></pre>
-<h4>Passing a context</h4>
-<pre class="prettyprint source lang-javascript"><code>const data = {
+Cron('10 * * * * *', {maxRuns: 1}, () =&gt; job.pause());
+Cron('15 * * * * *', {maxRuns: 1}, () =&gt; job.resume());
+Cron('20 * * * * *', {maxRuns: 1}, () =&gt; job.stop());
+```
+
+#### Passing a context
+```javascript
+const data = {
 	what: &quot;stuff&quot;
 };
 
-Cron('* * * * * *', { context: data }, (_self, context) => {
+Cron('* * * * * *', { context: data }, (_self, context) =&gt; {
 	console.log('This will print stuff: ' + context.what);
 });
 
-Cron('*/5 * * * * *', { context: data }, (self, context) => {
+Cron('*/5 * * * * *', { context: data }, (self, context) =&gt; {
 	console.log('After this, other stuff will be printed instead');
 	context.what = &quot;other stuff&quot;;
 	self.stop();
 });
+```
+
+## Contributing
+
+See [Contribution Guide](/CONTRIBUTING.md)
+
+## License
+
+MIT
 </code></pre>
-<h2>Contributing</h2>
-<p>See <a href="/CONTRIBUTING.md">Contribution Guide</a></p>
-<h2>License</h2>
-<p>MIT</p>
     </article>
   </section>
 

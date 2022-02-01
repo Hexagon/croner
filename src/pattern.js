@@ -60,6 +60,16 @@ CronPattern.prototype.parse = function () {
 	parts[4] = this.replaceAlphaMonths(parts[4]);
 	parts[5] = this.replaceAlphaDays(parts[5]);
 
+	// Implement '?' in the simplest possible way - replace ? with current value, before further processing
+	let initDate = new Date();
+
+	parts[0] = parts[0].replace("?", initDate.getSeconds());
+	parts[1] = parts[1].replace("?", initDate.getMinutes());
+	parts[2] = parts[2].replace("?", initDate.getHours());
+	parts[3] = parts[3].replace("?", initDate.getDate());
+	parts[4] = parts[4].replace("?", initDate.getMonth()+1);
+	parts[5] = parts[5].replace("?", initDate.getDay());
+
 	// Check part content
 	this.throwAtIllegalCharacters(parts);
 

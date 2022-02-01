@@ -508,6 +508,60 @@ module.exports = function (Cron) {
 		
 	});
 
+	test("59 * ? ? ? ? should (almost always) run within a minute", function () {
+
+		let 
+			now = new Date(),
+			scheduler,
+			nextRun;
+
+		// Set seconds to a low value to make sure the hour does not tip over
+		now.setSeconds(30);
+		
+		scheduler = new Cron("59 * ? ? ? ?");
+		nextRun = scheduler.next(now);
+
+		// Do compariso
+		assert.equal(nextRun.getTime() < now.getTime()+60000, true);
+		assert.equal(nextRun.getTime() >= now.getTime(), true);
+	});
+
+	test("? * ? ? ? ? should (almost always) run within a minute", function () {
+
+		let 
+			now = new Date(),
+			scheduler,
+			nextRun;
+
+		// Set seconds to a low value to make sure the hour/minute does not tip over
+		now.setSeconds(30);
+		
+		scheduler = new Cron("? * ? ? ? ?"),
+		nextRun = scheduler.next(now);
+
+		// Do compariso
+		assert.equal(nextRun.getTime() < now.getTime()+60000, true);
+		assert.equal(nextRun.getTime() >= now.getTime(), true);
+	});
+
+	test("* ? ? ? ? ? should (almost always) run within a second", function () {
+
+		let 
+			now = new Date(),
+			scheduler,
+			nextRun;
+
+		// Set seconds to a low value to make sure the hour does not tip over
+		now.setSeconds(30);
+		
+		scheduler = new Cron("* ? ? ? ? ?");
+		nextRun = scheduler.next(now);
+
+		// Do compariso
+		assert.equal(nextRun.getTime() < now.getTime()+1500, true);
+		assert.equal(nextRun.getTime() >= now.getTime(), true);
+	});
+
 	test("*/5 * 11 * * should return next day, at 11:00:00, if time is 12", function () {
 		let 
 			todayAt12 = new Date(), // Subtract one day
@@ -518,7 +572,7 @@ module.exports = function (Cron) {
 		todayAt12.setMinutes(34);
 		todayAt12.setMinutes(54);
 
-		scheduler = new Cron("*/5 * 11 * * *");
+		scheduler = new Cron("*/5 * 11 * * *"),
 		nextRun = scheduler.next(todayAt12);
 
 		// Do comparison
@@ -919,6 +973,45 @@ module.exports = function (Cron) {
 			}
 		});
 	}));
+
+	test("Next 10 run times is returned by enumeration(), and contain a reasonable time span", () => {
+
+		let 
+			now = new Date(),
+			nextRuns = Cron("*/30 * * * * *").enumerate(10);
+
+		// Check number of times returned
+		assert.equal(nextRuns.length, 10);
+
+		// Check that time span of first entry is within a minute
+		assert.equal(nextRuns[0].getTime() >= now.getTime(), true);
+		assert.equal(nextRuns[0].getTime() <= now.getTime()+60*1000, true);
+
+		// Check that time span of last entry is about 5 minutes from now
+		assert.equal(nextRuns[9].getTime() > now.getTime()+4*60*1000, true);
+		assert.equal(nextRuns[9].getTime() < now.getTime()+6*60*1000, true);
+
+	});
+
+	test("Next 10 run times is returned by enumeration(), and contain a reasonable time span, when using modified start time", () => {
+
+		// 20 minutes before now
+		let 
+			now = new Date(new Date().getTime()-1200*1000),
+			nextRuns = Cron("0 * * * * *").enumerate(10, now);
+
+		// Check number of times returned
+		assert.equal(nextRuns.length, 10);
+
+		// Check that time span of first entry is within a minute
+		assert.equal(nextRuns[0].getTime() >= now.getTime(), true);
+		assert.equal(nextRuns[0].getTime() <= now.getTime()+61*1000, true);
+
+		// Check that time span of last entry is about 10 minutes from 'now'
+		assert.equal(nextRuns[9].getTime() > now.getTime()+9*60*1000, true);
+		assert.equal(nextRuns[9].getTime() < now.getTime()+11*60*1000, true);
+
+	});
 
 	test.run();
 };

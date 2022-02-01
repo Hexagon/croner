@@ -66,10 +66,18 @@ export class Cron {
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
-     * @param {Date} [prev] - Input pattern
+     * @param {Date} [prev] - Date to start from
      * @returns {Date | null} - Next run time
      */
     next(prev?: Date): Date | null;
+    /**
+     * Find next n runs, based on supplied date. Strips milliseconds.
+     *
+     * @param {number} n - Number of runs to enumerate
+     * @param {Date} [prev] - Date to start from
+     * @returns {Date[]} - Next n run times
+     */
+    enumerate(n: number, previous: any): Date[];
     /**
      * Is running?
      * @public

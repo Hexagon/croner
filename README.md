@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="/croner.png" alt="Croner" width="150" height="150"><br>
-  Trigger functions in JavaScript using Cron syntax.<br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+<img src="/croner.png" alt="Croner" width="150" height="150"><br>
+Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. Node. Deno. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
 # Croner
@@ -10,8 +10,8 @@
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
-*   Pause, resume or stop execution after a task is scheduled.
 *   Find first date of next month, find date of next tuesday, etc.
+*   Pause, resume or stop execution after a task is scheduled.
 *   Works in Node.js >=4.0 (both require and import).
 *   Works in Deno >=1.16.
 *   Works in browsers as standalone, UMD or ES-module.
@@ -26,9 +26,9 @@ const job = Cron('* * * * * *', () => {
 	console.log('This will run every second');
 });
 
-// What date is next sunday?
-const nextSunday = Cron('0 0 0 * * 7').next();
-console.log(nextSunday.toLocaleDateString());
+// What dates do the next 100 sundays occur at?
+const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
+console.log(nextSundays);
 
 // How many days left to christmas eve?
 const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
@@ -83,7 +83,7 @@ croner:        2022-03-31 23:00:00 in 1.381ms
 
 </details>
 
- https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
+https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
 
 ## Installation
 
@@ -109,7 +109,7 @@ TypeScript
 import Cron from "croner";
 
 const scheduler : Cron = new Cron("* * * * * *", () => {
-    console.log("This will run every second.");
+	console.log("This will run every second.");
 });
 ```
 
@@ -121,7 +121,7 @@ JavaScript
 import Cron from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
 
 Cron("* * * * * *", () => {
-    console.log("This will run every second.");
+	console.log("This will run every second.");
 });
 ```
 
@@ -131,7 +131,7 @@ TypeScript
 import { Cron } from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
-    console.log("This will run every second.");
+	console.log("This will run every second.");
 });
 ```
 
@@ -182,6 +182,7 @@ job.schedule((/* optional */ job, /* optional */ context) => {});
 
 // States
 const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+const nextRuns = job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
 const prevRun = job.previous( );	
 const msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
 const isRunning = job.running();
@@ -205,7 +206,14 @@ job.stop();
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 
-#### Pattern
+#### Expressions
+
+The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.
+
+*   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month.
+
+*   Croner expressions support the following additional modifiers
+	-   *`?`*: A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
@@ -235,10 +243,10 @@ job.stop();
 #### Expressions
 ```javascript
 // Run a function according to pattern
-Cron('15-45/10 */5 1,2,3 * JAN-MAR SAT', function () {
+Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 	console.log('This will run every tenth second between second 15-45');
-	console.log('every fifth minute of hour 1,2 and 3');
-	console.log('every saturday in January to March.');
+	console.log('every fifth minute of hour 1,2 and 3 when day of month');
+	console.log('is the same as when Cron started, every saturday in January to March.');
 });
 ```
 

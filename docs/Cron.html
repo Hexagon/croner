@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
         </div>
     </div>
   </nav>
@@ -470,6 +470,163 @@
   
 
   <span class='name-container'>
+    <a class="link-icon" href="#enumerate">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="enumerate">
+      <span class="type-signature"></span>.enumerate<span class="signature">(n, prev<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;Date>}</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Find next n runs, based on supplied date. Strips milliseconds.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<div class="params">
+     
+      <div>
+          
+               <code>n</code>
+               <em>(
+    <span class="param-type">
+      number
+    </span>
+
+    
+)</em>
+          
+
+          
+            <span class="attributes">
+              
+
+              
+
+              
+            </span>
+          
+
+          <p>Number of runs to enumerate</p>
+
+          
+
+      </div>
+      
+      <div>
+          
+               <code>prev</code>
+               <em>(
+    <span class="param-type">
+      Date
+    </span>
+
+    
+)</em>
+          
+
+          
+            <span class="attributes">
+              
+                &lt;optional><br>
+              
+
+              
+
+              
+            </span>
+          
+
+          <p>Date to start from</p>
+
+          
+
+      </div>
+      
+</div>
+
+
+
+
+
+<dl class="details">
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line147">line 147</a>
+        </li>
+      </ul>
+    </dd>
+  
+
+  
+
+  
+
+  
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+        
+
+
+  
+
+  <span class='name-container'>
     <a class="link-icon" href="#msToNext">
       <svg height="20" width="20" style="fill: black;">
         <use xlink:href="#linkIcon"></use>
@@ -566,7 +723,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line198">line 198</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line220">line 220</a>
         </li>
       </ul>
     </dd>
@@ -652,7 +809,7 @@
             </span>
           
 
-          <p>Input pattern</p>
+          <p>Date to start from</p>
 
           
 
@@ -786,7 +943,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line226">line 226</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line248">line 248</a>
         </li>
       </ul>
     </dd>
@@ -877,7 +1034,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line158">line 158</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line180">line 180</a>
         </li>
       </ul>
     </dd>
@@ -968,7 +1125,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line236">line 236</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line258">line 258</a>
         </li>
       </ul>
     </dd>
@@ -1059,7 +1216,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line146">line 146</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line168">line 168</a>
         </li>
       </ul>
     </dd>
@@ -1178,7 +1335,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line247">line 247</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line269">line 269</a>
         </li>
       </ul>
     </dd>
@@ -1269,7 +1426,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line212">line 212</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line234">line 234</a>
         </li>
       </ul>
     </dd>

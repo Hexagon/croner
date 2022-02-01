@@ -378,6 +378,16 @@
 		parts[4] = this.replaceAlphaMonths(parts[4]);
 		parts[5] = this.replaceAlphaDays(parts[5]);
 
+		// Implement '?' in the simplest possible way - replace ? with current value, before further processing
+		let initDate = new Date();
+
+		parts[0] = parts[0].replace("?", initDate.getSeconds());
+		parts[1] = parts[1].replace("?", initDate.getMinutes());
+		parts[2] = parts[2].replace("?", initDate.getHours());
+		parts[3] = parts[3].replace("?", initDate.getDate());
+		parts[4] = parts[4].replace("?", initDate.getMonth()+1);
+		parts[5] = parts[5].replace("?", initDate.getDay());
+
 		// Check part content
 		this.throwAtIllegalCharacters(parts);
 
@@ -757,13 +767,35 @@
 	/**
 	 * Find next runtime, based on supplied date. Strips milliseconds.
 	 * 
-	 * @param {Date} [prev] - Input pattern
+	 * @param {Date} [prev] - Date to start from
 	 * @returns {Date | null} - Next run time
 	 */
 	Cron.prototype.next = function (prev) {
 		prev = new CronDate(prev, this.options.timezone);
 		const next = this._next(prev);
 		return next ? next.getDate() : null;
+	};
+
+	/**
+	 * Find next n runs, based on supplied date. Strips milliseconds.
+	 * 
+	 * @param {number} n - Number of runs to enumerate
+	 * @param {Date} [prev] - Date to start from
+	 * @returns {Date[]} - Next n run times
+	 */
+	Cron.prototype.enumerate = function (n, previous) {
+		let enumeration = [];
+
+		while(n--) {
+			previous = this.next(previous);
+			if (previous !== null) {
+				enumeration.push(previous);
+			} else {
+				break;
+			}
+		}
+
+		return enumeration;
 	};
 
 	/**
