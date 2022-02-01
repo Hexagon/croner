@@ -168,19 +168,19 @@
 
 			},
 			
-			resetPrevious = () => {
+			resetPrevious = (offset) => {
 				// Now when we have gone to next minute, we have to set seconds to the first match
 				// Now we are at 00:01:05 following the same example.
 				// 
 				// This goes all the way back to seconds, hence the reverse loop.
-				while(doing >= 0) {
+				while(doing + offset >= 0) {
 
 					// Ok, reset current member(e.g. seconds) to first match in pattern, using 
 					// the same method as aerlier
 					// 
 					// Note the fourth parameter, stating that we should start matching the pattern
 					// from zero, instead of current time.
-					findNext(toDo[doing][0], pattern, toDo[doing][2], 0);
+					findNext(toDo[doing + offset][0], pattern, toDo[doing + offset][2], 0);
 
 					// Go back up, days -> hours -> minutes -> seconds
 					doing--;
@@ -194,7 +194,7 @@
 		//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
 		//   from pattern. Offset should be -1
 		// ]
-		let toDo = [
+		const toDo = [
 			["seconds", "minutes", 0],
 			["minutes", "hours", 0],
 			["hours", "days", 0],
@@ -211,15 +211,21 @@
 			// If time is 00:00:01 and pattern says *:*:05, seconds will
 			// be set to 5
 
+			// Store current value at current level
+			let currentValue = this[toDo[doing][0]];
+			
 			// If pattern didn't provide a match, increment next value (e.g. minues)
-			let originalValueCurrent = this[toDo[doing][0]];
 			if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
 				this[toDo[doing][1]]++;
-				resetPrevious();
 
-			// If pattern provided a match, but changed current value, reset previous levels
-			} else if (originalValueCurrent !== this[toDo[doing][0]]) {
-				resetPrevious();
+				// Reset current level and previous levels
+				resetPrevious(0);
+
+			// If pattern provided a match, but changed current value ...
+			} else if (currentValue !== this[toDo[doing][0]]) {
+				// Reset previous levels
+				resetPrevious(-1);
+
 			}
 
 			

@@ -144,19 +144,19 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 		},
 		
-		resetPrevious = () => {
+		resetPrevious = (offset) => {
 			// Now when we have gone to next minute, we have to set seconds to the first match
 			// Now we are at 00:01:05 following the same example.
 			// 
 			// This goes all the way back to seconds, hence the reverse loop.
-			while(doing >= 0) {
+			while(doing + offset >= 0) {
 
 				// Ok, reset current member(e.g. seconds) to first match in pattern, using 
 				// the same method as aerlier
 				// 
 				// Note the fourth parameter, stating that we should start matching the pattern
 				// from zero, instead of current time.
-				findNext(toDo[doing][0], pattern, toDo[doing][2], 0);
+				findNext(toDo[doing + offset][0], pattern, toDo[doing + offset][2], 0);
 
 				// Go back up, days -> hours -> minutes -> seconds
 				doing--;
@@ -187,15 +187,21 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		// If time is 00:00:01 and pattern says *:*:05, seconds will
 		// be set to 5
 
-		// If pattern didn't provide a match, increment next value (e.g. minues)
+		// Store current value at current level
 		let currentValue = this[toDo[doing][0]];
+		
+		// If pattern didn't provide a match, increment next value (e.g. minues)
 		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
 			this[toDo[doing][1]]++;
-			resetPrevious();
 
-		// If pattern provided a match, but changed current value, reset previous levels
+			// Reset current level and previous levels
+			resetPrevious(0);
+
+		// If pattern provided a match, but changed current value ...
 		} else if (currentValue !== this[toDo[doing][0]]) {
-			resetPrevious();
+			// Reset previous levels
+			resetPrevious(-1);
+
 		}
 
 		
