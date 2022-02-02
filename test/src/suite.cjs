@@ -536,12 +536,29 @@ module.exports = function (Cron) {
 		// Set seconds to a low value to make sure the hour/minute does not tip over
 		now.setSeconds(30);
 		
-		scheduler = new Cron("? * ? ? ? ?"),
+		scheduler = new Cron("? * ? ? ? ?");
 		nextRun = scheduler.next(now);
 
 		// Do compariso
 		assert.equal(nextRun.getTime() < now.getTime()+60000, true);
 		assert.equal(nextRun.getTime() >= now.getTime(), true);
+	});
+
+	test("* * ? ? ? ? should return correct hour when used with a custom time zone", function () {
+
+		let 
+			now = new Date(),
+			scheduler,
+			nextRun;
+
+		// Set seconds to a low value to make sure the hour/minute does not tip over
+		now.setSeconds(30);
+		
+		scheduler = new Cron("* * ? ? ? ?", { timezone: "America/New_York"});
+		nextRun = scheduler.next(now);
+
+		// Do compariso
+		assert.equal(nextRun.getUTCHours(), now.getUTCHours());
 	});
 
 	test("* ? ? ? ? ? should (almost always) run within a second", function () {

@@ -57,10 +57,10 @@ export class Cron {
      * @returns {Cron}
      */
     constructor(pattern: string, options?: CronOptions | Function, func?: Function);
-    /** @type {CronPattern} */
-    pattern: CronPattern;
     /** @type {CronOptions} */
     options: CronOptions;
+    /** @type {CronPattern} */
+    pattern: CronPattern;
     fn: Function;
     private processOptions;
     /**

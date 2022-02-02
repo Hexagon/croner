@@ -25,8 +25,9 @@ export type CronIndexOffset = number;
  * Create a CronPattern instance from pattern string ('* * * * * *')
  * @constructor
  * @param {string} pattern - Input pattern
+ * @param {string} timezone - Input timezone, used for '?'-substitution
  */
-export function CronPattern(pattern: string): void;
+export function CronPattern(pattern: string, timezone: string): void;
 export class CronPattern {
     /**
      * Name for each part of the cron pattern
@@ -44,9 +45,11 @@ export class CronPattern {
      * Create a CronPattern instance from pattern string ('* * * * * *')
      * @constructor
      * @param {string} pattern - Input pattern
+     * @param {string} timezone - Input timezone, used for '?'-substitution
      */
-    constructor(pattern: string);
+    constructor(pattern: string, timezone: string);
     pattern: string;
+    timezone: string;
     seconds: any;
     minutes: any;
     hours: any;

@@ -334,10 +334,12 @@
 	 * Create a CronPattern instance from pattern string ('* * * * * *')
 	 * @constructor
 	 * @param {string} pattern - Input pattern
+	 * @param {string} timezone - Input timezone, used for '?'-substitution
 	 */
-	function CronPattern (pattern) {
+	function CronPattern (pattern, timezone) {
 
 		this.pattern 		= pattern;
+		this.timezone		= timezone;
 
 		this.seconds        = Array(60).fill(0); // 0-59
 		this.minutes        = Array(60).fill(0); // 0-59
@@ -379,13 +381,13 @@
 		parts[5] = this.replaceAlphaDays(parts[5]);
 
 		// Implement '?' in the simplest possible way - replace ? with current value, before further processing
-		let initDate = new Date();
+		let initDate = new CronDate(new Date(),this.timezone).getDate(true);
 
 		parts[0] = parts[0].replace("?", initDate.getSeconds());
 		parts[1] = parts[1].replace("?", initDate.getMinutes());
 		parts[2] = parts[2].replace("?", initDate.getHours());
 		parts[3] = parts[3].replace("?", initDate.getDate());
-		parts[4] = parts[4].replace("?", initDate.getMonth()+1);
+		parts[4] = parts[4].replace("?", initDate.getMonth()+1); // getMonth is zero indexed while pattern starts from 1
 		parts[5] = parts[5].replace("?", initDate.getDay());
 
 		// Check part content
@@ -709,9 +711,6 @@
 			return new Cron(pattern, options, func);
 		}
 
-		/** @type {CronPattern} */
-		this.pattern = new CronPattern(pattern);
-
 		// Make options optional
 		if( typeof options === "function" ) {
 			func = options;
@@ -720,6 +719,9 @@
 
 		/** @type {CronOptions} */
 		this.options = this.processOptions(options);
+
+		/** @type {CronPattern} */
+		this.pattern = new CronPattern(pattern, this.options.timezone);
 
 		/**
 		 * Allow shorthand scheduling

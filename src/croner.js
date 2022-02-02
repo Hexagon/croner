@@ -70,9 +70,6 @@ function Cron (pattern, options, func) {
 		return new Cron(pattern, options, func);
 	}
 
-	/** @type {CronPattern} */
-	this.pattern = new CronPattern(pattern);
-
 	// Make options optional
 	if( typeof options === "function" ) {
 		func = options;
@@ -81,6 +78,9 @@ function Cron (pattern, options, func) {
 
 	/** @type {CronOptions} */
 	this.options = this.processOptions(options);
+
+	/** @type {CronPattern} */
+	this.pattern = new CronPattern(pattern, this.options.timezone);
 
 	/**
 	 * Allow shorthand scheduling
