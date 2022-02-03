@@ -213,7 +213,8 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 *   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month.
 
 *   Croner expressions support the following additional modifiers
-	-   *`?`*: A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
+	-   *?*: A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
+	-   *L*: L can be used in the day of month field, to specify the last day of the month.
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
@@ -229,12 +230,12 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 
 | Field        | Required | Allowed values | Allowed special characters | Remarks                               |
 |--------------|----------|----------------|----------------------------|---------------------------------------|
-| Seconds      | Optional | 0-59           | * , - /                    |                                       |
-| Minutes      | Yes      | 0-59           | * , - /                    |                                       |
-| Hours        | Yes      | 0-23           | * , - /                    |                                       |
-| Day of Month | Yes      | 1-31           | * , - /                    |                                       |
-| Month        | Yes      | 1-12 or JAN-DEC| * , - /                    |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - /                    | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
+| Seconds      | Optional | 0-59           | * , - / ?                  |                                       |
+| Minutes      | Yes      | 0-59           | * , - / ?                  |                                       |
+| Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
+| Day of Month | Yes      | 1-31           | * , - / ? L                |                                       |
+| Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ?                  | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
 
 **Note**: Weekday and month names are case insensitive. Both MON and mon works.
 
@@ -253,13 +254,15 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 #### Find dates
 ```javascript
 // Find next month
-const nextMonth = Cron('0 0 0 1 * *').next(),
-	nextSunday = Cron('0 0 0 * * 7').next(),
-	nextSat29feb = Cron("0 0 0 29 2 6").next();
+const nextMonth = Cron("0 0 0 1 * *").next(),
+	nextSunday = Cron("0 0 0 * * 7").next(),
+	nextSat29feb = Cron("0 0 0 29 2 6").next(),
+	nextSunLastOfMonth = Cron("0 0 0 L * 7").next();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateString());  // 2048-02-29
+console.log("Next month ending with a sunday: " +  nextSunLastOfMonth.toLocaleDateString()); 
 ```
 
 #### With options

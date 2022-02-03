@@ -707,6 +707,30 @@ module.exports = function (Cron) {
 
 	});
 
+
+	test("0 0 0 L 2 * should find last day of february(28 2022)", function () {
+		let scheduler = new Cron("0 0 0 L 2 *"),
+			prevRun = new Date(1643930208380), // From 4th of february 2022
+			nextRun = scheduler.next(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun.getDate(),28);
+		assert.equal(nextRun.getMonth(),1);
+		assert.equal(nextRun.getFullYear(),2022);
+	});
+
+	test("0 0 0 L 2 * should find last day of february (29 2024)", function () {
+		let scheduler = new Cron("0 0 0 L 2 *"),
+			prevRun = new Date(1703891808380), // From 30th of december 2023
+			nextRun = scheduler.next(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun.getDate(),29);
+		assert.equal(nextRun.getMonth(),1);
+		assert.equal(nextRun.getFullYear(),2024);
+	});
+
+
 	test("Valid startAt with DateTime string should not throw", function () {
 		assert.not.throws(() => {
 			let 

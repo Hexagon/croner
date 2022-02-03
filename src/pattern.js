@@ -32,6 +32,8 @@ function CronPattern (pattern, timezone) {
 	this.months         = Array(12).fill(0); // 0-11 in array, 1-12 in config
 	this.daysOfWeek     = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
+	this.lastDayOfMonth = false;
+
 	this.parse();
 
 }
@@ -58,6 +60,13 @@ CronPattern.prototype.parse = function () {
 	// If seconds is omitted, insert 0 for seconds
 	if( parts.length === 5) {
 		parts.unshift("0");
+	}
+
+	// Convert 'L' to '*' and add lastDayOfMonth flag,
+	// and set days to 28,29,30,31 as those are the only days that can be the last day of month
+	if(parts[3].toUpperCase() == "L") {
+		parts[3] = "28,29,30,31";
+		this.lastDayOfMonth = true;
 	}
 
 	// Replace alpha representations

@@ -337,7 +337,8 @@ job.stop();
 <li>
 <p>Croner expressions support the following additional modifiers</p>
 <ul>
-<li><em><code>?</code></em>: A question mark is substituted with croner initialization time, as an example - <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
+<li><em>?</em>: A question mark is substituted with croner initialization time, as an example - <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
+<li><em>L</em>: L can be used in the day of month field, to specify the last day of the month.</li>
 </ul>
 </li>
 </ul>
@@ -366,42 +367,42 @@ job.stop();
 <td>Seconds</td>
 <td>Optional</td>
 <td>0-59</td>
-<td>* , - /</td>
+<td>* , - / ?</td>
 <td></td>
 </tr>
 <tr>
 <td>Minutes</td>
 <td>Yes</td>
 <td>0-59</td>
-<td>* , - /</td>
+<td>* , - / ?</td>
 <td></td>
 </tr>
 <tr>
 <td>Hours</td>
 <td>Yes</td>
 <td>0-23</td>
-<td>* , - /</td>
+<td>* , - / ?</td>
 <td></td>
 </tr>
 <tr>
 <td>Day of Month</td>
 <td>Yes</td>
 <td>1-31</td>
-<td>* , - /</td>
+<td>* , - / ? L</td>
 <td></td>
 </tr>
 <tr>
 <td>Month</td>
 <td>Yes</td>
 <td>1-12 or JAN-DEC</td>
-<td>* , - /</td>
+<td>* , - / ?</td>
 <td></td>
 </tr>
 <tr>
 <td>Day of Week</td>
 <td>Yes</td>
 <td>0-7 or SUN-MON</td>
-<td>* , - /</td>
+<td>* , - / ?</td>
 <td>0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0</td>
 </tr>
 </tbody>
@@ -418,13 +419,15 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 </code></pre>
 <h4>Find dates</h4>
 <pre class="prettyprint source lang-javascript"><code>// Find next month
-const nextMonth = Cron('0 0 0 1 * *').next(),
-	nextSunday = Cron('0 0 0 * * 7').next(),
-	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next();
+const nextMonth = Cron(&quot;0 0 0 1 * *&quot;).next(),
+	nextSunday = Cron(&quot;0 0 0 * * 7&quot;).next(),
+	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next(),
+	nextSunLastOfMonth = Cron(&quot;0 0 0 L * 7&quot;).next();
 
 console.log(&quot;First day of next month: &quot; +  nextMonth.toLocaleDateString());
 console.log(&quot;Next sunday: &quot; +  nextSunday.toLocaleDateString());
 console.log(&quot;Next saturday at 29th of february: &quot; +  nextSat29feb.toLocaleDateString());  // 2048-02-29
+console.log(&quot;Next month ending with a sunday: &quot; +  nextSunLastOfMonth.toLocaleDateString()); 
 </code></pre>
 <h4>With options</h4>
 <pre class="prettyprint source lang-javascript"><code>
