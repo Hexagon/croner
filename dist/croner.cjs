@@ -245,7 +245,9 @@
 			// Set days to one day before the first of next month
 			baseDate.setMonth(baseDate.getMonth()+1);
 			baseDate.setDate(0);
-			this.days = baseDate.getDate();
+			if (this.days < baseDate.getDate()) {
+				this.days = baseDate.getDate();
+			}
 
 			// If day has changed, reset everything before days
 			if (this.days !== originalDays) {
