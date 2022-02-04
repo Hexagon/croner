@@ -237,16 +237,6 @@
 			doing++;
 		}
 
-		// This is a special case for weekday, as the user isn't able to combine date/month patterns 
-		// with weekday patterns, it's just to increment days until we get a match.
-		while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
-			this.days += 1;
-
-			// Reset everything before days
-			doing = 2;
-			resetPrevious();
-		}
-		
 		// This is a special case for last day of month, increase days until days+1 changes month, stop, and re-evaluate
 		if (pattern.lastDayOfMonth) {
 			let baseDate = this.getDate(true),
@@ -262,6 +252,16 @@
 				doing = 2;
 				resetPrevious();
 			}
+		}
+		
+		// This is a special case for weekday, as the user isn't able to combine date/month patterns 
+		// with weekday patterns, it's just to increment days until we get a match.
+		while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
+			this.days += 1;
+
+			// Reset everything before days
+			doing = 2;
+			resetPrevious();
 		}
 
 		// If anything changed, recreate this CronDate and run again without incrementing
