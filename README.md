@@ -35,7 +35,7 @@ const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 
 // Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
-// This will run 2023-01-23 00:00:00 according to the time in Asia/Kolkata, regardless from local/system time
+// This will run 2023-01-23 00:00:00 according to the time in Asia/Kolkata
 Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay') });
 
 ```
