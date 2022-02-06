@@ -6,7 +6,7 @@ let
 	range = require("./suites/range.cjs"),
 	stepping = require("./suites/stepping.cjs"),
 	options = require("./suites/options.cjs"),
-	timezone = require("./suites/timezone.cjs")
+	timezone = require("./suites/timezone.cjs");
 
 // Actual tests
 module.exports = function (Cron) {

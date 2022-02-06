@@ -48,7 +48,7 @@ module.exports = function (Cron, test) {
 
 	test("Invalid data type of pattern should throw", function () {
 		assert.throws(() => {
-			let scheduler = new Cron(new Date());
+			let scheduler = new Cron(new Object());
 			scheduler.next();
 		});
 	});
@@ -322,4 +322,4 @@ module.exports = function (Cron, test) {
 
 
 
-}
+};

@@ -130,4 +130,4 @@ module.exports = function (Cron, test) {
 		},1500);
 	}));
 
-}
+};

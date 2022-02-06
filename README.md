@@ -313,6 +313,21 @@ Cron('*/5 * * * * *', { context: data }, (self, context) => {
 });
 ```
 
+
+#### Fire on a specific date/time
+```javascript
+// A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. Always specify which timezone the ISO 8601 time string has with the timezone option.
+let job = Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
+	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
+});
+
+if (job.next() === null) {
+	// The job will not fire for some reason
+} else {
+	console.log("Job will fire at " + job.next());
+}
+```
+
 ## Contributing
 
 See [Contribution Guide](/CONTRIBUTING.md)

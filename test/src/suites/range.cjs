@@ -1,11 +1,11 @@
 
 let 
-    assert = require("uvu/assert");
+	assert = require("uvu/assert");
 
 // Actual tests
 module.exports = function (Cron, test) {
 
-    test("Slash in pattern should not throw", function () {
+	test("Slash in pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* */5 * * * *");
 			scheduler.next();
@@ -146,4 +146,4 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-}
+};

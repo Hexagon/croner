@@ -157,7 +157,7 @@ console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas
 </code></pre>
 <p>More <a href="#examples">examples</a>...</p>
 <h2>Why another javascript cron implementation</h2>
-<p>Because the existing ones isn't good enough. They have serious bugs, use bloated dependencies, does not work in all environments and/or just doesn't work as expected.</p>
+<p>Because the existing ones aren't good enough. They have serious bugs, use bloated dependencies, do not work in all environments and/or simply don't work as expected.</p>
 <p>Benchmark at 2022-02-01:</p>
 <pre class="prettyprint source"><code>> node cron-implementation-test.js
 
@@ -470,6 +470,18 @@ Cron('*/5 * * * * *', { context: data }, (self, context) => {
 	context.what = &quot;other stuff&quot;;
 	self.stop();
 });
+</code></pre>
+<h4>Fire on a specific date/time</h4>
+<pre class="prettyprint source lang-javascript"><code>// A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. Always specify which timezone the ISO 8601 time string has with the timezone option.
+let job = Cron(&quot;2025-01-01T23:00:00&quot;,{timezone: &quot;Europe/Stockholm&quot;},() => {
+	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
+});
+
+if (job.next() === null) {
+	// The job will not fire for some reason
+} else {
+	console.log(&quot;Job will fire at &quot; + job.next());
+}
 </code></pre>
 <h2>Contributing</h2>
 <p>See <a href="/CONTRIBUTING.md">Contribution Guide</a></p>

@@ -1,5 +1,5 @@
 let 
-    assert = require("uvu/assert");
+	assert = require("uvu/assert");
 
 // Actual tests
 module.exports = function (Cron, test) {
@@ -67,4 +67,4 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-}
+};

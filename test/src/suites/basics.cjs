@@ -361,4 +361,40 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getTime(),compareDay.getTime());
 
 	});
+
+	test("Fire-once should be supported by ISO 8601 string, past and .next() should return null", function () {
+		let 
+			scheduler0 = new Cron("2020-01-01T00:00:00");
+		assert.equal(scheduler0.next(),null);
+	});
+	
+	test("Fire-once should be supported by ISO 8601 string, future and .next() should return correct date", function () {
+		let 
+			scheduler0 = new Cron("2200-01-01T00:00:00"),
+			nextRun = scheduler0.next();
+		assert.equal(nextRun.getFullYear(), 2200);
+		assert.equal(nextRun.getMonth(), 0);
+		assert.equal(nextRun.getDate(), 1);
+	});
+
+	test("Fire-once should be supported by date, past and .next() should return null", function () {
+		let 
+			refTime = new Date(),
+			twoSecsBeforeNow = new Date(refTime.getTime() - 2000),
+			scheduler0 = new Cron(twoSecsBeforeNow),
+			nextRun = scheduler0.next();
+		assert.equal(nextRun, null);
+	});
+
+
+	test("Fire-once should be supported by date, future and .next() should return correct date", function () {
+		let 
+			refTime = new Date(),
+			twoSecsFromNow = new Date(refTime.getTime() + 2000),
+			scheduler0 = new Cron(twoSecsFromNow),
+			nextRun = scheduler0.next();
+		assert.equal(nextRun.getTime() > refTime.getTime(), true);
+		assert.equal(nextRun.getTime() < refTime.getTime()+4000, true);
+	});
+
 };
