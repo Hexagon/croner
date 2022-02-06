@@ -21,18 +21,23 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 Quick examples:
 
 ```javascript
-// Run a function at the interval defined by a cron expression
-const job = Cron('* * * * * *', () => {
-	console.log('This will run every second');
+// Basic: Run a function at the interval defined by a cron expression
+const job = Cron('*/5 * * * * *', () => {
+	console.log('This will run every fifth second');
 });
 
-// What dates do the next 100 sundays occur at?
+// Enumeration: What dates do the next 100 sundays occur at?
 const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
 console.log(nextSundays);
 
-// How many days left to christmas eve?
+// Days left to a specific date
 const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
+
+// Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
+// This will run 2023-01-23 00:00:00 according to the time in Asia/Kolkata, regardless from local/system time
+Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay') });
+
 ```
 
 More [examples](#examples)...
@@ -175,7 +180,7 @@ Cron takes three arguments
 *   scheduled function (optional)
 
 ```javascript
-const job = Cron("* * * * * *" , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
+const job = Cron("* * * * * *" /* Or a date object, or ISO 8601 local time */ , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
 job.schedule((/* optional */ job, /* optional */ context) => {});		
@@ -206,15 +211,17 @@ job.stop();
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 
-#### Expressions
+#### Pattern
 
-The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.
+The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below. 
 
 *   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month.
 
 *   Croner expressions support the following additional modifiers
-	-   *?*: A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
-	-   *L*: L can be used in the day of month field, to specify the last day of the month.
+	-   *?* A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
+	-   *L* L can be used in the day of month field, to specify the last day of the month.
+
+*   Croner also allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger once at the specified date/time. If you use a timezone different from local, you pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
