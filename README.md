@@ -284,7 +284,7 @@ const job = Cron(
 		timezone: "Europe/Stockholm"
 	},
 	function() {
-		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00 in Europe/Stockholm.');
+		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00');
 	}
 );
 ```
@@ -292,7 +292,7 @@ const job = Cron(
 #### Job controls
 ```javascript
 const job = Cron('* * * * * *', (self) => {
-	console.log('This will run every second. Pause on second 10. Resume on second 15. And quit on second 20.');
+	console.log('This will run every second. Pause on second 10. Resume on 15. And quit on 20.');
 	console.log('Current second: ', new Date().getSeconds());
 	console.log('Previous run: ' + self.previous());
 	console.log('Next run: ' + self.next());
@@ -323,7 +323,8 @@ Cron('*/5 * * * * *', { context: data }, (self, context) => {
 
 #### Fire on a specific date/time
 ```javascript
-// A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. Always specify which timezone the ISO 8601 time string has with the timezone option.
+// A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
+// Always specify which timezone the ISO 8601 time string has with the timezone option.
 let job = Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
 	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
 });
