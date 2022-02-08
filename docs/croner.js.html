@@ -155,38 +155,38 @@ import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
 	
 /**
-	 * @typedef {Object} CronOptions - Cron scheduler options
-	 * @property {boolean} [paused] - Job is paused
-	 * @property {boolean} [kill] - Job is about to be killed or killed
-	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
-	 * @property {number} [maxRuns] - Maximum nuber of executions
-	 * @property {string | Date} [startAt] - When to start running
-	 * @property {string | Date} [stopAt] - When to stop running
-	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
-	 * @property {?} [context] - Used to pass any object to scheduled function
-	 */
-	
+ * @typedef {Object} CronOptions - Cron scheduler options
+ * @property {boolean} [paused] - Job is paused
+ * @property {boolean} [kill] - Job is about to be killed or killed
+ * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+ * @property {number} [maxRuns] - Maximum nuber of executions
+ * @property {string | Date} [startAt] - When to start running
+ * @property {string | Date} [stopAt] - When to stop running
+ * @property {string} [timezone] - Time zone in Europe/Stockholm format
+ * @property {?} [context] - Used to pass any object to scheduled function
+ */
+
 /**
-	 * Many JS engines stores the delay as a 32-bit signed integer internally.
-	 * This causes an integer overflow when using delays larger than 2147483647, 
-	 * resulting in the timeout being executed immediately.
-	 * 
-	 * All JS engines implements an immediate execution of delays larger that a 32-bit 
-	 * int to keep the behaviour concistent. 
-	 * 
-	 * @type {number}
-	 */
+ * Many JS engines stores the delay as a 32-bit signed integer internally.
+ * This causes an integer overflow when using delays larger than 2147483647, 
+ * resulting in the timeout being executed immediately.
+ * 
+ * All JS engines implements an immediate execution of delays larger that a 32-bit 
+ * int to keep the behaviour concistent. 
+ * 
+ * @type {number}
+ */
 const maxDelay = Math.pow(2, 32 - 1) - 1;
 	
 /**
-	 * Cron entrypoint
-	 * 
-	 * @constructor
-	 * @param {string|date} pattern - Input pattern, input date, or input ISO 8601 time string
-	 * @param {CronOptions|Function} [options] - Options
-	 * @param {Function} [func] - Function to be run each iteration of pattern
-	 * @returns {Cron}
-	 */
+ * Cron entrypoint
+ * 
+ * @constructor
+ * @param {string|date} pattern - Input pattern, input date, or input ISO 8601 time string
+ * @param {CronOptions|Function} [options] - Options
+ * @param {Function} [func] - Function to be run each iteration of pattern
+ * @returns {Cron}
+ */
 function Cron (pattern, options, func) {
 	
 	// Optional "new" keyword
@@ -215,8 +215,8 @@ function Cron (pattern, options, func) {
 	}
 	
 	/**
-		 * Allow shorthand scheduling
-		 */
+	 * Allow shorthand scheduling
+	 */
 	if( func !== void 0 ) {
 		this.fn = func;
 		this.schedule();
@@ -227,12 +227,12 @@ function Cron (pattern, options, func) {
 }
 	
 /**
-	 * Internal function that validates options, and sets defaults
-	 * @private
-	 * 
-	 * @param {CronOptions} options 
-	 * @returns {CronOptions}
-	 */
+ * Internal function that validates options, and sets defaults
+ * @private
+ * 
+ * @param {CronOptions} options 
+ * @returns {CronOptions}
+ */
 Cron.prototype.processOptions = function (options) {
 	
 	// If no options are passed, create empty object
@@ -258,11 +258,11 @@ Cron.prototype.processOptions = function (options) {
 };
 	
 /**
-	 * Find next runtime, based on supplied date. Strips milliseconds.
-	 * 
-	 * @param {Date} [prev] - Date to start from
-	 * @returns {Date | null} - Next run time
-	 */
+ * Find next runtime, based on supplied date. Strips milliseconds.
+ * 
+ * @param {Date} [prev] - Date to start from
+ * @returns {Date | null} - Next run time
+ */
 Cron.prototype.next = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
 	const next = this._next(prev);
@@ -270,33 +270,28 @@ Cron.prototype.next = function (prev) {
 };
 	
 /**
-	 * Find next n runs, based on supplied date. Strips milliseconds.
-	 * 
-	 * @param {number} n - Number of runs to enumerate
-	 * @param {Date} [prev] - Date to start from
-	 * @returns {Date[]} - Next n run times
-	 */
+ * Find next n runs, based on supplied date. Strips milliseconds.
+ * 
+ * @param {number} n - Number of runs to enumerate
+ * @param {Date} [prev] - Date to start from
+ * @returns {Date[]} - Next n run times
+ */
 Cron.prototype.enumerate = function (n, previous) {
 	let enumeration = [];
 	
-	while(n--) {
-		previous = this.next(previous);
-		if (previous !== null) {
-			enumeration.push(previous);
-		} else {
-			break;
-		}
+	while(n-- &amp;&amp; (previous = this.next(previous))) {
+		enumeration.push(previous);
 	}
 	
 	return enumeration;
 };
 	
 /**
-	 * Is running?
-	 * @public
-	 * 
-	 * @returns {boolean} - Running or not
-	 */
+ * Is running?
+ * @public
+ * 
+ * @returns {boolean} - Running or not
+ */
 Cron.prototype.running = function () {
 	const msLeft = this.msToNext(this.previousrun);
 	const running = !this.options.paused &amp;&amp; this.fn !== void 0;
@@ -304,30 +299,30 @@ Cron.prototype.running = function () {
 };
 	
 /**
-	 * Return previous run time
-	 * @public
-	 * 
-	 * @returns {Date | null} - Previous run time
-	 */
+ * Return previous run time
+ * @public
+ * 
+ * @returns {Date | null} - Previous run time
+ */
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
 };
 	
 /**
-	 * Internal version of next. Cron needs millseconds internally, hence _next.
-	 * @private
-	 * 
-	 * @param {CronDate} prev - Input pattern
-	 * @returns {CronDate | null} - Next run time
-	 */
+ * Internal version of next. Cron needs millseconds internally, hence _next.
+ * @private
+ * 
+ * @param {CronDate} prev - Input pattern
+ * @returns {CronDate | null} - Next run time
+ */
 Cron.prototype._next = function (prev) {
 	
 	// Previous run should never be before startAt
 	if( this.options.startAt &amp;&amp; prev &amp;&amp; prev.getTime(true) &lt; this.options.startAt.getTime(true) ) {
-		prev = new CronDate(this.options.startAt, this.options.timezone);
+		prev = this.options.startAt;
 	}
 	
-	// Calculate next run according to pattern or one-of
+	// Calculate next run according to pattern or one-off timestamp
 	const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern);
 	
 	if (this.once &amp;&amp; this.once.getTime(true) &lt;= prev.getTime(true)) {
@@ -348,12 +343,12 @@ Cron.prototype._next = function (prev) {
 };
 	
 /**
-	 * Returns number of milliseconds to next run
-	 * @public
-	 * 
-	 * @param {Date} [prev] - Starting date, defaults to now
-	 * @returns {number | null}
-	 */
+ * Returns number of milliseconds to next run
+ * @public
+ * 
+ * @param {Date} [prev] - Starting date, defaults to now
+ * @returns {number | null}
+ */
 Cron.prototype.msToNext = function (prev) {
 	prev = new CronDate(prev, this.options.timezone);
 	const next = this._next(prev);
@@ -365,9 +360,9 @@ Cron.prototype.msToNext = function (prev) {
 };
 	
 /**
-	 * Stop execution 
-	 * @public
-	 */
+ * Stop execution 
+ * @public
+ */
 Cron.prototype.stop = function () {
 	this.options.kill = true;
 	// Stop any awaiting call
@@ -377,32 +372,32 @@ Cron.prototype.stop = function () {
 };
 	
 /**
-	 * Pause executionR
-	 * @public
-	 * 
-	 * @returns {boolean} - Wether pause was successful
-	 */
+ * Pause executionR
+ * @public
+ * 
+ * @returns {boolean} - Wether pause was successful
+ */
 Cron.prototype.pause = function () {
 	return (this.options.paused = true) &amp;&amp; !this.options.kill;
 };
 	
 /**
-	 * Pause execution
-	 * @public
-	 * 
-	 * @returns {boolean} - Wether resume was successful
-	 */
+ * Pause execution
+ * @public
+ * 
+ * @returns {boolean} - Wether resume was successful
+ */
 Cron.prototype.resume = function () {
 	return !(this.options.paused = false) &amp;&amp; !this.options.kill;
 };
 	
 /**
-	 * Schedule a new job
-	 * @public
-	 * 
-	 * @param {Function} func - Function to be run each iteration of pattern
-	 * @returns {Cron}
-	 */
+ * Schedule a new job
+ * @public
+ * 
+ * @param {Function} func - Function to be run each iteration of pattern
+ * @returns {Cron}
+ */
 Cron.prototype.schedule = function (func) {
 	
 	// If a function is already scheduled, bail out
@@ -418,19 +413,15 @@ Cron.prototype.schedule = function (func) {
 	let waitMs = this.msToNext(this.previousrun);
 	if  ( waitMs === null )  return this;
 	
-	// Prioritize context before closure,
-	// to allow testing of maximum delay. 	
-	const _maxDelay = this.maxDelay || maxDelay;
-	
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
-	if( waitMs > _maxDelay ) {
-		waitMs = _maxDelay;
+	if( waitMs > maxDelay ) {
+		waitMs = maxDelay;
 	}
 	
 	// Ok, go!
-	const go = () => {
+	this.currentTimeout = setTimeout(() => {
 	
-		if( waitMs !== _maxDelay &amp;&amp; !this.options.paused ) {
+		if( waitMs !== maxDelay &amp;&amp; !this.options.paused ) {
 	
 			this.options.maxRuns--;
 	
@@ -452,9 +443,7 @@ Cron.prototype.schedule = function (func) {
 		// Recurse
 		this.schedule();
 	
-	};
-	
-	this.currentTimeout = setTimeout(go, waitMs );
+	}, waitMs );
 		
 	return this;
 	

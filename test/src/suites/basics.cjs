@@ -367,14 +367,48 @@ module.exports = function (Cron, test) {
 			scheduler0 = new Cron("2020-01-01T00:00:00");
 		assert.equal(scheduler0.next(),null);
 	});
-	
-	test("Fire-once should be supported by ISO 8601 string, future and .next() should return correct date", function () {
+
+	/* WIP
+	test("Fire-once should be supported by ISO 8601 string, future and .next() should handle ISO 8601 UTC correctly", function () {
+		let 
+			scheduler0 = new Cron("2200-01-01T00:00:00Z", {timezone: "Europe/Stockholm"});
+		assert.equal(scheduler0.next().getTime(),new Date(Date.UTC(2200,0,1,0,0,0)).getTime());
+	});
+	*/
+
+	test("Fire-once should be supported by ISO 8601 string, past and .enumerate() should return zero items", function () {
+		let 
+			scheduler0 = new Cron("2018-01-01T00:00:00"),
+			nextRun = scheduler0.enumerate(10);
+		assert.equal(nextRun.length, 0);
+	});
+
+	test("Fire-once should be supported by ISO 8601 local string, future and .next() should return correct date", function () {
 		let 
 			scheduler0 = new Cron("2200-01-01T00:00:00"),
 			nextRun = scheduler0.next();
 		assert.equal(nextRun.getFullYear(), 2200);
 		assert.equal(nextRun.getMonth(), 0);
 		assert.equal(nextRun.getDate(), 1);
+		assert.equal(nextRun.getHours(), 0);
+	});
+
+	test("Fire-once should be supported by ISO 8601 UTC string, future and .next() should return correct date", function () {
+		let 
+			scheduler0 = new Cron("2200-01-01T00:00:00Z"),
+			nextRun = scheduler0.next();
+		assert.equal(nextRun.getUTCFullYear(), 2200);
+		assert.equal(nextRun.getUTCMonth(), 0);
+		assert.equal(nextRun.getUTCDate(), 1);
+		assert.equal(nextRun.getUTCHours(), 0);
+	});
+
+
+	test("Fire-once should be supported by ISO 8601 string, future and .enumerate() should return exactly one item", function () {
+		let 
+			scheduler0 = new Cron("2200-01-01T00:00:00"),
+			nextRun = scheduler0.enumerate(10);
+		assert.equal(nextRun.length, 1);
 	});
 
 	test("Fire-once should be supported by date, past and .next() should return null", function () {
@@ -395,6 +429,22 @@ module.exports = function (Cron, test) {
 			nextRun = scheduler0.next();
 		assert.equal(nextRun.getTime() > refTime.getTime(), true);
 		assert.equal(nextRun.getTime() < refTime.getTime()+4000, true);
+	});
+
+	test("Invalid ISO 8601 local string should throw", function () {
+		assert.throws(() => {
+			let 
+				scheduler0 = new Cron("2020-13-01T00:00:00");
+			assert.equal(scheduler0.next(),null);
+		});
+	});
+
+	test("Invalid ISO 8601 UTC string should throw", function () {
+		assert.throws(() => {
+			let 
+				scheduler0 = new Cron("2020-13-01T00:00:00Z");
+			assert.equal(scheduler0.next(),null);
+		});
 	});
 
 };

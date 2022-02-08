@@ -30,17 +30,40 @@ module.exports = function (Cron, test) {
 		refTime.setMonth(8);
 
 		let
-			timeStockholm = Cron("0 0 0 31 10 *", {timezone: "Europe/Stockholm"}).next(refTime).getTime(),
-			timeNewYork = Cron("0 0 0 31 10 *", {timezone: "America/New_York"}).next(refTime).getTime(),
+			timeStockholm = Cron("0 0 12 30 10 *", {timezone: "Europe/Stockholm"}).next(refTime).getTime(),
+			timeNewYork = Cron("0 0 12 30 10 *", {timezone: "America/New_York"}).next(refTime).getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
 
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
 		assert.equal(diff,6);
 	});
 
+	test("Should return expected time, date and weekday different timezones", function () {
+
+		let refTime = new Date();
+		refTime.setFullYear(2022);
+		refTime.setMonth(1);
+		refTime.setDate(8);
+		refTime.setHours(12);
+
+		let
+			timeStockholm = Cron("0 0 23 8 2 2", {timezone: "Europe/Stockholm"}).next(refTime),
+			timeNewYork = Cron("0 0 23 8 2 2", {timezone: "America/New_York"}).next(refTime);
+			
+		assert.equal(timeStockholm.getUTCMonth(), 1);
+		assert.equal(timeStockholm.getUTCDate(), 8);
+		assert.equal(timeStockholm.getUTCHours(), 22);
+		assert.equal(timeStockholm.getUTCFullYear(), 2022);
+
+		assert.equal(timeNewYork.getUTCMonth(), 1);
+		assert.equal(timeNewYork.getUTCDate(), 9);
+		assert.equal(timeNewYork.getUTCHours(), 4);
+		assert.equal(timeNewYork.getUTCFullYear(), 2022);
+	});
+
 	test("getTime should return expected difference with different timezones (next 1st november)", function () {
-		let timeStockholm = Cron("0 0 0 1 11 *", {timezone: "Europe/Stockholm"}).next().getTime(),
-			timeNewYork = Cron("0 0 0 1 11 *", {timezone: "America/New_York"}).next().getTime(),
+		let timeStockholm = Cron("0 0 12 1 11 *", {timezone: "Europe/Stockholm"}).next().getTime(),
+			timeNewYork = Cron("0 0 12 1 11 *", {timezone: "America/New_York"}).next().getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
 
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)

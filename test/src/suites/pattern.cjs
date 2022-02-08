@@ -254,7 +254,7 @@ module.exports = function (Cron, test) {
 		scheduler = new Cron("* * ? ? ? ?", { timezone: "America/New_York"});
 		nextRun = scheduler.next(now);
 
-		// Do compariso
+		// Do comparison
 		assert.equal(nextRun.getUTCHours(), now.getUTCHours());
 	});
 
