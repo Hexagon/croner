@@ -263,13 +263,13 @@ CronDate.prototype.increment = function (pattern, rerun) {
 				if( pattern[target][i] &amp;&amp; (target !== "days" || (pattern.daysOfWeek[this.getDate(true).getDay()])) ) {
 					
 					// Special handling for L (last day of month), when we are searching for days
-					if (target === "days" &amp;&amp; pattern.lastDayOfMonth) {	
+					if (target === "days" &amp;&amp; pattern.lastDayOfMonth) {
 						let baseDate = this.getDate(true);
 
 						// Set days to one day after today, if month changes, then we are at the last day of the month
-						baseDate.setDate(i+1);
+						baseDate.setDate(i-offset+1);
 						if (baseDate.getMonth() !== this["months"]) {
-							this[target] = i;
+							this[target] = i-offset;
 							return true;
 						}
 					

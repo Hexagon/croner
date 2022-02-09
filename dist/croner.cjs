@@ -163,13 +163,13 @@
 					if( pattern[target][i] && (target !== "days" || (pattern.daysOfWeek[this.getDate(true).getDay()])) ) {
 						
 						// Special handling for L (last day of month), when we are searching for days
-						if (target === "days" && pattern.lastDayOfMonth) {	
+						if (target === "days" && pattern.lastDayOfMonth) {
 							let baseDate = this.getDate(true);
 
 							// Set days to one day after today, if month changes, then we are at the last day of the month
-							baseDate.setDate(i+1);
+							baseDate.setDate(i-offset+1);
 							if (baseDate.getMonth() !== this["months"]) {
-								this[target] = i;
+								this[target] = i-offset;
 								return true;
 							}
 						
@@ -829,7 +829,7 @@
 	/**
 	 * Find next runtime, based on supplied date. Strips milliseconds.
 	 * 
-	 * @param {Date} [prev] - Date to start from
+	 * @param {Date|string} [prev] - Date to start from
 	 * @returns {Date | null} - Next run time
 	 */
 	Cron.prototype.next = function (prev) {
@@ -842,7 +842,7 @@
 	 * Find next n runs, based on supplied date. Strips milliseconds.
 	 * 
 	 * @param {number} n - Number of runs to enumerate
-	 * @param {Date} [prev] - Date to start from
+	 * @param {Date|string} [prev] - Date to start from
 	 * @returns {Date[]} - Next n run times
 	 */
 	Cron.prototype.enumerate = function (n, previous) {

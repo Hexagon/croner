@@ -164,6 +164,82 @@ module.exports = function (Cron, test) {
 	});
 
 
+	test("Croner should increment seconds", function () {
+		let runs = Cron("* * * * * *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment minutes", function () {
+		let runs = Cron("0 * * * * *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment hours", function () {
+		let runs = Cron("0 0 * * * *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment days", function () {
+		let runs = Cron("0 0 0 * * *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment months", function () {
+		let runs = Cron("0 0 0 1 * *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment years", function () {
+		let runs = Cron("0 0 0 1 12 *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment weeks", function () {
+		let runs = Cron("0 0 0 * * 1").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should increment last day of month", function () {
+		let runs = Cron("0 0 0 L * *").enumerate(4);
+		assert.ok(runs[0] < runs[1]);
+		assert.ok(runs[1] < runs[2]);
+		assert.ok(runs[2] < runs[3]);
+	});
+
+	test("Croner should give correct last day of months", function () {
+		let runs = Cron("0 0 0 L * *").enumerate(4, "2022-01-01T00:00:00");
+		
+		assert.equal(runs[0].getFullYear(), 2022);
+		assert.equal(runs[0].getMonth(), 0);
+		assert.equal(runs[0].getDate(), 31);
+		assert.equal(runs[0].getHours(), 0);
+
+		assert.equal(runs[1].getFullYear(), 2022);
+		assert.equal(runs[1].getMonth(), 1);
+		assert.equal(runs[1].getDate(), 28);
+		assert.equal(runs[1].getHours(), 0);
+
+		assert.equal(runs[2].getFullYear(), 2022);
+		assert.equal(runs[2].getMonth(), 2);
+		assert.equal(runs[2].getDate(), 31);
+		assert.equal(runs[2].getHours(), 0);
+
+	});
+	
 	test("Impossible combination should result in null", function () {
 		let impossible = Cron("0 0 0 30 2 6").next(new Date(1634076000000));
 		assert.equal(null, impossible);

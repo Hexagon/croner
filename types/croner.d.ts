@@ -67,15 +67,15 @@ export class Cron {
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
-     * @param {Date} [prev] - Date to start from
+     * @param {Date|string} [prev] - Date to start from
      * @returns {Date | null} - Next run time
      */
-    next(prev?: Date): Date | null;
+    next(prev?: Date | string): Date | null;
     /**
      * Find next n runs, based on supplied date. Strips milliseconds.
      *
      * @param {number} n - Number of runs to enumerate
-     * @param {Date} [prev] - Date to start from
+     * @param {Date|string} [prev] - Date to start from
      * @returns {Date[]} - Next n run times
      */
     enumerate(n: number, previous: any): Date[];
