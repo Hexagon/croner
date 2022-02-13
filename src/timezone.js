@@ -10,9 +10,9 @@
  *                                                 (for example) will return local time in new york, but getUTCHours()
  *                                                 will return something irrelevant.
  * 
- * @param {date} date - Input date
+ * @param {Date} date - Input date
  * @param {string} tzString - Timezone string in Europe/Stockholm format
- * @returns {date}
+ * @returns {Date}
  */
 function convertTZ(date, tzString) {
 	return new Date(date.toLocaleString("en-US", {timeZone: tzString}));   
