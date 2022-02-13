@@ -16,9 +16,9 @@
 	 *                                                 (for example) will return local time in new york, but getUTCHours()
 	 *                                                 will return something irrelevant.
 	 * 
-	 * @param {date} date - Input date
+	 * @param {Date} date - Input date
 	 * @param {string} tzString - Timezone string in Europe/Stockholm format
-	 * @returns {date}
+	 * @returns {Date}
 	 */
 	function convertTZ(date, tzString) {
 		return new Date(date.toLocaleString("en-US", {timeZone: tzString}));   
@@ -751,7 +751,7 @@
 	 * Cron entrypoint
 	 * 
 	 * @constructor
-	 * @param {string|date} pattern - Input pattern, input date, or input ISO 8601 time string
+	 * @param {string|Date} pattern - Input pattern, input date, or input ISO 8601 time string
 	 * @param {CronOptions|Function} [options] - Options
 	 * @param {Function} [func] - Function to be run each iteration of pattern
 	 * @returns {Cron}

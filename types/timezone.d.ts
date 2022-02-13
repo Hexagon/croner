@@ -11,8 +11,8 @@ export default convertTZ;
  *                                                 (for example) will return local time in new york, but getUTCHours()
  *                                                 will return something irrelevant.
  *
- * @param {date} date - Input date
+ * @param {Date} date - Input date
  * @param {string} tzString - Timezone string in Europe/Stockholm format
- * @returns {date}
+ * @returns {Date}
  */
-declare function convertTZ(date: any, tzString: string): any;
+declare function convertTZ(date: Date, tzString: string): Date;
