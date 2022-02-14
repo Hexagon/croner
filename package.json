@@ -34,10 +34,11 @@
   ],
   "scripts": {
     "test": "uvu test test.croner.js",
-    "test:dist": "uvu test",
+    "test:dist": "uvu test js && npm run test:ts",
     "test:coverage": "c8 --include=src npm test",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
+    "test:ts": "tsc --noEmit ./test/ts/basics.ts",
     "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:typings && npm run build:dist && npm run build:minify && npm run build:cleanup && npm run test:coverage && npm run test:dist",
     "build:ci": "npm run test:lint && npm run build:typings && npm run build:dist && npm run build:minify && npm run build:cleanup && npm run test:coverage && npm run test:dist",
     "build:precleanup": "(rm -rf types/* || del /Q types\\*) && (rm -rf dist/* || del /Q dist\\*)",

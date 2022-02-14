@@ -842,7 +842,7 @@
 	 * Find next n runs, based on supplied date. Strips milliseconds.
 	 * 
 	 * @param {number} n - Number of runs to enumerate
-	 * @param {Date|string} [prev] - Date to start from
+	 * @param {Date|string} [previous] - Date to start from
 	 * @returns {Date[]} - Next n run times
 	 */
 	Cron.prototype.enumerate = function (n, previous) {

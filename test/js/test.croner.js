@@ -22,8 +22,9 @@ THE SOFTWARE.
 
 */
 
-import Cron from "../dist/croner.min.mjs";
-import { Cron as Cron2 } from "../dist/croner.min.mjs";
+import Cron from "../../src/croner.js";
+import { Cron as Cron2 } from "../../src/croner.js";
 import test from "./src/suite.cjs";
 test(Cron);
 test(Cron2);
+
