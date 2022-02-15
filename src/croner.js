@@ -83,7 +83,7 @@ function Cron (pattern, options, func) {
 	if (pattern && (pattern instanceof Date)) {
 		this.once = new CronDate(pattern, this.options.timezone);
 	} else if (pattern && (typeof pattern === "string") && pattern.indexOf(":") > 0) {
-		/** @type {CronPattern} */
+		/** @type {CronDate} */
 		this.once = new CronDate(pattern, this.options.timezone);
 	} else {
 		/** @type {CronPattern} */

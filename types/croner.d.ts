@@ -59,7 +59,7 @@ export class Cron {
     constructor(pattern: string | Date, options?: CronOptions | Function, func?: Function);
     /** @type {CronOptions} */
     options: CronOptions;
-    once: CronPattern;
+    once: CronDate;
     /** @type {CronPattern} */
     pattern: CronPattern;
     fn: Function;
@@ -132,5 +132,5 @@ export class Cron {
     currentTimeout: number;
     previousrun: CronDate;
 }
-import { CronPattern } from "./pattern.js";
 import { CronDate } from "./date.js";
+import { CronPattern } from "./pattern.js";
