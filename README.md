@@ -51,12 +51,12 @@ Benchmark at 2022-02-01:
 ```
 > node cron-implementation-test.js
 
-Test: When is next saturday 29th of february, pattern '0 0 0 29 2 6'
+Test: When is next monday in october, pattern '0 0 0 * 10 1'
 
-node-schedule: 2022-02-05 00:00:00 in 55.13ms
-node-cron:     ???                 in 14.587ms
-cron:          2022-03-05 00:00:00 in 21.07ms
-croner:        2048-02-29 00:00:00 in 10.508ms
+node-schedule: 2022-10-03 00:00:00 in 15.26ms
+node-cron:     ???                 in 1.076ms
+cron:          2022-11-07 00:00:00 in 2.923ms
+croner:        2022-10-03 00:00:00 in 1.774ms
 ```
 
 <details>
@@ -69,13 +69,6 @@ node-schedule: 2022-02-15 00:00:00 in 13.306ms
 node-cron:     ???                 in 1.676ms
 cron:          2022-03-15 00:00:00 in 6.066ms
 croner:        2022-02-15 00:00:00 in 0.575ms
-
-Test: When is next monday in october, pattern '0 0 0 * 10 1'
-
-node-schedule: 2022-10-03 00:00:00 in 15.26ms
-node-cron:     ???                 in 1.076ms
-cron:          2022-11-07 00:00:00 in 2.923ms
-croner:        2022-10-03 00:00:00 in 1.774ms
 
 Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
 
