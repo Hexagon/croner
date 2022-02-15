@@ -561,7 +561,7 @@
 		let [, lower, upper, steps] = matches;
 		lower = parseInt(lower, 10) + valueIndexOffset;
 		upper = parseInt(upper, 10) + valueIndexOffset;
-		steps = parseInt(steps, 10) + valueIndexOffset;
+		steps = parseInt(steps, 10);
 
 		if( isNaN(lower) ) throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
 		if( isNaN(upper) ) throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
@@ -574,7 +574,7 @@
 		if( lower > upper ) throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
 
 		for (let i = lower; i <= upper; i += steps) {
-			this[type][(i + valueIndexOffset)] = 1;
+			this[type][i] = 1;
 		}
 	};
 
@@ -613,7 +613,7 @@
 		}
 
 		for( let i = lower; i <= upper; i++ ) {
-			this[type][(i + valueIndexOffset)] = 1;
+			this[type][i] = 1;
 		}
 	};
 
@@ -623,9 +623,8 @@
 	 * 
 	 * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
 	 * @param {string} type - One of "seconds", "minutes" etc
-	 * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
 	 */
-	CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset) {
+	CronPattern.prototype.handleStepping = function (conf, type) {
 
 		const split = conf.split("/");
 
@@ -645,7 +644,7 @@
 		if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
 
 		for( let i = start; i < this[type].length; i+= steps ) {
-			this[type][(i + valueIndexOffset)] = 1;
+			this[type][i] = 1;
 		}
 	};
 

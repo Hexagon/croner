@@ -166,12 +166,12 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <p>Benchmark at 2022-02-01:</p>
 <pre class="prettyprint source"><code>> node cron-implementation-test.js
 
-Test: When is next saturday 29th of february, pattern '0 0 0 29 2 6'
+Test: When is next monday in october, pattern '0 0 0 * 10 1'
 
-node-schedule: 2022-02-05 00:00:00 in 55.13ms
-node-cron:     ???                 in 14.587ms
-cron:          2022-03-05 00:00:00 in 21.07ms
-croner:        2048-02-29 00:00:00 in 10.508ms
+node-schedule: 2022-10-03 00:00:00 in 15.26ms
+node-cron:     ???                 in 1.076ms
+cron:          2022-11-07 00:00:00 in 2.923ms
+croner:        2022-10-03 00:00:00 in 1.774ms
 </code></pre>
 <details>
 	<summary>More test results</summary>
@@ -181,13 +181,6 @@ node-schedule: 2022-02-15 00:00:00 in 13.306ms
 node-cron:     ???                 in 1.676ms
 cron:          2022-03-15 00:00:00 in 6.066ms
 croner:        2022-02-15 00:00:00 in 0.575ms
-
-Test: When is next monday in october, pattern '0 0 0 * 10 1'
-
-node-schedule: 2022-10-03 00:00:00 in 15.26ms
-node-cron:     ???                 in 1.076ms
-cron:          2022-11-07 00:00:00 in 2.923ms
-croner:        2022-10-03 00:00:00 in 1.774ms
 
 Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
 
@@ -337,7 +330,7 @@ job.stop();
 <p>The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.</p>
 <ul>
 <li>
-<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month.</p>
+<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a>.</p>
 </li>
 <li>
 <p>Croner expressions support the following additional modifiers</p>

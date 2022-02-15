@@ -67,4 +67,49 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	
+	test("Steps for hours should yield correct hours", function () {
+		let nextRuns = new Cron("1 1 */3 * * *").enumerate(10, "2020-01-01T00:00:00");
+		assert.equal(nextRuns[0].getHours(),0);
+		assert.equal(nextRuns[1].getHours(),3);
+		assert.equal(nextRuns[2].getHours(),6);
+		assert.equal(nextRuns[3].getHours(),9);
+		assert.equal(nextRuns[4].getHours(),12);
+		assert.equal(nextRuns[5].getHours(),15);
+		assert.equal(nextRuns[6].getHours(),18);
+		assert.equal(nextRuns[7].getHours(),21);
+		assert.equal(nextRuns[8].getHours(),0);
+		assert.equal(nextRuns[9].getHours(),3);
+	});
+
+	test("Steps for hours should yield correct hours with range", function () {
+		let nextRuns = new Cron("1 1 0-23/3 * * *").enumerate(10, "2020-01-01T00:00:00");
+		assert.equal(nextRuns[0].getHours(),0);
+		assert.equal(nextRuns[1].getHours(),3);
+		assert.equal(nextRuns[2].getHours(),6);
+		assert.equal(nextRuns[3].getHours(),9);
+		assert.equal(nextRuns[4].getHours(),12);
+		assert.equal(nextRuns[5].getHours(),15);
+		assert.equal(nextRuns[6].getHours(),18);
+		assert.equal(nextRuns[7].getHours(),21);
+		assert.equal(nextRuns[8].getHours(),0);
+		assert.equal(nextRuns[9].getHours(),3);
+	});
+
+	test("Steps for months should yield correct months", function () {
+		let nextRuns = new Cron("1 1 1 */3 *").enumerate(10, "2020-12-31T23:59:59");
+		assert.equal(nextRuns[0].getMonth(),0);
+		assert.equal(nextRuns[1].getMonth(),3);
+		assert.equal(nextRuns[2].getMonth(),6);
+		assert.equal(nextRuns[3].getMonth(),9);
+	});
+
+	test("Steps for months should yield correct months with range", function () {
+		let nextRuns = new Cron("1 1 1 1-12/3 *").enumerate(10, "2020-12-31T23:59:59");
+		assert.equal(nextRuns[0].getMonth(),0);
+		assert.equal(nextRuns[1].getMonth(),3);
+		assert.equal(nextRuns[2].getMonth(),6);
+		assert.equal(nextRuns[3].getMonth(),9);
+	});
+
 };
