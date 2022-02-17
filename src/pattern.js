@@ -33,6 +33,8 @@ function CronPattern (pattern, timezone) {
 	this.daysOfWeek     = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 	this.lastDayOfMonth = false;
+	this.starDayOfMonth = false;
+	this.starDayOfWeek  = false;
 
 	this.parse();
 
@@ -62,17 +64,27 @@ CronPattern.prototype.parse = function () {
 		parts.unshift("0");
 	}
 
-	// Convert 'L' to '*' and add lastDayOfMonth flag,
+	// Convert 'L' to lastDayOfMonth flag,
 	// and set days to 28,29,30,31 as those are the only days that can be the last day of month
-	if(parts[3].toUpperCase() == "L") {
-		parts[3] = "28,29,30,31";
+	if(parts[3].indexOf("L") >= 0) {
+		parts[3] = parts[3].replace("L","");
 		this.lastDayOfMonth = true;
+	}
+
+	// Check for starDayOfMonth
+	if(parts[3].toUpperCase() == "*") {
+		this.starDayOfMonth = true;
 	}
 
 	// Replace alpha representations
 	parts[4] = this.replaceAlphaMonths(parts[4]);
 	parts[5] = this.replaceAlphaDays(parts[5]);
 
+	// Check for starDayOfWeek
+	if(parts[5].toUpperCase() == "*") {
+		this.starDayOfWeek = true;
+	}
+	
 	// Implement '?' in the simplest possible way - replace ? with current value, before further processing
 	let initDate = new CronDate(new Date(),this.timezone).getDate(true);
 

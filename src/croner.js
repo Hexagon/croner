@@ -29,18 +29,7 @@
   ------------------------------------------------------------------------------------  */
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
-	
-/**
- * @typedef {Object} CronOptions - Cron scheduler options
- * @property {boolean} [paused] - Job is paused
- * @property {boolean} [kill] - Job is about to be killed or killed
- * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
- * @property {number} [maxRuns] - Maximum nuber of executions
- * @property {string | Date} [startAt] - When to start running
- * @property {string | Date} [stopAt] - When to stop running
- * @property {string} [timezone] - Time zone in Europe/Stockholm format
- * @property {?} [context] - Used to pass any object to scheduled function
- */
+import { CronOptions } from "./options.js";
 
 /**
  * Many JS engines stores the delay as a 32-bit signed integer internally.
@@ -77,22 +66,23 @@ function Cron (pattern, options, func) {
 	}
 	
 	/** @type {CronOptions} */
-	this.options = this.processOptions(options);
+	this.options = CronOptions(options);
+	
+	/** @type {CronDate|undefined} */
+	this.once = void 0;
+	
+	/** @type {CronPattern|undefined} */
+	this.pattern = void 0;
 	
 	// Check if we got a date, or a pattern supplied as first argument
-	if (pattern && (pattern instanceof Date)) {
-		this.once = new CronDate(pattern, this.options.timezone);
-	} else if (pattern && (typeof pattern === "string") && pattern.indexOf(":") > 0) {
-		/** @type {CronDate} */
+	// Then set either this.once or this.pattern
+	if (pattern && (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))) {
 		this.once = new CronDate(pattern, this.options.timezone);
 	} else {
-		/** @type {CronPattern} */
 		this.pattern = new CronPattern(pattern, this.options.timezone);
 	}
 	
-	/**
-	 * Allow shorthand scheduling
-	 */
+	// Allow shorthand scheduling
 	if( func !== void 0 ) {
 		this.fn = func;
 		this.schedule();
@@ -101,37 +91,6 @@ function Cron (pattern, options, func) {
 	return this;
 	
 }
-	
-/**
- * Internal function that validates options, and sets defaults
- * @private
- * 
- * @param {CronOptions} options 
- * @returns {CronOptions}
- */
-Cron.prototype.processOptions = function (options) {
-	
-	// If no options are passed, create empty object
-	if (options === void 0) {
-		options = {};
-	}
-	
-	// Keep options, or set defaults
-	options.paused = (options.paused === void 0) ? false : options.paused;
-	options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
-	options.catch = (options.catch === void 0) ? false : options.catch;
-	options.kill = false;
-	
-	// startAt is set, validate it
-	if( options.startAt ) {
-		options.startAt = new CronDate(options.startAt, options.timezone);
-	} 
-	if( options.stopAt ) {
-		options.stopAt = new CronDate(options.stopAt, options.timezone);
-	}	
-	
-	return options;
-};
 	
 /**
  * Find next runtime, based on supplied date. Strips milliseconds.
@@ -182,40 +141,6 @@ Cron.prototype.running = function () {
  */
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
-};
-	
-/**
- * Internal version of next. Cron needs millseconds internally, hence _next.
- * @private
- * 
- * @param {CronDate} prev - Input pattern
- * @returns {CronDate | null} - Next run time
- */
-Cron.prototype._next = function (prev) {
-	
-	// Previous run should never be before startAt
-	if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
-		prev = this.options.startAt;
-	}
-	
-	// Calculate next run according to pattern or one-off timestamp
-	const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern);
-	
-	if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
-		return null;
-  
-	} else if ((nextRun === null) ||
-		(this.options.maxRuns <= 0) ||	
-		(this.options.kill) ||
-		(this.options.stopAt && nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
-		return null;
-
-	} else {
-		// All seem good, return next run
-		return nextRun;
-  
-	}
-		
 };
 	
 /**
@@ -324,6 +249,41 @@ Cron.prototype.schedule = function (func) {
 	return this;
 	
 };
+
 	
+/**
+ * Internal version of next. Cron needs millseconds internally, hence _next.
+ * @private
+ * 
+ * @param {CronDate} prev - Input pattern
+ * @returns {CronDate | null} - Next run time
+ */
+Cron.prototype._next = function (prev) {
+	
+	// Previous run should never be before startAt
+	if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
+		prev = this.options.startAt;
+	}
+	
+	// Calculate next run according to pattern or one-off timestamp
+	const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options);
+	
+	if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
+		return null;
+  
+	} else if ((nextRun === null) ||
+		(this.options.maxRuns <= 0) ||	
+		(this.options.kill) ||
+		(this.options.stopAt && nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
+		return null;
+
+	} else {
+		// All seem good, return next run
+		return nextRun;
+  
+	}
+		
+};
+
 export default Cron;
 export { Cron };

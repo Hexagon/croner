@@ -1,42 +1,5 @@
 export default Cron;
 /**
- * - Cron scheduler options
- */
-export type CronOptions = {
-    /**
-     * - Job is paused
-     */
-    paused?: boolean;
-    /**
-     * - Job is about to be killed or killed
-     */
-    kill?: boolean;
-    /**
-     * - Continue exection even if a unhandled error is thrown by triggered function
-     */
-    catch?: boolean;
-    /**
-     * - Maximum nuber of executions
-     */
-    maxRuns?: number;
-    /**
-     * - When to start running
-     */
-    startAt?: string | Date;
-    /**
-     * - When to stop running
-     */
-    stopAt?: string | Date;
-    /**
-     * - Time zone in Europe/Stockholm format
-     */
-    timezone?: string;
-    /**
-     * - Used to pass any object to scheduled function
-     */
-    context?: unknown;
-};
-/**
  * Cron entrypoint
  *
  * @constructor
@@ -60,10 +23,8 @@ export class Cron {
     /** @type {CronOptions} */
     options: CronOptions;
     once: CronDate;
-    /** @type {CronPattern} */
     pattern: CronPattern;
     fn: Function;
-    private processOptions;
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
@@ -93,7 +54,6 @@ export class Cron {
      * @returns {Date | null} - Previous run time
      */
     public previous(): Date | null;
-    private _next;
     /**
      * Returns number of milliseconds to next run
      * @public
@@ -131,6 +91,8 @@ export class Cron {
     public schedule(func: Function): Cron;
     currentTimeout: number;
     previousrun: CronDate;
+    private _next;
 }
+import { CronOptions } from "./options.js";
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";

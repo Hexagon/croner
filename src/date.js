@@ -1,4 +1,5 @@
-import convertTZ from "./timezone.js";
+import { CronTZ } from "./tz.js";
+import { CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
 
 /**
  * Converts date to CronDate
@@ -33,7 +34,7 @@ function CronDate (date, timezone) {
 CronDate.prototype.fromDate = function (date) {
 	
 	if (this.timezone) {
-		date = convertTZ(date, this.timezone);
+		date = CronTZ(date, this.timezone);
 	}
 
 	this.milliseconds = date.getMilliseconds();
@@ -104,10 +105,11 @@ CronDate.prototype.fromString = function (str) {
  * @public
  * 
  * @param {string} pattern - The pattern used to increment current state
+ * @param {CronOptions} options - Cron options used for incrementing
  * @param {boolean} [rerun=false] - If this is an internal incremental run
  * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
  */
-CronDate.prototype.increment = function (pattern, rerun) {
+CronDate.prototype.increment = function (pattern, options, rerun) {
 
 	if (!rerun) {
 		this.seconds += 1;
@@ -135,27 +137,52 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 			for( let i = startPos; i < pattern[target].length; i++ ) {
 
-				// If pattern matches and, in case of days, weekday matches, go on
-				if( pattern[target][i] ) {
-					
-					// Special handling for L (last day of month), when we are searching for days
-					if (target === "days" && pattern.lastDayOfMonth) {
-						let baseDate = this.getDate(true);
+				// This applies to all "levels"
+				let match = pattern[target][i];
 
+				// Days has a couple of special cases
+				if (target === "days") {
+
+					// Create a date object for the target date
+					let targetDate = this.getDate(true);
+					targetDate.setDate(i-offset);
+
+					// Special handling for L (last day of month), when we are searching for days
+					if (pattern.lastDayOfMonth) {
+
+						// Create a copy of targetDate
 						// Set days to one day after today, if month changes, then we are at the last day of the month
-						baseDate.setDate(i-offset+1);
-						if (baseDate.getMonth() !== this["months"]) {
-							this[target] = i-offset;
-							return true;
+						let targetDateCopy = new Date(targetDate);
+						targetDateCopy.setDate(i-offset+1);
+				
+						// Overwrite match if last day of month is matching
+						if (targetDateCopy.getMonth() !== this.months) {
+							match = true;
 						}
-					
-					// Normal handling
+						
+					}
+
+					// Weekdays must also match when incrementing days
+					// If running in legacy mode, it is sufficient that only weekday match.
+					const dowMatch = pattern.daysOfWeek[targetDate.getDay()];
+					if (options.legacyMode) {
+						if (!pattern.starDayOfWeek && pattern.starDayOfMonth) {
+							match = dowMatch;
+						} else if (!pattern.starDayOfWeek && !pattern.starDayOfMonth) {
+							match = match || dowMatch;
+						}
 					} else {
-						this[target] = i-offset;
-						return true;
+						// dom AND dow
+						match = match && dowMatch;
 					}
 
 				}
+
+				if (match) {
+					this[target] = i-offset;
+					return true;
+				}
+
 			}
 			return false;
 
@@ -229,21 +256,11 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		// Gp down, seconds -> minutes -> hours -> days -> months -> year
 		doing++;
 	}
-	
-	// This is a special case for weekday, as the user isn't able to combine date/month patterns 
-	// with weekday patterns, it's just to increment days until we get a match.
-	while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
-		this.days += 1;
-
-		// Reset everything before days
-		doing = 2;
-		resetPrevious();
-	}
 
 	// If anything changed, recreate this CronDate and run again without incrementing
 	if (origTime != this.getTime()) {
 		this.apply();
-		return this.increment(pattern, true);
+		return this.increment(pattern, options, true);
 	} else {
 		return this;
 	}
@@ -262,7 +279,7 @@ CronDate.prototype.getDate = function (internal) {
 	if (internal || !this.timezone) {
 		return targetDate;
 	} else {
-		const offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
+		const offset = CronTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
 		return new Date(targetDate.getTime()-offset);
 	}
 };

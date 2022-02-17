@@ -203,12 +203,13 @@ job.stop();
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
+| legacyMode   | false          | boolean        | Combine day-of-month and day-of-week using OR, default is AND |
 
 #### Pattern
 
 The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below. 
 
-*   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. See issue [#53](https://github.com/Hexagon/croner/issues/53).
+*   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with `legacyMode: true` from version `4.2.0`. See issue [#53](https://github.com/Hexagon/croner/issues/53) for more information.
 
 *   Croner expressions support the following additional modifiers
 	-   *?* A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.

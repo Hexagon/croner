@@ -57,6 +57,8 @@ export class CronPattern {
     months: any;
     daysOfWeek: any;
     lastDayOfMonth: boolean;
+    starDayOfMonth: boolean;
+    starDayOfWeek: boolean;
     private parse;
     private partToArray;
     private throwAtIllegalCharacters;

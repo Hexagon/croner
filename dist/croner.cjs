@@ -12,7 +12,7 @@
 	 * 
 	 * Example:
 	 *   let normalDate = new Date(); // d is a normal Date instance, with local timezone and correct utc representation
-	 *       tzDate = convertTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours() 
+	 *       tzDate = CronTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours() 
 	 *                                                 (for example) will return local time in new york, but getUTCHours()
 	 *                                                 will return something irrelevant.
 	 * 
@@ -20,8 +20,54 @@
 	 * @param {string} tzString - Timezone string in Europe/Stockholm format
 	 * @returns {Date}
 	 */
-	function convertTZ(date, tzString) {
+	function CronTZ(date, tzString) {
 		return new Date(date.toLocaleString("en-US", {timeZone: tzString}));   
+	}
+
+	/**
+	 * @typedef {Object} CronOptions - Cron scheduler options
+	 * @property {boolean} [paused] - Job is paused
+	 * @property {boolean} [kill] - Job is about to be killed or killed
+	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+	 * @property {number} [maxRuns] - Maximum nuber of executions
+	 * @property {string | Date} [startAt] - When to start running
+	 * @property {string | Date} [stopAt] - When to stop running
+	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
+	 * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using OR. Default is AND.
+	 * @property {?} [context] - Used to pass any object to scheduled function
+	 */
+
+	/**
+	 * Internal function that validates options, and sets defaults
+	 * @private
+	 * 
+	 * @param {CronOptions} options 
+	 * @returns {CronOptions}
+	 */
+	function CronOptions(options) {
+		
+		// If no options are passed, create empty object
+		if (options === void 0) {
+			options = {};
+		}
+		
+		// Keep options, or set defaults
+		options.legacyMode = (options.legacyMode === void 0) ? false : options.legacyMode;
+		options.paused = (options.paused === void 0) ? false : options.paused;
+		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
+		options.catch = (options.catch === void 0) ? false : options.catch;
+		options.kill = false;
+		
+		// startAt is set, validate it
+		if( options.startAt ) {
+			options.startAt = new CronDate(options.startAt, options.timezone);
+		} 
+		if( options.stopAt ) {
+			options.stopAt = new CronDate(options.stopAt, options.timezone);
+		}	
+
+		return options;
+
 	}
 
 	/**
@@ -57,7 +103,7 @@
 	CronDate.prototype.fromDate = function (date) {
 		
 		if (this.timezone) {
-			date = convertTZ(date, this.timezone);
+			date = CronTZ(date, this.timezone);
 		}
 
 		this.milliseconds = date.getMilliseconds();
@@ -128,10 +174,11 @@
 	 * @public
 	 * 
 	 * @param {string} pattern - The pattern used to increment current state
+	 * @param {CronOptions} options - Cron options used for incrementing
 	 * @param {boolean} [rerun=false] - If this is an internal incremental run
 	 * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
 	 */
-	CronDate.prototype.increment = function (pattern, rerun) {
+	CronDate.prototype.increment = function (pattern, options, rerun) {
 
 		if (!rerun) {
 			this.seconds += 1;
@@ -159,27 +206,52 @@
 
 				for( let i = startPos; i < pattern[target].length; i++ ) {
 
-					// If pattern matches and, in case of days, weekday matches, go on
-					if( pattern[target][i] ) {
-						
-						// Special handling for L (last day of month), when we are searching for days
-						if (target === "days" && pattern.lastDayOfMonth) {
-							let baseDate = this.getDate(true);
+					// This applies to all "levels"
+					let match = pattern[target][i];
 
+					// Days has a couple of special cases
+					if (target === "days") {
+
+						// Create a date object for the target date
+						let targetDate = this.getDate(true);
+						targetDate.setDate(i-offset);
+
+						// Special handling for L (last day of month), when we are searching for days
+						if (pattern.lastDayOfMonth) {
+
+							// Create a copy of targetDate
 							// Set days to one day after today, if month changes, then we are at the last day of the month
-							baseDate.setDate(i-offset+1);
-							if (baseDate.getMonth() !== this["months"]) {
-								this[target] = i-offset;
-								return true;
+							let targetDateCopy = new Date(targetDate);
+							targetDateCopy.setDate(i-offset+1);
+					
+							// Overwrite match if last day of month is matching
+							if (targetDateCopy.getMonth() !== this.months) {
+								match = true;
 							}
-						
-						// Normal handling
+							
+						}
+
+						// Weekdays must also match when incrementing days
+						// If running in legacy mode, it is sufficient that only weekday match.
+						const dowMatch = pattern.daysOfWeek[targetDate.getDay()];
+						if (options.legacyMode) {
+							if (!pattern.starDayOfWeek && pattern.starDayOfMonth) {
+								match = dowMatch;
+							} else if (!pattern.starDayOfWeek && !pattern.starDayOfMonth) {
+								match = match || dowMatch;
+							}
 						} else {
-							this[target] = i-offset;
-							return true;
+							// dom AND dow
+							match = match && dowMatch;
 						}
 
 					}
+
+					if (match) {
+						this[target] = i-offset;
+						return true;
+					}
+
 				}
 				return false;
 
@@ -253,21 +325,11 @@
 			// Gp down, seconds -> minutes -> hours -> days -> months -> year
 			doing++;
 		}
-		
-		// This is a special case for weekday, as the user isn't able to combine date/month patterns 
-		// with weekday patterns, it's just to increment days until we get a match.
-		while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
-			this.days += 1;
-
-			// Reset everything before days
-			doing = 2;
-			resetPrevious();
-		}
 
 		// If anything changed, recreate this CronDate and run again without incrementing
 		if (origTime != this.getTime()) {
 			this.apply();
-			return this.increment(pattern, true);
+			return this.increment(pattern, options, true);
 		} else {
 			return this;
 		}
@@ -286,7 +348,7 @@
 		if (internal || !this.timezone) {
 			return targetDate;
 		} else {
-			const offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
+			const offset = CronTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
 			return new Date(targetDate.getTime()-offset);
 		}
 	};
@@ -402,6 +464,8 @@
 		this.daysOfWeek     = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 		this.lastDayOfMonth = false;
+		this.starDayOfMonth = false;
+		this.starDayOfWeek  = false;
 
 		this.parse();
 
@@ -431,17 +495,27 @@
 			parts.unshift("0");
 		}
 
-		// Convert 'L' to '*' and add lastDayOfMonth flag,
+		// Convert 'L' to lastDayOfMonth flag,
 		// and set days to 28,29,30,31 as those are the only days that can be the last day of month
-		if(parts[3].toUpperCase() == "L") {
-			parts[3] = "28,29,30,31";
+		if(parts[3].indexOf("L") >= 0) {
+			parts[3] = parts[3].replace("L","");
 			this.lastDayOfMonth = true;
+		}
+
+		// Check for starDayOfMonth
+		if(parts[3].toUpperCase() == "*") {
+			this.starDayOfMonth = true;
 		}
 
 		// Replace alpha representations
 		parts[4] = this.replaceAlphaMonths(parts[4]);
 		parts[5] = this.replaceAlphaDays(parts[5]);
 
+		// Check for starDayOfWeek
+		if(parts[5].toUpperCase() == "*") {
+			this.starDayOfWeek = true;
+		}
+		
 		// Implement '?' in the simplest possible way - replace ? with current value, before further processing
 		let initDate = new CronDate(new Date(),this.timezone).getDate(true);
 
@@ -731,18 +805,6 @@
 		THE SOFTWARE.
 
 	  ------------------------------------------------------------------------------------  */
-		
-	/**
-	 * @typedef {Object} CronOptions - Cron scheduler options
-	 * @property {boolean} [paused] - Job is paused
-	 * @property {boolean} [kill] - Job is about to be killed or killed
-	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
-	 * @property {number} [maxRuns] - Maximum nuber of executions
-	 * @property {string | Date} [startAt] - When to start running
-	 * @property {string | Date} [stopAt] - When to stop running
-	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
-	 * @property {?} [context] - Used to pass any object to scheduled function
-	 */
 
 	/**
 	 * Many JS engines stores the delay as a 32-bit signed integer internally.
@@ -779,22 +841,23 @@
 		}
 		
 		/** @type {CronOptions} */
-		this.options = this.processOptions(options);
+		this.options = CronOptions(options);
+		
+		/** @type {CronDate|undefined} */
+		this.once = void 0;
+		
+		/** @type {CronPattern|undefined} */
+		this.pattern = void 0;
 		
 		// Check if we got a date, or a pattern supplied as first argument
-		if (pattern && (pattern instanceof Date)) {
-			this.once = new CronDate(pattern, this.options.timezone);
-		} else if (pattern && (typeof pattern === "string") && pattern.indexOf(":") > 0) {
-			/** @type {CronDate} */
+		// Then set either this.once or this.pattern
+		if (pattern && (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))) {
 			this.once = new CronDate(pattern, this.options.timezone);
 		} else {
-			/** @type {CronPattern} */
 			this.pattern = new CronPattern(pattern, this.options.timezone);
 		}
 		
-		/**
-		 * Allow shorthand scheduling
-		 */
+		// Allow shorthand scheduling
 		if( func !== void 0 ) {
 			this.fn = func;
 			this.schedule();
@@ -803,37 +866,6 @@
 		return this;
 		
 	}
-		
-	/**
-	 * Internal function that validates options, and sets defaults
-	 * @private
-	 * 
-	 * @param {CronOptions} options 
-	 * @returns {CronOptions}
-	 */
-	Cron.prototype.processOptions = function (options) {
-		
-		// If no options are passed, create empty object
-		if (options === void 0) {
-			options = {};
-		}
-		
-		// Keep options, or set defaults
-		options.paused = (options.paused === void 0) ? false : options.paused;
-		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
-		options.catch = (options.catch === void 0) ? false : options.catch;
-		options.kill = false;
-		
-		// startAt is set, validate it
-		if( options.startAt ) {
-			options.startAt = new CronDate(options.startAt, options.timezone);
-		} 
-		if( options.stopAt ) {
-			options.stopAt = new CronDate(options.stopAt, options.timezone);
-		}	
-		
-		return options;
-	};
 		
 	/**
 	 * Find next runtime, based on supplied date. Strips milliseconds.
@@ -884,40 +916,6 @@
 	 */
 	Cron.prototype.previous = function () {
 		return this.previousrun ? this.previousrun.getDate() : null;
-	};
-		
-	/**
-	 * Internal version of next. Cron needs millseconds internally, hence _next.
-	 * @private
-	 * 
-	 * @param {CronDate} prev - Input pattern
-	 * @returns {CronDate | null} - Next run time
-	 */
-	Cron.prototype._next = function (prev) {
-		
-		// Previous run should never be before startAt
-		if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
-			prev = this.options.startAt;
-		}
-		
-		// Calculate next run according to pattern or one-off timestamp
-		const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern);
-		
-		if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
-			return null;
-	  
-		} else if ((nextRun === null) ||
-			(this.options.maxRuns <= 0) ||	
-			(this.options.kill) ||
-			(this.options.stopAt && nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
-			return null;
-
-		} else {
-			// All seem good, return next run
-			return nextRun;
-	  
-		}
-			
 	};
 		
 	/**
@@ -1025,6 +1023,41 @@
 			
 		return this;
 		
+	};
+
+		
+	/**
+	 * Internal version of next. Cron needs millseconds internally, hence _next.
+	 * @private
+	 * 
+	 * @param {CronDate} prev - Input pattern
+	 * @returns {CronDate | null} - Next run time
+	 */
+	Cron.prototype._next = function (prev) {
+		
+		// Previous run should never be before startAt
+		if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
+			prev = this.options.startAt;
+		}
+		
+		// Calculate next run according to pattern or one-off timestamp
+		const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options);
+		
+		if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
+			return null;
+	  
+		} else if ((nextRun === null) ||
+			(this.options.maxRuns <= 0) ||	
+			(this.options.kill) ||
+			(this.options.stopAt && nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
+			return null;
+
+		} else {
+			// All seem good, return next run
+			return nextRun;
+	  
+		}
+			
 	};
 
 	return Cron;

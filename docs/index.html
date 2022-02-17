@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#CronTZ">CronTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
         </div>
     </div>
   </nav>
@@ -324,13 +324,19 @@ job.stop();
 <td>Any</td>
 <td>Passed as the second parameter to triggered function</td>
 </tr>
+<tr>
+<td>legacyMode</td>
+<td>false</td>
+<td>boolean</td>
+<td>Combine day-of-month and day-of-week using OR, default is AND</td>
+</tr>
 </tbody>
 </table>
 <h4>Pattern</h4>
 <p>The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.</p>
 <ul>
 <li>
-<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a>.</p>
+<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with <code>legacyMode: true</code> from version <code>4.2.0</code>. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a> for more information.</p>
 </li>
 <li>
 <p>Croner expressions support the following additional modifiers</p>

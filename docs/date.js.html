@@ -105,7 +105,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#CronTZ">CronTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
         </div>
     </div>
   </nav>
@@ -122,7 +122,8 @@
 
 <section>
   <article>
-    <pre class="prettyprint source linenums"><code>import convertTZ from "./timezone.js";
+    <pre class="prettyprint source linenums"><code>import { CronTZ } from "./tz.js";
+import { CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
 
 /**
  * Converts date to CronDate
@@ -157,7 +158,7 @@ function CronDate (date, timezone) {
 CronDate.prototype.fromDate = function (date) {
 	
 	if (this.timezone) {
-		date = convertTZ(date, this.timezone);
+		date = CronTZ(date, this.timezone);
 	}
 
 	this.milliseconds = date.getMilliseconds();
@@ -228,10 +229,11 @@ CronDate.prototype.fromString = function (str) {
  * @public
  * 
  * @param {string} pattern - The pattern used to increment current state
+ * @param {CronOptions} options - Cron options used for incrementing
  * @param {boolean} [rerun=false] - If this is an internal incremental run
  * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
  */
-CronDate.prototype.increment = function (pattern, rerun) {
+CronDate.prototype.increment = function (pattern, options, rerun) {
 
 	if (!rerun) {
 		this.seconds += 1;
@@ -259,27 +261,52 @@ CronDate.prototype.increment = function (pattern, rerun) {
 
 			for( let i = startPos; i &lt; pattern[target].length; i++ ) {
 
-				// If pattern matches and, in case of days, weekday matches, go on
-				if( pattern[target][i] ) {
-					
-					// Special handling for L (last day of month), when we are searching for days
-					if (target === "days" &amp;&amp; pattern.lastDayOfMonth) {
-						let baseDate = this.getDate(true);
+				// This applies to all "levels"
+				let match = pattern[target][i];
 
+				// Days has a couple of special cases
+				if (target === "days") {
+
+					// Create a date object for the target date
+					let targetDate = this.getDate(true);
+					targetDate.setDate(i-offset);
+
+					// Special handling for L (last day of month), when we are searching for days
+					if (pattern.lastDayOfMonth) {
+
+						// Create a copy of targetDate
 						// Set days to one day after today, if month changes, then we are at the last day of the month
-						baseDate.setDate(i-offset+1);
-						if (baseDate.getMonth() !== this["months"]) {
-							this[target] = i-offset;
-							return true;
+						let targetDateCopy = new Date(targetDate);
+						targetDateCopy.setDate(i-offset+1);
+				
+						// Overwrite match if last day of month is matching
+						if (targetDateCopy.getMonth() !== this.months) {
+							match = true;
 						}
-					
-					// Normal handling
+						
+					}
+
+					// Weekdays must also match when incrementing days
+					// If running in legacy mode, it is sufficient that only weekday match.
+					const dowMatch = pattern.daysOfWeek[targetDate.getDay()];
+					if (options.legacyMode) {
+						if (!pattern.starDayOfWeek &amp;&amp; pattern.starDayOfMonth) {
+							match = dowMatch;
+						} else if (!pattern.starDayOfWeek &amp;&amp; !pattern.starDayOfMonth) {
+							match = match || dowMatch;
+						}
 					} else {
-						this[target] = i-offset;
-						return true;
+						// dom AND dow
+						match = match &amp;&amp; dowMatch;
 					}
 
 				}
+
+				if (match) {
+					this[target] = i-offset;
+					return true;
+				}
+
 			}
 			return false;
 
@@ -353,21 +380,11 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		// Gp down, seconds -> minutes -> hours -> days -> months -> year
 		doing++;
 	}
-	
-	// This is a special case for weekday, as the user isn't able to combine date/month patterns 
-	// with weekday patterns, it's just to increment days until we get a match.
-	while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
-		this.days += 1;
-
-		// Reset everything before days
-		doing = 2;
-		resetPrevious();
-	}
 
 	// If anything changed, recreate this CronDate and run again without incrementing
 	if (origTime != this.getTime()) {
 		this.apply();
-		return this.increment(pattern, true);
+		return this.increment(pattern, options, true);
 	} else {
 		return this;
 	}
@@ -386,7 +403,7 @@ CronDate.prototype.getDate = function (internal) {
 	if (internal || !this.timezone) {
 		return targetDate;
 	} else {
-		const offset = convertTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
+		const offset = CronTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
 		return new Date(targetDate.getTime()-offset);
 	}
 };

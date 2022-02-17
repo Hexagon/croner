@@ -6,7 +6,7 @@
  * 
  * Example:
  *   let normalDate = new Date(); // d is a normal Date instance, with local timezone and correct utc representation
- *       tzDate = convertTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours() 
+ *       tzDate = CronTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours() 
  *                                                 (for example) will return local time in new york, but getUTCHours()
  *                                                 will return something irrelevant.
  * 
@@ -14,8 +14,8 @@
  * @param {string} tzString - Timezone string in Europe/Stockholm format
  * @returns {Date}
  */
-function convertTZ(date, tzString) {
+function CronTZ(date, tzString) {
 	return new Date(date.toLocaleString("en-US", {timeZone: tzString}));   
 }   
 
-export default convertTZ;
+export { CronTZ };

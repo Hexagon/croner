@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#convertTZ">convertTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#CronTZ">CronTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
         </div>
     </div>
   </nav>
@@ -230,7 +230,7 @@ int to keep the behaviour concistent.</p>
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line55">line 55</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line44">line 44</a>
         </li>
       </ul>
     </dd>
@@ -262,13 +262,13 @@ int to keep the behaviour concistent.</p>
   
 
   <span class='name-container'>
-    <a class="link-icon" href="#convertTZ">
+    <a class="link-icon" href="#CronTZ">
       <svg height="20" width="20" style="fill: black;">
         <use xlink:href="#linkIcon"></use>
       </svg>
     </a>
-    <h4 class="name" id="convertTZ">
-      <span class="type-signature"></span>.convertTZ<span class="signature">(date, tzString)</span><span class="type-signature"> &rarr; {Date}</span>
+    <h4 class="name" id="CronTZ">
+      <span class="type-signature"></span>.CronTZ<span class="signature">(date, tzString)</span><span class="type-signature"> &rarr; {Date}</span>
     </h4>
   </span>
 
@@ -282,7 +282,7 @@ int to keep the behaviour concistent.</p>
 as the internal UTC time of the resulting object will be off.</p>
 <p>Example:
 let normalDate = new Date(); // d is a normal Date instance, with local timezone and correct utc representation
-tzDate = convertTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours()
+tzDate = CronTZ(d, 'America/New_York') // d is a tainted Date instance, where getHours()
 (for example) will return local time in new york, but getUTCHours()
 will return something irrelevant.</p>
   </div>
@@ -375,7 +375,7 @@ will return something irrelevant.</p>
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="timezone.js.html">timezone.js</a>, <a href="timezone.js.html#line17">line 17</a>
+          <a href="tz.js.html">tz.js</a>, <a href="tz.js.html#line17">line 17</a>
         </li>
       </ul>
     </dd>
@@ -826,6 +826,42 @@ will return something irrelevant.</p>
 
     <tr>
       
+        <td class="name"><code>legacyMode</code></td>
+      
+
+      <td class="type">
+        
+          
+    <span class="param-type">
+      boolean
+    </span>
+
+    
+
+        
+      </td>
+
+        
+          <td class="attributes">
+            
+              &lt;optional><br>
+            
+
+            
+          </td>
+        
+
+        
+
+        <td class="description last">
+          <p>Combine day-of-month and day-of-week using OR. Default is AND.</p>
+          </td>
+    </tr>
+
+  
+
+    <tr>
+      
         <td class="name"><code>context</code></td>
       
 
@@ -896,7 +932,7 @@ will return something irrelevant.</p>
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line33">line 33</a>
+          <a href="options.js.html">options.js</a>, <a href="options.js.html#line3">line 3</a>
         </li>
       </ul>
     </dd>

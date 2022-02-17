@@ -239,7 +239,32 @@ module.exports = function (Cron, test) {
 		assert.equal(runs[2].getHours(), 0);
 
 	});
-	
+
+	test("Croner should give correct last day of months when combined with other dates", function () {
+		let runs = Cron("0 0 0 15,L * *").enumerate(4, "2022-01-01T00:00:00");
+
+		assert.equal(runs[0].getFullYear(), 2022);
+		assert.equal(runs[0].getMonth(), 0);
+		assert.equal(runs[0].getDate(), 15);
+		assert.equal(runs[0].getHours(), 0);
+
+		assert.equal(runs[1].getFullYear(), 2022);
+		assert.equal(runs[1].getMonth(), 0);
+		assert.equal(runs[1].getDate(), 31);
+		assert.equal(runs[1].getHours(), 0);
+
+		assert.equal(runs[2].getFullYear(), 2022);
+		assert.equal(runs[2].getMonth(), 1);
+		assert.equal(runs[2].getDate(), 15);
+		assert.equal(runs[2].getHours(), 0);
+
+		assert.equal(runs[3].getFullYear(), 2022);
+		assert.equal(runs[3].getMonth(), 1);
+		assert.equal(runs[3].getDate(), 28);
+		assert.equal(runs[3].getHours(), 0);
+
+	});
+
 	test("Impossible combination should result in null", function () {
 		let impossible = Cron("0 0 0 30 2 6").next(new Date(1634076000000));
 		assert.equal(null, impossible);
@@ -438,6 +463,27 @@ module.exports = function (Cron, test) {
 
 	});
 
+	test("0 * * * * * with 40 iterations should return 45 minutes from now (legacy mode)", function () {
+		let scheduler = new Cron("0 * * * * *", { legacyMode: true }),
+			prevRun = new Date(),
+			nextRun,
+			iterations = 45,
+			compareDay = new Date(new Date().getTime()+45*60*1000);
+
+		while(iterations-->0) {
+			nextRun = scheduler.next(prevRun),
+			prevRun = nextRun;
+		}
+
+		// Set seconds, minutes and hours to 00:00:00
+		compareDay.setMilliseconds(0);
+		compareDay.setSeconds(0);
+
+		// Do comparison
+		assert.equal(nextRun.getTime(),compareDay.getTime());
+
+	});
+
 	test("Fire-once should be supported by ISO 8601 string, past and .next() should return null", function () {
 		let 
 			scheduler0 = new Cron("2020-01-01T00:00:00");
@@ -536,5 +582,59 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[5].getDate(),5);
 	});
 
+	test("Weekday pattern should return correct weekdays (legacy mode)", function () {
+		let nextRuns = new Cron("0 0 0 * * 5,6", { legacyMode: true }).enumerate(10, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),18);
+		assert.equal(nextRuns[1].getDate(),19);
+		assert.equal(nextRuns[2].getDate(),25);
+		assert.equal(nextRuns[3].getDate(),26);
+		assert.equal(nextRuns[4].getMonth(),2);
+		assert.equal(nextRuns[4].getDate(),4);
+		assert.equal(nextRuns[5].getDate(),5);
+	});
+
+
+	test("Weekday pattern should return correct combined with day of month", function () {
+		let nextRuns = new Cron("59 59 23 2 * 6").enumerate(2, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),3);
+		assert.equal(nextRuns[0].getDate(),2);
+		assert.equal(nextRuns[1].getFullYear(),2022);
+		assert.equal(nextRuns[1].getMonth(),6);
+		assert.equal(nextRuns[1].getDate(),2);
+	});
+
+	test("Weekday pattern should return correct weekdays (legacy mode)", function () {
+		let nextRuns = new Cron("0 0 0 * * 5,6", { legacyMode: true }).enumerate(10, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),18);
+		assert.equal(nextRuns[1].getDate(),19);
+		assert.equal(nextRuns[2].getDate(),25);
+		assert.equal(nextRuns[3].getDate(),26);
+		assert.equal(nextRuns[4].getMonth(),2);
+		assert.equal(nextRuns[4].getDate(),4);
+		assert.equal(nextRuns[5].getDate(),5);
+	});
+
+
+	test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
+		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).enumerate(6, "2022-01-31T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),2);
+		assert.equal(nextRuns[1].getMonth(),1);
+		assert.equal(nextRuns[1].getDate(),5);
+		assert.equal(nextRuns[2].getMonth(),1);
+		assert.equal(nextRuns[2].getDate(),12);
+		assert.equal(nextRuns[3].getMonth(),1);
+		assert.equal(nextRuns[3].getDate(),19);
+		assert.equal(nextRuns[4].getMonth(),1);
+		assert.equal(nextRuns[4].getDate(),26);
+		assert.equal(nextRuns[5].getMonth(),2);
+		assert.equal(nextRuns[5].getDate(),2);
+	});
 
 };
