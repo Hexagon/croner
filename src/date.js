@@ -136,7 +136,7 @@ CronDate.prototype.increment = function (pattern, rerun) {
 			for( let i = startPos; i < pattern[target].length; i++ ) {
 
 				// If pattern matches and, in case of days, weekday matches, go on
-				if( pattern[target][i] && (target !== "days" || (pattern.daysOfWeek[this.getDate(true).getDay()])) ) {
+				if( pattern[target][i] ) {
 					
 					// Special handling for L (last day of month), when we are searching for days
 					if (target === "days" && pattern.lastDayOfMonth) {
@@ -230,6 +230,16 @@ CronDate.prototype.increment = function (pattern, rerun) {
 		doing++;
 	}
 	
+	// This is a special case for weekday, as the user isn't able to combine date/month patterns 
+	// with weekday patterns, it's just to increment days until we get a match.
+	while (!pattern.daysOfWeek[this.getDate(true).getDay()]) {
+		this.days += 1;
+
+		// Reset everything before days
+		doing = 2;
+		resetPrevious();
+	}
+
 	// If anything changed, recreate this CronDate and run again without incrementing
 	if (origTime != this.getTime()) {
 		this.apply();

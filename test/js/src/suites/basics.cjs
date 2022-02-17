@@ -523,4 +523,18 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	test("Weekday pattern should return correct weekdays", function () {
+		let nextRuns = new Cron("0 0 0 * * 5,6").enumerate(10, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),18);
+		assert.equal(nextRuns[1].getDate(),19);
+		assert.equal(nextRuns[2].getDate(),25);
+		assert.equal(nextRuns[3].getDate(),26);
+		assert.equal(nextRuns[4].getMonth(),2);
+		assert.equal(nextRuns[4].getDate(),4);
+		assert.equal(nextRuns[5].getDate(),5);
+	});
+
+
 };
