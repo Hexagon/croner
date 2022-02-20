@@ -6,7 +6,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 # Croner
 
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![NPM Downloads](https://img.shields.io/npm/dm/croner.svg)](https://www.npmjs.org/package/croner)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
@@ -46,17 +46,19 @@ More [examples](#examples)...
 
 Because the existing ones aren't good enough. They have serious bugs, use bloated dependencies, do not work in all environments and/or simply don't work as expected.
 
-Benchmark at 2022-02-01:
+Benchmark at 2022-02-20:
 
 ```
 > node cron-implementation-test.js
 
-Test: When is next monday in october, pattern '0 0 0 * 10 1'
+Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
 
-node-schedule: 2022-10-03 00:00:00 in 15.26ms
-node-cron:     ???                 in 1.076ms
-cron:          2022-11-07 00:00:00 in 2.923ms
-croner:        2022-10-03 00:00:00 in 1.774ms
+node-schedule:    2022-03-31 23:00:00 in 15.379ms
+node-cron:        ???                 in 0.339ms
+Month '3' is limited to '30' days.
+cron:             2022-04-01 23:00:00 in 7.785ms
+croner (legacy):  2022-03-31 23:00:00 in 2.142ms
+croner (default): 2022-03-31 23:00:00 in 0.672ms
 ```
 
 <details>
@@ -65,18 +67,19 @@ croner:        2022-10-03 00:00:00 in 1.774ms
 ```
 Test: When is next 15th of february, pattern '0 0 0 15 2 *'
 
-node-schedule: 2022-02-15 00:00:00 in 13.306ms
-node-cron:     ???                 in 1.676ms
-cron:          2022-03-15 00:00:00 in 6.066ms
-croner:        2022-02-15 00:00:00 in 0.575ms
+node-schedule:    2023-02-15 00:00:00 in 43.875ms
+node-cron:        ???                 in 2.217ms
+cron:             2022-03-15 00:00:00 in 4.147ms
+croner (legacy):  2023-02-15 00:00:00 in 1.72ms
+croner (default): 2023-02-15 00:00:00 in 0.946ms
 
-Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
+Test: When is next monday in october, pattern '0 0 0 * 10 1'
 
-node-schedule: 2022-03-31 23:00:00 in 18.894ms
-node-cron:     ???                 in 3.017ms
-Month '3' is limited to '30' days.
-cron:          2022-04-01 23:00:00 in 4.508ms
-croner:        2022-03-31 23:00:00 in 1.381ms
+node-schedule:    2022-10-03 00:00:00 in 5.594ms
+node-cron:        ???                 in 3.62ms
+cron:             2022-11-07 00:00:00 in 1.658ms
+croner (legacy):  2022-10-03 00:00:00 in 0.697ms
+croner (default): 2022-10-03 00:00:00 in 0.546ms
 ```
 
 </details>

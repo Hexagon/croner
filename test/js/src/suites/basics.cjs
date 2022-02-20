@@ -490,6 +490,12 @@ module.exports = function (Cron, test) {
 		assert.equal(scheduler0.next(),null);
 	});
 
+	test("Fire-once should be supported by ISO 8601 string, past and .next() should return null (legacy mode)", function () {
+		let 
+			scheduler0 = new Cron("2020-01-01T00:00:00", { legacyMode: true});
+		assert.equal(scheduler0.next(),null);
+	});
+
 	/* WIP
 	test("Fire-once should be supported by ISO 8601 string, future and .next() should handle ISO 8601 UTC correctly", function () {
 		let 
