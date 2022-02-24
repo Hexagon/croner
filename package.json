@@ -28,9 +28,13 @@
     "cron",
     "parser",
     "croner",
+    "schedule",
     "sheduler",
     "timer",
-    "isomorphic"
+    "task",
+    "job",
+    "isomorphic",
+    "crontab"
   ],
   "scripts": {
     "test": "uvu test test.croner.js",
