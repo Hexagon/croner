@@ -46,6 +46,20 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	test("Letter combined with star in pattern should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* *a * * * *");
+			scheduler.next();
+		});
+	});
+
+	test("Number combined with star in pattern should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* *1 * * * *");
+			scheduler.next();
+		});
+	});
+
 	test("Invalid data type of pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron(new Object());
@@ -295,9 +309,7 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getMinutes(),0);
 		
 	});
-
-
-
+	
 	test("0 0 0 L 2 * should find last day of february(28 2022)", function () {
 		let scheduler = new Cron("0 0 0 L 2 *"),
 			prevRun = new Date(1643930208380), // From 4th of february 2022

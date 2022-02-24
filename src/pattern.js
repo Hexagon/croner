@@ -159,7 +159,8 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset, recu
 
 		this.handleStepping(conf, type, valueIndexOffset);
 
-	} else {
+	// Anything left should be a number
+	} else if( conf !== "" ) {
 		this.handleNumber(conf, type, valueIndexOffset);
 	}
 
@@ -190,6 +191,10 @@ CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
  */
 CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
 	const i = (parseInt(conf, 10) + valueIndexOffset);
+
+	if( isNaN(i) ) {
+		throw new TypeError("CronPattern: " + type + " is not a number: '" + conf + "'");
+	}
 
 	if( i < 0 || i >= this[type].length ) {
 		throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
