@@ -660,4 +660,10 @@ module.exports = function (Cron, test) {
 		
 	});
 
+	test("Invalid date should throw", function () {
+		assert.throws(() => {
+			new Cron("15 9 * * mon", { legacyMode: true }).next(new Date('pizza'));
+		});
+	});
+
 };

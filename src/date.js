@@ -13,7 +13,11 @@ function CronDate (date, timezone) {
 	this.timezone = timezone;
 
 	if (date && date instanceof Date) {
-		this.fromDate(date);
+		if (!isNaN(date)) {
+			this.fromDate(date);
+		} else {
+			throw new TypeError("CronDate: Invalid date passed as parameter to CronDate constructor");
+		}
 	} else if (date === void 0) {
 		this.fromDate(new Date());
 	} else if (date && typeof date === "string") {
@@ -23,6 +27,7 @@ function CronDate (date, timezone) {
 	} else {
 		throw new TypeError("CronDate: Invalid type (" + typeof date + ") passed as parameter to CronDate constructor");
 	}
+
 }
 
 /**
@@ -119,6 +124,8 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 
 	const 
 	
+		origTime = this.getTime(),
+
 		/**
 		 * Find next
 		 * 
@@ -259,7 +266,14 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 		doing++;
 	}
 
-	return this;
+	// If anything changed, recreate this CronDate and run again without incrementing
+	/*if (origTime != this.getTime()) {
+		this.apply();
+		return this.increment(pattern, options, true);
+	} else {*/
+		return this;
+	//}
+	
 };
 
 /**
