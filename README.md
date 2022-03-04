@@ -243,6 +243,17 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 
 **Note**: Weekday and month names are case insensitive. Both MON and mon works.
 
+It is also possible to use the following "nicknames" as pattern.
+
+| Nickname | Description |
+| -------- | ----------- |
+| \@yearly | Run once a year, ie.  "0 0 1 1 *". |
+| \@annually | Run once a year, ie.  "0 0 1 1 *". |
+| \@monthly | Run once a month, ie. "0 0 1 * *". |
+| \@weekly | Run once a week, ie.  "0 0 * * 0". |
+| \@daily | Run once a day, ie.   "0 0 * * *". |
+| \@hourly | Run once an hour, ie. "0 * * * *". |
+
 ### Examples 
 
 #### Expressions
@@ -258,8 +269,8 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 #### Find dates
 ```javascript
 // Find next month
-const nextMonth = Cron("0 0 0 1 * *").next(),
-	nextSunday = Cron("0 0 0 * * 7").next(),
+const nextMonth = Cron("@monthly").next(),
+	nextSunday = Cron("@weekly").next(),
 	nextSat29feb = Cron("0 0 0 29 2 6").next(),
 	nextSunLastOfMonth = Cron("0 0 0 L * 7").next();
 

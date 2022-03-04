@@ -175,6 +175,9 @@ CronPattern.prototype.parse = function () {
 		throw new TypeError("CronPattern: Pattern has to be of type string.");
 	}
 
+	// Handle @yearly, @monthly etc
+	this.pattern = this.handleNicknames(this.pattern);
+
 	// Split configuration on whitespace
 	const parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
 
@@ -472,6 +475,32 @@ CronPattern.prototype.replaceAlphaMonths = function (conf) {
 		.replace(/oct/gi, "10")
 		.replace(/nov/gi, "11")
 		.replace(/dec/gi, "12");
+};
+
+/**
+ * Replace nicknames with actual cron patterns
+ * @private
+ * 
+ * @param {string} pattern - Pattern, may contain nicknames, or not
+ * 
+ * @returns {string} - Pattern, with cron expression insted of nicknames
+ */
+CronPattern.prototype.handleNicknames = function (pattern) {
+	// Replace textual representations of pattern
+	const cleanPattern = pattern.trim().toLowerCase();
+	if (cleanPattern === "@yearly" || cleanPattern === "@annually") {
+		return "0 0 1 1 *";
+	} else if (cleanPattern === "@monthly") {
+		return  "0 0 1 * *";
+	} else if (cleanPattern === "@weekly") {
+		return "0 0 * * 0";
+	} else if (cleanPattern === "@daily") {
+		return "0 0 * * *";
+	} else if (cleanPattern === "@hourly") {
+		return "0 * * * *";
+	} else {
+		return pattern;
+	}
 };
 
 export { CronPattern };</code></pre>

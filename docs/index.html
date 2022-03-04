@@ -418,6 +418,41 @@ job.stop();
 </tbody>
 </table>
 <p><strong>Note</strong>: Weekday and month names are case insensitive. Both MON and mon works.</p>
+<p>It is also possible to use the following &quot;nicknames&quot; as pattern.</p>
+<table>
+<thead>
+<tr>
+<th>Nickname</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>@yearly</td>
+<td>Run once a year, ie.  &quot;0 0 1 1 *&quot;.</td>
+</tr>
+<tr>
+<td>@annually</td>
+<td>Run once a year, ie.  &quot;0 0 1 1 *&quot;.</td>
+</tr>
+<tr>
+<td>@monthly</td>
+<td>Run once a month, ie. &quot;0 0 1 * *&quot;.</td>
+</tr>
+<tr>
+<td>@weekly</td>
+<td>Run once a week, ie.  &quot;0 0 * * 0&quot;.</td>
+</tr>
+<tr>
+<td>@daily</td>
+<td>Run once a day, ie.   &quot;0 0 * * *&quot;.</td>
+</tr>
+<tr>
+<td>@hourly</td>
+<td>Run once an hour, ie. &quot;0 * * * *&quot;.</td>
+</tr>
+</tbody>
+</table>
 <h3>Examples</h3>
 <h4>Expressions</h4>
 <pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
@@ -429,8 +464,8 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 </code></pre>
 <h4>Find dates</h4>
 <pre class="prettyprint source lang-javascript"><code>// Find next month
-const nextMonth = Cron(&quot;0 0 0 1 * *&quot;).next(),
-	nextSunday = Cron(&quot;0 0 0 * * 7&quot;).next(),
+const nextMonth = Cron(&quot;@monthly&quot;).next(),
+	nextSunday = Cron(&quot;@weekly&quot;).next(),
 	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next(),
 	nextSunLastOfMonth = Cron(&quot;0 0 0 L * 7&quot;).next();
 

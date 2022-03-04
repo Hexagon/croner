@@ -68,4 +68,5 @@ export class CronPattern {
     private handleStepping;
     private replaceAlphaDays;
     private replaceAlphaMonths;
+    private handleNicknames;
 }

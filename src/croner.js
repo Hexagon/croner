@@ -147,11 +147,17 @@ Cron.prototype.previous = function () {
  * Returns number of milliseconds to next run
  * @public
  * 
- * @param {Date} [prev] - Starting date, defaults to now
+ * @param {Date} [prev] - Starting date, defaults to now - minimum interval
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {
+	
+	// Default previous run to now - minimum interval
+	prev = prev ? prev : new Date(new Date().getTime()-(this.options.interval*1000));
+
+	// Ensure that prev is a CronDate
 	prev = new CronDate(prev, this.options.timezone);
+
 	const next = this._next(prev);
 	if( next ) {
 		return (next.getTime(true) - prev.getTime(true));
@@ -237,6 +243,7 @@ Cron.prototype.schedule = function (func) {
 				this.fn(this, this.options.context);
 			}
 	
+			// Set previous run to now
 			this.previousrun = new CronDate(void 0, this.options.timezone);
 	
 		}

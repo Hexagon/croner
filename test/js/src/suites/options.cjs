@@ -130,4 +130,24 @@ module.exports = function (Cron, test) {
 		},1500);
 	}));
 
+	test("Invalid interval should throw", function () {
+		assert.throws(() => {
+			Cron("* * * * * *", { interval: "a" }).enumerate(3, "2022-02-17T00:00:00");
+		});
+	});
+
+	test("Valid interval should give correct run times", function () {
+		let nextRuns = Cron("* * * * * *", { interval: 90 }).enumerate(3, "2022-02-16T23:59:59");
+		
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),17);
+		assert.equal(nextRuns[0].getHours(),0);
+		assert.equal(nextRuns[0].getMinutes(),0);
+		assert.equal(nextRuns[0].getSeconds(),0);
+		assert.equal(nextRuns[1].getHours(),0);
+		assert.equal(nextRuns[1].getMinutes(),1);
+		assert.equal(nextRuns[1].getSeconds(),30);
+	});
+
 };

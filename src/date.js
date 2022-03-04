@@ -116,9 +116,16 @@ CronDate.prototype.fromString = function (str) {
  */
 CronDate.prototype.increment = function (pattern, options, rerun) {
 
+	// Always add one second, or minimum interval
 	if (!rerun) {
-		this.seconds += 1;
+		if (options.interval > 1) {
+			this.seconds += options.interval;
+		} else {
+			this.seconds += 1;
+		}
 	}
+
+	this.apply();
 
 	this.milliseconds = 0;
 

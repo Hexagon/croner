@@ -30,6 +30,7 @@
 	 * @property {boolean} [kill] - Job is about to be killed or killed
 	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
 	 * @property {number} [maxRuns] - Maximum nuber of executions
+	 * @property {number} [interval] - Minimum interval between executions, in seconds
 	 * @property {string | Date} [startAt] - When to start running
 	 * @property {string | Date} [stopAt] - When to stop running
 	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
@@ -56,6 +57,7 @@
 		options.paused = (options.paused === void 0) ? false : options.paused;
 		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
 		options.catch = (options.catch === void 0) ? false : options.catch;
+		options.interval = (options.interval === void 0) ? 0 : options.interval;
 		options.kill = false;
 		
 		// startAt is set, validate it
@@ -185,9 +187,16 @@
 	 */
 	CronDate.prototype.increment = function (pattern, options, rerun) {
 
+		// Always add one second, or minimum interval
 		if (!rerun) {
-			this.seconds += 1;
+			if (options.interval > 1) {
+				this.seconds += options.interval;
+			} else {
+				this.seconds += 1;
+			}
 		}
+
+		this.apply();
 
 		this.milliseconds = 0;
 
@@ -490,6 +499,9 @@
 			throw new TypeError("CronPattern: Pattern has to be of type string.");
 		}
 
+		// Handle @yearly, @monthly etc
+		this.pattern = this.handleNicknames(this.pattern);
+
 		// Split configuration on whitespace
 		const parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
 
@@ -789,6 +801,32 @@
 			.replace(/dec/gi, "12");
 	};
 
+	/**
+	 * Replace nicknames with actual cron patterns
+	 * @private
+	 * 
+	 * @param {string} pattern - Pattern, may contain nicknames, or not
+	 * 
+	 * @returns {string} - Pattern, with cron expression insted of nicknames
+	 */
+	CronPattern.prototype.handleNicknames = function (pattern) {
+		// Replace textual representations of pattern
+		const cleanPattern = pattern.trim().toLowerCase();
+		if (cleanPattern === "@yearly" || cleanPattern === "@annually") {
+			return "0 0 1 1 *";
+		} else if (cleanPattern === "@monthly") {
+			return  "0 0 1 * *";
+		} else if (cleanPattern === "@weekly") {
+			return "0 0 * * 0";
+		} else if (cleanPattern === "@daily") {
+			return "0 0 * * *";
+		} else if (cleanPattern === "@hourly") {
+			return "0 * * * *";
+		} else {
+			return pattern;
+		}
+	};
+
 	/* ------------------------------------------------------------------------------------
 
 	  Croner - MIT License - Hexagon <github.com/Hexagon>
@@ -935,11 +973,17 @@
 	 * Returns number of milliseconds to next run
 	 * @public
 	 * 
-	 * @param {Date} [prev] - Starting date, defaults to now
+	 * @param {Date} [prev] - Starting date, defaults to now - minimum interval
 	 * @returns {number | null}
 	 */
 	Cron.prototype.msToNext = function (prev) {
+		
+		// Default previous run to now - minimum interval
+		prev = prev ? prev : new Date(new Date().getTime()-(this.options.interval*1000));
+
+		// Ensure that prev is a CronDate
 		prev = new CronDate(prev, this.options.timezone);
+
 		const next = this._next(prev);
 		if( next ) {
 			return (next.getTime(true) - prev.getTime(true));
@@ -1025,6 +1069,7 @@
 					this.fn(this, this.options.context);
 				}
 		
+				// Set previous run to now
 				this.previousrun = new CronDate(void 0, this.options.timezone);
 		
 			}

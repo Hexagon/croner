@@ -58,7 +58,7 @@ export class Cron {
      * Returns number of milliseconds to next run
      * @public
      *
-     * @param {Date} [prev] - Starting date, defaults to now
+     * @param {Date} [prev] - Starting date, defaults to now - minimum interval
      * @returns {number | null}
      */
     public msToNext(prev?: Date): number | null;

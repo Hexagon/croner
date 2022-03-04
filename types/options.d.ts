@@ -19,6 +19,10 @@ export type CronOptions = {
      */
     maxRuns?: number;
     /**
+     * - Minimum interval between executions, in seconds
+     */
+    interval?: number;
+    /**
      * - When to start running
      */
     startAt?: string | Date;
@@ -45,6 +49,7 @@ export type CronOptions = {
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
  * @property {number} [maxRuns] - Maximum nuber of executions
+ * @property {number} [interval] - Minimum interval between executions, in seconds
  * @property {string | Date} [startAt] - When to start running
  * @property {string | Date} [stopAt] - When to stop running
  * @property {string} [timezone] - Time zone in Europe/Stockholm format

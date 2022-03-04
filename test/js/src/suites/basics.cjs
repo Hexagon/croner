@@ -163,6 +163,55 @@ module.exports = function (Cron, test) {
 
 	});
 
+	test("@yearly should be replaced", function () {
+		let nextRuns = Cron("@yearly").enumerate(3, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2023);
+		assert.equal(nextRuns[0].getMonth(),0);
+		assert.equal(nextRuns[0].getDate(),1);
+		assert.equal(nextRuns[1].getFullYear(),2024);
+		assert.equal(nextRuns[2].getFullYear(),2025);
+	});
+
+	test("@annually should be replaced", function () {
+		let nextRuns = Cron("@annually").enumerate(3, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2023);
+		assert.equal(nextRuns[0].getMonth(),0);
+		assert.equal(nextRuns[0].getDate(),1);
+	});
+
+	test("@monthly should be replaced", function () {
+		let nextRuns = Cron("@monthly").enumerate(3, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),2);
+		assert.equal(nextRuns[0].getDate(),1);
+		assert.equal(nextRuns[1].getMonth(),3);
+		assert.equal(nextRuns[1].getDate(),1);
+		assert.equal(nextRuns[2].getMonth(),4);
+		assert.equal(nextRuns[2].getDate(),1);
+	});
+
+	test("@weekly should be replaced", function () {
+		let nextRuns = Cron("@weekly").enumerate(3, "2022-02-17T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),20);
+		assert.equal(nextRuns[1].getMonth(),1);
+		assert.equal(nextRuns[1].getDate(),27);
+		assert.equal(nextRuns[2].getMonth(),2);
+		assert.equal(nextRuns[2].getDate(),6);
+	});
+
+	test("@hourly should be replaced", function () {
+		let nextRuns = Cron("@hourly").enumerate(3, "2022-02-16T23:59:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),17);
+		assert.equal(nextRuns[0].getHours(),0);
+		assert.equal(nextRuns[1].getMonth(),1);
+		assert.equal(nextRuns[1].getDate(),17);
+		assert.equal(nextRuns[1].getHours(),1);
+		assert.equal(nextRuns[2].getHours(),2);
+	});
 
 	test("Croner should increment seconds", function () {
 		let runs = Cron("* * * * * *").enumerate(4);
@@ -600,7 +649,6 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[4].getDate(),4);
 		assert.equal(nextRuns[5].getDate(),5);
 	});
-
 
 	test("Weekday pattern should return correct combined with day of month", function () {
 		let nextRuns = new Cron("59 59 23 2 * 6").enumerate(2, "2022-02-17T00:00:00");
