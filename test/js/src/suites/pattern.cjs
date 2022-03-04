@@ -332,6 +332,4 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getFullYear(),2024);
 	});
 
-
-
 };

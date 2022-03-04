@@ -118,8 +118,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 	this.milliseconds = 0;
 
 	const 
-		origTime = this.getTime(),
-		
+	
 		/**
 		 * Find next
 		 * 
@@ -180,6 +179,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 
 				if (match) {
 					this[target] = i-offset;
+					this.apply();
 					return true;
 				}
 
@@ -236,6 +236,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 		
 		// If pattern didn't provide a match, increment next value (e.g. minues)
 		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
+
 			this[toDo[doing][1]]++;
 
 			// Reset current level and previous levels
@@ -243,6 +244,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 
 		// If pattern provided a match, but changed current value ...
 		} else if (currentValue !== this[toDo[doing][0]]) {
+
 			// Reset previous levels
 			resetPrevious(-1);
 
@@ -257,14 +259,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 		doing++;
 	}
 
-	// If anything changed, recreate this CronDate and run again without incrementing
-	if (origTime != this.getTime()) {
-		this.apply();
-		return this.increment(pattern, options, true);
-	} else {
-		return this;
-	}
-
+	return this;
 };
 
 /**
