@@ -625,7 +625,6 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[5].getDate(),5);
 	});
 
-
 	test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
 		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).enumerate(6, "2022-01-31T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
@@ -641,6 +640,24 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[4].getDate(),26);
 		assert.equal(nextRuns[5].getMonth(),2);
 		assert.equal(nextRuns[5].getDate(),2);
+	});
+
+	test("Weekday pattern should return correct alone (legacy mode)", function () {
+		let nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).enumerate(3, "2022-02-28T23:59:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),2);
+		assert.equal(nextRuns[0].getDate(),7);
+		assert.equal(nextRuns[0].getHours(),9);
+		assert.equal(nextRuns[0].getMinutes(),15);
+		
+		assert.equal(nextRuns[1].getDate(),14);
+		assert.equal(nextRuns[1].getHours(),9);
+		assert.equal(nextRuns[1].getMinutes(),15);
+
+		assert.equal(nextRuns[2].getDate(),21);
+		assert.equal(nextRuns[2].getHours(),9);
+		assert.equal(nextRuns[2].getMinutes(),15);
+		
 	});
 
 };
