@@ -662,8 +662,19 @@ module.exports = function (Cron, test) {
 
 	test("Invalid date should throw", function () {
 		assert.throws(() => {
-			new Cron("15 9 * * mon", { legacyMode: true }).next(new Date('pizza'));
+			new Cron("15 9 * * mon", { legacyMode: true }).next(new Date("pizza"));
 		});
 	});
 
+	
+	test("Specific date should not create infinite loop (legacy mode)", function () {
+		const cron = new Cron("0 * * * mon,tue,wed,fri,sat,sun", {
+				legacyMode: true,
+			}),
+			next = cron.next(new Date("2022-03-31T11:40:34"));
+		assert.equal(next.getFullYear(),2022);
+		assert.equal(next.getMonth(),3);
+		assert.equal(next.getDate(),1);
+		assert.equal(next.getHours(),0);
+	});
 };

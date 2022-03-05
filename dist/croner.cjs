@@ -82,7 +82,11 @@
 		this.timezone = timezone;
 
 		if (date && date instanceof Date) {
-			this.fromDate(date);
+			if (!isNaN(date)) {
+				this.fromDate(date);
+			} else {
+				throw new TypeError("CronDate: Invalid date passed as parameter to CronDate constructor");
+			}
 		} else if (date === void 0) {
 			this.fromDate(new Date());
 		} else if (date && typeof date === "string") {
@@ -92,6 +96,7 @@
 		} else {
 			throw new TypeError("CronDate: Invalid type (" + typeof date + ") passed as parameter to CronDate constructor");
 		}
+
 	}
 
 	/**
@@ -188,6 +193,8 @@
 
 		const 
 		
+			origTime = this.getTime(),
+
 			/**
 			 * Find next
 			 * 
@@ -201,7 +208,7 @@
 			 */
 			findNext = (target, pattern, offset, override) => {
 				
-				const startPos = (override === void 0) ? this[target] + offset : 0 + offset;
+				const startPos = (override === void 0) ? this[target] + offset : 0;
 
 				for( let i = startPos; i < pattern[target].length; i++ ) {
 
@@ -248,7 +255,6 @@
 
 					if (match) {
 						this[target] = i-offset;
-						this.apply();
 						return true;
 					}
 
@@ -328,7 +334,14 @@
 			doing++;
 		}
 
-		return this;
+		// If anything changed, recreate this CronDate and run again without incrementing
+		if (origTime != this.getTime()) {
+			this.apply();
+			return this.increment(pattern, options, true);
+		} else {
+			return this;
+		}
+		
 	};
 
 	/**

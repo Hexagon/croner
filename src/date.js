@@ -139,7 +139,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 		 */
 		findNext = (target, pattern, offset, override) => {
 			
-			const startPos = (override === void 0) ? this[target] + offset : 0 + offset;
+			const startPos = (override === void 0) ? this[target] + offset : 0;
 
 			for( let i = startPos; i < pattern[target].length; i++ ) {
 
@@ -186,7 +186,6 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 
 				if (match) {
 					this[target] = i-offset;
-					this.apply();
 					return true;
 				}
 
@@ -267,12 +266,12 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 	}
 
 	// If anything changed, recreate this CronDate and run again without incrementing
-	/*if (origTime != this.getTime()) {
+	if (origTime != this.getTime()) {
 		this.apply();
 		return this.increment(pattern, options, true);
-	} else {*/
+	} else {
 		return this;
-	//}
+	}
 	
 };
 
