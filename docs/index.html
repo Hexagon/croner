@@ -316,6 +316,12 @@ job.stop();
 <td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
 </tr>
 <tr>
+<td>interval</td>
+<td>0</td>
+<td>Number</td>
+<td>Minimum number of seconds between triggers.</td>
+</tr>
+<tr>
 <td>paused</td>
 <td>false</td>
 <td>Boolean</td>
@@ -460,6 +466,12 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 	console.log('This will run every tenth second between second 15-45');
 	console.log('every fifth minute of hour 1,2 and 3 when day of month');
 	console.log('is the same as when Cron started, every saturday in January to March.');
+});
+</code></pre>
+<h4>Interval</h4>
+<pre class="prettyprint source lang-javascript"><code>// Trigger on specific interval combined with cron expression
+Cron('* * * 7-16 * MON-FRI', { interval: 90 }, function () {
+	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 </code></pre>
 <h4>Find dates</h4>

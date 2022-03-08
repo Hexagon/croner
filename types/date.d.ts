@@ -4,7 +4,7 @@
  *
  * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
  * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
- */
+*/
 export function CronDate(date?: any, timezone?: string): void;
 export class CronDate {
     /**
@@ -13,7 +13,7 @@ export class CronDate {
      *
      * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
      * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
-     */
+    */
     constructor(date?: any, timezone?: string);
     timezone: string;
     private fromDate;
@@ -37,6 +37,7 @@ export class CronDate {
      * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
      */
     public increment(pattern: string, options: CronOptions, rerun?: boolean): CronDate | null;
+    default: boolean;
     /**
      * Convert current state back to a javascript Date()
      * @public

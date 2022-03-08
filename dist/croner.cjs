@@ -57,7 +57,7 @@
 		options.paused = (options.paused === void 0) ? false : options.paused;
 		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
 		options.catch = (options.catch === void 0) ? false : options.catch;
-		options.interval = (options.interval === void 0) ? 0 : options.interval;
+		options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval);
 		options.kill = false;
 		
 		// startAt is set, validate it
@@ -66,7 +66,16 @@
 		} 
 		if( options.stopAt ) {
 			options.stopAt = new CronDate(options.stopAt, options.timezone);
-		}	
+		}
+
+		// Validate interval
+		if (options.interval !== null) {
+			if (isNaN(options.interval)) {
+				throw new Error("CronOptions: Supplied value for interval is not a number");
+			} else if (options.interval < 0) {
+				throw new Error("CronOptions: Supplied value for interval can not be negative");
+			}
+		}
 
 		return options;
 
@@ -78,7 +87,7 @@
 	 * 
 	 * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
 	 * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
-	 */
+	*/
 	function CronDate (date, timezone) {	
 
 		this.timezone = timezone;
@@ -186,7 +195,7 @@
 	 * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
 	 */
 	CronDate.prototype.increment = function (pattern, options, rerun) {
-
+		
 		// Always add one second, or minimum interval
 		if (!rerun) {
 			if (options.interval > 1) {
@@ -199,7 +208,7 @@
 		this.apply();
 
 		this.milliseconds = 0;
-
+		
 		const 
 		
 			origTime = this.getTime(),
@@ -344,6 +353,7 @@
 		}
 
 		// If anything changed, recreate this CronDate and run again without incrementing
+		this.default = false;
 		if (origTime != this.getTime()) {
 			this.apply();
 			return this.increment(pattern, options, true);
@@ -925,7 +935,6 @@
 	 * @returns {Date | null} - Next run time
 	 */
 	Cron.prototype.next = function (prev) {
-		prev = new CronDate(prev, this.options.timezone);
 		const next = this._next(prev);
 		return next ? next.getDate() : null;
 	};
@@ -938,8 +947,7 @@
 	 * @returns {Date[]} - Next n run times
 	 */
 	Cron.prototype.enumerate = function (n, previous) {
-		let enumeration = [];
-		
+		const enumeration = [];
 		while(n-- && (previous = this.next(previous))) {
 			enumeration.push(previous);
 		}
@@ -977,14 +985,13 @@
 	 * @returns {number | null}
 	 */
 	Cron.prototype.msToNext = function (prev) {
-		
-		// Default previous run to now - minimum interval
-		prev = prev ? prev : new Date(new Date().getTime()-(this.options.interval*1000));
 
-		// Ensure that prev is a CronDate
+		// Get next run time
+		const next = this._next(prev);
+
+		// Default previous for millisecond calculation
 		prev = new CronDate(prev, this.options.timezone);
 
-		const next = this._next(prev);
 		if( next ) {
 			return (next.getTime(true) - prev.getTime(true));
 		} else {
@@ -1093,13 +1100,19 @@
 	 */
 	Cron.prototype._next = function (prev) {
 		
+		const hasPreviousRun = prev ? true : false;
+
+		// Default previous
+		prev = new CronDate(prev, this.options.timezone);
+		
 		// Previous run should never be before startAt
 		if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
 			prev = this.options.startAt;
 		}
-		
-		// Calculate next run according to pattern or one-off timestamp
-		const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options);
+
+		// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
+		const 
+			nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, !hasPreviousRun);
 		
 		if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
 			return null;
