@@ -99,7 +99,6 @@ function Cron (pattern, options, func) {
  * @returns {Date | null} - Next run time
  */
 Cron.prototype.next = function (prev) {
-	prev = new CronDate(prev, this.options.timezone);
 	const next = this._next(prev);
 	return next ? next.getDate() : null;
 };
@@ -112,8 +111,7 @@ Cron.prototype.next = function (prev) {
  * @returns {Date[]} - Next n run times
  */
 Cron.prototype.enumerate = function (n, previous) {
-	let enumeration = [];
-	
+	const enumeration = [];
 	while(n-- && (previous = this.next(previous))) {
 		enumeration.push(previous);
 	}
@@ -151,14 +149,13 @@ Cron.prototype.previous = function () {
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {
-	
-	// Default previous run to now - minimum interval
-	prev = prev ? prev : new Date(new Date().getTime()-(this.options.interval*1000));
 
-	// Ensure that prev is a CronDate
+	// Get next run time
+	const next = this._next(prev);
+
+	// Default previous for millisecond calculation
 	prev = new CronDate(prev, this.options.timezone);
 
-	const next = this._next(prev);
 	if( next ) {
 		return (next.getTime(true) - prev.getTime(true));
 	} else {
@@ -267,13 +264,19 @@ Cron.prototype.schedule = function (func) {
  */
 Cron.prototype._next = function (prev) {
 	
+	const hasPreviousRun = prev ? true : false;
+
+	// Default previous
+	prev = new CronDate(prev, this.options.timezone);
+	
 	// Previous run should never be before startAt
 	if( this.options.startAt && prev && prev.getTime(true) < this.options.startAt.getTime(true) ) {
 		prev = this.options.startAt;
 	}
-	
-	// Calculate next run according to pattern or one-off timestamp
-	const nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options);
+
+	// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
+	const 
+		nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, !hasPreviousRun);
 	
 	if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
 		return null;

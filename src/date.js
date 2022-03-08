@@ -7,7 +7,7 @@ import { CronOptions } from "./options.js"; // eslint-disable-line no-unused-var
  * 
  * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
  * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
- */
+*/
 function CronDate (date, timezone) {	
 
 	this.timezone = timezone;
@@ -115,7 +115,7 @@ CronDate.prototype.fromString = function (str) {
  * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
  */
 CronDate.prototype.increment = function (pattern, options, rerun) {
-
+	
 	// Always add one second, or minimum interval
 	if (!rerun) {
 		if (options.interval > 1) {
@@ -128,7 +128,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 	this.apply();
 
 	this.milliseconds = 0;
-
+	
 	const 
 	
 		origTime = this.getTime(),
@@ -273,6 +273,7 @@ CronDate.prototype.increment = function (pattern, options, rerun) {
 	}
 
 	// If anything changed, recreate this CronDate and run again without incrementing
+	this.default = false;
 	if (origTime != this.getTime()) {
 		this.apply();
 		return this.increment(pattern, options, true);

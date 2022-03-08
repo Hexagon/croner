@@ -204,6 +204,7 @@ job.stop();
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
 | startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
+| interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 | legacyMode   | false          | boolean        | Combine day-of-month and day-of-week using OR, default is AND |
@@ -263,6 +264,14 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 	console.log('This will run every tenth second between second 15-45');
 	console.log('every fifth minute of hour 1,2 and 3 when day of month');
 	console.log('is the same as when Cron started, every saturday in January to March.');
+});
+```
+
+#### Interval
+```javascript
+// Trigger on specific interval combined with cron expression
+Cron('* * * 7-16 * MON-FRI', { interval: 90 }, function () {
+	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 ```
 

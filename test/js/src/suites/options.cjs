@@ -136,18 +136,31 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	test("Negative interval should throw", function () {
+		assert.throws(() => {
+			Cron("* * * * * *", { interval: "-1" }).enumerate(3, "2022-02-17T00:00:00");
+		});
+	});
+
+	test("Positive string interval should not throw", function () {
+		assert.not.throws(() => {
+			Cron("* * * * * *", { interval: "102" }).enumerate(3, "2022-02-17T00:00:00");
+		});
+	});
+
+
 	test("Valid interval should give correct run times", function () {
-		let nextRuns = Cron("* * * * * *", { interval: 90 }).enumerate(3, "2022-02-16T23:59:59");
+		let nextRuns = Cron("0,30 * * * * *", { interval: 90 }).enumerate(3, "2022-02-16T00:00:00");
 		
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
-		assert.equal(nextRuns[0].getDate(),17);
+		assert.equal(nextRuns[0].getDate(),16);
 		assert.equal(nextRuns[0].getHours(),0);
-		assert.equal(nextRuns[0].getMinutes(),0);
-		assert.equal(nextRuns[0].getSeconds(),0);
+		assert.equal(nextRuns[0].getMinutes(),1);
+		assert.equal(nextRuns[0].getSeconds(),30);
 		assert.equal(nextRuns[1].getHours(),0);
-		assert.equal(nextRuns[1].getMinutes(),1);
-		assert.equal(nextRuns[1].getSeconds(),30);
+		assert.equal(nextRuns[1].getMinutes(),3);
+		assert.equal(nextRuns[1].getSeconds(),0);
 	});
 
 };

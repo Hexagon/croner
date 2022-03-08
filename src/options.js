@@ -33,7 +33,7 @@ function CronOptions(options) {
 	options.paused = (options.paused === void 0) ? false : options.paused;
 	options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
 	options.catch = (options.catch === void 0) ? false : options.catch;
-	options.interval = (options.interval === void 0) ? 0 : options.interval;
+	options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval);
 	options.kill = false;
 	
 	// startAt is set, validate it
@@ -42,7 +42,16 @@ function CronOptions(options) {
 	} 
 	if( options.stopAt ) {
 		options.stopAt = new CronDate(options.stopAt, options.timezone);
-	}	
+	}
+
+	// Validate interval
+	if (options.interval !== null) {
+		if (isNaN(options.interval)) {
+			throw new Error("CronOptions: Supplied value for interval is not a number");
+		} else if (options.interval < 0) {
+			throw new Error("CronOptions: Supplied value for interval can not be negative");
+		}
+	}
 
 	return options;
 
