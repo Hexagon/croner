@@ -22,7 +22,7 @@
     "parserOptions": {
         "sourceType": "module"
     },
-    "ignorePatterns": ["dist-legacy/*","dist/*","docs/*"],
+    "ignorePatterns": ["dist-legacy/*","dist/*","docs/*","test/deno/*"],
     "globals": {
         "define": false,
         "describe": false,

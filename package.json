@@ -38,7 +38,7 @@
   ],
   "scripts": {
     "test": "uvu test test.croner.js",
-    "test:dist": "uvu test js && npm run test:ts",
+    "test:dist": "uvu test/js && npm run test:ts",
     "test:coverage": "c8 --include=src npm test",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
