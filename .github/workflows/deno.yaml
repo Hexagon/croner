@@ -1,4 +1,4 @@
-name: Test Deno Module
+name: Deno CI
 
 on:
   push:
