@@ -134,8 +134,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns.length, 10);
 
 		// Check that time span of first entry is within a minute
-		assert.equal(nextRuns[0].getTime() >= now.getTime(), true);
-		assert.equal(nextRuns[0].getTime() <= now.getTime()+60*1000, true);
+		assert.equal(nextRuns[0].getTime() >= now.getTime()-1000, true);
+		assert.equal(nextRuns[0].getTime() <= now.getTime()+61*1000, true);
 
 		// Check that time span of last entry is about 5 minutes from now
 		assert.equal(nextRuns[9].getTime() > now.getTime()+4*60*1000, true);
