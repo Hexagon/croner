@@ -931,7 +931,7 @@
 	/**
 	 * Find next runtime, based on supplied date. Strips milliseconds.
 	 * 
-	 * @param {Date|string} [prev] - Date to start from
+	 * @param {CronDate|Date|string} [prev] - Date to start from
 	 * @returns {Date | null} - Next run time
 	 */
 	Cron.prototype.next = function (prev) {
@@ -981,7 +981,7 @@
 	 * Returns number of milliseconds to next run
 	 * @public
 	 * 
-	 * @param {Date} [prev] - Starting date, defaults to now - minimum interval
+	 * @param {CronDate|Date|string} [prev] - Starting date, defaults to now - minimum interval
 	 * @returns {number | null}
 	 */
 	Cron.prototype.msToNext = function (prev) {
@@ -1095,14 +1095,17 @@
 	 * Internal version of next. Cron needs millseconds internally, hence _next.
 	 * @private
 	 * 
-	 * @param {CronDate} prev - Input pattern
+	 * @param {CronDate|Date|string} prev - PreviousRun
 	 * @returns {CronDate | null} - Next run time
 	 */
 	Cron.prototype._next = function (prev) {
+
+		// Use actual previous run if not supplied
+		prev = prev || this.previousrun;
 		
 		const hasPreviousRun = prev ? true : false;
 
-		// Default previous
+		// Ensure previous run is a CronDate
 		prev = new CronDate(prev, this.options.timezone);
 		
 		// Previous run should never be before startAt

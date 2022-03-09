@@ -28,10 +28,10 @@ export class Cron {
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
-     * @param {Date|string} [prev] - Date to start from
+     * @param {CronDate|Date|string} [prev] - Date to start from
      * @returns {Date | null} - Next run time
      */
-    next(prev?: Date | string): Date | null;
+    next(prev?: CronDate | Date | string): Date | null;
     /**
      * Find next n runs, based on supplied date. Strips milliseconds.
      *
@@ -58,10 +58,10 @@ export class Cron {
      * Returns number of milliseconds to next run
      * @public
      *
-     * @param {Date} [prev] - Starting date, defaults to now - minimum interval
+     * @param {CronDate|Date|string} [prev] - Starting date, defaults to now - minimum interval
      * @returns {number | null}
      */
-    public msToNext(prev?: Date): number | null;
+    public msToNext(prev?: CronDate | Date | string): number | null;
     /**
      * Stop execution
      * @public
