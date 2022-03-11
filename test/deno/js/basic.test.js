@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.128.0/testing/asserts.ts";
-import { Cron } from "../../src/croner.js";
+import { Cron } from "../../../src/croner.js";
 
 Deno.test("31st february should not be found", function () {
   let scheduler = new Cron("* * * 31 2 *");

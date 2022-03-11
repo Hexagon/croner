@@ -1,4 +1,4 @@
-import Cron from "../../";
+import Cron from "../../../";
 
 // Test basic
 const test1 : Cron = new Cron("* * * * * *", () => {

@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.128.0/testing/asserts.ts";
-import { Cron } from "../../src/croner.js";
+import { Cron } from "../../../src/croner.js";
 
 Deno.test("getTime should return expected difference with different timezones (next 1st november)", function () {
   let timeStockholm = Cron("0 0 12 1 11 *", { timezone: "Europe/Stockholm" })
