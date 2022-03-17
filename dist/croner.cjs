@@ -1100,10 +1100,7 @@
 	 */
 	Cron.prototype._next = function (prev) {
 
-		// Use actual previous run if not supplied
-		prev = prev || this.previousrun;
-		
-		const hasPreviousRun = prev ? true : false;
+		const hasPreviousRun = (prev || this.previousrun) ? true : false;
 
 		// Ensure previous run is a CronDate
 		prev = new CronDate(prev, this.options.timezone);
