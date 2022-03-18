@@ -714,7 +714,6 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-	
 	test("Specific date should not create infinite loop (legacy mode)", function () {
 		const cron = new Cron("0 * * * mon,tue,wed,fri,sat,sun", {
 				legacyMode: true,
@@ -725,4 +724,36 @@ module.exports = function (Cron, test) {
 		assert.equal(next.getDate(),1);
 		assert.equal(next.getHours(),0);
 	});
+
+	test("Value of next, previous and current during trigger (legacy mode)",  timeout(4000, (resolve, reject) => {
+		let run = 1;
+		const cron = new Cron("* * * * * *", {
+			legacyMode: true
+		}, () => {
+			const
+				now = new Date(),
+				nowParsed = new Date(now.toLocaleString()),
+				nextParsed = new Date(cron.next().toLocaleString());
+			if (run === 1) {
+				try {
+					assert.equal(nowParsed.getTime(),nextParsed.getTime()-1000);
+					assert.equal(cron.previous(), null);
+				} catch (e) {
+					reject(e);
+				}
+			} else {
+				const prevParsed = new Date(cron.previous().toLocaleString());
+				try {
+					assert.equal(nowParsed.getTime(),nextParsed.getTime()-1000);
+					assert.equal(nowParsed.getTime(),prevParsed.getTime()+1000);
+					resolve();
+				} catch (e) {
+					reject(e);
+				}
+				cron.stop();
+			}
+			run++;
+		}
+		);
+	}));
 };

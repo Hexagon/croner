@@ -192,13 +192,14 @@
 	 * @param {string} pattern - The pattern used to increment current state
 	 * @param {CronOptions} options - Cron options used for incrementing
 	 * @param {boolean} [rerun=false] - If this is an internal incremental run
+	 * @param {boolean} [hasPreviousRun] - If this run should adhere to minimum interval
 	 * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
 	 */
-	CronDate.prototype.increment = function (pattern, options, rerun) {
+	CronDate.prototype.increment = function (pattern, options, rerun, hasPreviousRun) {
 		
 		// Always add one second, or minimum interval
 		if (!rerun) {
-			if (options.interval > 1) {
+			if (options.interval > 1 && hasPreviousRun) {
 				this.seconds += options.interval;
 			} else {
 				this.seconds += 1;
@@ -356,7 +357,7 @@
 		this.default = false;
 		if (origTime != this.getTime()) {
 			this.apply();
-			return this.increment(pattern, options, true);
+			return this.increment(pattern, options, true, hasPreviousRun);
 		} else {
 			return this;
 		}
@@ -1112,7 +1113,7 @@
 
 		// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
 		const 
-			nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, !hasPreviousRun);
+			nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, false, hasPreviousRun);
 		
 		if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
 			return null;
