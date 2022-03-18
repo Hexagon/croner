@@ -732,8 +732,8 @@ module.exports = function (Cron, test) {
 		}, () => {
 			const
 				now = new Date(),
-				nowParsed = new Date(now.toLocaleString()),
-				nextParsed = new Date(cron.next().toLocaleString());
+				nextParsed = new Date(cron.next().toLocaleString()),
+				nowParsed = new Date(now.toLocaleString());
 			if (run === 1) {
 				try {
 					assert.equal(nowParsed.getTime(),nextParsed.getTime()-1000);
