@@ -130,6 +130,43 @@ module.exports = function (Cron, test) {
 		},1500);
 	}));
 
+	test("* * * * * * with maxRuns: 1 should return null after 1.5 seconds (legacyMode)",  timeout(2000, (resolve, reject) => {
+		let 
+			scheduler = new Cron("* * * * * *", { maxRuns: 1, legacyMode: true });
+		scheduler.schedule(function () {});
+		setTimeout(function () {
+			let nextRun = scheduler.next();
+			// Do comparison
+			try {
+				assert.equal(nextRun, null);
+				resolve();
+			} catch (e) {
+				reject (e);
+			}
+		},1500);
+	}));
+
+	test("* * * * * * with maxRuns: 1 should return null after 1.5 seconds (swapped argument order)",  timeout(2000, (resolve, reject) => {
+		let hasRun = false,
+			scheduler = new Cron(
+				"* * * * * *", 
+				function () { hasRun = true; },
+				{ maxRuns: 1 }
+			);
+		setTimeout(function () {
+			let nextRun = scheduler.next();
+			// Do comparison
+			try {
+				assert.equal(nextRun, null);
+				assert.equal(hasRun, true);
+				resolve();
+			} catch (e) {
+				reject (e);
+			}
+		},1500);
+	}));
+
+
 	test("Invalid interval should throw", function () {
 		assert.throws(() => {
 			Cron("* * * * * *", { interval: "a" }).enumerate(3, "2022-02-17T00:00:00");

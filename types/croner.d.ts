@@ -4,22 +4,22 @@ export default Cron;
  *
  * @constructor
  * @param {string|Date} pattern - Input pattern, input date, or input ISO 8601 time string
- * @param {CronOptions|Function} [options] - Options
- * @param {Function} [func] - Function to be run each iteration of pattern
+ * @param {CronOptions|Function} [fnOrOptions1] - Options or function to be run each iteration of pattern
+ * @param {CronOptions|Function} [fnOrOptions2] - Options or function to be run each iteration of pattern
  * @returns {Cron}
  */
-export function Cron(pattern: string | Date, options?: CronOptions | Function, func?: Function): Cron;
+export function Cron(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function): Cron;
 export class Cron {
     /**
      * Cron entrypoint
      *
      * @constructor
      * @param {string|Date} pattern - Input pattern, input date, or input ISO 8601 time string
-     * @param {CronOptions|Function} [options] - Options
-     * @param {Function} [func] - Function to be run each iteration of pattern
+     * @param {CronOptions|Function} [fnOrOptions1] - Options or function to be run each iteration of pattern
+     * @param {CronOptions|Function} [fnOrOptions2] - Options or function to be run each iteration of pattern
      * @returns {Cron}
      */
-    constructor(pattern: string | Date, options?: CronOptions | Function, func?: Function);
+    constructor(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function);
     /** @type {CronOptions} */
     options: CronOptions;
     once: CronDate;

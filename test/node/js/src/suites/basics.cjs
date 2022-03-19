@@ -111,6 +111,34 @@ module.exports = function (Cron, test) {
 	});
      
 
+	test("Options as second argument should not throw", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* * * * * *", {maxRuns: 1});
+			scheduler.next();
+		});
+	});
+
+	test("Options as third argument should not throw", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* * * * * *", () => {}, {maxRuns: 1});
+			scheduler.next();
+		});
+	});
+
+	test("Text as second argument should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* * * * * *", "bogus", {maxRuns: 1});
+			scheduler.next();
+		});
+	});
+
+	test("Text as third argument should throw", function () {
+		assert.throws(() => {
+			let scheduler = new Cron("* * * * * *", {maxRuns: 1}, "bogus");
+			scheduler.next();
+		});
+	});
+	
 	test("Context is passed", timeout(2000, (resolve, reject) => {
 		const 
 			c = { a: "b" };

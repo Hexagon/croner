@@ -135,7 +135,7 @@
       </svg>
     </a>
     <h4 class="name" id="Cron">
-      <span class="type-signature"></span>new Cron<span class="signature">(pattern, options<span class="signature-attributes">opt</span>, func<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Cron.html">Cron</a>}</span>
+      <span class="type-signature"></span>new Cron<span class="signature">(pattern, fnOrOptions1<span class="signature-attributes">opt</span>, fnOrOptions2<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Cron.html">Cron</a>}</span>
     </h4>
   </span>
 
@@ -194,7 +194,7 @@
       
       <div>
           
-               <code>options</code>
+               <code>fnOrOptions1</code>
                <em>(
     <span class="param-type">
       <a href="global.html#CronOptions">CronOptions</a>
@@ -222,7 +222,7 @@
             </span>
           
 
-          <p>Options</p>
+          <p>Options or function to be run each iteration of pattern</p>
 
           
 
@@ -230,8 +230,14 @@
       
       <div>
           
-               <code>func</code>
+               <code>fnOrOptions2</code>
                <em>(
+    <span class="param-type">
+      <a href="global.html#CronOptions">CronOptions</a>
+    </span>
+
+    |
+
     <span class="param-type">
       function
     </span>
@@ -252,7 +258,7 @@
             </span>
           
 
-          <p>Function to be run each iteration of pattern</p>
+          <p>Options or function to be run each iteration of pattern</p>
 
           
 
@@ -381,7 +387,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line72">line 72</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line85">line 85</a>
         </li>
       </ul>
     </dd>
@@ -444,7 +450,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line69">line 69</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line82">line 82</a>
         </li>
       </ul>
     </dd>
@@ -507,7 +513,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line75">line 75</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line88">line 88</a>
         </li>
       </ul>
     </dd>
@@ -669,7 +675,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line113">line 113</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line126">line 126</a>
         </li>
       </ul>
     </dd>
@@ -810,7 +816,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line151">line 151</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line164">line 164</a>
         </li>
       </ul>
     </dd>
@@ -951,7 +957,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line101">line 101</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line114">line 114</a>
         </li>
       </ul>
     </dd>
@@ -1042,7 +1048,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line184">line 184</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line197">line 197</a>
         </li>
       </ul>
     </dd>
@@ -1133,7 +1139,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line140">line 140</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line153">line 153</a>
         </li>
       </ul>
     </dd>
@@ -1224,7 +1230,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line194">line 194</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line207">line 207</a>
         </li>
       </ul>
     </dd>
@@ -1315,7 +1321,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line128">line 128</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line141">line 141</a>
         </li>
       </ul>
     </dd>
@@ -1434,7 +1440,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line205">line 205</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line218">line 218</a>
         </li>
       </ul>
     </dd>
@@ -1525,7 +1531,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line170">line 170</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line183">line 183</a>
         </li>
       </ul>
     </dd>

@@ -172,21 +172,34 @@ const maxDelay = Math.pow(2, 32 - 1) - 1;
  * 
  * @constructor
  * @param {string|Date} pattern - Input pattern, input date, or input ISO 8601 time string
- * @param {CronOptions|Function} [options] - Options
- * @param {Function} [func] - Function to be run each iteration of pattern
+ * @param {CronOptions|Function} [fnOrOptions1] - Options or function to be run each iteration of pattern
+ * @param {CronOptions|Function} [fnOrOptions2] - Options or function to be run each iteration of pattern
  * @returns {Cron}
  */
-function Cron (pattern, options, func) {
+function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	
 	// Optional "new" keyword
 	if( !(this instanceof Cron) ) {
-		return new Cron(pattern, options, func);
+		return new Cron(pattern, fnOrOptions1, fnOrOptions2);
 	}
 	
-	// Make options optional
-	if( typeof options === "function" ) {
-		func = options;
-		options = void 0;
+	// Make options and func optional and interchangable
+	let options, func;
+
+	if( typeof fnOrOptions1 === "function" ) {
+		func = fnOrOptions1;
+	} else if( typeof fnOrOptions1 === "object" ) {
+		options = fnOrOptions1;
+	} else if( fnOrOptions1 !== void 0) {
+		throw new Error("Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).");
+	}
+
+	if( typeof fnOrOptions2 === "function" ) {
+		func = fnOrOptions2;
+	} else if( typeof fnOrOptions2 === "object" ) {
+		options = fnOrOptions2;
+	} else if( fnOrOptions2 !== void 0) {
+		throw new Error("Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).");
 	}
 	
 	/** @type {CronOptions} */
