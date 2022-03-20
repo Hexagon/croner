@@ -992,10 +992,10 @@
 	Cron.prototype.msToNext = function (prev) {
 
 		// Get next run time
-		const next = this._next(prev);
+		const next = this._next(prev || this.previousrun);
 
 		// Default previous for millisecond calculation
-		prev = new CronDate(prev, this.options.timezone);
+		prev = new CronDate(prev || this.previousrun, this.options.timezone);
 
 		if( next ) {
 			return (next.getTime(true) - prev.getTime(true));
