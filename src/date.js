@@ -111,28 +111,21 @@ CronDate.prototype.fromString = function (str) {
  * 
  * @param {string} pattern - The pattern used to increment current state
  * @param {CronOptions} options - Cron options used for incrementing
- * @param {boolean} [rerun=false] - If this is an internal incremental run
  * @param {boolean} [hasPreviousRun] - If this run should adhere to minimum interval
  * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
  */
-CronDate.prototype.increment = function (pattern, options, rerun, hasPreviousRun) {
+CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	
-	// Always add one second, or minimum interval
-	if (!rerun) {
-		if (options.interval > 1 && hasPreviousRun) {
-			this.seconds += options.interval;
-		} else {
-			this.seconds += 1;
-		}
+	// Always add one second, or minimum interval, then clear milliseconds and apply changes if seconds has gotten out of bounds
+	if (options.interval > 1 && hasPreviousRun) {
+		this.seconds += options.interval;
+	} else {
+		this.seconds += 1;
 	}
-
-	this.apply();
-
 	this.milliseconds = 0;
+	this.apply();
 	
 	const 
-	
-		origTime = this.getTime(),
 
 		/**
 		 * Find next
@@ -256,6 +249,9 @@ CronDate.prototype.increment = function (pattern, options, rerun, hasPreviousRun
 			// Reset current level and previous levels
 			resetPrevious(0);
 
+			// Apply changes if any value has gotten out of bounds
+			this.apply();
+			
 		// If pattern provided a match, but changed current value ...
 		} else if (currentValue !== this[toDo[doing][0]]) {
 
@@ -268,19 +264,13 @@ CronDate.prototype.increment = function (pattern, options, rerun, hasPreviousRun
 		if (this.years >= 4000) {
 			return null;
 		}
-
+		
 		// Gp down, seconds -> minutes -> hours -> days -> months -> year
 		doing++;
 	}
 
 	// If anything changed, recreate this CronDate and run again without incrementing
-	this.default = false;
-	if (origTime != this.getTime()) {
-		this.apply();
-		return this.increment(pattern, options, true, hasPreviousRun);
-	} else {
-		return this;
-	}
+	return this;
 	
 };
 

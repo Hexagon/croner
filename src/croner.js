@@ -289,7 +289,7 @@ Cron.prototype._next = function (prev) {
 
 	// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
 	const 
-		nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, false, hasPreviousRun);
+		nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, hasPreviousRun);
 	
 	if (this.once && this.once.getTime(true) <= prev.getTime(true)) {
 		return null;

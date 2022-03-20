@@ -33,12 +33,10 @@ export class CronDate {
      *
      * @param {string} pattern - The pattern used to increment current state
      * @param {CronOptions} options - Cron options used for incrementing
-     * @param {boolean} [rerun=false] - If this is an internal incremental run
      * @param {boolean} [hasPreviousRun] - If this run should adhere to minimum interval
      * @return {CronDate|null} - Returns itself for chaining, or null if increment wasnt possible
      */
-    public increment(pattern: string, options: CronOptions, rerun?: boolean, hasPreviousRun?: boolean): CronDate | null;
-    default: boolean;
+    public increment(pattern: string, options: CronOptions, hasPreviousRun?: boolean): CronDate | null;
     /**
      * Convert current state back to a javascript Date()
      * @public
