@@ -952,8 +952,9 @@
 	 */
 	Cron.prototype.enumerate = function (n, previous) {
 		const enumeration = [];
-		while(n-- && (previous = this.next(previous))) {
-			enumeration.push(previous);
+		let prev = previous || this.previousrun;
+		while(n-- && (prev = this.next(prev))) {
+			enumeration.push(prev);
 		}
 		
 		return enumeration;
