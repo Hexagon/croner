@@ -995,7 +995,7 @@
 		const next = this._next(prev || this.previousrun);
 
 		// Default previous for millisecond calculation
-		prev = new CronDate(prev || this.previousrun, this.options.timezone);
+		prev = new CronDate(prev, this.options.timezone);
 
 		if( next ) {
 			return (next.getTime(true) - prev.getTime(true));
