@@ -104,12 +104,15 @@ const Cron = require("croner");
 
 TypeScript
 
-*Note that only default export is available in Node.js TypeScript, as the commonjs module is used internally.*
+Notes for TypeScript:
+
+* If using strict eslint-rules, specifically `new-cap` combined with `no-new`, you need to import and use lower case `cron` instead of `Cron`.
+* only default export is available in Node.js TypeScript, as the commonjs module is used internally.
 
 ```typescript
 import Cron from "croner";
 
-const scheduler : Cron = new Cron("* * * * * *", () => {
+const job : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
 });
 ```
