@@ -110,7 +110,7 @@ Notes for TypeScript:
 * only default export is available in Node.js TypeScript, as the commonjs module is used internally.
 
 ```typescript
-import Cron from "croner";
+import { Cron } from "croner";
 
 const job : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");

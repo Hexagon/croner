@@ -56,7 +56,7 @@
   "main": "./dist/croner.cjs",
   "browser": "./dist/croner.min.js",
   "module": "./src/croner.js",
-  "types": "types/croner.single.d.ts",
+  "types": "types/croner.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {

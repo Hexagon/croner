@@ -1136,6 +1136,8 @@
 			
 	};
 
+	Cron.Cron = Cron;
+
 	return Cron;
 
 }));
