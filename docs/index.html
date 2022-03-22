@@ -208,10 +208,9 @@ const Cron = require(&quot;croner&quot;);
 <p>TypeScript</p>
 <p>Notes for TypeScript:</p>
 <ul>
-<li>If using strict eslint-rules, specifically <code>new-cap</code> combined with <code>no-new</code>, you need to import and use lower case <code>cron</code> instead of <code>Cron</code>.</li>
-<li>only default export is available in Node.js TypeScript, as the commonjs module is used internally.</li>
+<li>If using strict eslint-rules, specifically <code>new-cap</code> combined with <code>no-new</code>, you need to import and use lower case <code>cron</code> instead of <code>{ Cron }</code>.</li>
 </ul>
-<pre class="prettyprint source lang-typescript"><code>import Cron from &quot;croner&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;croner&quot;;
 
 const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);

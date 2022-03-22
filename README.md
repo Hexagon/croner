@@ -106,8 +106,7 @@ TypeScript
 
 Notes for TypeScript:
 
-* If using strict eslint-rules, specifically `new-cap` combined with `no-new`, you need to import and use lower case `cron` instead of `Cron`.
-* only default export is available in Node.js TypeScript, as the commonjs module is used internally.
+* If using strict eslint-rules, specifically `new-cap` combined with `no-new`, you need to import and use lower case `cron` instead of `{ Cron }`.
 
 ```typescript
 import { Cron } from "croner";
