@@ -12,7 +12,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Find first date of next month, find date of next tuesday, etc.
 *   Pause, resume or stop execution after a task is scheduled.
-*   Works in Node.js >=4.0 (both require and import).
+*   Works in Node.js >=6.0 (both require and import).
 *   Works in Deno >=1.16.
 *   Works in browsers as standalone, UMD or ES-module.
 *   **Experimental feature:** Schedule in specific target timezones.
