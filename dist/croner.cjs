@@ -574,7 +574,7 @@
 	 * @param {CronIndexOffset} valueIndexOffset
 	 * @param {boolean} [recursed] - Is this a recursed call 
 	 */
-	CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset, recursed) {
+	CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 
 		const arr = this[type];
 
@@ -590,25 +590,19 @@
 		const split = conf.split(",");
 		if( split.length > 1 ) {
 			for( let i = 0; i < split.length; i++ ) {
-				this.partToArray(type, split[i], valueIndexOffset, true);
+				this.partToArray(type, split[i], valueIndexOffset);
 			}
 
 		// Handle range with stepping (x-y/z)
 		} else if( conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1 ) {
-			if (recursed) throw new Error("CronPattern: Range with stepping cannot coexist with ,");
-
 			this.handleRangeWithStepping(conf, type, valueIndexOffset);
 		
 		// Handle range
 		} else if( conf.indexOf("-") !== -1 ) {
-			if (recursed) throw new Error("CronPattern: Range with stepping cannot coexist with ,");
-
 			this.handleRange(conf, type, valueIndexOffset);
 
 		// Handle stepping
 		} else if( conf.indexOf("/") !== -1 ) {
-			if (recursed) throw new Error("CronPattern: Range with stepping cannot coexist with ,");
-
 			this.handleStepping(conf, type, valueIndexOffset);
 
 		// Anything left should be a number
