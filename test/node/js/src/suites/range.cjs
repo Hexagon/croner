@@ -40,8 +40,8 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-	test("Slash in pattern with preceding comma separated entries should throw", function () {
-		assert.throws(() => {
+	test("Slash in pattern with preceding comma separated entries should not throw", function () {
+		assert.not.throws(() => {
 			let scheduler = new Cron("* 1,2/5 * * * *");
 			scheduler.next();
 		});
@@ -54,15 +54,15 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-	test("Slash in pattern with preceding range separated by comma should throw", function () {
-		assert.throws(() => {
+	test("Slash in pattern with preceding range separated by comma should not throw", function () {
+		assert.not.throws(() => {
 			let scheduler = new Cron("* 1-15/5,6 * * * *");
 			scheduler.next();
 		});
 	});
 
-	test("Range separated by comma should throw", function () {
-		assert.throws(() => {
+	test("Range separated by comma should not throw", function () {
+		assert.not.throws(() => {
 			let scheduler = new Cron("* 1-15,17 * * * *");
 			scheduler.next();
 		});
