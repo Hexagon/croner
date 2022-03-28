@@ -35,9 +35,15 @@ Se recommend using VS Code with eslint extensions, which will automatically chec
 2.  Install or update to **Node.js v16**. 
 3.  Create a working branch ```feature/my-cool-feature``` or ```bugfix/issue-14``` and start with your changes!
 
+### Testing your changes
+
+Make sure you add test cases for your changes. While developing, use ```npm run test``` to run run quick tests against `/src/*`. 
+
 ### Commit your update
 
-Please run ```npm run build``` before committing, to update the dist-files, and to make sure every test and check passes. If you make changes to any function Interface, or to JSDoc in general, you should also run ```npm run build:docs``` to update the generated documentation.
+Please run ```npm run build``` before committing, to update the dist-files, and to make sure every test and check passes. When using this command, both source code, and all generated code will be tested, so it can take a while. 
+
+If you make changes to any function Interface, or to JSDoc in general, you should also run ```npm run build:docs``` to update the generated documentation.
 
 See [package.json](/package.json) scripts section for all available scripts.
 

@@ -129,6 +129,19 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[7].getHours(),10);
 	});
 
+	test("Steps for hours should yield correct hours with offset range and comma-separated values on wednesdays (legacy mode)", function () {
+		let nextRuns = new Cron("1 1 3-8/2,1,10 * * sat").enumerate(10, "2020-01-01T00:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2020);
+		assert.equal(nextRuns[0].getMonth(),0);
+		assert.equal(nextRuns[0].getDate(),4);
+		assert.equal(nextRuns[0].getHours(),1);
+		assert.equal(nextRuns[1].getHours(),3);
+		assert.equal(nextRuns[2].getHours(),5);
+		assert.equal(nextRuns[3].getHours(),7);
+		assert.equal(nextRuns[4].getHours(),10);
+		assert.equal(nextRuns[5].getHours(),1);
+	});
+
 	test("Steps for months should yield correct months", function () {
 		let nextRuns = new Cron("1 1 1 */3 *").enumerate(10, "2020-12-31T23:59:59");
 		assert.equal(nextRuns[0].getMonth(),0);
