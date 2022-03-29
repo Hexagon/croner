@@ -57,7 +57,7 @@
 		options.paused = (options.paused === void 0) ? false : options.paused;
 		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
 		options.catch = (options.catch === void 0) ? false : options.catch;
-		options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval);
+		options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval, 10);
 		options.kill = false;
 		
 		// startAt is set, validate it

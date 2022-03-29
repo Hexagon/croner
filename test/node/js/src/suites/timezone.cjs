@@ -42,14 +42,14 @@ module.exports = function (Cron, test) {
 
 		let refTime = new Date();
 		refTime.setFullYear(2022);
-		refTime.setMonth(1);
 		refTime.setDate(8);
+		refTime.setMonth(1);
 		refTime.setHours(12);
 
 		let
 			timeStockholm = Cron("0 0 23 8 2 2", {timezone: "Europe/Stockholm"}).next(refTime),
 			timeNewYork = Cron("0 0 23 8 2 2", {timezone: "America/New_York"}).next(refTime);
-			
+
 		assert.equal(timeStockholm.getUTCMonth(), 1);
 		assert.equal(timeStockholm.getUTCDate(), 8);
 		assert.equal(timeStockholm.getUTCHours(), 22);
