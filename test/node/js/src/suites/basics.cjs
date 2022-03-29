@@ -229,6 +229,17 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[2].getDate(),6);
 	});
 
+	test("@weekly should be replaced", function () {
+		let nextRuns = Cron("@daily").enumerate(3, "2022-02-17T12:00:00");
+		assert.equal(nextRuns[0].getFullYear(),2022);
+		assert.equal(nextRuns[0].getMonth(),1);
+		assert.equal(nextRuns[0].getDate(),18);
+		assert.equal(nextRuns[1].getMonth(),1);
+		assert.equal(nextRuns[1].getDate(),19);
+		assert.equal(nextRuns[2].getMonth(),1);
+		assert.equal(nextRuns[2].getDate(),20);
+	});
+
 	test("@hourly should be replaced", function () {
 		let nextRuns = Cron("@hourly").enumerate(3, "2022-02-16T23:59:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
