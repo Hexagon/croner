@@ -1133,6 +1133,8 @@
 
 	Cron.Cron = Cron;
 
+	Cron.Cron = Cron;
+
 	return Cron;
 
 }));

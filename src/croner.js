@@ -309,5 +309,6 @@ Cron.prototype._next = function (prev) {
 		
 };
 
+Cron.Cron = Cron;
 export default Cron;
 export { Cron };

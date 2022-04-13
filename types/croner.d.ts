@@ -93,6 +93,9 @@ export class Cron {
     previousrun: CronDate;
     private _next;
 }
+export namespace Cron {
+    export { Cron };
+}
 import { CronOptions } from "./options.js";
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
