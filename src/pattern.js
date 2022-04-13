@@ -314,6 +314,7 @@ CronPattern.prototype.handleStepping = function (conf, type) {
  */
 CronPattern.prototype.replaceAlphaDays = function (conf) {
 	return conf
+		.replace(/(?<=-)sun/gi, "7")
 		.replace(/sun/gi, "0")
 		.replace(/mon/gi, "1")
 		.replace(/tue/gi, "2")
