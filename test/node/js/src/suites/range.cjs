@@ -146,4 +146,18 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	test("Sunday as lower value of range should not throw", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* * * * * SUN-MON");
+			scheduler.next();
+		});
+	});
+
+	test("Sunday as upper value of range should not throw", function () {
+		assert.not.throws(() => {
+			let scheduler = new Cron("* * * * * MON-SUN");
+			scheduler.next();
+		});
+	});
+
 };
