@@ -314,6 +314,7 @@ CronPattern.prototype.handleStepping = function (conf, type) {
  */
 CronPattern.prototype.replaceAlphaDays = function (conf) {
 	return conf
+		.replace(/-sun/gi, "-7") // choose 7 if sunday is the upper value of a range because the upper value must not be smaller than the lower value
 		.replace(/sun/gi, "0")
 		.replace(/mon/gi, "1")
 		.replace(/tue/gi, "2")
