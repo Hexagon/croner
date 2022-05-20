@@ -68,14 +68,14 @@ export class Cron {
      */
     public stop(): void;
     /**
-     * Pause executionR
+     * Pause execution
      * @public
      *
      * @returns {boolean} - Wether pause was successful
      */
     public pause(): boolean;
     /**
-     * Pause execution
+     * Resume execution
      * @public
      *
      * @returns {boolean} - Wether resume was successful

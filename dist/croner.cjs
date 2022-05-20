@@ -1012,7 +1012,7 @@
 	};
 		
 	/**
-	 * Pause executionR
+	 * Pause execution
 	 * @public
 	 * 
 	 * @returns {boolean} - Wether pause was successful
@@ -1022,7 +1022,7 @@
 	};
 		
 	/**
-	 * Pause execution
+	 * Resume execution
 	 * @public
 	 * 
 	 * @returns {boolean} - Wether resume was successful

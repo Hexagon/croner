@@ -24,7 +24,7 @@ Scan through our [existing issues](https://github.com/hexagon/croner/issues) to 
 
 #### Setting up the environment
 
-Se recommend using VS Code with eslint extensions, which will automatically check your code against THE defined rules as you write it.
+We recommend using VS Code with eslint extensions, which will automatically check your code against the defined rules as you write it.
 
 1.  Fork the repository.
 -   Using GitHub Desktop:
