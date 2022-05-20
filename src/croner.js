@@ -190,7 +190,7 @@ Cron.prototype.stop = function () {
 };
 	
 /**
- * Pause executionR
+ * Pause execution
  * @public
  * 
  * @returns {boolean} - Wether pause was successful
@@ -200,7 +200,7 @@ Cron.prototype.pause = function () {
 };
 	
 /**
- * Pause execution
+ * Resume execution
  * @public
  * 
  * @returns {boolean} - Wether resume was successful
