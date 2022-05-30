@@ -89,6 +89,7 @@ export class Cron {
      * @returns {Cron}
      */
     public schedule(func: Function): Cron;
+    waitTo: number;
     currentTimeout: number;
     previousrun: CronDate;
     private _next;

@@ -228,18 +228,23 @@ Cron.prototype.schedule = function (func) {
 	}
 	
 	// Get ms to next run, bail out early if waitMs is null (no next run)
-	let waitMs = this.msToNext(this.previousrun);
+	let waitMs = this.msToNext(this.previousrun),
+		now = new Date().getTime();
+
 	if  ( waitMs === null )  return this;
 	
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
 	if( waitMs > maxDelay ) {
 		waitMs = maxDelay;
 	}
+
+	// Early run protection
+	this.waitTo = now + waitMs; 
 	
 	// Ok, go!
 	this.currentTimeout = setTimeout(() => {
 	
-		if( waitMs !== maxDelay && !this.options.paused ) {
+		if( waitMs !== maxDelay && !this.options.paused && this.waitTo <= new Date().getTime() ) {
 	
 			this.options.maxRuns--;
 	
