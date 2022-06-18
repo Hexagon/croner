@@ -214,9 +214,10 @@ Cron.prototype.resume = function () {
  * @public
  * 
  * @param {Function} func - Function to be run each iteration of pattern
+ * @param {Date} [partial] - Internal function indicating a partial run
  * @returns {Cron}
  */
-Cron.prototype.schedule = function (func) {
+Cron.prototype.schedule = function (func, partial) {
 	
 	// If a function is already scheduled, bail out
 	if (func && this.fn) {
@@ -228,7 +229,10 @@ Cron.prototype.schedule = function (func) {
 	}
 	
 	// Get ms to next run, bail out early if waitMs is null (no next run)
-	let waitMs = this.msToNext(this.previousrun);
+	let 
+		waitMs = this.msToNext(partial ? partial : this.previousrun),
+		target = this.next(partial ? partial :  this.previousrun);
+
 	if  ( waitMs === null )  return this;
 	
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
@@ -239,7 +243,9 @@ Cron.prototype.schedule = function (func) {
 	// Ok, go!
 	this.currentTimeout = setTimeout(() => {
 	
-		if( waitMs !== maxDelay && !this.options.paused ) {
+		let now = new Date();
+
+		if( waitMs !== maxDelay && !this.options.paused && now.getTime() >= target ) {
 	
 			this.options.maxRuns--;
 	
@@ -257,12 +263,16 @@ Cron.prototype.schedule = function (func) {
 			// Set previous run to now
 			this.previousrun = new CronDate(void 0, this.options.timezone);
 	
+			// Recurse
+			this.schedule();
+			
+		} else {
+			// Partial
+			this.schedule(undefined, now);
 		}
 	
-		// Recurse
-		this.schedule();
 	
-	}, waitMs );
+	}, waitMs);
 		
 	return this;
 	

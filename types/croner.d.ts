@@ -86,9 +86,10 @@ export class Cron {
      * @public
      *
      * @param {Function} func - Function to be run each iteration of pattern
+     * @param {Date} [partial] - Internal function indicating a partial run
      * @returns {Cron}
      */
-    public schedule(func: Function): Cron;
+    public schedule(func: Function, partial?: Date): Cron;
     currentTimeout: number;
     previousrun: CronDate;
     private _next;
