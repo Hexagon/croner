@@ -89,7 +89,7 @@ CronPattern.prototype.parse = function () {
 	}
 	
 	// Implement '?' in the simplest possible way - replace ? with current value, before further processing
-	let initDate = new CronDate(new Date(),this.timezone).getDate(true);
+	const initDate = new CronDate(new Date(),this.timezone).getDate(true);
 
 	parts[0] = parts[0].replace("?", initDate.getSeconds());
 	parts[1] = parts[1].replace("?", initDate.getMinutes());

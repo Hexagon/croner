@@ -231,7 +231,7 @@
 					if (target === "days") {
 
 						// Create a date object for the target date
-						let targetDate = this.getDate(true);
+						const targetDate = this.getDate(true);
 						targetDate.setDate(i-offset);
 
 						// Special handling for L (last day of month), when we are searching for days
@@ -239,7 +239,7 @@
 
 							// Create a copy of targetDate
 							// Set days to one day after today, if month changes, then we are at the last day of the month
-							let targetDateCopy = new Date(targetDate);
+							const targetDateCopy = new Date(targetDate);
 							targetDateCopy.setDate(i-offset+1);
 					
 							// Overwrite match if last day of month is matching
@@ -319,7 +319,7 @@
 			// be set to 5
 
 			// Store current value at current level
-			let currentValue = this[toDo[doing][0]];
+			const currentValue = this[toDo[doing][0]];
 			
 			// If pattern didn't provide a match, increment next value (e.g. minues)
 			if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
@@ -538,7 +538,7 @@
 		}
 		
 		// Implement '?' in the simplest possible way - replace ? with current value, before further processing
-		let initDate = new CronDate(new Date(),this.timezone).getDate(true);
+		const initDate = new CronDate(new Date(),this.timezone).getDate(true);
 
 		parts[0] = parts[0].replace("?", initDate.getSeconds());
 		parts[1] = parts[1].replace("?", initDate.getMinutes());
@@ -1051,9 +1051,8 @@
 		}
 		
 		// Get ms to next run, bail out early if waitMs is null (no next run)
-		let 
-			waitMs = this.msToNext(partial ? partial : this.previousrun),
-			target = this.next(partial ? partial :  this.previousrun);
+		let	waitMs = this.msToNext(partial ? partial : this.previousrun);
+		const target = this.next(partial ? partial :  this.previousrun);
 
 		if  ( waitMs === null )  return this;
 		
@@ -1065,7 +1064,7 @@
 		// Ok, go!
 		this.currentTimeout = setTimeout(() => {
 		
-			let now = new Date();
+			const now = new Date();
 
 			if( waitMs !== maxDelay && !this.options.paused && now.getTime() >= target ) {
 		

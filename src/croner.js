@@ -229,9 +229,8 @@ Cron.prototype.schedule = function (func, partial) {
 	}
 	
 	// Get ms to next run, bail out early if waitMs is null (no next run)
-	let 
-		waitMs = this.msToNext(partial ? partial : this.previousrun),
-		target = this.next(partial ? partial :  this.previousrun);
+	let	waitMs = this.msToNext(partial ? partial : this.previousrun);
+	const target = this.next(partial ? partial :  this.previousrun);
 
 	if  ( waitMs === null )  return this;
 	
@@ -243,7 +242,7 @@ Cron.prototype.schedule = function (func, partial) {
 	// Ok, go!
 	this.currentTimeout = setTimeout(() => {
 	
-		let now = new Date();
+		const now = new Date();
 
 		if( waitMs !== maxDelay && !this.options.paused && now.getTime() >= target ) {
 	

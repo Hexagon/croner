@@ -22,6 +22,8 @@ jobs:
         with:
           deno-version: ${{ matrix.deno-version }}
       - name: Test Deno Formatting
-        run: deno fmt --check test/deno
+        run: deno fmt --check
+      - name: Test Deno Linting
+        run: deno lint
       - name: Test Deno Module
-        run: deno test --allow-none test/deno
+        run: deno task test

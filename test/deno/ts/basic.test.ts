@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.128.0/testing/asserts.ts";
 import Cron from "../../../src/croner.js";
 
 Deno.test("Next 10 run times is returned by enumeration(), and contain a reasonable time span", () => {
-  let now = new Date(),
+  const now = new Date(),
     nextRuns = new Cron("*/30 * * * * *").enumerate(10);
 
   // Check number of times returned
@@ -18,7 +18,7 @@ Deno.test("Next 10 run times is returned by enumeration(), and contain a reasona
 });
 
 Deno.test("Weekday pattern should return correct alone (legacy mode)", function () {
-  let nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).enumerate(
+  const nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).enumerate(
     3,
     "2022-02-28T23:59:00",
   );

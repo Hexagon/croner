@@ -1,5 +1,8 @@
 import { CronTZ } from "./tz.js";
-import { CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
+
+// This import is only used by tsc for generating type definitions from js/jsdoc
+// deno-lint-ignore no-unused-vars
+import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
 
 /**
  * Converts date to CronDate
@@ -151,7 +154,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 				if (target === "days") {
 
 					// Create a date object for the target date
-					let targetDate = this.getDate(true);
+					const targetDate = this.getDate(true);
 					targetDate.setDate(i-offset);
 
 					// Special handling for L (last day of month), when we are searching for days
@@ -159,7 +162,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 
 						// Create a copy of targetDate
 						// Set days to one day after today, if month changes, then we are at the last day of the month
-						let targetDateCopy = new Date(targetDate);
+						const targetDateCopy = new Date(targetDate);
 						targetDateCopy.setDate(i-offset+1);
 				
 						// Overwrite match if last day of month is matching
@@ -239,7 +242,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 		// be set to 5
 
 		// Store current value at current level
-		let currentValue = this[toDo[doing][0]];
+		const currentValue = this[toDo[doing][0]];
 		
 		// If pattern didn't provide a match, increment next value (e.g. minues)
 		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
