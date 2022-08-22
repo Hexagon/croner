@@ -505,11 +505,11 @@ module.exports = function (Cron, test) {
 		});
 	}));
 
-	test("0 0 0 * * * with 40 iterations should return 40 days from now", function () {
+	test("0 0 0 * * * with 365 iterations should return 365 days from now", function () {
 		let scheduler = new Cron("0 0 0 * * *"),
 			prevRun = new Date(),
 			nextRun,
-			iterations = 40,
+			iterations = 365,
 			compareDay = new Date();
 			
 		compareDay.setDate(compareDay.getDate() + iterations);
