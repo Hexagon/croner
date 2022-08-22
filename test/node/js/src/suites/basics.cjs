@@ -517,6 +517,7 @@ module.exports = function (Cron, test) {
 		while(iterations-->0) {
 			nextRun = scheduler.next(prevRun),
 			prevRun = nextRun;
+			console.log(nextRun);
 		}
 
 		// Set seconds, minutes and hours to 00:00:00
