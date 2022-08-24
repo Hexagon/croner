@@ -338,7 +338,6 @@ Cron('*/5 * * * * *', { context: data }, (self, context) => {
 });
 ```
 
-
 #### Fire on a specific date/time
 ```javascript
 // A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
@@ -351,6 +350,30 @@ if (job.next() === null) {
 	// The job will not fire for some reason
 } else {
 	console.log("Job will fire at " + job.next());
+}
+```
+
+## Act at competion
+
+```javascript
+// Start a job firing once each 5th second, run at most 3 times
+const job = new Cron("0/5 * * * * *", { maxRuns: 3 }, (job) => {
+    
+    // Do work
+    console.log('Job Running');
+
+    // Is this the last execution?
+    if (!job.next()) {
+        console.log('Last execution');
+    }
+
+});
+ 
+// Will there be no executions? 
+// This would trigger if you change maxRuns to 0, or manage to compose 
+// an impossible cron expression.
+if (!job.next() && !job.previous()) {
+    console.log('No executions scheduled');
 }
 ```
 
