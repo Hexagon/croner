@@ -353,7 +353,7 @@ if (job.next() === null) {
 }
 ```
 
-## Act at competion
+#### Act at completion
 
 ```javascript
 // Start a job firing once each 5th second, run at most 3 times

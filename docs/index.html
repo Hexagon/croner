@@ -543,7 +543,7 @@ if (job.next() === null) {
 	console.log(&quot;Job will fire at &quot; + job.next());
 }
 </code></pre>
-<h2>Act at competion</h2>
+<h4>Act at completion</h4>
 <pre class="prettyprint source lang-javascript"><code>// Start a job firing once each 5th second, run at most 3 times
 const job = new Cron(&quot;0/5 * * * * *&quot;, { maxRuns: 3 }, (job) => {
     
