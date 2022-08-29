@@ -530,6 +530,31 @@ module.exports = function (Cron, test) {
 
 	});
 
+	test("0 0 0 * * * with 365 iterations should return 365 days from now in timezone America/Santiago", function () {
+		let scheduler = new Cron("0 0 0 * * *", { timezone: "America/Santiago"}),
+			prevRun = new Date(),
+			nextRun,
+			iterations = 365,
+			compareDay = new Date();
+			
+		compareDay.setDate(compareDay.getDate() + iterations);
+		
+		while(iterations-->0) {
+			nextRun = scheduler.next(prevRun),
+			prevRun = nextRun;
+		}
+
+		// Set seconds, minutes and hours to 00:00:00
+		compareDay.setMilliseconds(0);
+		compareDay.setSeconds(0);
+		compareDay.setMinutes(0);
+		compareDay.setHours(0);
+
+		// Do comparison
+		assert.equal(nextRun.getTime(),compareDay.getTime());
+
+	});
+
 	test("0 * * * * * with 40 iterations should return 45 minutes from now", function () {
 		let scheduler = new Cron("0 * * * * *"),
 			prevRun = new Date(),
