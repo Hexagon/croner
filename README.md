@@ -222,6 +222,8 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 
 *   Croner also allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger once at the specified date/time. If you use a timezone different from local, you pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).
 
+*   **Important**: Croner does not take care of runs missed during daytime savings time (DST) shifts. E.g.: If the clock shifts från 23:59:59 to 01:00:00 a job scheduled between 00:00:00 and 00:59:59 that day would be missed. This might change in a future major release. Current state at [#132](https://github.com/Hexagon/croner/issues/53).
+
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
 // │ ┌────────────── minute (0 - 59)
