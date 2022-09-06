@@ -10,8 +10,9 @@
  *                                                 (for example) will return local time in new york, but getUTCHours()
  *                                                 will return something irrelevant.
  *
- * @param {Date} date - Input date
+ * @param {date} date - Input date
  * @param {string} tzString - Timezone string in Europe/Stockholm format
- * @returns {Date}
+ * @param {boolean} [reverse] - Reverse operation
+ * @returns {date}
  */
-export function CronTZ(date: Date, tzString: string): Date;
+export function CronTZ(date: any, tzString: string, reverse?: boolean): any;

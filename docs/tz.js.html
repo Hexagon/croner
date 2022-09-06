@@ -105,7 +105,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#CronTZ">CronTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#CronFromTZ">CronFromTZ</a></li><li><a href="global.html#CronTZ">CronTZ</a></li><li><a href="global.html#maxDelay">maxDelay</a></li></ul>
         </div>
     </div>
   </nav>
@@ -134,15 +134,60 @@
  *                                                 (for example) will return local time in new york, but getUTCHours()
  *                                                 will return something irrelevant.
  * 
- * @param {Date} date - Input date
+ * @param {date} date - Input date
  * @param {string} tzString - Timezone string in Europe/Stockholm format
- * @returns {Date}
+ * @param {boolean} [reverse] - Reverse operation
+ * @returns {date}
  */
-function CronTZ(date, tzString) {
-	return new Date(date.toLocaleString("en-US", {timeZone: tzString}));   
+function CronTZ(date, tzString, reverse) {
+	if (reverse) {
+		return CronFromTZ(date, tzString);
+	} else {
+		return new Date(date.toLocaleString("sv-SE", {timeZone: tzString}));
+	}
 }   
 
-export { CronTZ };</code></pre>
+/**
+ * Reverse of CronTZ
+ * 
+ * @param {date} date - Input (tainted) date
+ * @param {string} tzString - Timezone string in Europe/Stockholm format
+ * @returns {date}
+ */
+function CronFromTZ(sourceDate, tzString) {
+
+	// Try using target offset
+	const 
+		targetPlus = new Date(sourceDate.toLocaleString("sv-SE", {timeZone: tzString})),
+		offset = sourceDate.getTime() - targetPlus.getTime();
+
+	let testOffset = 0,
+		iterations = 0,
+		closestAfter = -Infinity;
+
+	while (iterations++ &lt; 2) {
+		let 
+			testTarget = new Date(sourceDate.getTime() + offset - testOffset),
+			test = new Date(testTarget.toLocaleString("sv-SE", {timeZone: tzString}));
+
+		testOffset = test.getTime() - sourceDate.getTime();
+
+		if (testOffset === 0) {
+			return testTarget;
+		} else {
+			if (testOffset &lt; 0 &amp;&amp; testOffset > closestAfter) {
+				closestAfter = testOffset;
+			}
+		}
+
+	}
+
+	return new Date(sourceDate.getTime() + offset - closestAfter);
+
+}
+
+export { CronTZ };
+</code></pre>
   </article>
 </section>
 

@@ -289,8 +289,7 @@ CronDate.prototype.getDate = function (internal) {
 	if (internal || !this.timezone) {
 		return targetDate;
 	} else {
-		const offset = CronTZ(targetDate, this.timezone).getTime()-targetDate.getTime();
-		return new Date(targetDate.getTime()-offset);
+		return CronTZ(targetDate, this.timezone, true);
 	}
 };
 
