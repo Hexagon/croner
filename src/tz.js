@@ -42,7 +42,7 @@ function CronFromTZ(sourceDate, tzString) {
 		closestAfter = -Infinity;
 
 	while (iterations++ < 2) {
-		let 
+		const 
 			testTarget = new Date(sourceDate.getTime() + offset - testOffset),
 			test = new Date(testTarget.toLocaleString("sv-SE", {timeZone: tzString}));
 
