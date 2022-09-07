@@ -32,25 +32,33 @@ function CronTZ(date, tzString, reverse) {
  */
 function CronFromTZ(sourceDate, tzString) {
 
-	// Try using target offset
+	// Calculate offset between local and target, this will be a "best guess"
 	const 
 		targetPlus = new Date(sourceDate.toLocaleString("sv-SE", {timeZone: tzString})),
-		offset = sourceDate.getTime() - targetPlus.getTime();
+		bestGuessOffset = sourceDate.getTime() - targetPlus.getTime();
 
 	let testOffset = 0,
 		iterations = 0,
 		closestAfter = -Infinity;
 
 	while (iterations++ < 2) {
+
 		const 
-			testTarget = new Date(sourceDate.getTime() + offset - testOffset),
-			test = new Date(testTarget.toLocaleString("sv-SE", {timeZone: tzString}));
+			// Subtract best guess from target, creating a guessed local time
+			guessedLocalTime = new Date(sourceDate.getTime() + bestGuessOffset - testOffset),
+		
+			// Add correct timezone offset to guessed local time
+			test = new Date(guessedLocalTime.toLocaleString("sv-SE", {timeZone: tzString}));
 
+		// If offset is 0, we made it, return correct local time
 		testOffset = test.getTime() - sourceDate.getTime();
-
 		if (testOffset === 0) {
-			return testTarget;
+			return guessedLocalTime;
+
+		// If there is an offset, this usually mean that there is a DST switch locally between target and guessed local time 
 		} else {
+
+			// Store best guess after actual time, to use if we cannot make a match at all
 			if (testOffset < 0 && testOffset > closestAfter) {
 				closestAfter = testOffset;
 			}
@@ -58,7 +66,12 @@ function CronFromTZ(sourceDate, tzString) {
 
 	}
 
-	return new Date(sourceDate.getTime() + offset - closestAfter);
+	// If we made it here, it is impossible to create a local time that land at target time 
+	// after applying the timezone offset. This usually means that target is during a 
+	// DST switch (target is 00:00:00 when clock skips from 23:59:59 to 01:00:00).
+	// In this case, use the point in time which yields the time closest to target after applying timezone offset
+	// which in the previous example will be 01:00:00.
+	return new Date(sourceDate.getTime() + bestGuessOffset - closestAfter);
 
 }
 
