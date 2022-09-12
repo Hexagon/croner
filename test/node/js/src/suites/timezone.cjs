@@ -70,14 +70,40 @@ module.exports = function (Cron, test) {
 		assert.equal(diff,5);
 	});
 
-	test("0 0 0 * * * with 365 iterations should return 365 days from now in America/Santiago", function () {
-		let scheduler = new Cron("0 0 0 * * *", { timezone: "America/Santiago" }),
+	test("0 0 0 * * * with 365 iterations should return 365 days from now in America/New_York", function () {
+		let scheduler = new Cron("0 0 0 * * *", { timezone: "America/New_York" }),
 			prevRun = new Date(),
 			nextRun,
 			iterations = 365,
 			compareDay = new Date();
 			
 		compareDay.setDate(compareDay.getDate() + iterations);
+		
+		while(iterations-->0) {
+			nextRun = scheduler.next(prevRun),
+			prevRun = nextRun;
+		}
+
+		// Set seconds, minutes and hours to 00:00:00
+		compareDay.setMilliseconds(0);
+		compareDay.setSeconds(0);
+		compareDay.setMinutes(0);
+		compareDay.setHours(0);
+
+		// Do comparison
+		assert.equal(Math.abs(nextRun.getTime()-compareDay.getTime())<13*60*60*1000, true);
+
+	});
+
+	
+	test("0 30 2 * * * with 365 iterations should return 364 days from now in America/New_York, due to one day skipped during DST transition", function () {
+		let scheduler = new Cron("0 0 2 * * *", { timezone: "America/New_York" }),
+			prevRun = new Date(),
+			nextRun,
+			iterations = 365,
+			compareDay = new Date();
+			
+		compareDay.setDate(compareDay.getDate() + iterations + 1);
 		
 		while(iterations-->0) {
 			nextRun = scheduler.next(prevRun),

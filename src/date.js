@@ -1,4 +1,4 @@
-import { CronTZ } from "./tz.js";
+import { minitz } from "./tz.js";
 
 // This import is only used by tsc for generating type definitions from js/jsdoc
 // deno-lint-ignore no-unused-vars
@@ -42,7 +42,7 @@ function CronDate (date, timezone) {
 CronDate.prototype.fromDate = function (date) {
 	
 	if (this.timezone) {
-		date = CronTZ(date, this.timezone);
+		date = minitz.toTZ(date, this.timezone);
 	}
 
 	this.milliseconds = date.getMilliseconds();
@@ -289,7 +289,7 @@ CronDate.prototype.getDate = function (internal) {
 	if (internal || !this.timezone) {
 		return targetDate;
 	} else {
-		return CronTZ(targetDate, this.timezone, true);
+		return minitz.fromTZ(targetDate, this.timezone);
 	}
 };
 
