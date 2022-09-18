@@ -1,4 +1,4 @@
-import { minitz } from "./tz.js";
+import { minitz } from "./minitz.js";
 
 // This import is only used by tsc for generating type definitions from js/jsdoc
 // deno-lint-ignore no-unused-vars
@@ -37,21 +37,19 @@ function CronDate (date, timezone) {
  * Sets internals using a Date 
  * @private
  * 
- * @param {Date} date - Input date
+ * @param {Date} date - Input date in local time
  */
-CronDate.prototype.fromDate = function (date) {
+CronDate.prototype.fromDate = function (inputDate) {
 	
-	if (this.timezone) {
-		date = minitz.toTZ(date, this.timezone);
-	}
-
-	this.milliseconds = date.getMilliseconds();
-	this.seconds = date.getSeconds();
-	this.minutes = date.getMinutes();
-	this.hours = date.getHours();
-	this.days = date.getDate();
-	this.months  = date.getMonth();
-	this.years = date.getFullYear();
+	const date = minitz.toTZ(inputDate, this.timezone);
+	
+	this.milliseconds = inputDate.getMilliseconds();
+	this.seconds = date.second;
+	this.minutes = date.minute;
+	this.hours = date.hour;
+	this.days = date.day;
+	this.months  = date.month - 1;
+	this.years = date.year;
 
 };
 
@@ -79,15 +77,15 @@ CronDate.prototype.fromCronDate = function (date) {
  * @param {Date} date - Input date
  */
 CronDate.prototype.apply = function () {
-	const newDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
+	const newDate = new Date(Date.UTC(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds));
 	
-	this.milliseconds = newDate.getMilliseconds();
-	this.seconds = newDate.getSeconds();
-	this.minutes = newDate.getMinutes();
-	this.hours = newDate.getHours();
-	this.days = newDate.getDate();
-	this.months  = newDate.getMonth();
-	this.years = newDate.getFullYear();
+	this.milliseconds = newDate.getUTCMilliseconds();
+	this.seconds = newDate.getUTCSeconds();
+	this.minutes = newDate.getUTCMinutes();
+	this.hours = newDate.getUTCHours();
+	this.days = newDate.getUTCDate();
+	this.months  = newDate.getUTCMonth();
+	this.years = newDate.getUTCFullYear();
 };
 
 /**
@@ -97,15 +95,7 @@ CronDate.prototype.apply = function () {
  * @param {Date} date - Input date
  */
 CronDate.prototype.fromString = function (str) {
-
-	const parsedDate = this.parseISOLocal(str);
-
-	// Throw if we did get an invalid date
-	if( isNaN(parsedDate) ) {
-		throw new TypeError("CronDate: Provided string value for CronDate could not be parsed as date.");
-	}
-	
-	this.fromDate(parsedDate);
+	return this.fromDate(minitz.fromTZISO(str, this.timezone));
 };
 
 /**
@@ -285,11 +275,10 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
  * @returns {Date}
  */
 CronDate.prototype.getDate = function (internal) {
-	const targetDate = new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
 	if (internal || !this.timezone) {
-		return targetDate;
+		return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
 	} else {
-		return minitz.fromTZ(targetDate, this.timezone);
+		return minitz(this.years, this.months+1, this.days, this.hours, this.minutes, this.seconds, this.timezone);
 	}
 };
 
@@ -297,78 +286,10 @@ CronDate.prototype.getDate = function (internal) {
  * Convert current state back to a javascript Date() and return UTC milliseconds
  * @public
  * 
- * @param {boolean} internal - If this is an internal call
  * @returns {Date}
  */
-CronDate.prototype.getTime = function (internal) {
-	return this.getDate(internal).getTime();
-};
-
-/**
- * Takes a iso 8001 local date time string and creates a Date object
- * @private
- * 
- * @param {string} dateTimeString - an ISO 8001 format date and time string
- *                      with all components, e.g. 2015-11-24T19:40:00
- * @returns {Date|number} - Date instance from parsing the string. May be NaN.
- */
-CronDate.prototype.parseISOLocal = function (dateTimeString) {
-	const dateTimeStringSplit = dateTimeString.split(/\D/);
-
-	// Check for completeness
-	if (dateTimeStringSplit.length < 6) {
-		return NaN;
-	}
-
-	const
-		year = parseInt(dateTimeStringSplit[0], 10),
-		month = parseInt(dateTimeStringSplit[1], 10),
-		day = parseInt(dateTimeStringSplit[2], 10),
-		hour = parseInt(dateTimeStringSplit[3], 10),
-		minute = parseInt(dateTimeStringSplit[4], 10),
-		second = parseInt(dateTimeStringSplit[5], 10);
-
-	// Check parts for numeric
-	if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {
-		return NaN;
-	} else {
-		let generatedDate;
-
-		// Check for UTC flag
-		if ((dateTimeString.indexOf("Z") > 0)) {
-
-			// Handle date as UTC
-			generatedDate = new Date(Date.UTC(year, month-1, day, hour, minute, second));
-
-			// Check generated date
-			if (year == generatedDate.getUTCFullYear()
-				&& month == generatedDate.getUTCMonth()+1
-				&& day == generatedDate.getUTCDate()
-				&& hour == generatedDate.getUTCHours()
-				&& minute == generatedDate.getUTCMinutes()
-				&& second == generatedDate.getUTCSeconds()) {
-				return generatedDate;
-			} else {
-				return NaN;
-			}
-		} else {
-
-			// Handle date as local time
-			generatedDate = new Date(year, month-1, day, hour, minute, second);
-
-			// Check generated date
-			if (year == generatedDate.getFullYear()
-				&& month == generatedDate.getMonth()+1
-				&& day == generatedDate.getDate()
-				&& hour == generatedDate.getHours()
-				&& minute == generatedDate.getMinutes()
-				&& second == generatedDate.getSeconds()) {
-				return generatedDate;
-			} else {
-				return NaN;
-			}
-		}
-	}
+CronDate.prototype.getTime = function () {
+	return this.getDate().getTime();
 };
 
 export { CronDate };

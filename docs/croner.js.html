@@ -415,9 +415,9 @@ Cron.prototype._next = function (prev) {
 
 	// Ensure previous run is a CronDate
 	prev = new CronDate(prev, this.options.timezone);
-	
+
 	// Previous run should never be before startAt
-	if( this.options.startAt &amp;&amp; prev &amp;&amp; prev.getTime(true) &lt; this.options.startAt.getTime(true) ) {
+	if( this.options.startAt &amp;&amp; prev &amp;&amp; prev.getTime() &lt; this.options.startAt.getTime() ) {
 		prev = this.options.startAt;
 	}
 
@@ -425,13 +425,13 @@ Cron.prototype._next = function (prev) {
 	const 
 		nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, hasPreviousRun);
 	
-	if (this.once &amp;&amp; this.once.getTime(true) &lt;= prev.getTime(true)) {
+	if (this.once &amp;&amp; this.once.getTime() &lt;= prev.getTime()) {
 		return null;
   
 	} else if ((nextRun === null) ||
 		(this.options.maxRuns &lt;= 0) ||	
 		(this.options.kill) ||
-		(this.options.stopAt &amp;&amp; nextRun.getTime(true) >= this.options.stopAt.getTime(true) )) {
+		(this.options.stopAt &amp;&amp; nextRun.getTime() >= this.options.stopAt.getTime() )) {
 		return null;
 
 	} else {

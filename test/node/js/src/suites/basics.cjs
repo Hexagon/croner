@@ -279,7 +279,6 @@ module.exports = function (Cron, test) {
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
-
 	test("Croner should increment months", function () {
 		let runs = Cron("0 0 0 1 * *").enumerate(4);
 		assert.ok(runs[0] < runs[1]);
@@ -353,8 +352,8 @@ module.exports = function (Cron, test) {
 
 	});
 
-	test("Impossible combination should result in null", function () {
-		let impossible = Cron("0 0 0 30 2 6").next(new Date(1634076000000));
+	test("Impossible combination should result in null (non legacy mode)", function () {
+		let impossible = Cron("0 0 0 30 2 6", { legacyMode: false }).next(new Date(1634076000000));
 		assert.equal(null, impossible);
 	});
 	test("scheduled job should not stop on unhandled error with option catch: true",  timeout(4000, (resolve) => {
@@ -462,6 +461,7 @@ module.exports = function (Cron, test) {
 		}
 
 	});
+
 	test("Test milliseconds to 23:59:59 XXXX-01-01 (most often next year), 1000s steps", function () {
 
 		let prevRun = new Date(new Date().setMilliseconds(0)),
@@ -486,12 +486,16 @@ module.exports = function (Cron, test) {
 
 	});
 
-	test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00", function () {
-		assert.equal(Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear(), 2029);
+	test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (croner mode)", function () {
+		assert.equal(Cron("0 0 0 1 11 4", { legacyMode: false }).next(new Date(1634076000000)).getFullYear(), 2029);
 	});
 
-	test("Next saturday at 29th of february should occur 2048. Also test weekday an month names and case insensitivity", function () {
-		let nextSaturday29feb = Cron("0 0 0 29 feb SAT").next(new Date(1634076000000));
+	test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (legacy/default mode)", function () {
+		assert.equal(Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear(), 2021);
+	});
+
+	test("Next saturday at 29th of february should occur 2048. Also test weekday an month names and case insensitivity (croner mode)", function () {
+		let nextSaturday29feb = Cron("0 0 0 29 feb SAT", { legacyMode: false }).next(new Date(1634076000000));
 		assert.equal(nextSaturday29feb.getFullYear(),2048);
 	});
 
@@ -584,13 +588,11 @@ module.exports = function (Cron, test) {
 		assert.equal(scheduler0.next(),null);
 	});
 
-	/* WIP
 	test("Fire-once should be supported by ISO 8601 string, future and .next() should handle ISO 8601 UTC correctly", function () {
 		let 
-			scheduler0 = new Cron("2200-01-01T00:00:00Z", {timezone: "Europe/Stockholm"});
+			scheduler0 = new Cron("2200-01-01T00:00:00Z", {timezone: "America/New_York"});
 		assert.equal(scheduler0.next().getTime(),new Date(Date.UTC(2200,0,1,0,0,0)).getTime());
 	});
-	*/
 
 	test("Fire-once should be supported by ISO 8601 string, past and .enumerate() should return zero items", function () {
 		let 
@@ -677,7 +679,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-		let nextRuns = new Cron("0 0 0 * * 5,6", { legacyMode: true }).enumerate(10, "2022-02-17T00:00:00");
+		let nextRuns = new Cron("0 0 0 * * 5,6").enumerate(10, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),18);
@@ -689,8 +691,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[5].getDate(),5);
 	});
 
-	test("Weekday pattern should return correct combined with day of month", function () {
-		let nextRuns = new Cron("59 59 23 2 * 6").enumerate(2, "2022-02-17T00:00:00");
+	test("Weekday pattern should return correct combined with day of month (croner mode)", function () {
+		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: false }).enumerate(2, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),3);
 		assert.equal(nextRuns[0].getDate(),2);
@@ -700,7 +702,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-		let nextRuns = new Cron("0 0 0 * * 5,6", { legacyMode: true }).enumerate(10, "2022-02-17T00:00:00");
+		let nextRuns = new Cron("0 0 0 * * 5,6").enumerate(10, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),18);

@@ -14,7 +14,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 *   Works in Node.js >=6.0 (both require and import).
 *   Works in Deno >=1.16.
 *   Works in browsers as standalone, UMD or ES-module.
-*   **Experimental feature:** Schedule in specific target timezones.
+*   Schedule using specific target timezones.
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 
 Quick examples:
@@ -203,18 +203,18 @@ job.stop();
 | maxRuns      | Infinite       | Number         |                                       |
 | catch	       | false          | Boolean        | Catch and ignore unhandled errors in triggered function |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
-| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
-| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone |
+| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
+| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
-| legacyMode   | false          | boolean        | Combine day-of-month and day-of-week using OR, default is AND |
+| legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
 
 #### Pattern
 
 The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below. 
 
-*   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with `legacyMode: true` from version `4.2.0`. See issue [#53](https://github.com/Hexagon/croner/issues/53) for more information.
+*   In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: ```0 20 1 * MON``` will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with `legacyMode: true` from version `4.2.0` and is default from `5.0.0`. See issue [#53](https://github.com/Hexagon/croner/issues/53) for more information.
 
 *   Croner expressions support the following additional modifiers
 	-   *?* A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
@@ -261,7 +261,7 @@ It is also possible to use the following "nicknames" as pattern.
 #### Expressions
 ```javascript
 // Run a function according to pattern
-Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
+Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
 	console.log('This will run every tenth second between second 15-45');
 	console.log('every fifth minute of hour 1,2 and 3 when day of month');
 	console.log('is the same as when Cron started, every saturday in January to March.');
@@ -271,7 +271,7 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 #### Interval
 ```javascript
 // Trigger on specific interval combined with cron expression
-Cron('* * * 7-16 * MON-FRI', { interval: 90 }, function () {
+Cron('* * * 7-16 * MON-FRI', { interval: 90, legacyMode: false }, function () {
 	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 ```
@@ -281,8 +281,8 @@ Cron('* * * 7-16 * MON-FRI', { interval: 90 }, function () {
 // Find next month
 const nextMonth = Cron("@monthly").next(),
 	nextSunday = Cron("@weekly").next(),
-	nextSat29feb = Cron("0 0 0 29 2 6").next(),
-	nextSunLastOfMonth = Cron("0 0 0 L * 7").next();
+	nextSat29feb = Cron("0 0 0 29 2 6", { legacyMode: false }).next(),
+	nextSunLastOfMonth = Cron("0 0 0 L * 7", { legacyMode: false }).next();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());

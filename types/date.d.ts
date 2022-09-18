@@ -49,10 +49,8 @@ export class CronDate {
      * Convert current state back to a javascript Date() and return UTC milliseconds
      * @public
      *
-     * @param {boolean} internal - If this is an internal call
      * @returns {Date}
      */
-    public getTime(internal: boolean): Date;
-    private parseISOLocal;
+    public getTime(): Date;
 }
 import { CronOptions } from "./options.js";

@@ -5,7 +5,7 @@
     },
     "source": {
       "include": ["README.md","./src/"],
-      "exclude": ["./docs"],
+      "exclude": ["./docs","./src/minitz.js"],
       "excludePattern": "(node_modules|test|dist|coverage|^|\\/|\\\\)_"
     },
     "plugins": [

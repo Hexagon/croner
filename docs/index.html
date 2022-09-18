@@ -137,7 +137,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 <li>Works in Node.js &gt;=6.0 (both require and import).</li>
 <li>Works in Deno &gt;=1.16.</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
-<li><strong>Experimental feature:</strong> Schedule in specific target timezones.</li>
+<li>Schedule using specific target timezones.</li>
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
 </ul>
 <p>Quick examples:</p>
@@ -309,13 +309,13 @@ job.stop();
 <td>startAt</td>
 <td>undefined</td>
 <td>String</td>
-<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
+<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed)</td>
 </tr>
 <tr>
 <td>stopAt</td>
 <td>undefined</td>
 <td>String</td>
-<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local or specified timezone</td>
+<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed)</td>
 </tr>
 <tr>
 <td>interval</td>
@@ -337,9 +337,9 @@ job.stop();
 </tr>
 <tr>
 <td>legacyMode</td>
-<td>false</td>
+<td>true</td>
 <td>boolean</td>
-<td>Combine day-of-month and day-of-week using OR, default is AND</td>
+<td>Combine day-of-month and day-of-week using true = OR, false = AND</td>
 </tr>
 </tbody>
 </table>
@@ -347,7 +347,7 @@ job.stop();
 <p>The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.</p>
 <ul>
 <li>
-<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with <code>legacyMode: true</code> from version <code>4.2.0</code>. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a> for more information.</p>
+<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with <code>legacyMode: true</code> from version <code>4.2.0</code> and is default from <code>5.0.0</code>. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a> for more information.</p>
 </li>
 <li>
 <p>Croner expressions support the following additional modifiers</p>
@@ -464,7 +464,7 @@ job.stop();
 <h3>Examples</h3>
 <h4>Expressions</h4>
 <pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
-Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
+Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
 	console.log('This will run every tenth second between second 15-45');
 	console.log('every fifth minute of hour 1,2 and 3 when day of month');
 	console.log('is the same as when Cron started, every saturday in January to March.');
@@ -472,7 +472,7 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', function () {
 </code></pre>
 <h4>Interval</h4>
 <pre class="prettyprint source lang-javascript"><code>// Trigger on specific interval combined with cron expression
-Cron('* * * 7-16 * MON-FRI', { interval: 90 }, function () {
+Cron('* * * 7-16 * MON-FRI', { interval: 90, legacyMode: false }, function () {
 	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 </code></pre>
@@ -480,8 +480,8 @@ Cron('* * * 7-16 * MON-FRI', { interval: 90 }, function () {
 <pre class="prettyprint source lang-javascript"><code>// Find next month
 const nextMonth = Cron(&quot;@monthly&quot;).next(),
 	nextSunday = Cron(&quot;@weekly&quot;).next(),
-	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;).next(),
-	nextSunLastOfMonth = Cron(&quot;0 0 0 L * 7&quot;).next();
+	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;, { legacyMode: false }).next(),
+	nextSunLastOfMonth = Cron(&quot;0 0 0 L * 7&quot;, { legacyMode: false }).next();
 
 console.log(&quot;First day of next month: &quot; +  nextMonth.toLocaleDateString());
 console.log(&quot;Next sunday: &quot; +  nextSunday.toLocaleDateString());
