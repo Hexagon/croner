@@ -217,14 +217,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.0.0/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.0.0/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -239,11 +239,11 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </ul>
 <h4>CDN</h4>
 <p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js&quot;>&lt;/script>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js&quot;>&lt;/script>
 </code></pre>
 <p>To use as a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
 <pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
-	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs&quot;;
+	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.mjs&quot;;
 
 	// ... see usage section ...
 &lt;/script>

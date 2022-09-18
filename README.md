@@ -120,7 +120,7 @@ const job : Cron = new Cron("* * * * * *", () => {
 JavaScript
 
 ```javascript
-import Cron from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.0.0/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -130,7 +130,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://cdn.jsdelivr.net/gh/hexagon/croner@4/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.0.0/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -150,14 +150,14 @@ const _scheduler : Cron = new Cron("* * * * * *", () => {
 To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js"></script>
 ```
 
 To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
-	import Cron from "https://cdn.jsdelivr.net/npm/croner@4/dist/croner.min.mjs";
+	import Cron from "https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.mjs";
 
 	// ... see usage section ...
 </script>
