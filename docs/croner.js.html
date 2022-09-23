@@ -248,6 +248,9 @@ Cron.prototype.next = function (prev) {
  * @returns {Date[]} - Next n run times
  */
 Cron.prototype.enumerate = function (n, previous) {
+	if(n > this.options.maxRuns){
+		n = this.options.maxRuns;
+	}
 	const enumeration = [];
 	let prev = previous || this.previousrun;
 	while(n-- &amp;&amp; (prev = this.next(prev))) {

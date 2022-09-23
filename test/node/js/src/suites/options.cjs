@@ -12,8 +12,8 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-	test("startAt with Date string should throw", function () {
-		assert.throws(() => {
+	test("startAt with Date string should not throw (treated like local 00:00:00)", function () {
+		assert.not.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01" });
 			scheduler.next();
@@ -53,8 +53,8 @@ module.exports = function (Cron, test) {
 		});
 	});
 
-	test("Valid stopAt with Date string should throw", function () {
-		assert.throws(() => {
+	test("Valid stopAt with Date string should not throw", function () {
+		assert.not.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01" });
 			scheduler.next();

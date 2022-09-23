@@ -6,7 +6,7 @@
 
 	/* ------------------------------------------------------------------------------------
 
-		minitz 2.1.3 - MIT License - Hexagon <hexagon@56k.guru>
+		minitz 3.0.0 - MIT License - Hexagon <hexagon@56k.guru>
 
 		Bundled manually, check https://github.com/Hexagon/minitz for updates
 
@@ -245,45 +245,27 @@
 	 * @returns {TimePoint} - TimePoint instance from parsing the string
 	 */
 	function parseISOLocal(dateTimeString, timezone) {
-		const dateTimeStringSplit = dateTimeString.split(/\D/);
+
+		// Parse date using built in Date.parse
+		const parsed = new Date(Date.parse(dateTimeString));
 
 		// Check for completeness
-		if (dateTimeStringSplit.length < 6) {
-			throw new Error("minitz: Incomplete ISO8601 passed to parser.");
+		if (isNaN(parsed)) {
+			throw new Error("minitz: Invalid ISO8601 passed to parser.");
 		}
-
-		const
-			year = parseInt(dateTimeStringSplit[0], 10),
-			month = parseInt(dateTimeStringSplit[1], 10),
-			day = parseInt(dateTimeStringSplit[2], 10),
-			hour = parseInt(dateTimeStringSplit[3], 10),
-			minute = parseInt(dateTimeStringSplit[4], 10),
-			second = parseInt(dateTimeStringSplit[5], 10);
-
-		// Check parts for numeric
-		if( isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second) ) {
-			throw new Error("minitz: Could not parse ISO8601 string.");
+		
+		// If 
+		//   * date/time is specified in UTC (Z-flag included)
+		//   * or UTC offset is specified (+ or - included after character 9 (20200101 or 2020-01-0))
+		// Return time in utc, else return local time and include timezone identifier
+		const stringEnd = dateTimeString.substring(9);
+		if (dateTimeString.includes("Z") || stringEnd.includes("-") || stringEnd.includes("+")) {
+			return minitz.tp(parsed.getUTCFullYear(), parsed.getUTCMonth()+1, parsed.getUTCDate(),parsed.getUTCHours(), parsed.getUTCMinutes(),parsed.getUTCSeconds(), "Etc/UTC");
 		} else {
-			// Check generated date
-			const generatedDate = new Date(Date.UTC(year, month-1, day, hour, minute, second));
-			if (!(year == generatedDate.getUTCFullYear()
-				&& month == generatedDate.getUTCMonth()+1
-				&& day == generatedDate.getUTCDate()
-				&& hour == generatedDate.getUTCHours()
-				&& minute == generatedDate.getUTCMinutes()
-				&& second == generatedDate.getUTCSeconds())) {
-				throw new Error("minitz: ISO8601 string contains invalid date or time");
-			}
-			// Check for UTC flag
-			if ((dateTimeString.indexOf("Z") > 0)) {
-				// Handle date as UTC time, ignoring input timezone
-				return minitz.tp(year, month, day, hour, minute, second, "Etc/UTC");
-			} else {
-				// Handle date as local time, and convert from specified time zone
-				// Note: Date already validated by the UTC-parsing
-				return minitz.tp(year, month, day, hour, minute, second, timezone);
-			}
+			return minitz.tp(parsed.getFullYear(), parsed.getMonth()+1, parsed.getDate(),parsed.getHours(), parsed.getMinutes(),parsed.getSeconds(), timezone);
 		}
+		// Treat date as local time, in target timezone
+
 	}
 
 	minitz.minitz = minitz;
@@ -1130,6 +1112,9 @@
 	 * @returns {Date[]} - Next n run times
 	 */
 	Cron.prototype.enumerate = function (n, previous) {
+		if(n > this.options.maxRuns){
+			n = this.options.maxRuns;
+		}
 		const enumeration = [];
 		let prev = previous || this.previousrun;
 		while(n-- && (prev = this.next(prev))) {
