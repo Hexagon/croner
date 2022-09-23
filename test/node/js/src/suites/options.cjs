@@ -200,4 +200,10 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[1].getSeconds(),0);
 	});
 
+	test("The number of run times returned by enumerate() should not be more than maxRuns", function () {
+		let nextRuns = Cron("* * * * * *", { maxRuns: 5 }).enumerate(10);
+		
+		assert.equal(nextRuns.length,5);
+	});
+
 };
