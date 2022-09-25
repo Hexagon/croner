@@ -41,15 +41,24 @@ function CronDate (date, timezone) {
  */
 CronDate.prototype.fromDate = function (inputDate) {
 	
-	const date = minitz.toTZ(inputDate, this.timezone);
-	
-	this.milliseconds = inputDate.getMilliseconds();
-	this.seconds = date.second;
-	this.minutes = date.minute;
-	this.hours = date.hour;
-	this.days = date.day;
-	this.months  = date.month - 1;
-	this.years = date.year;
+	if (this.timezone) {
+		const date = minitz.toTZ(inputDate, this.timezone);
+		this.milliseconds = inputDate.getMilliseconds();
+		this.seconds = date.second;
+		this.minutes = date.minute;
+		this.hours = date.hour;
+		this.days = date.day;
+		this.months  = date.month - 1;
+		this.years = date.year;
+	} else {
+		this.milliseconds = inputDate.getMilliseconds();
+		this.seconds = inputDate.getSeconds();
+		this.minutes = inputDate.getMinutes();
+		this.hours = inputDate.getHours();
+		this.days = inputDate.getDate();
+		this.months  = inputDate.getMonth();
+		this.years = inputDate.getFullYear();
+	}
 
 };
 
