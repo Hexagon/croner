@@ -1,4 +1,4 @@
-import { minitz } from "./minitz.js";
+import { minitz } from "./helpers/minitz.js";
 
 // This import is only used by tsc for generating type definitions from js/jsdoc
 // deno-lint-ignore no-unused-vars
