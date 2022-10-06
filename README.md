@@ -220,7 +220,7 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 
 *   Croner allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger at the specified date/time, and only once. If you use a timezone different from local, you should pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).
 
-*   Croner allow to change how day-of-week and day-of-month is combined. By default croner (and Vixie cron) will trigger when day-of-month OR day-of-week conditions match In croner. As an example ```0 20 1 * MON``` will trigger on both the first of the month and on each monday. If you want to use AND (and in this example only trigger on mondays that also is 1st of the month) you can pass `{ legacyMode: false }`. See issue [#53](https://github.com/Hexagon/croner/issues/53) for more information.
+*   Croner allow to change how day-of-week and day-of-month is combined. By default croner (and Vixie cron) will trigger when day-of-month OR day-of-week conditions match. As an example ```0 20 1 * MON``` will trigger on the first of the month, as well as on each monday. If you want to use AND (and in this example only trigger on mondays that is also 1st of the month) you can pass `{ legacyMode: false }`. See issue [#53](https://github.com/Hexagon/croner/issues/53) for more information.
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
