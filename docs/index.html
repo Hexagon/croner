@@ -217,14 +217,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.0.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.1.2/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.0.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.1.2/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -347,9 +347,6 @@ job.stop();
 <p>The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.</p>
 <ul>
 <li>
-<p>In croner, a combination of day-of-week and day-of-month will only trigger when both conditions match. An example: <code>0 20 1 * MON</code> will only trigger when monday occur the first day of any month. In Vixie Cron, it would trigger every monday AND the first day of every month. Vixie style can be enabled with <code>legacyMode: true</code> from version <code>4.2.0</code> and is default from <code>5.0.0</code>. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a> for more information.</p>
-</li>
-<li>
 <p>Croner expressions support the following additional modifiers</p>
 <ul>
 <li><em>?</em> A question mark is substituted with croner initialization time, as an example - <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
@@ -357,7 +354,10 @@ job.stop();
 </ul>
 </li>
 <li>
-<p>Croner also allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger once at the specified date/time. If you use a timezone different from local, you pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).</p>
+<p>Croner allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger at the specified date/time, and only once. If you use a timezone different from local, you should pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).</p>
+</li>
+<li>
+<p>Croner allow to change how day-of-week and day-of-month is combined. By default croner (and Vixie cron) will trigger when day-of-month OR day-of-week conditions match In croner. As an example <code>0 20 1 * MON</code> will trigger on both the first of the month and on each monday. If you want to use AND (and in this example only trigger on mondays that also is 1st of the month) you can pass <code>{ legacyMode: false }</code>. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a> for more information.</p>
 </li>
 </ul>
 <pre class="prettyprint source lang-javascript"><code>// ┌──────────────── (optional) second (0 - 59)
