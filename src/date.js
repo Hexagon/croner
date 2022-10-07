@@ -8,27 +8,27 @@ import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-lin
  * Converts date to CronDate
  * @constructor
  * 
- * @param {CronDate|date|string} [date] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
- * @param {string} [timezone] - String representation of target timezone in Europe/Stockholm format.
+ * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
+ * @param {string} [tz] - String representation of target timezone in Europe/Stockholm format.
 */
-function CronDate (date, timezone) {	
+function CronDate (d, tz) {	
 
-	this.timezone = timezone;
+	this.tz = tz;
 
-	if (date && date instanceof Date) {
-		if (!isNaN(date)) {
-			this.fromDate(date);
+	if (d && d instanceof Date) {
+		if (!isNaN(d)) {
+			this.fromDate(d);
 		} else {
-			throw new TypeError("CronDate: Invalid date passed as parameter to CronDate constructor");
+			throw new TypeError("CronDate: Invalid date passed to CronDate constructor");
 		}
-	} else if (date === void 0) {
+	} else if (d === void 0) {
 		this.fromDate(new Date());
-	} else if (date && typeof date === "string") {
-		this.fromString(date);
-	} else if (date instanceof CronDate) {
-		this.fromCronDate(date);
+	} else if (d && typeof d === "string") {
+		this.fromString(d);
+	} else if (d instanceof CronDate) {
+		this.fromCronDate(d);
 	} else {
-		throw new TypeError("CronDate: Invalid type (" + typeof date + ") passed as parameter to CronDate constructor");
+		throw new TypeError("CronDate: Invalid type (" + typeof d + ") passed to CronDate constructor");
 	}
 
 }
@@ -37,27 +37,27 @@ function CronDate (date, timezone) {
  * Sets internals using a Date 
  * @private
  * 
- * @param {Date} date - Input date in local time
+ * @param {Date} inDate - Input date in local time
  */
-CronDate.prototype.fromDate = function (inputDate) {
+CronDate.prototype.fromDate = function (inDate) {
 	
-	if (this.timezone) {
-		const date = minitz.toTZ(inputDate, this.timezone);
-		this.milliseconds = inputDate.getMilliseconds();
-		this.seconds = date.second;
-		this.minutes = date.minute;
-		this.hours = date.hour;
-		this.days = date.day;
-		this.months  = date.month - 1;
-		this.years = date.year;
+	if (this.tz) {
+		const d = minitz.toTZ(inDate, this.tz);
+		this.ms = inDate.getMilliseconds();
+		this.s = d.s;
+		this.i = d.i;
+		this.h = d.h;
+		this.d = d.d;
+		this.m  = d.m - 1;
+		this.y = d.y;
 	} else {
-		this.milliseconds = inputDate.getMilliseconds();
-		this.seconds = inputDate.getSeconds();
-		this.minutes = inputDate.getMinutes();
-		this.hours = inputDate.getHours();
-		this.days = inputDate.getDate();
-		this.months  = inputDate.getMonth();
-		this.years = inputDate.getFullYear();
+		this.ms = inDate.getMilliseconds();
+		this.s = inDate.getSeconds();
+		this.i = inDate.getMinutes();
+		this.h = inDate.getHours();
+		this.d = inDate.getDate();
+		this.m  = inDate.getMonth();
+		this.y = inDate.getFullYear();
 	}
 
 };
@@ -66,35 +66,33 @@ CronDate.prototype.fromDate = function (inputDate) {
  * Sets internals by deep copying another CronDate
  * @private
  * 
- * @param {CronDate} date - Input date
+ * @param {CronDate} d - Input date
  */
-CronDate.prototype.fromCronDate = function (date) {
-	this.timezone = date.timezone;
-	this.milliseconds = date.milliseconds;
-	this.seconds = date.seconds;
-	this.minutes = date.minutes;
-	this.hours = date.hours;
-	this.days = date.days;
-	this.months = date.months;
-	this.years = date.years;
+CronDate.prototype.fromCronDate = function (d) {
+	this.tz = d.tz;
+	this.ms = d.ms;
+	this.s = d.s;
+	this.i = d.i;
+	this.h = d.h;
+	this.d = d.d;
+	this.m = d.m;
+	this.y = d.y;
 };
 
 /**
  * Reset internal parameters (seconds, minutes, hours) that may have exceeded their ranges
  * @private
- * 
- * @param {Date} date - Input date
  */
 CronDate.prototype.apply = function () {
-	const newDate = new Date(Date.UTC(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds));
+	const d = new Date(Date.UTC(this.y, this.m, this.d, this.h, this.i, this.s, this.ms));
 	
-	this.milliseconds = newDate.getUTCMilliseconds();
-	this.seconds = newDate.getUTCSeconds();
-	this.minutes = newDate.getUTCMinutes();
-	this.hours = newDate.getUTCHours();
-	this.days = newDate.getUTCDate();
-	this.months  = newDate.getUTCMonth();
-	this.years = newDate.getUTCFullYear();
+	this.ms = d.getUTCMilliseconds();
+	this.s = d.getUTCSeconds();
+	this.i = d.getUTCMinutes();
+	this.h = d.getUTCHours();
+	this.d = d.getUTCDate();
+	this.m  = d.getUTCMonth();
+	this.y = d.getUTCFullYear();
 };
 
 /**
@@ -104,7 +102,7 @@ CronDate.prototype.apply = function () {
  * @param {Date} date - Input date
  */
 CronDate.prototype.fromString = function (str) {
-	return this.fromDate(minitz.fromTZISO(str, this.timezone));
+	return this.fromDate(minitz.fromTZISO(str, this.tz));
 };
 
 /**
@@ -120,11 +118,11 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	
 	// Always add one second, or minimum interval, then clear milliseconds and apply changes if seconds has gotten out of bounds
 	if (options.interval > 1 && hasPreviousRun) {
-		this.seconds += options.interval;
+		this.s += options.interval;
 	} else {
-		this.seconds += 1;
+		this.s += 1;
 	}
-	this.milliseconds = 0;
+	this.ms = 0;
 	this.apply();
 	
 	const 
@@ -150,7 +148,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 				let match = pattern[target][i];
 
 				// Days has a couple of special cases
-				if (target === "days") {
+				if (target === "d") {
 
 					// Create a date object for the target date
 					const targetDate = this.getDate(true);
@@ -165,7 +163,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 						targetDateCopy.setDate(i-offset+1);
 				
 						// Overwrite match if last day of month is matching
-						if (targetDateCopy.getMonth() !== this.months) {
+						if (targetDateCopy.getMonth() !== this.m) {
 							match = true;
 						}
 						
@@ -173,11 +171,11 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 
 					// Weekdays must also match when incrementing days
 					// If running in legacy mode, it is sufficient that only weekday match.
-					const dowMatch = pattern.daysOfWeek[targetDate.getDay()];
+					const dowMatch = pattern.dow[targetDate.getDay()];
 					if (options.legacyMode) {
-						if (!pattern.starDayOfWeek && pattern.starDayOfMonth) {
+						if (!pattern.starDOW && pattern.starDOM) {
 							match = dowMatch;
-						} else if (!pattern.starDayOfWeek && !pattern.starDayOfMonth) {
+						} else if (!pattern.starDOW && !pattern.starDOM) {
 							match = match || dowMatch;
 						}
 					} else {
@@ -224,11 +222,11 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	//   from pattern. Offset should be -1
 	// ]
 	const toDo = [
-		["seconds", "minutes", 0],
-		["minutes", "hours", 0],
-		["hours", "days", 0],
-		["days", "months", -1],
-		["months", "years", 0]
+		["s", "i", 0],
+		["i", "h", 0],
+		["h", "d", 0],
+		["d", "m", -1],
+		["m", "y", 0]
 	];
 
 	// Ok, we're working our way trough the toDo array, top to bottom
@@ -263,7 +261,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 		}
 
 		// Bail out if an impossible pattern is used
-		if (this.years >= 4000) {
+		if (this.y >= 4000) {
 			return null;
 		}
 		
@@ -284,10 +282,10 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
  * @returns {Date}
  */
 CronDate.prototype.getDate = function (internal) {
-	if (internal || !this.timezone) {
-		return new Date(this.years, this.months, this.days, this.hours, this.minutes, this.seconds, this.milliseconds);
+	if (internal || !this.tz) {
+		return new Date(this.y, this.m, this.d, this.h, this.i, this.s, this.ms);
 	} else {
-		return minitz(this.years, this.months+1, this.days, this.hours, this.minutes, this.seconds, this.timezone);
+		return minitz(this.y, this.m+1, this.d, this.h, this.i, this.s, this.tz);
 	}
 };
 

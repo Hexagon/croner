@@ -1,7 +1,7 @@
 /**
  * Name for each part of the cron pattern
  */
-export type CronPatternPart = ("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek");
+export type CronPatternPart = ("s" | "i" | "h" | "d" | "m" | "dow");
 /**
  * Offset, 0 or -1.
  *
@@ -11,7 +11,7 @@ export type CronPatternPart = ("seconds" | "minutes" | "hours" | "days" | "month
 export type CronIndexOffset = number;
 /**
  * Name for each part of the cron pattern
- * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+ * @typedef {("s" | "i" | "h" | "d" | "m" | "dow")} CronPatternPart
  */
 /**
  * Offset, 0 or -1.
@@ -31,7 +31,7 @@ export function CronPattern(pattern: string, timezone: string): void;
 export class CronPattern {
     /**
      * Name for each part of the cron pattern
-     * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+     * @typedef {("s" | "i" | "h" | "d" | "m" | "dow")} CronPatternPart
      */
     /**
      * Offset, 0 or -1.
@@ -50,15 +50,15 @@ export class CronPattern {
     constructor(pattern: string, timezone: string);
     pattern: string;
     timezone: string;
-    seconds: any;
-    minutes: any;
-    hours: any;
-    days: any;
-    months: any;
-    daysOfWeek: any;
+    s: any;
+    i: any;
+    h: any;
+    d: any;
+    m: any;
+    dow: any;
     lastDayOfMonth: boolean;
-    starDayOfMonth: boolean;
-    starDayOfWeek: boolean;
+    starDOM: boolean;
+    starDOW: boolean;
     private parse;
     private partToArray;
     private throwAtIllegalCharacters;

@@ -126,7 +126,7 @@
 
 /**
  * Name for each part of the cron pattern
- * @typedef {("seconds" | "minutes" | "hours" | "days" | "months" | "daysOfWeek")} CronPatternPart
+ * @typedef {("s" | "i" | "h" | "d" | "m" | "dow")} CronPatternPart
  */
 
 /**
@@ -149,16 +149,16 @@ function CronPattern (pattern, timezone) {
 	this.pattern 		= pattern;
 	this.timezone		= timezone;
 
-	this.seconds        = Array(60).fill(0); // 0-59
-	this.minutes        = Array(60).fill(0); // 0-59
-	this.hours          = Array(24).fill(0); // 0-23
-	this.days           = Array(31).fill(0); // 0-30 in array, 1-31 in config
-	this.months         = Array(12).fill(0); // 0-11 in array, 1-12 in config
-	this.daysOfWeek     = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
+	this.s        = Array(60).fill(0); // 0-59
+	this.i        = Array(60).fill(0); // 0-59
+	this.h        = Array(24).fill(0); // 0-23
+	this.d        = Array(31).fill(0); // 0-30 in array, 1-31 in config
+	this.m        = Array(12).fill(0); // 0-11 in array, 1-12 in config
+	this.dow      = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 	this.lastDayOfMonth = false;
-	this.starDayOfMonth = false;
-	this.starDayOfWeek  = false;
+	this.starDOM = false;
+	this.starDOW  = false;
 
 	this.parse();
 
@@ -198,18 +198,18 @@ CronPattern.prototype.parse = function () {
 		this.lastDayOfMonth = true;
 	}
 
-	// Check for starDayOfMonth
+	// Check for starDOM
 	if(parts[3].toUpperCase() == "*") {
-		this.starDayOfMonth = true;
+		this.starDOM = true;
 	}
 
 	// Replace alpha representations
 	parts[4] = this.replaceAlphaMonths(parts[4]);
 	parts[5] = this.replaceAlphaDays(parts[5]);
 
-	// Check for starDayOfWeek
+	// Check for starDOW
 	if(parts[5].toUpperCase() == "*") {
-		this.starDayOfWeek = true;
+		this.starDOW = true;
 	}
 	
 	// Implement '?' in the simplest possible way - replace ? with current value, before further processing
@@ -226,16 +226,16 @@ CronPattern.prototype.parse = function () {
 	this.throwAtIllegalCharacters(parts);
 
 	// Parse parts into arrays, validates as we go
-	this.partToArray("seconds",    parts[0], 0);
-	this.partToArray("minutes",    parts[1], 0);
-	this.partToArray("hours",      parts[2], 0);
-	this.partToArray("days",       parts[3], -1);
-	this.partToArray("months",     parts[4], -1);
-	this.partToArray("daysOfWeek", parts[5], 0);
+	this.partToArray("s",    parts[0], 0);
+	this.partToArray("i",    parts[1], 0);
+	this.partToArray("h",      parts[2], 0);
+	this.partToArray("d",       parts[3], -1);
+	this.partToArray("m",     parts[4], -1);
+	this.partToArray("dow", parts[5], 0);
 
 	// 0 = Sunday, 7 = Sunday
-	if( this.daysOfWeek[7] ) {
-		this.daysOfWeek[0] = 1;
+	if( this.dow[7] ) {
+		this.dow[0] = 1;
 	}
 
 };
@@ -420,7 +420,7 @@ CronPattern.prototype.handleStepping = function (conf, type) {
 
 	if( isNaN(steps) ) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
 	if( steps === 0 ) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
-	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
+	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, max steps for part is ("+this[type].length+")");
 
 	for( let i = start; i &lt; this[type].length; i+= steps ) {
 		this[type][i] = 1;
