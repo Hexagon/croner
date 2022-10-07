@@ -52,7 +52,7 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Browser (ESMCommonJS)                  |          ✓          |          ✓          |           |                           |                     |
 | Deno (ESM)                     |          ✓          |                     |           |                           |                     |
 | **Features**                                                                                                                        |
-| dom-AND-dow               |          ✓          |          ✓          |           |                           |                     |
+| dom-AND-dow               |          ✓          |                     |           |                           |                     |
 | dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
 | Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
