@@ -45,45 +45,47 @@ More [examples](#examples)...
 
 Because the existing ones aren't good enough. They have serious bugs, use bloated dependencies, do not work in all environments and/or simply don't work as expected.
 
-Benchmark at 2022-02-20:
+|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
+|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
+| **Platforms**                                                                                                                        |
+| Node.js (CommonJS)                   |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Browser (ESMCommonJS)                  |          ✓          |          ✓          |           |                           |                     |
+| Deno (ESM)                     |          ✓          |                     |           |                           |                     |
+| **Features**                                                                                                                        |
+| dom-AND-dow               |          ✓          |          ✓          |           |                           |                     |
+| dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
+| Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
+| Timezone                  |          ✓          |           ✓          |     ✓       |        ✓                   |         ✓            |
+| **Size**                                                                                                                        |
+| Minified size (KB)        | 15.5                | 16.3            | 16.5      | -                      | -                |
+| Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
+| Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
+| **Popularity**                                                                                                                        |
+| Downloads/week [^1]        | 631K                | 20K                 | 358K      | 1240K                     | 766K                |
+| **Quality**                                                                                                                        |
+| Issues [^1]                |                   0 |                   2 |   118 :warning: |                 119 :warning: |    133 :warning: |
+| Code coverage              |                     |                     |                 |                               |                  |
+| **Performance**                                                                                                                        |
+| Ops/s `1 2 3 4 5 6`         | ToDo                    | ToDo                    | ToDo          | ToDo                          | ToDo                    |
+| **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
+| Test `0 0 23 * * *`         | 2022-10-09 00:40    | 2022-10-09 00:40    | N/A       | 2022-10-09 00:40          | 2022-10-09 00:40    |
+| Test `0 0 0 L 2 *` [^2]      | 2023-02-28 00:00 |          2023-02-28 00:00 | N/A       | N/A                       |          2023-02-28 00:00 |
+| Test `0 0 0 29 2 *`         |          2024-02-29 00:00 |          2024-02-29 00:00 | N/A       | 2023-03-29 00:00  :x:           |          2024-02-29 00:00 |
+| Test `0 0 0 29 2 6` [^3]     |          2048-02-09 00:00| N/A                 | N/A       | N/A                       | N/A                 |
+| Test `0 0 0 15 2 *`         |          2023-02-16 00:00 |          2023-02-16 00:00 | N/A       | 2023-03-15 00:00  :x:           |          2023-02-16 00:00 |
+| Test `0 0 0 * 10 1`         |          2022-10-10 00:00 |          2022-10-10 00:00 | N/A       | 2022-11-07 00:00 :x:           |          2022-10-10 00:00 |
+| Test `0 0 23 31 3 *`        | 2023-03-31 23:00    | 2023-03-31 23:00    | N/A       | 2023-04-01 23:00 :x:    | 2023-03-31 23:00    |
+| Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
 
-```
-> node cron-implementation-test.js
+> **Note**
+> Table last updated at 2022-10-08
 
-Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
+[^1]: As of 2022-10-08
+[^2]: Requires support for L-modifier
+[^3]: In dom-AND-dow mode, only supported by croner at the moment.
+[^4]: Node-cron has no way of showing next run time.
 
-node-schedule:    2022-03-31 23:00:00 in 15.379ms
-node-cron:        ???                 in 0.339ms
-Month '3' is limited to '30' days.
-cron:             2022-04-01 23:00:00 in 7.785ms
-croner (legacy):  2022-03-31 23:00:00 in 2.142ms
-croner (default): 2022-03-31 23:00:00 in 0.672ms
-```
-
-<details>
-	<summary>More test results</summary>
-	
-```
-Test: When is next 15th of february, pattern '0 0 0 15 2 *'
-
-node-schedule:    2023-02-15 00:00:00 in 43.875ms
-node-cron:        ???                 in 2.217ms
-cron:             2022-03-15 00:00:00 in 4.147ms
-croner (legacy):  2023-02-15 00:00:00 in 1.72ms
-croner (default): 2023-02-15 00:00:00 in 0.946ms
-
-Test: When is next monday in october, pattern '0 0 0 * 10 1'
-
-node-schedule:    2022-10-03 00:00:00 in 5.594ms
-node-cron:        ???                 in 3.62ms
-cron:             2022-11-07 00:00:00 in 1.658ms
-croner (legacy):  2022-10-03 00:00:00 in 0.697ms
-croner (default): 2022-10-03 00:00:00 in 0.546ms
-```
-
-</details>
-
-https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70
 
 ## Installation
 
@@ -243,7 +245,8 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
 | Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ?                  | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
 
-**Note**: Weekday and month names are case insensitive. Both MON and mon works.
+> **Note**
+> Weekday and month names are case insensitive. Both MON and mon works.
 
 It is also possible to use the following "nicknames" as pattern.
 
