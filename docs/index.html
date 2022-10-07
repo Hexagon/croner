@@ -162,38 +162,268 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <p>More <a href="#examples">examples</a>...</p>
 <h2>Why another javascript cron implementation</h2>
 <p>Because the existing ones aren't good enough. They have serious bugs, use bloated dependencies, do not work in all environments and/or simply don't work as expected.</p>
-<p>Benchmark at 2022-02-20:</p>
-<pre class="prettyprint source"><code>> node cron-implementation-test.js
-
-Test: When is 23:00 next 31st march, pattern '0 0 23 31 3 *'
-
-node-schedule:    2022-03-31 23:00:00 in 15.379ms
-node-cron:        ???                 in 0.339ms
-Month '3' is limited to '30' days.
-cron:             2022-04-01 23:00:00 in 7.785ms
-croner (legacy):  2022-03-31 23:00:00 in 2.142ms
-croner (default): 2022-03-31 23:00:00 in 0.672ms
-</code></pre>
-<details>
-	<summary>More test results</summary>
-<pre class="prettyprint source"><code>Test: When is next 15th of february, pattern '0 0 0 15 2 *'
-
-node-schedule:    2023-02-15 00:00:00 in 43.875ms
-node-cron:        ???                 in 2.217ms
-cron:             2022-03-15 00:00:00 in 4.147ms
-croner (legacy):  2023-02-15 00:00:00 in 1.72ms
-croner (default): 2023-02-15 00:00:00 in 0.946ms
-
-Test: When is next monday in october, pattern '0 0 0 * 10 1'
-
-node-schedule:    2022-10-03 00:00:00 in 5.594ms
-node-cron:        ???                 in 3.62ms
-cron:             2022-11-07 00:00:00 in 1.658ms
-croner (legacy):  2022-10-03 00:00:00 in 0.697ms
-croner (default): 2022-10-03 00:00:00 in 0.546ms
-</code></pre>
-</details>
-<p>https://gist.github.com/Hexagon/703f85f2dd86443cc17eef8f5cc6cb70</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center">croner</th>
+<th style="text-align:center">cronosjs</th>
+<th style="text-align:center">node-cron</th>
+<th style="text-align:center">cron</th>
+<th style="text-align:center">node-schedule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Platforms</strong></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Node.js (CommonJS)</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+</tr>
+<tr>
+<td>Browser (ESMCommonJS)</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Deno (ESM)</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td><strong>Features</strong></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>dom-AND-dow</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>dom-OR-dow</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+</tr>
+<tr>
+<td>Next run</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+</tr>
+<tr>
+<td>Next n runs</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Timezone</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+</tr>
+<tr>
+<td><strong>Size</strong></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Minified size (KB)</td>
+<td style="text-align:center">15.5</td>
+<td style="text-align:center">16.3</td>
+<td style="text-align:center">16.5</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td>Bundlephobia  minzip (KB)</td>
+<td style="text-align:center">3.6</td>
+<td style="text-align:center">5.1</td>
+<td style="text-align:center">5.7</td>
+<td style="text-align:center">23.9</td>
+<td style="text-align:center">32.4</td>
+</tr>
+<tr>
+<td>Dependencies</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td><strong>Popularity</strong></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Downloads/week [^1]</td>
+<td style="text-align:center">631K</td>
+<td style="text-align:center">20K</td>
+<td style="text-align:center">358K</td>
+<td style="text-align:center">1240K</td>
+<td style="text-align:center">766K</td>
+</tr>
+<tr>
+<td><strong>Quality</strong></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Issues [^1]</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">118 :warning:</td>
+<td style="text-align:center">119 :warning:</td>
+<td style="text-align:center">133 :warning:</td>
+</tr>
+<tr>
+<td>Code coverage</td>
+<td style="text-align:center">99%</td>
+<td style="text-align:center">98%</td>
+<td style="text-align:center">100%</td>
+<td style="text-align:center">81%</td>
+<td style="text-align:center">94%</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td>Ops/s <code>1 2 3 4 5 6</code></td>
+<td style="text-align:center">ToDo</td>
+<td style="text-align:center">ToDo</td>
+<td style="text-align:center">ToDo</td>
+<td style="text-align:center">ToDo</td>
+<td style="text-align:center">ToDo</td>
+</tr>
+<tr>
+<td><strong>Tests</strong></td>
+<td style="text-align:center"><strong>8/8</strong></td>
+<td style="text-align:center"><strong>7/8</strong></td>
+<td style="text-align:center"><strong>0/8</strong> [^4] :question:</td>
+<td style="text-align:center"><strong>1/8</strong> :warning:</td>
+<td style="text-align:center"><strong>7/8</strong></td>
+</tr>
+<tr>
+<td>Test <code>0 0 23 * * *</code></td>
+<td style="text-align:center">2022-10-09 00:40</td>
+<td style="text-align:center">2022-10-09 00:40</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2022-10-09 00:40</td>
+<td style="text-align:center">2022-10-09 00:40</td>
+</tr>
+<tr>
+<td>Test <code>0 0 0 L 2 *</code> [^2]</td>
+<td style="text-align:center">2023-02-28 00:00</td>
+<td style="text-align:center">2023-02-28 00:00</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2023-02-28 00:00</td>
+</tr>
+<tr>
+<td>Test <code>0 0 0 29 2 *</code></td>
+<td style="text-align:center">2024-02-29 00:00</td>
+<td style="text-align:center">2024-02-29 00:00</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2023-03-29 00:00  :x:</td>
+<td style="text-align:center">2024-02-29 00:00</td>
+</tr>
+<tr>
+<td>Test <code>0 0 0 29 2 6</code> [^3]</td>
+<td style="text-align:center">2048-02-09 00:00</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">N/A</td>
+</tr>
+<tr>
+<td>Test <code>0 0 0 15 2 *</code></td>
+<td style="text-align:center">2023-02-16 00:00</td>
+<td style="text-align:center">2023-02-16 00:00</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2023-03-15 00:00  :x:</td>
+<td style="text-align:center">2023-02-16 00:00</td>
+</tr>
+<tr>
+<td>Test <code>0 0 0 * 10 1</code></td>
+<td style="text-align:center">2022-10-10 00:00</td>
+<td style="text-align:center">2022-10-10 00:00</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2022-11-07 00:00 :x:</td>
+<td style="text-align:center">2022-10-10 00:00</td>
+</tr>
+<tr>
+<td>Test <code>0 0 23 31 3 *</code></td>
+<td style="text-align:center">2023-03-31 23:00</td>
+<td style="text-align:center">2023-03-31 23:00</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2023-04-01 23:00 :x:</td>
+<td style="text-align:center">2023-03-31 23:00</td>
+</tr>
+<tr>
+<td>Test <code>1 2 3 4 5 6</code></td>
+<td style="text-align:center">2023-05-04 03:02</td>
+<td style="text-align:center">2023-05-04 03:02</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">2023-06-03 03:02 :x:</td>
+<td style="text-align:center">2023-05-04 03:02</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note</strong>
+Table last updated at 2022-10-08</p>
+</blockquote>
+<p>[^1]: As of 2022-10-08
+[^2]: Requires support for L-modifier
+[^3]: In dom-AND-dow mode, only supported by croner at the moment.
+[^4]: Node-cron has no way of showing next run time.</p>
 <h2>Installation</h2>
 <h3>Node.js</h3>
 <p><code>npm install croner --save</code></p>
@@ -217,14 +447,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.1.2/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.2.1/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.1.2/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.2.1/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -425,7 +655,10 @@ job.stop();
 </tr>
 </tbody>
 </table>
-<p><strong>Note</strong>: Weekday and month names are case insensitive. Both MON and mon works.</p>
+<blockquote>
+<p><strong>Note</strong>
+Weekday and month names are case insensitive. Both MON and mon works.</p>
+</blockquote>
 <p>It is also possible to use the following &quot;nicknames&quot; as pattern.</p>
 <table>
 <thead>

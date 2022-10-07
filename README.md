@@ -65,7 +65,7 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Downloads/week [^1]        | 631K                | 20K                 | 358K      | 1240K                     | 766K                |
 | **Quality**                                                                                                                        |
 | Issues [^1]                |                   0 |                   2 |   118 :warning: |                 119 :warning: |    133 :warning: |
-| Code coverage              |                     |                     |                 |                               |                  |
+| Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
 | **Performance**                                                                                                                        |
 | Ops/s `1 2 3 4 5 6`         | ToDo                    | ToDo                    | ToDo          | ToDo                          | ToDo                    |
 | **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
@@ -122,7 +122,7 @@ const job : Cron = new Cron("* * * * * *", () => {
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.1.2/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.2.1/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -132,7 +132,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.1.2/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.2.1/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
