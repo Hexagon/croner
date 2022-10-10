@@ -336,11 +336,19 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 </tr>
 <tr>
 <td>Ops/s <code>1 2 3 4 5 6</code></td>
-<td style="text-align:center">ToDo</td>
-<td style="text-align:center">ToDo</td>
-<td style="text-align:center">ToDo</td>
-<td style="text-align:center">ToDo</td>
-<td style="text-align:center">ToDo</td>
+<td style="text-align:center">28585</td>
+<td style="text-align:center">25093</td>
+<td style="text-align:center">N/A :x:</td>
+<td style="text-align:center">Test failed :x:</td>
+<td style="text-align:center">2381</td>
+</tr>
+<tr>
+<td>Ops/s <code>0 0 0 29 2 *</code></td>
+<td style="text-align:center">33999</td>
+<td style="text-align:center">17824</td>
+<td style="text-align:center">N/A :x:</td>
+<td style="text-align:center">Test failed :x:</td>
+<td style="text-align:center">187 :warning:</td>
 </tr>
 <tr>
 <td><strong>Tests</strong></td>
@@ -417,8 +425,11 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 </tbody>
 </table>
 <blockquote>
-<p><strong>Note</strong>
-Table last updated at 2022-10-08</p>
+<p><strong>Note</strong></p>
+<ul>
+<li>Table last updated at 2022-10-08</li>
+<li>node-cron has no interface to predict when the function will run. So tests cannot be carried out.</li>
+</ul>
 </blockquote>
 <p>[^1]: As of 2022-10-08
 [^2]: Requires support for L-modifier

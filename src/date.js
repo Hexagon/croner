@@ -142,47 +142,36 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 			
 			const startPos = (override === void 0) ? this[target] + offset : 0;
 
+			// In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster 
+			// than new Date(y,m,d). We use the UTC functions to set/get date parts.
+
+			// Pre-calculate last day of month if needed
+			const lastDayOfMonth = pattern.lastDayOfMonth ? new Date(Date.UTC(this.y, this.m+1, 0,0,0,0,0)).getUTCDate() : undefined;
+
+			// Pre-calculate weekday if needed
+			// Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
+			let fDomWeekDay = !pattern.starDOW ? new Date(Date.UTC(this.y, this.m, 1,0,0,0,0)).getUTCDay() : undefined;
+
 			for( let i = startPos; i < pattern[target].length; i++ ) {
 
 				// This applies to all "levels"
 				let match = pattern[target][i];
 
-				// Days has a couple of special cases
-				if (target === "d") {
+				// Special case for last day of month
+				if (target === "d" && pattern.lastDayOfMonth && i-offset == lastDayOfMonth) {
+					match = true;
+				}
 
-					// Create a date object for the target date
-					const targetDate = this.getDate(true);
-					targetDate.setDate(i-offset);
-
-					// Special handling for L (last day of month), when we are searching for days
-					if (pattern.lastDayOfMonth) {
-
-						// Create a copy of targetDate
-						// Set days to one day after today, if month changes, then we are at the last day of the month
-						const targetDateCopy = new Date(targetDate);
-						targetDateCopy.setDate(i-offset+1);
-				
-						// Overwrite match if last day of month is matching
-						if (targetDateCopy.getMonth() !== this.m) {
-							match = true;
-						}
-						
-					}
-
-					// Weekdays must also match when incrementing days
-					// If running in legacy mode, it is sufficient that only weekday match.
-					const dowMatch = pattern.dow[targetDate.getDay()];
-					if (options.legacyMode) {
-						if (!pattern.starDOW && pattern.starDOM) {
-							match = dowMatch;
-						} else if (!pattern.starDOW && !pattern.starDOM) {
-							match = match || dowMatch;
-						}
+				// Special case for day of week
+				if (target === "d" && !pattern.starDOW) {
+					const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
+					// If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
+					// In all other cases use "AND"
+					if (options.legacyMode && !pattern.starDOM) {
+						match = match || dowMatch;
 					} else {
-						// dom AND dow
 						match = match && dowMatch;
 					}
-
 				}
 
 				if (match) {
@@ -194,7 +183,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 			return false;
 
 		},
-		
+
 		resetPrevious = (offset) => {
 			// Now when we have gone to next minute, we have to set seconds to the first match
 			// Now we are at 00:01:05 following the same example.
@@ -261,7 +250,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 		}
 
 		// Bail out if an impossible pattern is used
-		if (this.y >= 4000) {
+		if (this.y >= 3000) {
 			return null;
 		}
 		

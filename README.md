@@ -67,7 +67,8 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Issues [^1]                |                   0 |                   2 |   118 :warning: |                 119 :warning: |    133 :warning: |
 | Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
 | **Performance**                                                                                                                        |
-| Ops/s `1 2 3 4 5 6`         | ToDo                    | ToDo                    | ToDo          | ToDo                          | ToDo                    |
+| Ops/s `1 2 3 4 5 6`         | 28585                    | 25093                    | N/A :x:          | Test failed :x:      | 2381                    |
+| Ops/s `0 0 0 29 2 *`         | 33999                    | 17824                    | N/A :x:          | Test failed :x:      | 187 :warning:                    |
 | **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
 | Test `0 0 23 * * *`         | 2022-10-09 00:40    | 2022-10-09 00:40    | N/A       | 2022-10-09 00:40          | 2022-10-09 00:40    |
 | Test `0 0 0 L 2 *` [^2]      | 2023-02-28 00:00 |          2023-02-28 00:00 | N/A       | N/A                       |          2023-02-28 00:00 |
@@ -79,7 +80,8 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
 
 > **Note**
-> Table last updated at 2022-10-08
+> *   Table last updated at 2022-10-08
+> *   node-cron has no interface to predict when the function will run. So tests cannot be carried out.
 
 [^1]: As of 2022-10-08
 [^2]: Requires support for L-modifier
