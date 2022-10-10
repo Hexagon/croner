@@ -52,11 +52,17 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Browser (ESMCommonJS)                  |          ✓          |          ✓          |           |                           |                     |
 | Deno (ESM)                     |          ✓          |                     |           |                           |                     |
 | **Features**                                                                                                                        |
+| Typescript typings        |          ✓          |         ✓            |           |                           |                     |
 | dom-AND-dow               |          ✓          |                     |           |                           |                     |
 | dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
 | Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
-| Timezone                  |          ✓          |           ✓          |     ✓       |        ✓                   |         ✓            |
+| Timezone                  |          ✓          |           ✓         |     ✓       |        ✓                   |         ✓            |
+| Minimum interval          |          ✓          |           ✓         |              |                            |                      |
+| Controls (stop/resume)    |          ✓          |           ✓         |     ✓        |        ✓                   |         ✓           |   
+| Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
+| Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
+| Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
 | **Size**                                                                                                                        |
 | Minified size (KB)        | 15.5                | 16.3            | 16.5      | -                      | -                |
 | Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |

@@ -216,7 +216,7 @@
 
 				// Pre-calculate weekday if needed
 				// Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
-				let fDomWeekDay = !pattern.starDOW ? new Date(Date.UTC(this.y, this.m, 1,0,0,0,0)).getUTCDay() : undefined;
+				const fDomWeekDay = !pattern.starDOW ? new Date(Date.UTC(this.y, this.m, 1,0,0,0,0)).getUTCDay() : undefined;
 
 				for( let i = startPos; i < pattern[target].length; i++ ) {
 
