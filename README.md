@@ -88,6 +88,7 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 > **Note**
 > *   Table last updated at 2022-10-08
 > *   node-cron has no interface to predict when the function will run. So tests cannot be carried out.
+> *   All tests and benchmarks carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
 
 [^1]: As of 2022-10-08
 [^2]: Requires support for L-modifier
