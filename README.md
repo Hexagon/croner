@@ -58,7 +58,7 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
 | Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
 | Timezone                  |          ✓          |           ✓         |     ✓       |        ✓                   |         ✓            |
-| Minimum interval          |          ✓          |           ✓         |              |                            |                      |
+| Minimum interval          |          ✓          |                     |              |                            |                      |
 | Controls (stop/resume)    |          ✓          |           ✓         |     ✓        |        ✓                   |         ✓           |   
 | Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
 | Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
