@@ -7,9 +7,9 @@ import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-lin
 const DaysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 
 const IncrementResult = {
-    OK: 1,
-    INCREMENT_SELF: 2,
-    INCREMENT_PARENT: 3
+	OK: 1,
+	INCREMENT_SELF: 2,
+	INCREMENT_PARENT: 3
 };
 
 // Array of work to be done, consisting of subarrays described below:
@@ -21,17 +21,17 @@ const IncrementResult = {
 //   Fourth item is levels to reset if current level changes
 // ]
 const ToDo = [
-    ["m", "y", 0, ["d","h","i","s"], 0],
-    ["d", "m", -1, ["h","i","s"], 1],
-    ["h", "d", 0, ["i","s"], 0],
-    ["i", "h", 0, ["s"],0],
-    ["s", "i", 0, [],0],
+	["m", "y", 0, ["d","h","i","s"], 0],
+	["d", "m", -1, ["h","i","s"], 1],
+	["h", "d", 0, ["i","s"], 0],
+	["i", "h", 0, ["s"],0],
+	["s", "i", 0, [],0],
 ];
 
 
 const 
 
-    /**
+	/**
      * Find next
      * 
      * @param {string} target
@@ -42,63 +42,63 @@ const
      * @returns {boolean}
      * 
      */
-    findNext = (self, options, target, pattern, offset, override) => {
-        const 
-            originalTarget = self[target],
-            startPos = !override ? self[target] + offset : 0;
+	findNext = (self, options, target, pattern, offset, override) => {
+		const 
+			originalTarget = self[target],
+			startPos = !override ? self[target] + offset : 0;
 
-        // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster 
-        // than new Date(y,m,d). We use the UTC functions to set/get date parts.
+		// In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster 
+		// than new Date(y,m,d). We use the UTC functions to set/get date parts.
 
-        // Pre-calculate last day of month if needed
-        let lastDayOfMonth;
-        if (pattern.lastDayOfMonth) {
-            if (self.m !== 1) {
-                lastDayOfMonth = DaysOfMonth[self.m]; // About 20% performance increase when using L
-            } else {
-                lastDayOfMonth = new Date(Date.UTC(self.y, self.m+1, 0,0,0,0,0)).getUTCDate();
-            }
-        }
+		// Pre-calculate last day of month if needed
+		let lastDayOfMonth;
+		if (pattern.lastDayOfMonth) {
+			if (self.m !== 1) {
+				lastDayOfMonth = DaysOfMonth[self.m]; // About 20% performance increase when using L
+			} else {
+				lastDayOfMonth = new Date(Date.UTC(self.y, self.m+1, 0,0,0,0,0)).getUTCDate();
+			}
+		}
 
-        // Pre-calculate weekday if needed
-        // Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
-        const fDomWeekDay = (!pattern.starDOW && target == "d") ? new Date(Date.UTC(self.y, self.m, 1,0,0,0,0)).getUTCDay() : undefined;
+		// Pre-calculate weekday if needed
+		// Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
+		const fDomWeekDay = (!pattern.starDOW && target == "d") ? new Date(Date.UTC(self.y, self.m, 1,0,0,0,0)).getUTCDay() : undefined;
 
-        for( let i = startPos; i < pattern[target].length; i++ ) {
+		for( let i = startPos; i < pattern[target].length; i++ ) {
 
-            // self applies to all "levels"
-            let match = pattern[target][i];
+			// self applies to all "levels"
+			let match = pattern[target][i];
 
-            // Special case for last day of month
-            if (target === "d" && pattern.lastDayOfMonth && i-offset == lastDayOfMonth) {
-                match = true;
-            }
+			// Special case for last day of month
+			if (target === "d" && pattern.lastDayOfMonth && i-offset == lastDayOfMonth) {
+				match = true;
+			}
 
-            // Special case for day of week
-            if (target === "d" && !pattern.starDOW) {
-                const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
-                // If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
-                // In all other cases use "AND"
-                if (options.legacyMode && !pattern.starDOM) {
-                    match = match || dowMatch;
-                } else {
-                    match = match && dowMatch;
-                }
-            }
+			// Special case for day of week
+			if (target === "d" && !pattern.starDOW) {
+				const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
+				// If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
+				// In all other cases use "AND"
+				if (options.legacyMode && !pattern.starDOM) {
+					match = match || dowMatch;
+				} else {
+					match = match && dowMatch;
+				}
+			}
 
-            if (match) {
-                self[target] = i-offset;
-                if (originalTarget !== self[target]) {
-                    // Changed
-                    return IncrementResult.INCREMENT_SELF;
-                } else {
-                    // Unchanged
-                    return IncrementResult.OK;
-                }
-            }
-        }
-        return IncrementResult.INCREMENT_PARENT;
-    };
+			if (match) {
+				self[target] = i-offset;
+				if (originalTarget !== self[target]) {
+					// Changed
+					return IncrementResult.INCREMENT_SELF;
+				} else {
+					// Unchanged
+					return IncrementResult.OK;
+				}
+			}
+		}
+		return IncrementResult.INCREMENT_PARENT;
+	};
     
 /**
  * Converts date to CronDate
@@ -190,10 +190,10 @@ CronDate.prototype.apply = function () {
 		this.d = d.getUTCDate();
 		this.m  = d.getUTCMonth();
 		this.y = d.getUTCFullYear();
-        return true;
+		return true;
 	} else {
-        return false;
-    }
+		return false;
+	}
 };
 
 /**
@@ -208,53 +208,53 @@ CronDate.prototype.fromString = function (str) {
 
 CronDate.prototype.incrementParts = function (pattern, options, doing)  {
 
-    // Find next month (or whichever part we're at)
+	// Find next month (or whichever part we're at)
 	const
-        currentlyDoingPart = ToDo[doing][0],
-        currentPartOffset = ToDo[doing][2],
-        result = findNext(this, options, currentlyDoingPart, pattern, currentPartOffset);
-    // Month (or whichever part we're at) changed
+		currentlyDoingPart = ToDo[doing][0],
+		currentPartOffset = ToDo[doing][2],
+		result = findNext(this, options, currentlyDoingPart, pattern, currentPartOffset);
+	// Month (or whichever part we're at) changed
 	if (result > IncrementResult.OK) {
-        // Flag following levels for reset
-        let resetLevel = doing + 1;
-        while(resetLevel < ToDo.length) {
-            this[ToDo[resetLevel][0]] = ToDo[resetLevel][4];
-            resetLevel++;
-        }
-        // Parent changed
-        if (result=== IncrementResult.INCREMENT_PARENT) {
-            // Do increment parent
-            const parentToIncrement = ToDo[doing][1];
-            this[parentToIncrement]++;
-            this[ToDo[doing][0]] = ToDo[doing][4];
+		// Flag following levels for reset
+		let resetLevel = doing + 1;
+		while(resetLevel < ToDo.length) {
+			this[ToDo[resetLevel][0]] = ToDo[resetLevel][4];
+			resetLevel++;
+		}
+		// Parent changed
+		if (result=== IncrementResult.INCREMENT_PARENT) {
+			// Do increment parent
+			const parentToIncrement = ToDo[doing][1];
+			this[parentToIncrement]++;
+			this[ToDo[doing][0]] = ToDo[doing][4];
 			this.apply();
 
-            // Restart
-            return this.incrementParts(pattern, options, 0);
-        } else if (this.apply()) {
-            return this.incrementParts(pattern, options, doing-1);
-        }
+			// Restart
+			return this.incrementParts(pattern, options, 0);
+		} else if (this.apply()) {
+			return this.incrementParts(pattern, options, doing-1);
+		}
 
-    }
+	}
 
-    // Done?
+	// Done?
 	doing += 1;
-    if (doing >= ToDo.length) {
-        // Yay!
-        return this;
+	if (doing >= ToDo.length) {
+		// Yay!
+		return this;
 
-    // ... or out of bounds ?
-    } else if (this.y >= 3000) {
-        // ABORT!
-        return null;
+		// ... or out of bounds ?
+	} else if (this.y >= 3000) {
+		// ABORT!
+		return null;
 
-    // ... oh, go to next part then
-    } else {
+		// ... oh, go to next part then
+	} else {
 
-        return this.incrementParts(pattern, options, doing);
-    }
+		return this.incrementParts(pattern, options, doing);
+	}
     
-}
+};
 
 /**
  * Increment to next run time
