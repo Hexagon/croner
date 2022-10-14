@@ -4,7 +4,13 @@ import { minitz } from "./helpers/minitz.js";
 // deno-lint-ignore no-unused-vars
 import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
 
-const daysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+const DaysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+const IncrementResult = {
+    OK: 1,
+    INCREMENT_SELF: 2,
+    INCREMENT_PARENT: 3
+};
 
 // Array of work to be done, consisting of subarrays described below:
 // [
@@ -12,15 +18,88 @@ const daysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 //   Second item is which member to increment if we didn't find a mathch in current item,
 //   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
 //   from pattern. Offset should be -1
+//   Fourth item is levels to reset if current level changes
 // ]
-const toDo = [
-	["s", "i", 0],
-	["i", "h", 0],
-	["h", "d", 0],
-	["d", "m", -1],
-	["m", "y", 0]
+const ToDo = [
+    ["m", "y", 0, ["d","h","i","s"], 0],
+    ["d", "m", -1, ["h","i","s"], 1],
+    ["h", "d", 0, ["i","s"], 0],
+    ["i", "h", 0, ["s"],0],
+    ["s", "i", 0, [],0],
 ];
 
+
+const 
+
+    /**
+     * Find next
+     * 
+     * @param {string} target
+     * @param {string} pattern
+     * @param {string} offset
+     * @param {string} override
+     * 
+     * @returns {boolean}
+     * 
+     */
+    findNext = (self, options, target, pattern, offset, override) => {
+        const 
+            originalTarget = self[target],
+            startPos = !override ? self[target] + offset : 0;
+
+        // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster 
+        // than new Date(y,m,d). We use the UTC functions to set/get date parts.
+
+        // Pre-calculate last day of month if needed
+        let lastDayOfMonth;
+        if (pattern.lastDayOfMonth) {
+            if (self.m !== 1) {
+                lastDayOfMonth = DaysOfMonth[self.m]; // About 20% performance increase when using L
+            } else {
+                lastDayOfMonth = new Date(Date.UTC(self.y, self.m+1, 0,0,0,0,0)).getUTCDate();
+            }
+        }
+
+        // Pre-calculate weekday if needed
+        // Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
+        const fDomWeekDay = (!pattern.starDOW && target == "d") ? new Date(Date.UTC(self.y, self.m, 1,0,0,0,0)).getUTCDay() : undefined;
+
+        for( let i = startPos; i < pattern[target].length; i++ ) {
+
+            // self applies to all "levels"
+            let match = pattern[target][i];
+
+            // Special case for last day of month
+            if (target === "d" && pattern.lastDayOfMonth && i-offset == lastDayOfMonth) {
+                match = true;
+            }
+
+            // Special case for day of week
+            if (target === "d" && !pattern.starDOW) {
+                const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
+                // If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
+                // In all other cases use "AND"
+                if (options.legacyMode && !pattern.starDOM) {
+                    match = match || dowMatch;
+                } else {
+                    match = match && dowMatch;
+                }
+            }
+
+            if (match) {
+                self[target] = i-offset;
+                if (originalTarget !== self[target]) {
+                    // Changed
+                    return IncrementResult.INCREMENT_SELF;
+                } else {
+                    // Unchanged
+                    return IncrementResult.OK;
+                }
+            }
+        }
+        return IncrementResult.INCREMENT_PARENT;
+    };
+    
 /**
  * Converts date to CronDate
  * @constructor
@@ -102,7 +181,7 @@ CronDate.prototype.fromCronDate = function (d) {
  */
 CronDate.prototype.apply = function () {
 	// If any value could be out of bounds, apply 
-	if (this.m>11||this.d>daysOfMonth[this.m]||this.h>59||this.i>59||this.s>59) {
+	if (this.m>11||this.d>DaysOfMonth[this.m]||this.h>59||this.i>59||this.s>59) {
 		const d = new Date(Date.UTC(this.y, this.m, this.d, this.h, this.i, this.s, this.ms));
 		this.ms = d.getUTCMilliseconds();
 		this.s = d.getUTCSeconds();
@@ -111,7 +190,10 @@ CronDate.prototype.apply = function () {
 		this.d = d.getUTCDate();
 		this.m  = d.getUTCMonth();
 		this.y = d.getUTCFullYear();
-	}
+        return true;
+	} else {
+        return false;
+    }
 };
 
 /**
@@ -123,6 +205,56 @@ CronDate.prototype.apply = function () {
 CronDate.prototype.fromString = function (str) {
 	return this.fromDate(minitz.fromTZISO(str, this.tz));
 };
+
+CronDate.prototype.incrementParts = function (pattern, options, doing)  {
+
+    // Find next month (or whichever part we're at)
+	const
+        currentlyDoingPart = ToDo[doing][0],
+        currentPartOffset = ToDo[doing][2],
+        result = findNext(this, options, currentlyDoingPart, pattern, currentPartOffset);
+    // Month (or whichever part we're at) changed
+	if (result > IncrementResult.OK) {
+        // Flag following levels for reset
+        let resetLevel = doing + 1;
+        while(resetLevel < ToDo.length) {
+            this[ToDo[resetLevel][0]] = ToDo[resetLevel][4];
+            resetLevel++;
+        }
+        // Parent changed
+        if (result=== IncrementResult.INCREMENT_PARENT) {
+            // Do increment parent
+            const parentToIncrement = ToDo[doing][1];
+            this[parentToIncrement]++;
+            this[ToDo[doing][0]] = ToDo[doing][4];
+			this.apply();
+
+            // Restart
+            return this.incrementParts(pattern, options, 0);
+        } else if (this.apply()) {
+            return this.incrementParts(pattern, options, doing-1);
+        }
+
+    }
+
+    // Done?
+	doing += 1;
+    if (doing >= ToDo.length) {
+        // Yay!
+        return this;
+
+    // ... or out of bounds ?
+    } else if (this.y >= 3000) {
+        // ABORT!
+        return null;
+
+    // ... oh, go to next part then
+    } else {
+
+        return this.incrementParts(pattern, options, doing);
+    }
+    
+}
 
 /**
  * Increment to next run time
@@ -143,178 +275,9 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	}
 	this.ms = 0;
 	this.apply();
-	
-	const 
 
-		/**
-		 * Find next
-		 * 
-		 * @param {string} target
-		 * @param {string} pattern
-		 * @param {string} offset
-		 * @param {string} override
-		 * 
-		 * @returns {boolean}
-		 * 
-		 */
-		findNext = (target, pattern, offset, override) => {
 
-			const startPos = (override === void 0) ? this[target] + offset : 0;
-
-			// In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster 
-			// than new Date(y,m,d). We use the UTC functions to set/get date parts.
-
-			// Pre-calculate last day of month if needed
-			let lastDayOfMonth;
-			if (pattern.lastDayOfMonth) {
-				if (this.m !== 1) {
-					lastDayOfMonth = daysOfMonth[this.m]; // About 20% performance increase when using L
-				} else {
-					lastDayOfMonth = new Date(Date.UTC(this.y, this.m+1, 0,0,0,0,0)).getUTCDate();
-				}
-			}
-
-			// Pre-calculate weekday if needed
-			// Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
-			const fDomWeekDay = (!pattern.starDOW && target == "d") ? new Date(Date.UTC(this.y, this.m, 1,0,0,0,0)).getUTCDay() : undefined;
-
-			for( let i = startPos; i < pattern[target].length; i++ ) {
-
-				// This applies to all "levels"
-				let match = pattern[target][i];
-
-				// Special case for last day of month
-				if (target === "d" && pattern.lastDayOfMonth && i-offset == lastDayOfMonth) {
-					match = true;
-				}
-
-				// Special case for day of week
-				if (target === "d" && !pattern.starDOW) {
-					const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
-					// If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
-					// In all other cases use "AND"
-					if (options.legacyMode && !pattern.starDOM) {
-						match = match || dowMatch;
-					} else {
-						match = match && dowMatch;
-					}
-				}
-
-				if (match) {
-					this[target] = i-offset;
-					return true;
-				}
-
-			}
-			return false;
-
-		},
-
-		resetPrevious = (offset) => {
-			// Now when we have gone to next minute, we have to set seconds to the first match
-			// Now we are at 00:01:05 following the same example.
-			// 
-			// This goes all the way back to seconds, hence the reverse loop.
-			while(doing + offset >= 0) {
-
-				// Ok, reset current member(e.g. seconds) to first match in pattern, using 
-				// the same method as aerlier
-				// 
-				// Note the fourth parameter, stating that we should start matching the pattern
-				// from zero, instead of current time.
-				findNext(toDo[doing + offset][0], pattern, toDo[doing + offset][2], 0);
-
-				// Go back up, days -> hours -> minutes -> seconds
-				doing--;
-			}
-		};
-
-	let doing;
-
-	// Ok we have skipped to first , we're working our way trough the toDo array, top to bottom
-	// If we reach 5, work is done
-	doing = 4;
-	while(doing < 5) {
-
-		// findNext sets the current member to next match in pattern
-		// If time is 00:00:01 and pattern says *:*:05, seconds will
-		// be set to 5
-
-		// Store current value at current level
-		const currentValue = this[toDo[doing][0]];
-		
-		// If pattern didn't provide a match, increment next value (e.g. minues)
-		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
-
-			// Increment next level
-			this[toDo[doing][1]]++;
-
-			// Reset current level and previous levels
-			resetPrevious(0);
-
-			// Apply changes if any value has gotten out of bounds
-			this.apply();
-			
-		// If pattern provided a match, but changed current value ...
-		} else if (currentValue !== this[toDo[doing][0]]) {
-
-			// Reset previous levels
-			resetPrevious(-1);
-
-		}
-
-		// Bail out if an impossible pattern is used
-		if (this.y >= 3000) {
-			return null;
-		}
-		
-		// Gp down, seconds -> minutes -> hours -> days -> months -> year
-		doing++;
-	}
-
-	// Ok we have skipped to first , we're working our way trough the toDo array, top to bottom
-	// If we reach 5, work is done
-	doing = 0;
-	while(doing < 5) {
-
-		// findNext sets the current member to next match in pattern
-		// If time is 00:00:01 and pattern says *:*:05, seconds will
-		// be set to 5
-
-		// Store current value at current level
-		const currentValue = this[toDo[doing][0]];
-		
-		// If pattern didn't provide a match, increment next value (e.g. minues)
-		if(!findNext(toDo[doing][0], pattern, toDo[doing][2])) {
-
-			// Increment next level
-			this[toDo[doing][1]]++;
-
-			// Reset current level and previous levels
-			resetPrevious(0);
-
-			// Apply changes if any value has gotten out of bounds
-			this.apply();
-			
-		// If pattern provided a match, but changed current value ...
-		} else if (currentValue !== this[toDo[doing][0]]) {
-
-			// Reset previous levels
-			resetPrevious(-1);
-
-		}
-
-		// Bail out if an impossible pattern is used
-		if (this.y >= 3000) {
-			return null;
-		}
-		
-		// Gp down, seconds -> minutes -> hours -> days -> months -> year
-		doing++;
-	}
-
-	// If anything changed, recreate this CronDate and run again without incrementing
-	return this;
+	return this.incrementParts(pattern, options, 0);
 	
 };
 
