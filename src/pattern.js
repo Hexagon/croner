@@ -52,10 +52,10 @@ CronPattern.prototype.parse = function () {
 	}
 
 	// Handle @yearly, @monthly etc
-	this.pattern = this.handleNicknames(this.pattern);
+	if (this.pattern.indexOf("@") >= 0) this.pattern = this.handleNicknames(this.pattern).trim();
 
 	// Split configuration on whitespace
-	const parts = this.pattern.trim().replace(/\s+/g, " ").split(" ");
+	const parts = this.pattern.replace(/\s+/g, " ").split(" ");
 
 	// Validite number of configuration entries
 	if( parts.length < 5 || parts.length > 6 ) {
@@ -68,35 +68,35 @@ CronPattern.prototype.parse = function () {
 	}
 
 	// Convert 'L' to lastDayOfMonth flag,
-	// and set days to 28,29,30,31 as those are the only days that can be the last day of month
 	if(parts[3].indexOf("L") >= 0) {
 		parts[3] = parts[3].replace("L","");
 		this.lastDayOfMonth = true;
 	}
 
 	// Check for starDOM
-	if(parts[3].toUpperCase() == "*") {
+	if(parts[3] == "*") {
 		this.starDOM = true;
 	}
 
 	// Replace alpha representations
-	parts[4] = this.replaceAlphaMonths(parts[4]);
-	parts[5] = this.replaceAlphaDays(parts[5]);
+	if (parts[4].length >= 3) parts[4] = this.replaceAlphaMonths(parts[4]);
+	if (parts[5].length >= 3) parts[5] = this.replaceAlphaDays(parts[5]);
 
 	// Check for starDOW
-	if(parts[5].toUpperCase() == "*") {
+	if(parts[5] == "*") {
 		this.starDOW = true;
 	}
 	
 	// Implement '?' in the simplest possible way - replace ? with current value, before further processing
-	const initDate = new CronDate(new Date(),this.timezone).getDate(true);
-
-	parts[0] = parts[0].replace("?", initDate.getSeconds());
-	parts[1] = parts[1].replace("?", initDate.getMinutes());
-	parts[2] = parts[2].replace("?", initDate.getHours());
-	parts[3] = parts[3].replace("?", initDate.getDate());
-	parts[4] = parts[4].replace("?", initDate.getMonth()+1); // getMonth is zero indexed while pattern starts from 1
-	parts[5] = parts[5].replace("?", initDate.getDay());
+	if (this.pattern.indexOf("?") >= 0) {
+		const initDate = new CronDate(new Date(),this.timezone).getDate(true);
+		parts[0] = parts[0].replace("?", initDate.getSeconds());
+		parts[1] = parts[1].replace("?", initDate.getMinutes());
+		parts[2] = parts[2].replace("?", initDate.getHours());
+		if (!this.starDOM) parts[3] = parts[3].replace("?", initDate.getDate());
+		parts[4] = parts[4].replace("?", initDate.getMonth()+1); // getMonth is zero indexed while pattern starts from 1
+		if (!this.starDOW) parts[5] = parts[5].replace("?", initDate.getDay());
+	}
 
 	// Check part content
 	this.throwAtIllegalCharacters(parts);
@@ -130,12 +130,7 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
 	const arr = this[type];
 
 	// First off, handle wildcard
-	if( conf === "*" ) {
-		for( let i = 0; i < arr.length; i++ ) {
-			arr[i] = 1;
-		}
-		return;
-	}
+	if( conf === "*" ) return arr.fill(1);
 
 	// Handle separated entries (,) by recursion
 	const split = conf.split(",");

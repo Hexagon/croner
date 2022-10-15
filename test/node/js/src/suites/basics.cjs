@@ -240,6 +240,12 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[2].getDate(),20);
 	});
 
+	test("@wekly should throw", function () {
+		assert.throws(() => {
+			Cron("@wekly").enumerate(3, "2022-02-17T12:00:00");
+		});
+	});
+
 	test("@hourly should be replaced", function () {
 		let nextRuns = Cron("@hourly").enumerate(3, "2022-02-16T23:59:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
