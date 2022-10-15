@@ -21,7 +21,8 @@
     "dist/*.js",
     "dist/*.min.cjs",
     "dist/*.mjs",
-    "types/*"
+    "types/*",
+    "croner.png"
   ],
   "engines": {
     "node": ">=6.0"
