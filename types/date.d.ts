@@ -20,6 +20,7 @@ export class CronDate {
      */
     tz: string | undefined;
     private fromDate;
+    ms: any;
     s: any;
     i: any;
     h: any;
@@ -57,3 +58,4 @@ export class CronDate {
      */
     public getTime(): Date;
 }
+import { CronOptions } from "./options.js";

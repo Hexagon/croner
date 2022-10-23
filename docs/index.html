@@ -124,7 +124,7 @@
   <section class="readme">
     <article>
       <p align="center">
-<img src="/croner.png" alt="Croner" width="150" height="150"><br>
+<img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
 Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. Node. Deno. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 <h1>Croner</h1>
@@ -344,11 +344,11 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 </tr>
 <tr>
 <td>Downloads/week [^1]</td>
-<td style="text-align:center">631K</td>
-<td style="text-align:center">20K</td>
-<td style="text-align:center">358K</td>
-<td style="text-align:center">1240K</td>
-<td style="text-align:center">766K</td>
+<td style="text-align:center">672K</td>
+<td style="text-align:center">30K</td>
+<td style="text-align:center">376K</td>
+<td style="text-align:center">1574K</td>
+<td style="text-align:center">804K</td>
 </tr>
 <tr>
 <td><strong>Quality</strong></td>
@@ -364,7 +364,7 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td style="text-align:center">2</td>
 <td style="text-align:center">118 :warning:</td>
 <td style="text-align:center">119 :warning:</td>
-<td style="text-align:center">133 :warning:</td>
+<td style="text-align:center">135 :warning:</td>
 </tr>
 <tr>
 <td>Code coverage</td>
@@ -384,19 +384,19 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 </tr>
 <tr>
 <td>Ops/s <code>1 2 3 4 5 6</code></td>
-<td style="text-align:center">28585</td>
-<td style="text-align:center">25093</td>
+<td style="text-align:center">99 952</td>
+<td style="text-align:center">49 308</td>
 <td style="text-align:center">N/A :x:</td>
 <td style="text-align:center">Test failed :x:</td>
-<td style="text-align:center">2381</td>
+<td style="text-align:center">2 299 :warning:</td>
 </tr>
 <tr>
 <td>Ops/s <code>0 0 0 29 2 *</code></td>
-<td style="text-align:center">33999</td>
-<td style="text-align:center">17824</td>
+<td style="text-align:center">65 392</td>
+<td style="text-align:center">17 138</td>
 <td style="text-align:center">N/A :x:</td>
 <td style="text-align:center">Test failed :x:</td>
-<td style="text-align:center">187 :warning:</td>
+<td style="text-align:center">1 450 :warning:</td>
 </tr>
 <tr>
 <td><strong>Tests</strong></td>
@@ -475,7 +475,7 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <blockquote>
 <p><strong>Note</strong></p>
 <ul>
-<li>Table last updated at 2022-10-08</li>
+<li>Table last updated at 2022-10-23</li>
 <li>node-cron has no interface to predict when the function will run. So tests cannot be carried out.</li>
 <li>All tests and benchmarks carried out using <a href="https://github.com/Hexagon/cron-comparison">https://github.com/Hexagon/cron-comparison</a></li>
 </ul>
@@ -507,14 +507,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.2.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.3.1/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.2.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.3.1/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
