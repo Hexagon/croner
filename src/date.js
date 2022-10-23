@@ -4,23 +4,36 @@ import { minitz } from "./helpers/minitz.js";
 // deno-lint-ignore no-unused-vars
 import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
 
-
-// Constant defining the minimum number of days per month where index 0 = January etc.
+/** 
+ * Constant defining the minimum number of days per month where index 0 = January etc.
+ * @private
+ * 
+ * @constant
+ * @type {Number[]}
+ * 
+*/
 const DaysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 
-// Array of work to be done, consisting of subarrays described below:
-// [
-//   First item is which member to process,
-//   Second item is which member to increment if we didn't find a mathch in current item,
-//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
-//   from pattern. Offset should be -1
-// ]
-const ToDo = [
-	["m", "y", 0],
+/**
+ * Array of work to be done, consisting of subarrays described below:
+ * @private
+ * 
+ * @constant
+ * 
+ * [
+ *   First item is which member to process,
+ *   Second item is which member to increment if we didn't find a mathch in current item,
+ *   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
+ *   from pattern. Offset should be -1
+ * ]
+ * 
+ */
+const RecursionSteps = [
+	["m", "y",  0],
 	["d", "m", -1],
-	["h", "d", 0],
-	["i", "h", 0],
-	["s", "i", 0],
+	["h", "d",  0],
+	["i", "h",  0],
+	["s", "i",  0],
 ];
     
 /**
@@ -32,6 +45,9 @@ const ToDo = [
 */
 function CronDate (d, tz) {	
 
+	/**
+	 * @type {string|undefined}
+	 */
 	this.tz = tz;
 
 	if (d && d instanceof Date) {
@@ -185,15 +201,13 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 
 		if (match) {
 			this[target] = i-offset;
-			if (originalTarget !== this[target]) {
-				// Changed
-				return 2;
-			} else {
-				// Unchanged
-				return 1;
-			}
+
+			// Return 2 if changed, 1 if unchanged
+			return (originalTarget !== this[target]) ? 2 : 1;
 		}
 	}
+
+	// Return 3 if part was not matched
 	return 3;
 };
 
@@ -203,27 +217,27 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
  * 
  * @param {string} pattern - The pattern used to increment current state
  * @param {CronOptions} options - Cron options used for incrementing
- * @param {integer} doing - Which part to increment, 0 represent first item of ToDo-array etc.
+ * @param {integer} doing - Which part to increment, 0 represent first item of RecursionSteps-array etc.
  * @return {CronDate|null} - Returns itthis for chaining, or null if increment wasnt possible
  */
 CronDate.prototype.recurse = function (pattern, options, doing)  {
 
 	// Find next month (or whichever part we're at)
-	const res = this.findNext(options, ToDo[doing][0], pattern, ToDo[doing][2]);
+	const res = this.findNext(options, RecursionSteps[doing][0], pattern, RecursionSteps[doing][2]);
 
 	// Month (or whichever part we're at) changed
 	if (res > 1) {
 		// Flag following levels for reset
 		let resetLevel = doing + 1;
-		while(resetLevel < ToDo.length) {
-			this[ToDo[resetLevel][0]] = -ToDo[resetLevel][2];
+		while(resetLevel < RecursionSteps.length) {
+			this[RecursionSteps[resetLevel][0]] = -RecursionSteps[resetLevel][2];
 			resetLevel++;
 		}
 		// Parent changed
 		if (res=== 3) {
 			// Do increment parent, and reset current level
-			this[ToDo[doing][1]]++;
-			this[ToDo[doing][0]] = -ToDo[doing][2];
+			this[RecursionSteps[doing][1]]++;
+			this[RecursionSteps[doing][0]] = -RecursionSteps[doing][2];
 			this.apply();
 
 			// Restart
@@ -238,7 +252,7 @@ CronDate.prototype.recurse = function (pattern, options, doing)  {
 	doing += 1;
 
 	// Done?
-	if (doing >= ToDo.length) {
+	if (doing >= RecursionSteps.length) {
 		return this;
 
 		// ... or out of bounds ?
@@ -273,7 +287,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	this.ms = 0;
 	this.apply();
 
-
+	// Recursively change each part (y, m, d ...) until next match is found, return null on failure
 	return this.recurse(pattern, options, 0);
 	
 };

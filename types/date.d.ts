@@ -15,9 +15,11 @@ export class CronDate {
      * @param {string} [tz] - String representation of target timezone in Europe/Stockholm format.
     */
     constructor(d?: CronDate | Date | string, tz?: string);
-    tz: string;
+    /**
+     * @type {string|undefined}
+     */
+    tz: string | undefined;
     private fromDate;
-    ms: any;
     s: any;
     i: any;
     h: any;
@@ -55,4 +57,3 @@ export class CronDate {
      */
     public getTime(): Date;
 }
-import { CronOptions } from "./options.js";

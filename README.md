@@ -1,5 +1,5 @@
 <p align="center">
-<img src="/croner.png" alt="Croner" width="150" height="150"><br>
+<img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
 Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. Node. Deno. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
@@ -131,7 +131,7 @@ const job : Cron = new Cron("* * * * * *", () => {
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.2.1/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.3.1/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -141,7 +141,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.2.1/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.3.1/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");

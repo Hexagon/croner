@@ -13,79 +13,36 @@
 	  ------------------------------------------------------------------------------------  */
 	  function minitz(y,m,d,h,i,s,tz,throwOnInvalid){return minitz.fromTZ(minitz.tp(y,m,d,h,i,s,tz),throwOnInvalid)}minitz.fromTZISO=(localTimeStr,tz,throwOnInvalid)=>{return minitz.fromTZ(parseISOLocal(localTimeStr,tz),throwOnInvalid)};minitz.fromTZ=function(tp,throwOnInvalid){const inDate=new Date(Date.UTC(tp.y,tp.m-1,tp.d,tp.h,tp.i,tp.s)),offset=getTimezoneOffset(tp.tz,inDate),dateGuess=new Date(inDate.getTime()-offset),dateOffsGuess=getTimezoneOffset(tp.tz,dateGuess);if(dateOffsGuess-offset===0){return dateGuess}else {const dateGuess2=new Date(inDate.getTime()-dateOffsGuess),dateOffsGuess2=getTimezoneOffset(tp.tz,dateGuess2);if(dateOffsGuess2-dateOffsGuess===0){return dateGuess2}else if(!throwOnInvalid){return dateGuess}else {throw new Error("Invalid date passed to fromTZ()")}}};minitz.toTZ=function(d,tzStr){const td=new Date(d.toLocaleString("sv-SE",{timeZone:tzStr}));return {y:td.getFullYear(),m:td.getMonth()+1,d:td.getDate(),h:td.getHours(),i:td.getMinutes(),s:td.getSeconds(),tz:tzStr}};minitz.tp=(y,m,d,h,i,s,tz)=>{return {y:y,m:m,d:d,h:h,i:i,s:s,tz:tz}};function getTimezoneOffset(timeZone,date=new Date){const tz=date.toLocaleString("en",{timeZone:timeZone,timeStyle:"long"}).split(" ").slice(-1)[0];const dateString=date.toString();return Date.parse(`${dateString} UTC`)-Date.parse(`${dateString} ${tz}`)}function parseISOLocal(dtStr,tz){const pd=new Date(Date.parse(dtStr));if(isNaN(pd)){throw new Error("minitz: Invalid ISO8601 passed to parser.")}const stringEnd=dtStr.substring(9);if(dtStr.includes("Z")||stringEnd.includes("-")||stringEnd.includes("+")){return minitz.tp(pd.getUTCFullYear(),pd.getUTCMonth()+1,pd.getUTCDate(),pd.getUTCHours(),pd.getUTCMinutes(),pd.getUTCSeconds(),"Etc/UTC")}else {return minitz.tp(pd.getFullYear(),pd.getMonth()+1,pd.getDate(),pd.getHours(),pd.getMinutes(),pd.getSeconds(),tz)}}minitz.minitz=minitz;
 
-	/**
-	 * @typedef {Object} CronOptions - Cron scheduler options
-	 * @property {boolean} [paused] - Job is paused
-	 * @property {boolean} [kill] - Job is about to be killed or killed
-	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
-	 * @property {number} [maxRuns] - Maximum nuber of executions
-	 * @property {number} [interval] - Minimum interval between executions, in seconds
-	 * @property {string | Date} [startAt] - When to start running
-	 * @property {string | Date} [stopAt] - When to stop running
-	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
-	 * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is OR.
-	 * @property {?} [context] - Used to pass any object to scheduled function
-	 */
-
-	/**
-	 * Internal function that validates options, and sets defaults
+	/** 
+	 * Constant defining the minimum number of days per month where index 0 = January etc.
 	 * @private
 	 * 
-	 * @param {CronOptions} options 
-	 * @returns {CronOptions}
-	 */
-	function CronOptions(options) {
-		
-		// If no options are passed, create empty object
-		if (options === void 0) {
-			options = {};
-		}
-		
-		// Keep options, or set defaults
-		options.legacyMode = (options.legacyMode === void 0) ? true : options.legacyMode;
-		options.paused = (options.paused === void 0) ? false : options.paused;
-		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
-		options.catch = (options.catch === void 0) ? false : options.catch;
-		options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval, 10);
-		options.kill = false;
-		
-		// startAt is set, validate it
-		if( options.startAt ) {
-			options.startAt = new CronDate(options.startAt, options.timezone);
-		} 
-		if( options.stopAt ) {
-			options.stopAt = new CronDate(options.stopAt, options.timezone);
-		}
-
-		// Validate interval
-		if (options.interval !== null) {
-			if (isNaN(options.interval)) {
-				throw new Error("CronOptions: Supplied value for interval is not a number");
-			} else if (options.interval < 0) {
-				throw new Error("CronOptions: Supplied value for interval can not be negative");
-			}
-		}
-
-		return options;
-
-	}
-
-	// Constant defining the minimum number of days per month where index 0 = January etc.
+	 * @constant
+	 * @type {Number[]}
+	 * 
+	*/
 	const DaysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 
-	// Array of work to be done, consisting of subarrays described below:
-	// [
-	//   First item is which member to process,
-	//   Second item is which member to increment if we didn't find a mathch in current item,
-	//   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
-	//   from pattern. Offset should be -1
-	// ]
-	const ToDo = [
-		["m", "y", 0],
+	/**
+	 * Array of work to be done, consisting of subarrays described below:
+	 * @private
+	 * 
+	 * @constant
+	 * 
+	 * [
+	 *   First item is which member to process,
+	 *   Second item is which member to increment if we didn't find a mathch in current item,
+	 *   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
+	 *   from pattern. Offset should be -1
+	 * ]
+	 * 
+	 */
+	const RecursionSteps = [
+		["m", "y",  0],
 		["d", "m", -1],
-		["h", "d", 0],
-		["i", "h", 0],
-		["s", "i", 0],
+		["h", "d",  0],
+		["i", "h",  0],
+		["s", "i",  0],
 	];
 	    
 	/**
@@ -97,6 +54,9 @@
 	*/
 	function CronDate (d, tz) {	
 
+		/**
+		 * @type {string|undefined}
+		 */
 		this.tz = tz;
 
 		if (d && d instanceof Date) {
@@ -127,7 +87,6 @@
 		
 		if (this.tz) {
 			const d = minitz.toTZ(inDate, this.tz);
-			this.ms = inDate.getMilliseconds();
 			this.s = d.s;
 			this.i = d.i;
 			this.h = d.h;
@@ -135,7 +94,6 @@
 			this.m  = d.m - 1;
 			this.y = d.y;
 		} else {
-			this.ms = inDate.getMilliseconds();
 			this.s = inDate.getSeconds();
 			this.i = inDate.getMinutes();
 			this.h = inDate.getHours();
@@ -154,7 +112,6 @@
 	 */
 	CronDate.prototype.fromCronDate = function (d) {
 		this.tz = d.tz;
-		this.ms = d.ms;
 		this.s = d.s;
 		this.i = d.i;
 		this.h = d.h;
@@ -170,8 +127,7 @@
 	CronDate.prototype.apply = function () {
 		// If any value could be out of bounds, apply 
 		if (this.m>11||this.d>DaysOfMonth[this.m]||this.h>59||this.i>59||this.s>59) {
-			const d = new Date(Date.UTC(this.y, this.m, this.d, this.h, this.i, this.s, this.ms));
-			this.ms = d.getUTCMilliseconds();
+			const d = new Date(Date.UTC(this.y, this.m, this.d, this.h, this.i, this.s, 0));
 			this.s = d.getUTCSeconds();
 			this.i = d.getUTCMinutes();
 			this.h = d.getUTCHours();
@@ -250,15 +206,13 @@
 
 			if (match) {
 				this[target] = i-offset;
-				if (originalTarget !== this[target]) {
-					// Changed
-					return 2;
-				} else {
-					// Unchanged
-					return 1;
-				}
+
+				// Return 2 if changed, 1 if unchanged
+				return (originalTarget !== this[target]) ? 2 : 1;
 			}
 		}
+
+		// Return 3 if part was not matched
 		return 3;
 	};
 
@@ -268,27 +222,27 @@
 	 * 
 	 * @param {string} pattern - The pattern used to increment current state
 	 * @param {CronOptions} options - Cron options used for incrementing
-	 * @param {integer} doing - Which part to increment, 0 represent first item of ToDo-array etc.
+	 * @param {integer} doing - Which part to increment, 0 represent first item of RecursionSteps-array etc.
 	 * @return {CronDate|null} - Returns itthis for chaining, or null if increment wasnt possible
 	 */
 	CronDate.prototype.recurse = function (pattern, options, doing)  {
 
 		// Find next month (or whichever part we're at)
-		const res = this.findNext(options, ToDo[doing][0], pattern, ToDo[doing][2]);
+		const res = this.findNext(options, RecursionSteps[doing][0], pattern, RecursionSteps[doing][2]);
 
 		// Month (or whichever part we're at) changed
 		if (res > 1) {
 			// Flag following levels for reset
 			let resetLevel = doing + 1;
-			while(resetLevel < ToDo.length) {
-				this[ToDo[resetLevel][0]] = -ToDo[resetLevel][2];
+			while(resetLevel < RecursionSteps.length) {
+				this[RecursionSteps[resetLevel][0]] = -RecursionSteps[resetLevel][2];
 				resetLevel++;
 			}
 			// Parent changed
 			if (res=== 3) {
 				// Do increment parent, and reset current level
-				this[ToDo[doing][1]]++;
-				this[ToDo[doing][0]] = -ToDo[doing][2];
+				this[RecursionSteps[doing][1]]++;
+				this[RecursionSteps[doing][0]] = -RecursionSteps[doing][2];
 				this.apply();
 
 				// Restart
@@ -303,7 +257,7 @@
 		doing += 1;
 
 		// Done?
-		if (doing >= ToDo.length) {
+		if (doing >= RecursionSteps.length) {
 			return this;
 
 			// ... or out of bounds ?
@@ -335,10 +289,9 @@
 		} else {
 			this.s += 1;
 		}
-		this.ms = 0;
 		this.apply();
 
-
+		// Recursively change each part (y, m, d ...) until next match is found, return null on failure
 		return this.recurse(pattern, options, 0);
 		
 	};
@@ -352,7 +305,7 @@
 	 */
 	CronDate.prototype.getDate = function (internal) {
 		if (internal || !this.tz) {
-			return new Date(this.y, this.m, this.d, this.h, this.i, this.s, this.ms);
+			return new Date(this.y, this.m, this.d, this.h, this.i, this.s, 0);
 		} else {
 			return minitz(this.y, this.m+1, this.d, this.h, this.i, this.s, this.tz);
 		}
@@ -737,6 +690,63 @@
 		}
 	};
 
+	/**
+	 * @typedef {Object} CronOptions - Cron scheduler options
+	 * @property {boolean} [paused] - Job is paused
+	 * @property {boolean} [kill] - Job is about to be killed or killed
+	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+	 * @property {number} [maxRuns] - Maximum nuber of executions
+	 * @property {number} [interval] - Minimum interval between executions, in seconds
+	 * @property {string | Date} [startAt] - When to start running
+	 * @property {string | Date} [stopAt] - When to stop running
+	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
+	 * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is OR.
+	 * @property {?} [context] - Used to pass any object to scheduled function
+	 */
+
+	/**
+	 * Internal function that validates options, and sets defaults
+	 * @private
+	 * 
+	 * @param {CronOptions} options 
+	 * @returns {CronOptions}
+	 */
+	function CronOptions(options) {
+		
+		// If no options are passed, create empty object
+		if (options === void 0) {
+			options = {};
+		}
+		
+		// Keep options, or set defaults
+		options.legacyMode = (options.legacyMode === void 0) ? true : options.legacyMode;
+		options.paused = (options.paused === void 0) ? false : options.paused;
+		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
+		options.catch = (options.catch === void 0) ? false : options.catch;
+		options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval, 10);
+		options.kill = false;
+		
+		// startAt is set, validate it
+		if( options.startAt ) {
+			options.startAt = new CronDate(options.startAt, options.timezone);
+		} 
+		if( options.stopAt ) {
+			options.stopAt = new CronDate(options.stopAt, options.timezone);
+		}
+
+		// Validate interval
+		if (options.interval !== null) {
+			if (isNaN(options.interval)) {
+				throw new Error("CronOptions: Supplied value for interval is not a number");
+			} else if (options.interval < 0) {
+				throw new Error("CronOptions: Supplied value for interval can not be negative");
+			}
+		}
+
+		return options;
+
+	}
+
 	/* ------------------------------------------------------------------------------------
 
 	  Croner - MIT License - Hexagon <github.com/Hexagon>
@@ -775,10 +785,11 @@
 	 * All JS engines implements an immediate execution of delays larger that a 32-bit 
 	 * int to keep the behaviour concistent. 
 	 * 
+	 * @constant
 	 * @type {number}
 	 */
 	const maxDelay = Math.pow(2, 32 - 1) - 1;
-		
+
 	/**
 	 * Cron entrypoint
 	 * 

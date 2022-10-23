@@ -39,10 +39,11 @@ import { CronOptions } from "./options.js";
  * All JS engines implements an immediate execution of delays larger that a 32-bit 
  * int to keep the behaviour concistent. 
  * 
+ * @constant
  * @type {number}
  */
 const maxDelay = Math.pow(2, 32 - 1) - 1;
-	
+
 /**
  * Cron entrypoint
  * 
