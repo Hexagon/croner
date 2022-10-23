@@ -68,13 +68,13 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
 | Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
 | **Popularity**                                                                                                                        |
-| Downloads/week [^1]        | 631K                | 20K                 | 358K      | 1240K                     | 766K                |
+| Downloads/week [^1]        | 672K                | 30K                 | 376K      | 1574K                     | 804K                |
 | **Quality**                                                                                                                        |
-| Issues [^1]                |                   0 |                   2 |   118 :warning: |                 119 :warning: |    133 :warning: |
+| Issues [^1]                |                   0 |                   2 |   118 :warning: |                 119 :warning: |    135 :warning: |
 | Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
 | **Performance**                                                                                                                        |
-| Ops/s `1 2 3 4 5 6`         | 28585                    | 25093                    | N/A :x:          | Test failed :x:      | 2381                    |
-| Ops/s `0 0 0 29 2 *`         | 33999                    | 17824                    | N/A :x:          | Test failed :x:      | 187 :warning:                    |
+| Ops/s `1 2 3 4 5 6`         | 99 952                    | 49 308                    | N/A :x:          | Test failed :x:      | 2 299 :warning:                    |
+| Ops/s `0 0 0 29 2 *`         | 65 392                    | 17 138                    | N/A :x:          | Test failed :x:      | 1 450 :warning:                    |
 | **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
 | Test `0 0 23 * * *`         | 2022-10-09 00:40    | 2022-10-09 00:40    | N/A       | 2022-10-09 00:40          | 2022-10-09 00:40    |
 | Test `0 0 0 L 2 *` [^2]      | 2023-02-28 00:00 |          2023-02-28 00:00 | N/A       | N/A                       |          2023-02-28 00:00 |
@@ -86,7 +86,7 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
 
 > **Note**
-> *   Table last updated at 2022-10-08
+> *   Table last updated at 2022-10-23
 > *   node-cron has no interface to predict when the function will run. So tests cannot be carried out.
 > *   All tests and benchmarks carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
 
