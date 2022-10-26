@@ -16,17 +16,18 @@ export class CronDate {
     */
     constructor(d?: CronDate | Date | string, tz?: string);
     /**
+     * TimeZone
      * @type {string|undefined}
      */
     tz: string | undefined;
     private fromDate;
-    ms: any;
-    s: any;
-    i: any;
-    h: any;
-    d: any;
-    m: any;
-    y: any;
+    ms: number;
+    second: number;
+    minute: number;
+    hour: number;
+    day: number;
+    month: number;
+    year: number;
     private fromCronDate;
     private apply;
     private fromString;

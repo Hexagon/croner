@@ -147,17 +147,17 @@ const DaysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
  * [
  *   First item is which member to process,
  *   Second item is which member to increment if we didn't find a mathch in current item,
- *   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12
+ *   Third item is an offset. if months is handled 0-11 in js date object, and we get 1-12 from `this.minute`
  *   from pattern. Offset should be -1
  * ]
  * 
  */
 const RecursionSteps = [
-	["m", "y",  0],
-	["d", "m", -1],
-	["h", "d",  0],
-	["i", "h",  0],
-	["s", "i",  0],
+	["month", "year",  0],
+	["day", "month", -1],
+	["hour", "day",  0],
+	["minute", "hour",  0],
+	["second", "minute",  0],
 ];
     
 /**
@@ -170,10 +170,12 @@ const RecursionSteps = [
 function CronDate (d, tz) {	
 
 	/**
+	 * TimeZone
 	 * @type {string|undefined}
 	 */
 	this.tz = tz;
 
+	// Populate object using input date, or throw
 	if (d &amp;&amp; d instanceof Date) {
 		if (!isNaN(d)) {
 			this.fromDate(d);
@@ -200,23 +202,29 @@ function CronDate (d, tz) {
  */
 CronDate.prototype.fromDate = function (inDate) {
 	
+	/* If this instance of CronDate has a target timezone set, 
+	 * use minitz to convert input date object to target timezone
+	 * before extracting hours, minutes, seconds etc.
+	 * 
+	 * If not, extract all parts from inDate as-is.
+	 */
 	if (this.tz) {
 		const d = minitz.toTZ(inDate, this.tz);
 		this.ms = inDate.getMilliseconds();
-		this.s = d.s;
-		this.i = d.i;
-		this.h = d.h;
-		this.d = d.d;
-		this.m  = d.m - 1;
-		this.y = d.y;
+		this.second = d.s;
+		this.minute = d.i;
+		this.hour = d.h;
+		this.day = d.d;
+		this.month  = d.m - 1;
+		this.year = d.y;
 	} else {
 		this.ms = inDate.getMilliseconds();
-		this.s = inDate.getSeconds();
-		this.i = inDate.getMinutes();
-		this.h = inDate.getHours();
-		this.d = inDate.getDate();
-		this.m  = inDate.getMonth();
-		this.y = inDate.getFullYear();
+		this.second = inDate.getSeconds();
+		this.minute = inDate.getMinutes();
+		this.hour = inDate.getHours();
+		this.day = inDate.getDate();
+		this.month  = inDate.getMonth();
+		this.year = inDate.getFullYear();
 	}
 
 };
@@ -229,13 +237,48 @@ CronDate.prototype.fromDate = function (inDate) {
  */
 CronDate.prototype.fromCronDate = function (d) {
 	this.tz = d.tz;
+
+	/**
+	 * Current full year, in local time or target timezone specified by `this.tz` 
+	 * @type {number}
+	 */
+	this.year = d.year;
+
+	/**
+	 * Current month (1-12), in local time or target timezone specified by `this.tz`
+	 * @type {number}
+	 */
+	this.month = d.month;
+
+	/**
+	 * Current day (1-31), in local time or target timezone specified by `this.tz`
+	 * @type {number}
+	 */
+	this.day = d.day;
+
+	/**
+	 * Current hour (0-23), in local time or target timezone specified by `this.tz`
+	 * @type {number}
+	 */
+	this.hour = d.hour;
+
+	/**
+	 * Current minute (0-59), in local time or target timezone specified by `this.tz`
+	 * @type {number}
+	 */
+	this.minute = d.minute;
+
+	/**
+	 * Current second (0-59), in local time or target timezone specified by `this.tz`
+	 * @type {number}
+	 */
+	this.second = d.second;
+	
+	/**
+	 * Current milliseconds
+	 * @type {number}
+	 */
 	this.ms = d.ms;
-	this.s = d.s;
-	this.i = d.i;
-	this.h = d.h;
-	this.d = d.d;
-	this.m = d.m;
-	this.y = d.y;
 };
 
 /**
@@ -244,15 +287,15 @@ CronDate.prototype.fromCronDate = function (d) {
  */
 CronDate.prototype.apply = function () {
 	// If any value could be out of bounds, apply 
-	if (this.m>11||this.d>DaysOfMonth[this.m]||this.h>59||this.i>59||this.s>59) {
-		const d = new Date(Date.UTC(this.y, this.m, this.d, this.h, this.i, this.s, this.ms));
+	if (this.month>11||this.day>DaysOfMonth[this.month]||this.hour>59||this.minute>59||this.second>59) {
+		const d = new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms));
 		this.ms = d.getUTCMilliseconds();
-		this.s = d.getUTCSeconds();
-		this.i = d.getUTCMinutes();
-		this.h = d.getUTCHours();
-		this.d = d.getUTCDate();
-		this.m  = d.getUTCMonth();
-		this.y = d.getUTCFullYear();
+		this.second = d.getUTCSeconds();
+		this.minute = d.getUTCMinutes();
+		this.hour = d.getUTCHours();
+		this.day = d.getUTCDate();
+		this.month  = d.getUTCMonth();
+		this.year = d.getUTCFullYear();
 		return true;
 	} else {
 		return false;
@@ -290,16 +333,16 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 	// Pre-calculate last day of month if needed
 	let lastDayOfMonth;
 	if (pattern.lastDayOfMonth) {
-		if (this.m !== 1) {
-			lastDayOfMonth = DaysOfMonth[this.m]; // About 20% performance increase when using L
+		if (this.month !== 1) {
+			lastDayOfMonth = DaysOfMonth[this.month]; // About 20% performance increase when using L
 		} else {
-			lastDayOfMonth = new Date(Date.UTC(this.y, this.m+1, 0,0,0,0,0)).getUTCDate();
+			lastDayOfMonth = new Date(Date.UTC(this.year, this.month+1, 0,0,0,0,0)).getUTCDate();
 		}
 	}
 
 	// Pre-calculate weekday if needed
 	// Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
-	const fDomWeekDay = (!pattern.starDOW &amp;&amp; target == "d") ? new Date(Date.UTC(this.y, this.m, 1,0,0,0,0)).getUTCDay() : undefined;
+	const fDomWeekDay = (!pattern.starDOW &amp;&amp; target == "day") ? new Date(Date.UTC(this.year, this.month, 1,0,0,0,0)).getUTCDay() : undefined;
 
 	for( let i = this[target] + offset; i &lt; pattern[target].length; i++ ) {
 
@@ -307,12 +350,12 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 		let match = pattern[target][i];
 
 		// Special case for last day of month
-		if (target === "d" &amp;&amp; pattern.lastDayOfMonth &amp;&amp; i-offset == lastDayOfMonth) {
+		if (target === "day" &amp;&amp; pattern.lastDayOfMonth &amp;&amp; i-offset == lastDayOfMonth) {
 			match = true;
 		}
 
 		// Special case for day of week
-		if (target === "d" &amp;&amp; !pattern.starDOW) {
+		if (target === "day" &amp;&amp; !pattern.starDOW) {
 			const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
 			// If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
 			// In all other cases use "AND"
@@ -380,7 +423,7 @@ CronDate.prototype.recurse = function (pattern, options, doing)  {
 		return this;
 
 		// ... or out of bounds ?
-	} else if (this.y >= 3000) {
+	} else if (this.year >= 3000) {
 		return null;
 
 		// ... oh, go to next part then
@@ -404,9 +447,9 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	
 	// Always add one second, or minimum interval, then clear milliseconds and apply changes if seconds has gotten out of bounds
 	if (options.interval > 1 &amp;&amp; hasPreviousRun) {
-		this.s += options.interval;
+		this.second += options.interval;
 	} else {
-		this.s += 1;
+		this.second += 1;
 	}
 	this.ms = 0;
 	this.apply();
@@ -425,9 +468,9 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
  */
 CronDate.prototype.getDate = function (internal) {
 	if (internal || !this.tz) {
-		return new Date(this.y, this.m, this.d, this.h, this.i, this.s, this.ms);
+		return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 	} else {
-		return minitz(this.y, this.m+1, this.d, this.h, this.i, this.s, this.tz);
+		return minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz);
 	}
 };
 

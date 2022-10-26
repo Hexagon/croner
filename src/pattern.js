@@ -2,7 +2,7 @@ import { CronDate } from "./date.js";
 
 /**
  * Name for each part of the cron pattern
- * @typedef {("s" | "i" | "h" | "d" | "m" | "dow")} CronPatternPart
+ * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dow")} CronPatternPart
  */
 
 /**
@@ -25,12 +25,12 @@ function CronPattern (pattern, timezone) {
 	this.pattern 		= pattern;
 	this.timezone		= timezone;
 
-	this.s        = Array(60).fill(0); // 0-59
-	this.i        = Array(60).fill(0); // 0-59
-	this.h        = Array(24).fill(0); // 0-23
-	this.d        = Array(31).fill(0); // 0-30 in array, 1-31 in config
-	this.m        = Array(12).fill(0); // 0-11 in array, 1-12 in config
-	this.dow      = Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
+	this.second			= Array(60).fill(0); // 0-59
+	this.minute			= Array(60).fill(0); // 0-59
+	this.hour			= Array(24).fill(0); // 0-23
+	this.day			= Array(31).fill(0); // 0-30 in array, 1-31 in config
+	this.month			= Array(12).fill(0); // 0-11 in array, 1-12 in config
+	this.dow			= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 	this.lastDayOfMonth = false;
 	this.starDOM = false;
@@ -102,12 +102,12 @@ CronPattern.prototype.parse = function () {
 	this.throwAtIllegalCharacters(parts);
 
 	// Parse parts into arrays, validates as we go
-	this.partToArray("s",    parts[0], 0);
-	this.partToArray("i",    parts[1], 0);
-	this.partToArray("h",      parts[2], 0);
-	this.partToArray("d",       parts[3], -1);
-	this.partToArray("m",     parts[4], -1);
-	this.partToArray("dow", parts[5], 0);
+	this.partToArray("second",    parts[0], 0);
+	this.partToArray("minute",    parts[1], 0);
+	this.partToArray("hour",      parts[2], 0);
+	this.partToArray("day",       parts[3], -1);
+	this.partToArray("month",     parts[4], -1);
+	this.partToArray("dow",       parts[5], 0);
 
 	// 0 = Sunday, 7 = Sunday
 	if( this.dow[7] ) {
