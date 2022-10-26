@@ -95,8 +95,8 @@ module.exports = function (Cron, test) {
 
 	});
 
-	test("0 2 30 * * * with 365 iterations should return 366 days from now in America/New_York", function () {
-		let scheduler = new Cron("0 0 0 * * *", { timezone: "America/New_York" }),
+	test("0 30 2 * * * with 365 iterations should return 365 days from now in America/New_York", function () {
+		let scheduler = new Cron("0 30 2 * * *", { timezone: "America/New_York" }),
 			prevRun = new Date(),
 			nextRun,
 			iterations = 365,
