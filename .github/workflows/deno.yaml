@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         deno-version: [1.20.6, "v1.x"]
+        timezone: ["America/New_York", "Europe/London", "Europe/Berlin", "America/Santiago"]
 
     steps:
       - name: Git Checkout Deno Module
@@ -25,5 +26,8 @@ jobs:
         run: deno fmt --check
       - name: Test Deno Linting
         run: deno lint
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: ${{ matrix.timezone }}
       - name: Test Deno Module
         run: deno task test

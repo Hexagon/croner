@@ -18,6 +18,7 @@ jobs:
       matrix:
         node-version: [12.x, 14.x, 16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        timezone: ["America/New_York", "Europe/London", "Europe/Berlin", "America/Santiago"]
 
     steps:
     - uses: actions/checkout@v2
@@ -26,5 +27,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - uses: szenius/set-timezone@v1.0
+      with:
+        timezoneLinux: ${{ matrix.timezone }}
     - run: npm ci
     - run: npm run build:ci
