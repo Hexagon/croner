@@ -314,13 +314,6 @@ Cron.prototype._next = function (prev) {
 		(this.options.stopAt && nextRun.getTime() >= this.options.stopAt.getTime() )) {
 		return null;
 
-	} else if (nextRun.getTime() <= prev.getTime()) {
-		// Next run can never be earlier than or equal to previous run. This indicate a negative DST switch
-		// When this happens, increase previous time by one minute, and recurse into this function
-		// until next run is matched
-		const incrementedDate = new CronDate(new Date(prev.getTime() + 60000),this.options.timezone);
-		return this._next(incrementedDate);
-
 	} else {
 		// All seem good, return next run
 		return nextRun;

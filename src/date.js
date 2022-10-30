@@ -179,6 +179,26 @@ CronDate.prototype.apply = function () {
 };
 
 /**
+ * Check if current state is valid, 
+ * @private
+ */
+CronDate.prototype.isValid = function () {
+
+	// Always apply before checking validity
+	this.apply();
+
+	// Check validity
+	try {
+		// Setting last argument of minitz (throwOnInvalid) to true, let's us know if current state
+		// is in fact a valid point in time at `this.tz`
+		minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz, true);
+		return true;
+	} catch(e) {
+		return false;
+	}
+};
+
+/**
  * Sets internals by parsing a string
  * @private
  * 
@@ -331,7 +351,9 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	this.apply();
 
 	// Recursively change each part (y, m, d ...) until next match is found, return null on failure
-	return this.recurse(pattern, options, 0);
+	let result = this.recurse(pattern, options, 0);
+
+	return result;
 	
 };
 
