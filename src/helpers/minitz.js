@@ -1,8 +1,15 @@
 /* ------------------------------------------------------------------------------------
+
 	minitz - MIT License - Hexagon <hexagon@56k.guru>
+
+	Version 4.0.1
+
 	------------------------------------------------------------------------------------
+
 	License:
+
 	Copyright (c) 2022 Hexagon <hexagon@56k.guru>
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
@@ -18,6 +25,7 @@
 	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 	THE SOFTWARE.
+
   ------------------------------------------------------------------------------------  */
 
 /**
@@ -122,9 +130,11 @@ minitz.fromTZ = function(tp, throwOnInvalid) {
 		if ((dateOffsGuess2 - dateOffsGuess) === 0) {
 			// All good, return local time
 			return dateGuess2;
+		} else if(!throwOnInvalid && (dateOffsGuess2 - dateOffsGuess) > 0) {
+			// We're most probably dealing with a DST transition where we should use the offset of the second guess
+			return dateGuess2; 
 		} else if (!throwOnInvalid) {
-			// This guess wasn't spot on either, we're most probably dealing with a DST transition
-			// - return the local time adjusted by _initial_ offset
+			// We're most probably dealing with a DST transition where we should use the offset of the initial guess
 			return dateGuess;
 		} else {
 			// Input time is invalid, and the library is instructed to throw, so let's do it

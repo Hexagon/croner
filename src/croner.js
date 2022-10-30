@@ -317,7 +317,7 @@ Cron.prototype._next = function (prev) {
 	} else {
 		// All seem good, return next run
 		return nextRun;
-  
+
 	}
 		
 };
