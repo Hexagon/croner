@@ -30,7 +30,6 @@ export class CronDate {
     year: number;
     private fromCronDate;
     private apply;
-    private isValid;
     private fromString;
     private findNext;
     private recurse;
