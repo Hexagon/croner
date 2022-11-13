@@ -13,7 +13,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 *   Pause, resume or stop execution after a task is scheduled.
 *   Works in Node.js >=6.0 (both require and import).
 *   Works in Deno >=1.16.
-*   Works in Bun >=2.2.0
+*   Works in Bun >=0.2.2
 *   Works in browsers as standalone, UMD or ES-module.
 *   Works with both JavaScriptCore and V8.
 *   Schedule using specific target timezones.
