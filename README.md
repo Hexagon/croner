@@ -5,7 +5,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 
 # Croner
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
+![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
@@ -13,7 +13,9 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 *   Pause, resume or stop execution after a task is scheduled.
 *   Works in Node.js >=6.0 (both require and import).
 *   Works in Deno >=1.16.
+*   Works in Bun >=2.2.0
 *   Works in browsers as standalone, UMD or ES-module.
+*   Works with both JavaScriptCore and V8.
 *   Schedule using specific target timezones.
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 
@@ -124,6 +126,16 @@ import { Cron } from "croner";
 const job : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
 });
+```
+
+### Bun
+
+```bun add croner```
+
+> **Note** If you experience problems during install, try using `bun add croner --backend=copyfile`.
+
+```javascript
+import Cron from "croner";
 ```
 
 ### Deno
