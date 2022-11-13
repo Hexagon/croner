@@ -3,7 +3,7 @@ import { Cron } from "../../../src/croner.js";
 
 test("31st february should not be found", function () {
   const scheduler = new Cron("* * * 31 2 *");
-  expect(scheduler.next(), null);
+  expect(scheduler.next()).toBe(null);
 });
 
 test("Next 10 run times is returned by enumeration(), and contain a reasonable time span", () => {

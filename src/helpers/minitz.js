@@ -225,10 +225,9 @@ minitz.tp = (y,m,d,h,i,s,tz) => { return { y, m, d, h, i, s, tz: tz }; };
  */
 function getTimezoneOffset(timeZone, date = new Date()) {
 	const tz = date.toLocaleString("en", {timeZone, timeStyle: "long"}).split(" ").slice(-1)[0];
-	const dateString = date.toString().replace("GMT+0000 (Coordinated Universal Time)","");
+	const dateString = date.toLocaleString();
 	return Date.parse(`${dateString} UTC`) - Date.parse(`${dateString} ${tz}`);
 }
-
 
 /**
  * Helper function that takes a ISO8001 local date time string and creates a Date object.

@@ -1,0 +1,32 @@
+name: Bun CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        bun-version: ["v0.2.2"]
+        timezone: ["America/New_York", "Europe/Berlin"]
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+      - name: Use Bun Version ${{ matrix.bun-version }}
+        uses: antongolub/action-setup-bun@v1
+        with:
+          bun-version: ${{ matrix.bun-version }}
+          bun-repo: 'oven-sh/bun'
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: ${{ matrix.timezone }}
+      - name: Install Dependencies
+        run: bun install
+      - name: Test Bun Module
+        run: bun run test:bun  
