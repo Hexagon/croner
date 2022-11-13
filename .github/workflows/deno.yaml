@@ -26,7 +26,7 @@ jobs:
         run: deno fmt --check
       - name: Test Deno Linting
         run: deno lint
-      - uses: szenius/set-timezone@v1.0
+      - uses: szenius/set-timezone@v1.1
         with:
           timezoneLinux: ${{ matrix.timezone }}
       - name: Test Deno Module

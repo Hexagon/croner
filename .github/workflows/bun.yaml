@@ -23,7 +23,7 @@ jobs:
         with:
           bun-version: ${{ matrix.bun-version }}
           bun-repo: 'oven-sh/bun'
-      - uses: szenius/set-timezone@v1.0
+      - uses: szenius/set-timezone@v1.1
         with:
           timezoneLinux: ${{ matrix.timezone }}
       - name: Install Dependencies
