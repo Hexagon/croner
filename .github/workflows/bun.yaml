@@ -19,7 +19,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v3
       - name: Use Bun Version ${{ matrix.bun-version }}
-        uses: antongolub/action-setup-bun@v1.12
+        uses: antongolub/action-setup-bun@v1.12.8
         with:
           bun-version: ${{ matrix.bun-version }}
           bun-repo: 'oven-sh/bun'
