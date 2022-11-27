@@ -8,8 +8,8 @@
 
 		minitz - MIT License - Hexagon <hexagon@56k.guru>
 
-		Version 4.0.1
-
+		Version 4.0.4
+		
 		------------------------------------------------------------------------------------
 
 		License:
@@ -230,10 +230,18 @@
 	 * @returns {number} - Offset in ms between UTC and timeZone
 	 */
 	function getTimezoneOffset(timeZone, date = new Date()) {
+
+		// Get timezone 
 		const tz = date.toLocaleString("en", {timeZone, timeStyle: "long"}).split(" ").slice(-1)[0];
-		const dateString = date.toLocaleString();
-		return Date.parse(`${dateString} UTC`) - Date.parse(`${dateString} ${tz}`);
+
+		// Extract time in en-US format
+		// - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
+		const dateString = date.toLocaleString("en-US").replace(/[\u202f]/," ");
+
+		// Check ms offset between GMT and extracted timezone
+		return Date.parse(`${dateString} GMT`) - Date.parse(`${dateString} ${tz}`);
 	}
+
 
 	/**
 	 * Helper function that takes a ISO8001 local date time string and creates a Date object.
