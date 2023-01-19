@@ -143,7 +143,7 @@ import Cron from "croner";
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.3.4/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.4.0/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -153,7 +153,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.3.4/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.4.0/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
