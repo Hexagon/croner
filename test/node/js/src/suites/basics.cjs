@@ -373,6 +373,25 @@ module.exports = function (Cron, test) {
 			resolve(); 
 		});
 	}));
+	test("scheduled job should execute callback on unhandled error with option catch: callback()",  timeout(4000, (resolve) => {
+		let job = Cron("* * * * * *",{catch: (e) => { 
+			assert.instance(e,Error);
+			resolve(); 
+		}},() => { 
+			job.stop();
+			throw new Error("E");
+		});
+	}));
+	test("scheduled job should execute callback on unhandled error with option catch: callback()",  timeout(4000, (resolve) => {
+		let job = Cron("* * * * * *",{catch: async (e) => { 
+			assert.instance(e,Error);
+			resolve(); 
+		}}, async () => {
+			job.stop();
+			throw new Error("E");
+		}
+		);
+	}));
 	test("shorthand schedule without options should not throw, and execute",  timeout(2000, (resolve, reject) => {
 		try {
 			let job = Cron("* * * * * *",() => { job.stop(); resolve(); });

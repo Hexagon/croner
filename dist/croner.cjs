@@ -283,7 +283,8 @@
 	 * @typedef {Object} CronOptions - Cron scheduler options
 	 * @property {boolean} [paused] - Job is paused
 	 * @property {boolean} [kill] - Job is about to be killed or killed
-	 * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+	 * @property {boolean | function} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+	 * 										  - If set to a function, execute function on catching the error.
 	 * @property {number} [maxRuns] - Maximum nuber of executions
 	 * @property {number} [interval] - Minimum interval between executions, in seconds
 	 * @property {string | Date} [startAt] - When to start running
@@ -1304,7 +1305,7 @@
 		}
 		
 		// Ok, go!
-		this.currentTimeout = setTimeout(() => {
+		this.currentTimeout = setTimeout(async () => {
 		
 			const now = new Date();
 
@@ -1312,15 +1313,24 @@
 		
 				this.options.maxRuns--;
 		
-				// Always catch errors, but only re-throw if options.catch is not set
+				// Always catch errors
+				//  - re-throw if options.catch is not set
+				//	- call callback if options.catch is set to a function
+				//  - ignore if options.catch is set to any other truthy value
 				if (this.options.catch) {
 					try {
-						this.fn(this, this.options.context);
+						await this.fn(this, this.options.context);
 					} catch (_e) {
-						// Ignore
+						if (
+							Object.prototype.toString.call(this.options.catch) === "[object Function]"
+							|| "function" === typeof this.options.catch
+							|| this.options.catch instanceof Function
+						) {
+							this.options.catch(_e);
+						}
 					}
 				} else {
-					this.fn(this, this.options.context);
+					await this.fn(this, this.options.context);
 				}
 		
 				// Set previous run to now

@@ -244,7 +244,7 @@ Cron.prototype.schedule = function (func, partial) {
 	}
 	
 	// Ok, go!
-	this.currentTimeout = setTimeout(() => {
+	this.currentTimeout = setTimeout(async () => {
 	
 		const now = new Date();
 
@@ -252,15 +252,24 @@ Cron.prototype.schedule = function (func, partial) {
 	
 			this.options.maxRuns--;
 	
-			// Always catch errors, but only re-throw if options.catch is not set
+			// Always catch errors
+			//  - re-throw if options.catch is not set
+			//	- call callback if options.catch is set to a function
+			//  - ignore if options.catch is set to any other truthy value
 			if (this.options.catch) {
 				try {
-					this.fn(this, this.options.context);
+					await this.fn(this, this.options.context);
 				} catch (_e) {
-					// Ignore
+					if (
+						Object.prototype.toString.call(this.options.catch) === "[object Function]"
+						|| "function" === typeof this.options.catch
+						|| this.options.catch instanceof Function
+					) {
+						this.options.catch(_e);
+					}
 				}
 			} else {
-				this.fn(this, this.options.context);
+				await this.fn(this, this.options.context);
 			}
 	
 			// Set previous run to now

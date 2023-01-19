@@ -11,7 +11,7 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Find first date of next month, find date of next tuesday, etc.
 *   Pause, resume or stop execution after a task is scheduled.
-*   Works in Node.js >=6.0 (both require and import).
+*   Works in Node.js >=7.6 (both require and import).
 *   Works in Deno >=1.16.
 *   Works in Bun >=0.2.2
 *   Works in browsers as standalone, UMD or ES-module.
@@ -224,7 +224,7 @@ job.stop();
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
 | maxRuns      | Infinite       | Number         |                                       |
-| catch	       | false          | Boolean        | Catch and ignore unhandled errors in triggered function |
+| catch	       | false          | Boolean        | Catch unhandled errors in triggered function. Passing `true` will silently ignore errors. Passing a callback function will trigger this callback on error. |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
 | startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
 | stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |

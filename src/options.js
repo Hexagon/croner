@@ -4,7 +4,8 @@ import { CronDate } from "./date.js";
  * @typedef {Object} CronOptions - Cron scheduler options
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
- * @property {boolean} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+ * @property {boolean | function} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+ * 										  - If set to a function, execute function on catching the error.
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [interval] - Minimum interval between executions, in seconds
  * @property {string | Date} [startAt] - When to start running
