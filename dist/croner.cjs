@@ -280,10 +280,15 @@
 	minitz.minitz = minitz;
 
 	/**
+	 * @callback CatchCallbackFn
+	 * @param {unknown} e
+	 */
+
+	/**
 	 * @typedef {Object} CronOptions - Cron scheduler options
 	 * @property {boolean} [paused] - Job is paused
 	 * @property {boolean} [kill] - Job is about to be killed or killed
-	 * @property {boolean | function} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+	 * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
 	 * 										  - If set to a function, execute function on catching the error.
 	 * @property {number} [maxRuns] - Maximum nuber of executions
 	 * @property {number} [interval] - Minimum interval between executions, in seconds
@@ -1230,7 +1235,7 @@
 	Cron.prototype.msToNext = function (prev) {
 
 		// Get next run time
-		const next = this._next(prev || this.previousrun);
+		const next = this._next(prev);
 
 		// Default previous for millisecond calculation
 		prev = new CronDate(prev, this.options.timezone);

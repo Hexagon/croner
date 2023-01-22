@@ -14,7 +14,7 @@ export type CronOptions = {
      * - Continue exection even if a unhandled error is thrown by triggered function
      * - If set to a function, execute function on catching the error.
      */
-    catch?: boolean | Function;
+    catch?: boolean | CatchCallbackFn;
     /**
      * - Maximum nuber of executions
      */
@@ -44,11 +44,16 @@ export type CronOptions = {
      */
     context?: unknown;
 };
+export type CatchCallbackFn = (e: unknown) => any;
+/**
+ * @callback CatchCallbackFn
+ * @param {unknown} e
+ */
 /**
  * @typedef {Object} CronOptions - Cron scheduler options
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
- * @property {boolean | function} [catch] - Continue exection even if a unhandled error is thrown by triggered function
+ * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
  * 										  - If set to a function, execute function on catching the error.
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [interval] - Minimum interval between executions, in seconds

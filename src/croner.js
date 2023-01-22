@@ -169,7 +169,7 @@ Cron.prototype.previous = function () {
 Cron.prototype.msToNext = function (prev) {
 
 	// Get next run time
-	const next = this._next(prev || this.previousrun);
+	const next = this._next(prev);
 
 	// Default previous for millisecond calculation
 	prev = new CronDate(prev, this.options.timezone);
