@@ -45,6 +45,14 @@ import { CronOptions } from "./options.js";
 const maxDelay = Math.pow(2, 32 - 1) - 1;
 
 /**
+ * An array containing all created cron jobs.
+ *
+ * @constant
+ * @type {Cron[]}
+ */
+const scheduledJobs = [];
+
+/**
  * Cron entrypoint
  * 
  * @constructor
@@ -105,6 +113,7 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 		this.schedule();
 	}
 	
+	scheduledJobs.push(this);
 	return this;
 	
 }
@@ -335,5 +344,6 @@ Cron.prototype._next = function (prev) {
 };
 
 Cron.Cron = Cron;
+Cron.scheduledJobs = scheduledJobs;
 export default Cron;
-export { Cron };
+export { Cron, scheduledJobs };

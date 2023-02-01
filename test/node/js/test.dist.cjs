@@ -25,7 +25,8 @@ THE SOFTWARE.
 /* eslint no-unused-vars: 0 */
 
 "use strict";
-const 
-	Cron = require("../../../dist/croner.cjs"),
-	test = require("./src/suite.cjs");
-test(Cron);
+const
+	Cron = require("../../../dist/croner.min.cjs"),
+	test = require("./src/suite.cjs"),
+	{ scheduledJobs } = require("../../../dist/croner.min.cjs");
+test(Cron, scheduledJobs);

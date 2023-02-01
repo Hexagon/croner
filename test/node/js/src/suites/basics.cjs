@@ -2,7 +2,15 @@ let
 	assert = require("uvu/assert"),
 	timeout = require("../util/timeout.cjs");
 
-module.exports = function (Cron, test) {
+module.exports = function (Cron, test, scheduledJobs) {
+
+	test("Created jobs should appear in the 'scheduledJobs' array", function() {
+		// Empty an array, so it doesn't contain jobs from other tests
+		scheduledJobs.length = 0;
+		assert.equal(scheduledJobs, []);
+		const job = new Cron("* * * * * *");
+		assert.equal(scheduledJobs, [job]);
+	});
 
 	test("new Cron(...) should not throw", function () {
 		assert.not.throws(() => {

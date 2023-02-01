@@ -1,7 +1,7 @@
-module.exports = function (Cron) {
+module.exports = function (Cron, scheduledJobs) {
 	const test = require("uvu").test;
 
-	require("./suites/basics.cjs")(Cron, test);
+	require("./suites/basics.cjs")(Cron, test, scheduledJobs);
 	require("./suites/pattern.cjs")(Cron, test);
 	require("./suites/range.cjs")(Cron, test);
 	require("./suites/stepping.cjs")(Cron, test);
