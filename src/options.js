@@ -7,6 +7,7 @@ import { CronDate } from "./date.js";
 
 /**
  * @typedef {Object} CronOptions - Cron scheduler options
+ * @property {string} [name] - Name of a job
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
@@ -34,6 +35,9 @@ function CronOptions(options) {
 		options = {};
 	}
 	
+	// Don't duplicate the 'name' property
+	delete options.name;
+
 	// Keep options, or set defaults
 	options.legacyMode = (options.legacyMode === void 0) ? true : options.legacyMode;
 	options.paused = (options.paused === void 0) ? false : options.paused;

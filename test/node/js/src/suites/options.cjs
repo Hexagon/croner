@@ -4,6 +4,16 @@ let
 
 module.exports = function (Cron, test) {
 
+	test("name should be undefined if it's not specified", function () {
+		const scheduler = new Cron("* * * * * *");
+		assert.is(scheduler.name, undefined);
+	});
+
+	test("name should be defined if it's specified", function () {
+		const scheduler = new Cron("* * * * * *", { name: "my job" });
+		assert.is(scheduler.name, "my job");
+	});
+
 	test("Valid startAt with DateTime string should not throw", function () {
 		assert.not.throws(() => {
 			let 
