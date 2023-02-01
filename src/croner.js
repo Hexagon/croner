@@ -269,7 +269,7 @@ Cron.prototype.schedule = function (func, partial) {
 					}
 				}
 			} else {
-				await this.fn(this, this.options.context);
+				this.fn(this, this.options.context);
 			}
 	
 			// Set previous run to now

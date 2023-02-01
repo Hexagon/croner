@@ -516,14 +516,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.4.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.4.2/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.4.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.4.2/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
