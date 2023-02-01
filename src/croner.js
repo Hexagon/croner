@@ -79,6 +79,9 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 		throw new Error("Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).");
 	}
 	
+	/** @type {string|undefined} */
+	this.name = options ? options.name : void 0;
+	
 	/** @type {CronOptions} */
 	this.options = CronOptions(options);
 	
