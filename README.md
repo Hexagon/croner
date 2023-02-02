@@ -102,7 +102,8 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 [^2]: Requires support for L-modifier
 [^3]: In dom-AND-dow mode, only supported by croner at the moment.
 [^4]: Node-cron has no way of showing next run time.
-<details>
+
+</details>
 
 ## Installation
 
