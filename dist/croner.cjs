@@ -1335,7 +1335,7 @@
 						}
 					}
 				} else {
-					await this.fn(this, this.options.context);
+					this.fn(this, this.options.context);
 				}
 		
 				// Set previous run to now
