@@ -3,6 +3,10 @@
  */
 export type CronOptions = {
     /**
+     * - Name of a job
+     */
+    name?: string;
+    /**
      * - Job is paused
      */
     paused?: boolean;
@@ -51,6 +55,7 @@ export type CatchCallbackFn = (e: unknown) => any;
  */
 /**
  * @typedef {Object} CronOptions - Cron scheduler options
+ * @property {string} [name] - Name of a job
  * @property {boolean} [paused] - Job is paused
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function

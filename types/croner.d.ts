@@ -20,6 +20,8 @@ export class Cron {
      * @returns {Cron}
      */
     constructor(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function);
+    /** @type {string|undefined} */
+    name: string | undefined;
     /** @type {CronOptions} */
     options: CronOptions;
     once: CronDate;
@@ -96,7 +98,15 @@ export class Cron {
 }
 export namespace Cron {
     export { Cron };
+    export { scheduledJobs };
 }
+/**
+ * An array containing all created cron jobs.
+ *
+ * @constant
+ * @type {Cron[]}
+ */
+export const scheduledJobs: Cron[];
 import { CronOptions } from "./options.js";
 import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
