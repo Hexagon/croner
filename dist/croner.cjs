@@ -286,6 +286,7 @@
 
 	/**
 	 * @typedef {Object} CronOptions - Cron scheduler options
+	 * @property {string} [name] - Name of a job
 	 * @property {boolean} [paused] - Job is paused
 	 * @property {boolean} [kill] - Job is about to be killed or killed
 	 * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
@@ -313,6 +314,9 @@
 			options = {};
 		}
 		
+		// Don't duplicate the 'name' property
+		delete options.name;
+
 		// Keep options, or set defaults
 		options.legacyMode = (options.legacyMode === void 0) ? true : options.legacyMode;
 		options.paused = (options.paused === void 0) ? false : options.paused;
@@ -1111,6 +1115,14 @@
 	const maxDelay = Math.pow(2, 32 - 1) - 1;
 
 	/**
+	 * An array containing all created cron jobs.
+	 *
+	 * @constant
+	 * @type {Cron[]}
+	 */
+	const scheduledJobs = [];
+
+	/**
 	 * Cron entrypoint
 	 * 
 	 * @constructor
@@ -1145,6 +1157,9 @@
 			throw new Error("Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).");
 		}
 		
+		/** @type {string|undefined} */
+		this.name = options ? options.name : void 0;
+		
 		/** @type {CronOptions} */
 		this.options = CronOptions(options);
 		
@@ -1168,6 +1183,7 @@
 			this.schedule();
 		}
 		
+		scheduledJobs.push(this);
 		return this;
 		
 	}
@@ -1398,6 +1414,7 @@
 	};
 
 	Cron.Cron = Cron;
+	Cron.scheduledJobs = scheduledJobs;
 
 	return Cron;
 
