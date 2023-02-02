@@ -65,6 +65,12 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 | Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
 | Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
 | Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
+
+<details>
+  <summary>In depth comparison of various libraries</summary>
+  
+|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
+|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
 | **Size**                                                                                                                        |
 | Minified size (KB)        | 15.5                | 16.3            | 16.5      | -                      | -                |
 | Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
@@ -96,7 +102,7 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 [^2]: Requires support for L-modifier
 [^3]: In dom-AND-dow mode, only supported by croner at the moment.
 [^4]: Node-cron has no way of showing next run time.
-
+<details>
 
 ## Installation
 
@@ -143,7 +149,7 @@ import Cron from "croner";
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.5.0/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.5.1/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -153,7 +159,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.5.0/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.5.1/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");

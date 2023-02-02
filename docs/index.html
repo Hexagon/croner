@@ -304,6 +304,22 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td style="text-align:center"></td>
 <td style="text-align:center"></td>
 </tr>
+</tbody>
+</table>
+<details>
+  <summary>In depth comparison of various libraries</summary>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center">croner</th>
+<th style="text-align:center">cronosjs</th>
+<th style="text-align:center">node-cron</th>
+<th style="text-align:center">cron</th>
+<th style="text-align:center">node-schedule</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><strong>Size</strong></td>
 <td style="text-align:center"></td>
@@ -486,6 +502,7 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 [^2]: Requires support for L-modifier
 [^3]: In dom-AND-dow mode, only supported by croner at the moment.
 [^4]: Node-cron has no way of showing next run time.</p>
+<details>
 <h2>Installation</h2>
 <h3>Node.js</h3>
 <p><code>npm install croner --save</code></p>
@@ -516,14 +533,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.5.0/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.5.1/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.5.0/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.5.1/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);

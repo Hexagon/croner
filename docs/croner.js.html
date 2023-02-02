@@ -393,17 +393,21 @@ Cron.prototype.schedule = function (func, partial) {
 			//	- call callback if options.catch is set to a function
 			//  - ignore if options.catch is set to any other truthy value
 			if (this.options.catch) {
-				try {
-					await this.fn(this, this.options.context);
-				} catch (_e) {
-					if (
-						Object.prototype.toString.call(this.options.catch) === "[object Function]"
-						|| "function" === typeof this.options.catch
-						|| this.options.catch instanceof Function
-					) {
-						this.options.catch(_e);
+				// We don't wan't croner to stop even if a job is running over next
+				// - so we wrap the function in a non-awaited anonymous function clause
+				(async (inst) => {
+					try {
+						await inst.fn(inst, inst.options.context);
+					} catch (_e) {
+						if (
+							Object.prototype.toString.call(inst.options.catch) === "[object Function]"
+							|| "function" === typeof inst.options.catch
+							|| inst.options.catch instanceof Function
+						) {
+							inst.options.catch(_e);
+						}
 					}
-				}
+				})(this);
 			} else {
 				this.fn(this, this.options.context);
 			}
@@ -469,6 +473,7 @@ Cron.prototype._next = function (prev) {
 
 Cron.Cron = Cron;
 Cron.scheduledJobs = scheduledJobs;
+
 export default Cron;
 export { Cron, scheduledJobs };
 </code></pre>
