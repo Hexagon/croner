@@ -74,7 +74,7 @@
   "devDependencies": {
     "c8": "^7.11.3",
     "eslint": "^8.19.0",
-    "jsdoc": "^3.6.10",
+    "jsdoc": "^4.0.0",
     "jsdoc-chameleon-template": "^1.0.2",
     "minitz": "^4.0.0",
     "rollup": "^3.2.3",

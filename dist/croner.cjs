@@ -1326,7 +1326,7 @@
 		}
 		
 		// Ok, go!
-		this.currentTimeout = setTimeout(async () => {
+		this.currentTimeout = setTimeout(() => {
 		
 			const now = new Date();
 
