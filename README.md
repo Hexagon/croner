@@ -1,6 +1,6 @@
 <p align="center">
 <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
-Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. Most features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
 # Croner
@@ -9,14 +9,14 @@ Trigger functions and/or evaluate cron expressions in JavaScript. No dependencie
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
-*   Find first date of next month, find date of next tuesday, etc.
-*   Pause, resume or stop execution after a task is scheduled.
+*   Find the first date of the next month, the date of the next Tuesday, etc.
+*   Pause, resume, or stop execution after a task is scheduled.
 *   Works in Node.js >=7.6 (both require and import).
 *   Works in Deno >=1.16.
 *   Works in Bun >=0.2.2
 *   Works in browsers as standalone, UMD or ES-module.
 *   Works with both JavaScriptCore and V8.
-*   Schedule using specific target timezones.
+*   Schedule using specific target time zones.
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 
 Quick examples:
@@ -43,9 +43,9 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 More [examples](#examples)...
 
-## Why another javascript cron implementation
+## Why another JavaScript cron implementation
 
-Because the existing ones aren't good enough. They have serious bugs, use bloated dependencies, do not work in all environments and/or simply don't work as expected.
+Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.
 
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
@@ -95,8 +95,8 @@ Because the existing ones aren't good enough. They have serious bugs, use bloate
 
 > **Note**
 > *   Table last updated at 2022-10-23
-> *   node-cron has no interface to predict when the function will run. So tests cannot be carried out.
-> *   All tests and benchmarks carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
+> *   node-cron has no interface to predict when the function will run, so tests cannot be carried out.
+> *   All tests and benchmarks were carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
 
 [^1]: As of 2022-10-08
 [^2]: Requires support for L-modifier
@@ -125,7 +125,7 @@ TypeScript
 
 Notes for TypeScript:
 
-* If using strict eslint-rules, specifically `new-cap` combined with `no-new`, you need to import and use lower case `cron` instead of `{ Cron }`.
+* If using strict eslint rules, specifically new-cap combined with no-new, you need to import and use lowercase `cron` instead of `{ Cron }`.
 
 ```typescript
 import { Cron } from "croner";
@@ -139,7 +139,7 @@ const job : Cron = new Cron("* * * * * *", () => {
 
 ```bun add croner```
 
-> **Note** If you experience problems during install, try using `bun add croner --backend=copyfile`.
+> **Note** If you encounter problems during installation, try using `bun add croner --backend=copyfile`.
 
 ```javascript
 import Cron from "croner";
@@ -171,9 +171,9 @@ const _scheduler : Cron = new Cron("* * * * * *", () => {
 
 #### Manual
 
-*   Download latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip)
-*   Unpack
-*   Grab ```croner.min.js``` (UMD and standalone) or ```croner.min.mjs``` (ES-module) from the [dist/](/dist) folder
+*   Download the latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip).
+*   Unpack the zip file.
+*   Grab ```croner.min.js``` (UMD and standalone) or ```croner.min.mjs``` (ES-module) from the [dist/](/dist) folder.
 
 #### CDN
 
@@ -183,7 +183,7 @@ To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS]
 <script src="https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js"></script>
 ```
 
-To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+To use as an [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
@@ -192,6 +192,7 @@ To use as a [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/
 	// ... see usage section ...
 </script>
 ```
+
 ## Documentation
 
 Full documentation available at [hexagon.github.io/croner](https://hexagon.github.io/croner/Cron.html).
@@ -243,15 +244,15 @@ job.stop();
 
 #### Pattern
 
-The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below. 
+The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:
 
-*   Croner expressions support the following additional modifiers
-	-   *?* A question mark is substituted with croner initialization time, as an example - `? ? * * * *` would be substituted with `25 8 * * * *` if time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
-	-   *L* L can be used in the day of month field, to specify the last day of the month.
+*   Croner expressions have the following additional modifiers:
+	-   *?* A question mark is substituted with the time of Croner's initialization. For example `? ? * * * *` would be substituted with `25 8 * * * *` if the time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
+	-   *L* L can be used in the day of the month field to specify the last day of the month.
 
-*   Croner allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger at the specified date/time, and only once. If you use a timezone different from local, you should pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).
+*   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
-*   Croner allow to change how day-of-week and day-of-month is combined. By default croner (and Vixie cron) will trigger when day-of-month OR day-of-week conditions match. As an example ```0 20 1 * MON``` will trigger on the first of the month, as well as on each monday. If you want to use AND (and in this example only trigger on mondays that is also 1st of the month) you can pass `{ legacyMode: false }`. See issue [#53](https://github.com/Hexagon/croner/issues/53) for more information.
+*   Croner also allows you to change how the day-of-week and day-of-month conditions are combined. By default, Croner (and Vixie cron) will trigger when either the day-of-month OR the day-of-week conditions match. For example, `0 20 1 * MON` will trigger on the first of the month as well as each Monday. If you want to use AND (so that it only triggers on Mondays that are also the first of the month), you can pass `{ legacyMode: false }`. For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
@@ -275,7 +276,7 @@ The expressions of Croner are very similar to the ones of Vixie Cron, with a few
 | Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ?                  | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
 
 > **Note**
-> Weekday and month names are case insensitive. Both MON and mon works.
+> Weekday and month names are case-insensitive. Both `MON` and `mon` work.
 
 It is also possible to use the following "nicknames" as pattern.
 
@@ -419,4 +420,4 @@ See [Contribution Guide](/CONTRIBUTING.md)
 
 ## License
 
-MIT
+MIT License
