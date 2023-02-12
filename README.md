@@ -241,8 +241,7 @@ job.stop();
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 | legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
-| unref        | false          | boolean        | Setting this to true does unref the internal timer, which allow the process to exit even if the a croner job is running |
-| utcOffset    | undefined      | number         | Specify which UTC offset your pattern should trigger on, in minutes. It is mainly implemented for compatibility with the cron package. You probably want to use the option timezone instead, which also correctly handles DST switches. |
+| unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 
 #### Pattern
 
