@@ -12,6 +12,7 @@ import { CronDate } from "./date.js";
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
  * 										  - If set to a function, execute function on catching the error.
+ * @property {boolean} [unref] - Abort job instantly if nothing else keeps the event loop running.
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [interval] - Minimum interval between executions, in seconds
  * @property {string | Date} [startAt] - When to start running
@@ -44,6 +45,7 @@ function CronOptions(options) {
 	options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
 	options.catch = (options.catch === void 0) ? false : options.catch;
 	options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval, 10);
+	options.unref = (options.unref === void 0) ? false : options.unref;
 	options.kill = false;
 	
 	// startAt is set, validate it
@@ -61,6 +63,11 @@ function CronOptions(options) {
 		} else if (options.interval < 0) {
 			throw new Error("CronOptions: Supplied value for interval can not be negative");
 		}
+	}
+
+	// Unref should be true, false or undefined
+	if (options.unref !== true && options.unref !== false) {
+		throw new Error("CronOptions: Unref should be either true, false or undefined(false).");
 	}
 
 	return options;

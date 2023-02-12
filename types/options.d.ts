@@ -20,6 +20,10 @@ export type CronOptions = {
      */
     catch?: boolean | CatchCallbackFn;
     /**
+     * - Abort job instantly if nothing else keeps the event loop running.
+     */
+    unref?: boolean;
+    /**
      * - Maximum nuber of executions
      */
     maxRuns?: number;
@@ -60,6 +64,7 @@ export type CatchCallbackFn = (e: unknown) => any;
  * @property {boolean} [kill] - Job is about to be killed or killed
  * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
  * 										  - If set to a function, execute function on catching the error.
+ * @property {boolean} [unref] - Abort job instantly if nothing else keeps the event loop running.
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [interval] - Minimum interval between executions, in seconds
  * @property {string | Date} [startAt] - When to start running

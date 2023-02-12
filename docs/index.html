@@ -533,14 +533,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.5.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.6.1/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.5.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.6.1/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -662,6 +662,18 @@ job.stop();
 <td>true</td>
 <td>boolean</td>
 <td>Combine day-of-month and day-of-week using true = OR, false = AND</td>
+</tr>
+<tr>
+<td>unref</td>
+<td>false</td>
+<td>boolean</td>
+<td>Setting this to true does unref the internal timer, which allow the process to exit even if the a croner job is running</td>
+</tr>
+<tr>
+<td>utcOffset</td>
+<td>undefined</td>
+<td>number</td>
+<td>Specify which UTC offset your pattern should trigger on, in minutes. It is mainly implemented for compatibility with the cron package. You probably want to use the option timezone instead, which also correctly handles DST switches.</td>
 </tr>
 </tbody>
 </table>

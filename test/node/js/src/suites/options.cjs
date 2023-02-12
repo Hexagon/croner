@@ -80,6 +80,34 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	test("Invalid unref should throw", function () {
+		assert.throws(() => {
+			let 
+				scheduler = new Cron("0 0 12 * * *", { unref: "hellu throw" });
+			scheduler.next();
+		});
+	});
+
+	test("Valid unref should not throw", function () {
+		let 
+			scheduler = new Cron("0 0 12 * * *", { unref: true });
+		scheduler.next();
+	});
+	test("Setting unref to true should work", function () {
+		let 
+			scheduler = new Cron("0 0 12 * * *", { unref: true }, () => {});
+		scheduler.next();
+		scheduler.stop();
+		assert.equal(scheduler.options.unref,true);
+	});
+	test("Undefined unref should set unref to false", function () {
+		let 
+			scheduler = new Cron("0 0 12 * * *");
+		scheduler.next();
+		assert.equal(scheduler.options.unref,false);
+	});
+
+
 	test("stopAt with time only should throw", function () {
 		assert.throws(() => {
 			let 

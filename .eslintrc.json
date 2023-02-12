@@ -26,7 +26,8 @@
     "globals": {
         "define": false,
         "describe": false,
-        "it": false
+        "it": false,
+        "deno": false
     },
     "env": {
         "es2017": true,

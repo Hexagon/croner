@@ -150,7 +150,7 @@ import Cron from "croner";
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.5.1/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.6.1/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -160,7 +160,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.5.1/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.6.1/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -241,6 +241,8 @@ job.stop();
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 | legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
+| unref        | false          | boolean        | Setting this to true does unref the internal timer, which allow the process to exit even if the a croner job is running |
+| utcOffset    | undefined      | number         | Specify which UTC offset your pattern should trigger on, in minutes. It is mainly implemented for compatibility with the cron package. You probably want to use the option timezone instead, which also correctly handles DST switches. |
 
 #### Pattern
 

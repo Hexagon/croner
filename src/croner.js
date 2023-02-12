@@ -314,7 +314,18 @@ Cron.prototype.schedule = function (func, partial) {
 	
 	
 	}, waitMs);
-		
+
+	// If unref option is set - unref the current timeout, which allows the process to exit even if there is a pending schedule
+	if (this.currentTimeout && this.options.unref) {
+		/* global Deno */
+		if (typeof Deno !== "undefined" && typeof Deno.unrefTimer !== "undefined") {
+			Deno.unrefTimer(this.currentTimeout);
+		// Node
+		} else if(typeof this.currentTimeout.unref !== "undefined") {
+			this.currentTimeout.unref();
+		}
+	}
+
 	return this;
 	
 };
