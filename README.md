@@ -243,6 +243,10 @@ job.stop();
 | legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 
+> **Warning**
+> Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
+> Browsers have not yet implemented this feature, and it does not make sense to use it in a browser environment.
+
 #### Pattern
 
 The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:

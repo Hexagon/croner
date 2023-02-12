@@ -18,7 +18,7 @@ import { CronDate } from "./date.js";
  * @property {string | Date} [startAt] - When to start running
  * @property {string | Date} [stopAt] - When to stop running
  * @property {string} [timezone] - Time zone in Europe/Stockholm format
- * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is OR.
+ * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is true = OR.
  * @property {?} [context] - Used to pass any object to scheduled function
  */
 
