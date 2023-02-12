@@ -125,21 +125,21 @@
     <article>
       <p align="center">
 <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
-Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. Most features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 <h1>Croner</h1>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <img src="https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master" alt="Deno CI"> <img src="https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master" alt="Bun CI"> <a href="https://badge.fury.io/js/croner"><img src="https://badge.fury.io/js/croner.svg" alt="npm version"></a> <a href="https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff" alt="Codacy Badge"></a> <a href="https://www.npmjs.org/package/croner"><img src="https://img.shields.io/npm/dw/croner.svg" alt="NPM Downloads"></a>
 <img src="https://img.shields.io/badge/dependencies-none-brightgreen" alt="No dependencies"> <a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a></p>
 <ul>
 <li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
-<li>Find first date of next month, find date of next tuesday, etc.</li>
-<li>Pause, resume or stop execution after a task is scheduled.</li>
+<li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
+<li>Pause, resume, or stop execution after a task is scheduled.</li>
 <li>Works in Node.js &gt;=7.6 (both require and import).</li>
 <li>Works in Deno &gt;=1.16.</li>
 <li>Works in Bun &gt;=0.2.2</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
 <li>Works with both JavaScriptCore and V8.</li>
-<li>Schedule using specific target timezones.</li>
+<li>Schedule using specific target time zones.</li>
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
 </ul>
 <p>Quick examples:</p>
@@ -162,8 +162,8 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 </code></pre>
 <p>More <a href="#examples">examples</a>...</p>
-<h2>Why another javascript cron implementation</h2>
-<p>Because the existing ones aren't good enough. They have serious bugs, use bloated dependencies, do not work in all environments and/or simply don't work as expected.</p>
+<h2>Why another JavaScript cron implementation</h2>
+<p>Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.</p>
 <table>
 <thead>
 <tr>
@@ -494,8 +494,8 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <p><strong>Note</strong></p>
 <ul>
 <li>Table last updated at 2022-10-23</li>
-<li>node-cron has no interface to predict when the function will run. So tests cannot be carried out.</li>
-<li>All tests and benchmarks carried out using <a href="https://github.com/Hexagon/cron-comparison">https://github.com/Hexagon/cron-comparison</a></li>
+<li>node-cron has no interface to predict when the function will run, so tests cannot be carried out.</li>
+<li>All tests and benchmarks were carried out using <a href="https://github.com/Hexagon/cron-comparison">https://github.com/Hexagon/cron-comparison</a></li>
 </ul>
 </blockquote>
 <p>[^1]: As of 2022-10-08
@@ -516,7 +516,7 @@ const Cron = require(&quot;croner&quot;);
 <p>TypeScript</p>
 <p>Notes for TypeScript:</p>
 <ul>
-<li>If using strict eslint-rules, specifically <code>new-cap</code> combined with <code>no-new</code>, you need to import and use lower case <code>cron</code> instead of <code>{ Cron }</code>.</li>
+<li>If using strict eslint rules, specifically new-cap combined with no-new, you need to import and use lowercase <code>cron</code> instead of <code>{ Cron }</code>.</li>
 </ul>
 <pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;croner&quot;;
 
@@ -527,7 +527,7 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <h3>Bun</h3>
 <p><code>bun add croner</code></p>
 <blockquote>
-<p><strong>Note</strong> If you experience problems during install, try using <code>bun add croner --backend=copyfile</code>.</p>
+<p><strong>Note</strong> If you encounter problems during installation, try using <code>bun add croner --backend=copyfile</code>.</p>
 </blockquote>
 <pre class="prettyprint source lang-javascript"><code>import Cron from &quot;croner&quot;;
 </code></pre>
@@ -549,15 +549,15 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <h3>Browser</h3>
 <h4>Manual</h4>
 <ul>
-<li>Download latest <a href="https://github.com/Hexagon/croner/archive/refs/heads/master.zip">zipball</a></li>
-<li>Unpack</li>
-<li>Grab <code>croner.min.js</code> (UMD and standalone) or <code>croner.min.mjs</code> (ES-module) from the <a href="/dist">dist/</a> folder</li>
+<li>Download the latest <a href="https://github.com/Hexagon/croner/archive/refs/heads/master.zip">zipball</a>.</li>
+<li>Unpack the zip file.</li>
+<li>Grab <code>croner.min.js</code> (UMD and standalone) or <code>croner.min.mjs</code> (ES-module) from the <a href="/dist">dist/</a> folder.</li>
 </ul>
 <h4>CDN</h4>
 <p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
 <pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js&quot;>&lt;/script>
 </code></pre>
-<p>To use as a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
+<p>To use as an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
 <pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
 	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.mjs&quot;;
 
@@ -607,7 +607,7 @@ job.stop();
 <td>name</td>
 <td>undefined</td>
 <td>String</td>
-<td>Name of a job</td>
+<td>If you specify a name for the job, Croner will keep a reference to the job in exported array <code>scheduledJobs</code></td>
 </tr>
 <tr>
 <td>maxRuns</td>
@@ -666,20 +666,20 @@ job.stop();
 </tbody>
 </table>
 <h4>Pattern</h4>
-<p>The expressions of Croner are very similar to the ones of Vixie Cron, with a few additions and changes listed below.</p>
+<p>The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:</p>
 <ul>
 <li>
-<p>Croner expressions support the following additional modifiers</p>
+<p>Croner expressions have the following additional modifiers:</p>
 <ul>
-<li><em>?</em> A question mark is substituted with croner initialization time, as an example - <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
-<li><em>L</em> L can be used in the day of month field, to specify the last day of the month.</li>
+<li><em>?</em> A question mark is substituted with the time of Croner's initialization. For example <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if the time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
+<li><em>L</em> L can be used in the day of the month field to specify the last day of the month.</li>
 </ul>
 </li>
 <li>
-<p>Croner allow you to pass a javascript Date object, or a ISO 8601 formatted string, as a pattern. The scheduled function will trigger at the specified date/time, and only once. If you use a timezone different from local, you should pass ISO 8601 local time in target location, and specify timezone using the options (2nd parameter).</p>
+<p>Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).</p>
 </li>
 <li>
-<p>Croner allow to change how day-of-week and day-of-month is combined. By default croner (and Vixie cron) will trigger when day-of-month OR day-of-week conditions match. As an example <code>0 20 1 * MON</code> will trigger on the first of the month, as well as on each monday. If you want to use AND (and in this example only trigger on mondays that is also 1st of the month) you can pass <code>{ legacyMode: false }</code>. See issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a> for more information.</p>
+<p>Croner also allows you to change how the day-of-week and day-of-month conditions are combined. By default, Croner (and Vixie cron) will trigger when either the day-of-month OR the day-of-week conditions match. For example, <code>0 20 1 * MON</code> will trigger on the first of the month as well as each Monday. If you want to use AND (so that it only triggers on Mondays that are also the first of the month), you can pass <code>{ legacyMode: false }</code>. For more information, see issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a>.</p>
 </li>
 </ul>
 <pre class="prettyprint source lang-javascript"><code>// ┌──────────────── (optional) second (0 - 59)
@@ -749,7 +749,7 @@ job.stop();
 </table>
 <blockquote>
 <p><strong>Note</strong>
-Weekday and month names are case insensitive. Both MON and mon works.</p>
+Weekday and month names are case-insensitive. Both <code>MON</code> and <code>mon</code> work.</p>
 </blockquote>
 <p>It is also possible to use the following &quot;nicknames&quot; as pattern.</p>
 <table>
@@ -868,6 +868,50 @@ if (job.next() === null) {
 	console.log(&quot;Job will fire at &quot; + job.next());
 }
 </code></pre>
+<h4>Naming jobs</h4>
+<p>If you provide a name for the job using the option { name: '...' }, a reference to the job will be stored in the exported array <code>scheduledJobs</code>. Naming a job makes it accessible throughout your application.</p>
+<blockquote>
+<p><strong>Note</strong>
+If a job is stopped using <code>.stop()</code>, and goes out of scope, it will normally be eligible for garbage collection and will be deleted during the next garbage collection cycle. Keeping a reference by specifying option <code>name</code> prevents this from happening.</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>// import { Cron, scheduledJobs } ...
+
+// Scoped job
+(() => {
+
+	// As we specify a name for the job, a reference will be kept in `scheduledJobs`
+	const job = Cron(&quot;* * * * * *&quot;, { name: &quot;Job1&quot; }, function () {
+		console.log(&quot;This will run every second&quot;);
+	});
+
+	job.pause();
+	console.log(&quot;Job paused&quot;);
+
+})();
+
+// Another scope, delayed 5 seconds
+setTimeout(() => {
+
+	// Find our job
+	// - scheduledJobs can either be imported separately { Cron, scheduledJobs }
+	//   or access through Cron.scheduledJobs
+	const job = scheduledJobs.find(j => j.name === &quot;Job1&quot;);
+
+	// Resume it
+	if (job) {
+		if(job.resume()) {
+			// This will happen
+			console.log(&quot;Job resumed successfully&quot;);
+		} else {
+			console.log(&quot;Job found, but could not be restarted. The job were probably stopped using `.stop()` which prevents resuming.&quot;);
+		}
+	} else {
+		console.error(&quot;Job not found&quot;);
+	}
+
+}, 5000);
+
+</code></pre>
 <h4>Act at completion</h4>
 <pre class="prettyprint source lang-javascript"><code>// Start a job firing once each 5th second, run at most 3 times
 const job = new Cron(&quot;0/5 * * * * *&quot;, { maxRuns: 3 }, (job) => {
@@ -891,8 +935,10 @@ if (!job.next() && !job.previous()) {
 </code></pre>
 <h2>Contributing</h2>
 <p>See <a href="/CONTRIBUTING.md">Contribution Guide</a></p>
+<p>... or ...</p>
+<p><a href='https://ko-fi.com/C1C7IEEYF' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
 <h2>License</h2>
-<p>MIT</p>
+<p>MIT License</p>
     </article>
   </section>
 

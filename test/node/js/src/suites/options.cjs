@@ -10,8 +10,9 @@ module.exports = function (Cron, test) {
 	});
 
 	test("name should be defined if it's specified", function () {
-		const scheduler = new Cron("* * * * * *", { name: "my job" });
-		assert.is(scheduler.name, "my job");
+		const uniqueName = "TestJob5" + new Date().getTime().toString();
+		const scheduler = new Cron("* * * * * *", { name: uniqueName });
+		assert.is(scheduler.name, uniqueName);
 	});
 
 	test("Valid startAt with DateTime string should not throw", function () {

@@ -1115,7 +1115,7 @@
 	const maxDelay = Math.pow(2, 32 - 1) - 1;
 
 	/**
-	 * An array containing all created cron jobs.
+	 * An array containing all named cron jobs.
 	 *
 	 * @constant
 	 * @type {Cron[]}
@@ -1183,7 +1183,17 @@
 			this.schedule();
 		}
 		
-		scheduledJobs.push(this);
+		// Only store the job in scheduledJobs if a name is specified in the options.
+		if (this.name) {
+			const existing = scheduledJobs.find(j => j.name === this.name);
+			if (existing) {
+				throw new Error("Cron: Tried to initialize new named job '"+this.name+"', but name already taken.");
+			} else {
+				scheduledJobs.push(this);
+			}
+			
+		}
+
 		return this;
 		
 	}
@@ -1265,6 +1275,9 @@
 		
 	/**
 	 * Stop execution 
+	 * 
+	 * Running this will forcefully stop the job, and prevent furter exection. `.resume()` will not work after stopping.
+	 * 
 	 * @public
 	 */
 	Cron.prototype.stop = function () {

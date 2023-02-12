@@ -66,6 +66,9 @@ export class Cron {
     public msToNext(prev?: CronDate | Date | string): number | null;
     /**
      * Stop execution
+     *
+     * Running this will forcefully stop the job, and prevent furter exection. `.resume()` will not work after stopping.
+     *
      * @public
      */
     public stop(): void;
@@ -101,7 +104,7 @@ export namespace Cron {
     export { scheduledJobs };
 }
 /**
- * An array containing all created cron jobs.
+ * An array containing all named cron jobs.
  *
  * @constant
  * @type {Cron[]}

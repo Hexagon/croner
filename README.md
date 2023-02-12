@@ -231,7 +231,7 @@ job.stop();
 
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
-| name         | undefined      | String         | Name of a job |
+| name         | undefined      | String         | If you specify a name for the job, Croner will keep a reference to the job in exported array `scheduledJobs` |
 | maxRuns      | Infinite       | Number         |                                       |
 | catch	       | false          | Boolean        | Catch unhandled errors in triggered function. Passing `true` will silently ignore errors. Passing a callback function will trigger this callback on error. |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
@@ -384,6 +384,54 @@ if (job.next() === null) {
 } else {
 	console.log("Job will fire at " + job.next());
 }
+```
+
+#### Naming jobs
+
+If you provide a name for the job using the option { name: '...' }, a reference to the job will be stored in the exported array `scheduledJobs`. Naming a job makes it accessible throughout your application.
+
+> **Note**
+> If a job is stopped using `.stop()`, and goes out of scope, it will normally be eligible for garbage collection and will be deleted during the next garbage collection cycle. Keeping a reference by specifying option `name` prevents this from happening.
+
+
+```javascript
+// import { Cron, scheduledJobs } ...
+
+// Scoped job
+(() => {
+
+	// As we specify a name for the job, a reference will be kept in `scheduledJobs`
+	const job = Cron("* * * * * *", { name: "Job1" }, function () {
+		console.log("This will run every second");
+	});
+
+	job.pause();
+	console.log("Job paused");
+
+})();
+
+// Another scope, delayed 5 seconds
+setTimeout(() => {
+
+	// Find our job
+	// - scheduledJobs can either be imported separately { Cron, scheduledJobs }
+	//   or access through Cron.scheduledJobs
+	const job = scheduledJobs.find(j => j.name === "Job1");
+
+	// Resume it
+	if (job) {
+		if(job.resume()) {
+			// This will happen
+			console.log("Job resumed successfully");
+		} else {
+			console.log("Job found, but could not be restarted. The job were probably stopped using `.stop()` which prevents resuming.");
+		}
+	} else {
+		console.error("Job not found");
+	}
+
+}, 5000);
+
 ```
 
 #### Act at completion

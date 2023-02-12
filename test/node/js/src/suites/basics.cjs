@@ -5,11 +5,10 @@ let
 module.exports = function (Cron, test, scheduledJobs) {
 
 	test("Created jobs should appear in the 'scheduledJobs' array", function() {
-		// Empty an array, so it doesn't contain jobs from other tests
-		scheduledJobs.length = 0;
-		assert.equal(scheduledJobs, []);
-		const job = new Cron("* * * * * *");
-		assert.equal(scheduledJobs, [job]);
+		const uniqueName = "TestJob3" + new Date().getTime().toString();
+		const job = new Cron("* * * * * *", { name: uniqueName});
+		assert.equal(scheduledJobs.find(j => j === job), job);
+		job.stop();
 	});
 
 	test("new Cron(...) should not throw", function () {
@@ -399,6 +398,39 @@ module.exports = function (Cron, test, scheduledJobs) {
 			throw new Error("E");
 		}
 		);
+	}));
+	test("Initializing two jobs with the same name should throw", () => {
+		const uniqueName = "TestJob1" + new Date().getTime().toString();
+		Cron("* * * * * *", { name: uniqueName, paused: true });
+		assert.throws(() => {
+			Cron("* * * * * *", { name: uniqueName, paused: true });
+		}, "already taken");
+	});
+	test("named job should be found in other scope",  timeout(4000, (resolve) => {
+		const uniqueName = "TestJob2" + new Date().getTime().toString();
+		(() => {
+			Cron("* * * * * *", { name: uniqueName });
+		})();
+		setTimeout(() => {
+			const foundJob = Cron.scheduledJobs.find(j => j.name === uniqueName);
+			if (foundJob && foundJob.name === uniqueName) {
+				foundJob.stop();
+				resolve();
+			}
+		},1500);
+	}));
+	test("unnamed job should not be found in other scope",  timeout(4000, (resolve) => {
+		let ref;
+		(() => {
+			ref = Cron("* * * * * *", { paused: true });
+		})();
+		setTimeout(() => {
+			const found = Cron.scheduledJobs.find(job => job === ref);
+			if (!found) {
+				resolve();
+			}
+			ref.stop();
+		},500);
 	}));
 	test("shorthand schedule without options should not throw, and execute",  timeout(2000, (resolve, reject) => {
 		try {
