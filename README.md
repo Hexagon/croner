@@ -242,7 +242,7 @@ job.stop();
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 | legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
-| utcOffset    | undefined      | boolean        | Schedule using a specific utc offset in minutes. *This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
+| utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 

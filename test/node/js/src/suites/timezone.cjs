@@ -50,7 +50,7 @@ module.exports = function (Cron, test) {
 		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next().getTime(),
 			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next().getTime();
 
-		// The time right now should be the same in utc wether in new york or stockholm
+		// The time right now should be the same in utc wether in new york or stockholm. Allow a 4 second difference.
 		assert.ok(timeStockholm>=timeNewYork-4000);
 		assert.ok(timeStockholm<=timeNewYork+4000);
 	});
@@ -102,11 +102,12 @@ module.exports = function (Cron, test) {
 	});
 
 	test("0 0 0 * * * with 365 iterations should return 365 days from now in America/New_York", function () {
-		let scheduler = new Cron("0 0 0 * * *", { timezone: "America/New_York" }),
-			prevRun = new Date(),
+		let startAt = new Date(Date.parse("2023-01-01T12:00:00.000Z")),
+			scheduler = new Cron("0 0 0 * * *", { timezone: "America/New_York", startAt }),
 			nextRun,
+			prevRun = new Date(startAt.getTime()),
 			iterations = 365,
-			compareDay = new Date();
+			compareDay = new Date(startAt.getTime());
 			
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
@@ -127,11 +128,12 @@ module.exports = function (Cron, test) {
 	});
 
 	test("0 30 2 * * * with 365 iterations should return 365 days from now in America/New_York", function () {
-		let scheduler = new Cron("0 30 2 * * *", { timezone: "America/New_York" }),
-			prevRun = new Date(),
+		let startAt = new Date(Date.parse("2023-01-01T12:00:00.000Z")),
+			scheduler = new Cron("0 30 2 * * *", { timezone: "America/New_York", startAt }),
 			nextRun,
+			prevRun = new Date(startAt.getTime()),
 			iterations = 365,
-			compareDay = new Date();
+			compareDay = new Date(startAt.getTime());
 			
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
@@ -148,17 +150,17 @@ module.exports = function (Cron, test) {
 
 		// Do comparison
 		assert.equal(Math.abs(nextRun.getTime()-compareDay.getTime())<13*60*60*1000, true);
-
 	});
 
 	test("0 30 1 * * * with 365 iterations should return 365 days from now in America/New_York", function () {
-		let scheduler = new Cron("0 30 1 * * *", { timezone: "America/New_York" }),
-			prevRun = new Date(),
+		let startAt = new Date(Date.parse("2023-01-01T12:00:00.000Z")),
+			scheduler = new Cron("0 30 1 * * *", { timezone: "America/New_York", startAt }),
 			nextRun,
+			prevRun = new Date(startAt.getTime()),
 			iterations = 365,
-			compareDay = new Date();
+			compareDay = new Date(startAt.getTime());
 			
-		compareDay.setDate(compareDay.getDate() + iterations );
+		compareDay.setDate(compareDay.getDate() + iterations);
 		
 		while(iterations-->0) {
 			nextRun = scheduler.next(prevRun),
@@ -173,7 +175,6 @@ module.exports = function (Cron, test) {
 
 		// Do comparison
 		assert.equal(Math.abs(nextRun.getTime()-compareDay.getTime())<13*60*60*1000, true);
-
 	});
 
 	test("0 30 2 * * * with 365 iterations should return 366 days from now in Europe/Berlin", function () {

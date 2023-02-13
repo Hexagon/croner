@@ -69,18 +69,26 @@ function CronOptions(options) {
 
 	// Validate utcOffset
 	if (options.utcOffset !== void 0) {
+		
+		// Limit range for utcOffset
 		if (isNaN(options.utcOffset)) {
 			throw new Error("CronOptions: Invalid value passed for utcOffset, should be number representing minutes offset from UTC.");
-		} else if (options.utcOffset < -870 && options.utcOffset > 870 ) {
+		} else if (options.utcOffset < -870 || options.utcOffset > 870 ) {
 			throw new Error("CronOptions: utcOffset out of bounds.");
 		}
+		
+		// Do not allow both timezone and utcOffset
+		if (options.utcOffset !== void 0 && options.timezone) {
+			throw new Error("CronOptions: Combining 'utcOffset' with 'timezone' is not allowed.");
+		}
+
 	}
 
 	// Unref should be true, false or undefined
 	if (options.unref !== true && options.unref !== false) {
 		throw new Error("CronOptions: Unref should be either true, false or undefined(false).");
 	}
-
+	
 	return options;
 
 }
