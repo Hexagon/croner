@@ -226,7 +226,7 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	// Check if we got a date, or a pattern supplied as first argument
 	// Then set either this.once or this.pattern
 	if (pattern &amp;&amp; (pattern instanceof Date || ((typeof pattern === "string") &amp;&amp; pattern.indexOf(":") > 0))) {
-		this.once = new CronDate(pattern, this.options.timezone);
+		this.once = new CronDate(pattern, this.options.timezone || this.options.utcOffset);
 	} else {
 		this.pattern = new CronPattern(pattern, this.options.timezone);
 	}
@@ -318,7 +318,7 @@ Cron.prototype.msToNext = function (prev) {
 	const next = this._next(prev);
 
 	// Default previous for millisecond calculation
-	prev = new CronDate(prev, this.options.timezone);
+	prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
 
 	if( next ) {
 		return (next.getTime(true) - prev.getTime(true));
@@ -426,7 +426,7 @@ Cron.prototype.schedule = function (func, partial) {
 			}
 	
 			// Set previous run to now
-			this.previousrun = new CronDate(void 0, this.options.timezone);
+			this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
 	
 			// Recurse
 			this.schedule();
@@ -467,7 +467,7 @@ Cron.prototype._next = function (prev) {
 	const hasPreviousRun = (prev || this.previousrun) ? true : false;
 
 	// Ensure previous run is a CronDate
-	prev = new CronDate(prev, this.options.timezone);
+	prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
 
 	// Previous run should never be before startAt
 	if( this.options.startAt &amp;&amp; prev &amp;&amp; prev.getTime() &lt; this.options.startAt.getTime() ) {
@@ -476,7 +476,7 @@ Cron.prototype._next = function (prev) {
 
 	// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
 	const 
-		nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, hasPreviousRun);
+		nextRun = this.once || new CronDate(prev, this.options.timezone|| this.options.utcOffset).increment(this.pattern, this.options, hasPreviousRun);
 	
 	if (this.once &amp;&amp; this.once.getTime() &lt;= prev.getTime()) {
 		return null;

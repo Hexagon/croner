@@ -533,14 +533,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.6.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.6.2/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.6.1/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.6.2/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -669,8 +669,19 @@ job.stop();
 <td>boolean</td>
 <td>Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running.</td>
 </tr>
+<tr>
+<td>utcOffset</td>
+<td>undefined</td>
+<td>boolean</td>
+<td>Schedule using a specific utc offset in minutes. *This does not take care of daylight savings time, you probably want to use option <code>timezone</code> instead.</td>
+</tr>
 </tbody>
 </table>
+<blockquote>
+<p><strong>Warning</strong>
+Unreferencing timers (option <code>unref</code>) is only supported by Node.js and Deno.
+Browsers have not yet implemented this feature, and it does not make sense to use it in a browser environment.</p>
+</blockquote>
 <h4>Pattern</h4>
 <p>The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:</p>
 <ul>

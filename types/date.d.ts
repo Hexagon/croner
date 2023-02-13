@@ -3,23 +3,23 @@
  * @constructor
  *
  * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
- * @param {string} [tz] - String representation of target timezone in Europe/Stockholm format.
+ * @param {string|number} [tz] - String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
 */
-export function CronDate(d?: CronDate | Date | string, tz?: string): void;
+export function CronDate(d?: CronDate | Date | string, tz?: string | number): void;
 export class CronDate {
     /**
      * Converts date to CronDate
      * @constructor
      *
      * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
-     * @param {string} [tz] - String representation of target timezone in Europe/Stockholm format.
+     * @param {string|number} [tz] - String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
     */
-    constructor(d?: CronDate | Date | string, tz?: string);
+    constructor(d?: CronDate | Date | string, tz?: string | number);
     /**
      * TimeZone
-     * @type {string|undefined}
+     * @type {string|number|undefined}
      */
-    tz: string | undefined;
+    tz: string | number | undefined;
     private fromDate;
     ms: number;
     second: number;

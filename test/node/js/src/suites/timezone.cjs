@@ -15,6 +15,37 @@ module.exports = function (Cron, test) {
 
 	});
 
+	test("Zero UTC offset", function () {
+		let 
+			dayOne = new Date("2021-10-31T20:00:00"),
+			scheduler = new Cron("0 0 12 * * *", {utcOffset: 0, startAt: dayOne }),
+			nextRun = scheduler.next(); // Next run in local time
+
+		// Do comparison
+		assert.equal(nextRun.getUTCHours(), 12);
+
+	});
+
+	test("Neagtive UTC offset", function () {
+		let 
+			dayOne = new Date("2021-10-31T20:00:00"),
+			scheduler = new Cron("0 0 13 * * *", {utcOffset: -120, startAt: dayOne }),
+			nextRun = scheduler.next(); // Next run in local time
+
+		// Do comparison
+		assert.equal(nextRun.getUTCHours(), 15);
+	});
+
+	test("Positive UTC offset", function () {
+		let 
+			dayOne = new Date("2021-10-31T20:00:00"),
+			scheduler = new Cron("0 0 13 * * *", {utcOffset: 480, startAt: dayOne }),
+			nextRun = scheduler.next(); // Next run in local time
+
+		// Do comparison
+		assert.equal(nextRun.getUTCHours(), 5);
+	});
+
 	test("getTime should return expected difference with different timezones (now)", function () {
 		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next().getTime(),
 			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next().getTime();

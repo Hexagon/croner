@@ -165,13 +165,13 @@ const RecursionSteps = [
  * @constructor
  * 
  * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
- * @param {string} [tz] - String representation of target timezone in Europe/Stockholm format.
+ * @param {string|number} [tz] - String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
 */
 function CronDate (d, tz) {	
 
 	/**
 	 * TimeZone
-	 * @type {string|undefined}
+	 * @type {string|number|undefined}
 	 */
 	this.tz = tz;
 
@@ -209,14 +209,27 @@ CronDate.prototype.fromDate = function (inDate) {
 	 * If not, extract all parts from inDate as-is.
 	 */
 	if (this.tz) {
-		const d = minitz.toTZ(inDate, this.tz);
-		this.ms = inDate.getMilliseconds();
-		this.second = d.s;
-		this.minute = d.i;
-		this.hour = d.h;
-		this.day = d.d;
-		this.month  = d.m - 1;
-		this.year = d.y;
+		if (typeof this.tz === "number") {
+			this.ms = inDate.getMilliseconds();
+			this.second = inDate.getSeconds();
+			this.minute = inDate.getMinutes()+this.tz;
+			this.hour = inDate.getHours();
+			this.day = inDate.getDate();
+			this.month  = inDate.getMonth();
+			this.year = inDate.getFullYear();
+
+			// Minute could be out of bounds, apply
+			this.apply();
+		} else {
+			const d = minitz.toTZ(inDate, this.tz);
+			this.ms = inDate.getMilliseconds();
+			this.second = d.s;
+			this.minute = d.i;
+			this.hour = d.h;
+			this.day = d.d;
+			this.month  = d.m - 1;
+			this.year = d.y;
+		}
 	} else {
 		this.ms = inDate.getMilliseconds();
 		this.second = inDate.getSeconds();
@@ -287,7 +300,7 @@ CronDate.prototype.fromCronDate = function (d) {
  */
 CronDate.prototype.apply = function () {
 	// If any value could be out of bounds, apply 
-	if (this.month>11||this.day>DaysOfMonth[this.month]||this.hour>59||this.minute>59||this.second>59) {
+	if (this.month>11||this.day>DaysOfMonth[this.month]||this.hour>59||this.minute>59||this.second>59||this.hour&lt;0||this.minute&lt;0||this.second&lt;0) {
 		const d = new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms));
 		this.ms = d.getUTCMilliseconds();
 		this.second = d.getUTCSeconds();
@@ -470,7 +483,11 @@ CronDate.prototype.getDate = function (internal) {
 	if (internal || !this.tz) {
 		return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 	} else {
-		return minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz);
+		if (typeof this.tz === "number") {
+			return new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute-this.tz, this.second, this.ms));
+		} else {
+			return minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz);
+		}
 	}
 };
 

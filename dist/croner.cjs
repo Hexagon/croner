@@ -297,7 +297,8 @@
 	 * @property {string | Date} [startAt] - When to start running
 	 * @property {string | Date} [stopAt] - When to stop running
 	 * @property {string} [timezone] - Time zone in Europe/Stockholm format
-	 * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is OR.
+	 * @property {number} [utcOffset] - Offset from UTC in minutes
+	 * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is true = OR.
 	 * @property {?} [context] - Used to pass any object to scheduled function
 	 */
 
@@ -324,6 +325,7 @@
 		options.maxRuns = (options.maxRuns === void 0) ? Infinity : options.maxRuns;
 		options.catch = (options.catch === void 0) ? false : options.catch;
 		options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval, 10);
+		options.utcOffset = (options.utcOffset === void 0) ? void 0 : parseInt(options.utcOffset, 10);
 		options.unref = (options.unref === void 0) ? false : options.unref;
 		options.kill = false;
 		
@@ -341,6 +343,15 @@
 				throw new Error("CronOptions: Supplied value for interval is not a number");
 			} else if (options.interval < 0) {
 				throw new Error("CronOptions: Supplied value for interval can not be negative");
+			}
+		}
+
+		// Validate utcOffset
+		if (options.utcOffset !== void 0) {
+			if (isNaN(options.utcOffset)) {
+				throw new Error("CronOptions: Invalid value passed for utcOffset, should be number representing minutes offset from UTC.");
+			} else if (options.utcOffset < -870 && options.utcOffset > 870 ) {
+				throw new Error("CronOptions: utcOffset out of bounds.");
 			}
 		}
 
@@ -390,13 +401,13 @@
 	 * @constructor
 	 * 
 	 * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
-	 * @param {string} [tz] - String representation of target timezone in Europe/Stockholm format.
+	 * @param {string|number} [tz] - String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
 	*/
 	function CronDate (d, tz) {	
 
 		/**
 		 * TimeZone
-		 * @type {string|undefined}
+		 * @type {string|number|undefined}
 		 */
 		this.tz = tz;
 
@@ -434,14 +445,27 @@
 		 * If not, extract all parts from inDate as-is.
 		 */
 		if (this.tz) {
-			const d = minitz.toTZ(inDate, this.tz);
-			this.ms = inDate.getMilliseconds();
-			this.second = d.s;
-			this.minute = d.i;
-			this.hour = d.h;
-			this.day = d.d;
-			this.month  = d.m - 1;
-			this.year = d.y;
+			if (typeof this.tz === "number") {
+				this.ms = inDate.getMilliseconds();
+				this.second = inDate.getSeconds();
+				this.minute = inDate.getMinutes()+this.tz;
+				this.hour = inDate.getHours();
+				this.day = inDate.getDate();
+				this.month  = inDate.getMonth();
+				this.year = inDate.getFullYear();
+
+				// Minute could be out of bounds, apply
+				this.apply();
+			} else {
+				const d = minitz.toTZ(inDate, this.tz);
+				this.ms = inDate.getMilliseconds();
+				this.second = d.s;
+				this.minute = d.i;
+				this.hour = d.h;
+				this.day = d.d;
+				this.month  = d.m - 1;
+				this.year = d.y;
+			}
 		} else {
 			this.ms = inDate.getMilliseconds();
 			this.second = inDate.getSeconds();
@@ -512,7 +536,7 @@
 	 */
 	CronDate.prototype.apply = function () {
 		// If any value could be out of bounds, apply 
-		if (this.month>11||this.day>DaysOfMonth[this.month]||this.hour>59||this.minute>59||this.second>59) {
+		if (this.month>11||this.day>DaysOfMonth[this.month]||this.hour>59||this.minute>59||this.second>59||this.hour<0||this.minute<0||this.second<0) {
 			const d = new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms));
 			this.ms = d.getUTCMilliseconds();
 			this.second = d.getUTCSeconds();
@@ -695,7 +719,11 @@
 		if (internal || !this.tz) {
 			return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 		} else {
-			return minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz);
+			if (typeof this.tz === "number") {
+				return new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute-this.tz, this.second, this.ms));
+			} else {
+				return minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz);
+			}
 		}
 	};
 
@@ -1179,7 +1207,7 @@
 		// Check if we got a date, or a pattern supplied as first argument
 		// Then set either this.once or this.pattern
 		if (pattern && (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))) {
-			this.once = new CronDate(pattern, this.options.timezone);
+			this.once = new CronDate(pattern, this.options.timezone || this.options.utcOffset);
 		} else {
 			this.pattern = new CronPattern(pattern, this.options.timezone);
 		}
@@ -1271,7 +1299,7 @@
 		const next = this._next(prev);
 
 		// Default previous for millisecond calculation
-		prev = new CronDate(prev, this.options.timezone);
+		prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
 
 		if( next ) {
 			return (next.getTime(true) - prev.getTime(true));
@@ -1379,7 +1407,7 @@
 				}
 		
 				// Set previous run to now
-				this.previousrun = new CronDate(void 0, this.options.timezone);
+				this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
 		
 				// Recurse
 				this.schedule();
@@ -1420,7 +1448,7 @@
 		const hasPreviousRun = (prev || this.previousrun) ? true : false;
 
 		// Ensure previous run is a CronDate
-		prev = new CronDate(prev, this.options.timezone);
+		prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
 
 		// Previous run should never be before startAt
 		if( this.options.startAt && prev && prev.getTime() < this.options.startAt.getTime() ) {
@@ -1429,7 +1457,7 @@
 
 		// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
 		const 
-			nextRun = this.once || new CronDate(prev, this.options.timezone).increment(this.pattern, this.options, hasPreviousRun);
+			nextRun = this.once || new CronDate(prev, this.options.timezone|| this.options.utcOffset).increment(this.pattern, this.options, hasPreviousRun);
 		
 		if (this.once && this.once.getTime() <= prev.getTime()) {
 			return null;
