@@ -84,7 +84,7 @@ CronDate.prototype.fromDate = function (inDate) {
 	 * 
 	 * If not, extract all parts from inDate as-is.
 	 */
-	if (this.tz) {
+	if (this.tz !== void 0) {
 		if (typeof this.tz === "number") {
 			this.ms = inDate.getMilliseconds();
 			this.second = inDate.getSeconds();
@@ -356,7 +356,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
  * @returns {Date}
  */
 CronDate.prototype.getDate = function (internal) {
-	if (internal || !this.tz) {
+	if (internal || !(this.tz !== void 0)) {
 		return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 	} else {
 		if (typeof this.tz === "number") {
