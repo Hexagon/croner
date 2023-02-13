@@ -454,14 +454,13 @@
 		 */
 		if (this.tz !== void 0) {
 			if (typeof this.tz === "number") {
-				this.ms = inDate.getMilliseconds();
-				this.second = inDate.getSeconds();
-				this.minute = inDate.getMinutes()+this.tz;
-				this.hour = inDate.getHours();
-				this.day = inDate.getDate();
-				this.month  = inDate.getMonth();
-				this.year = inDate.getFullYear();
-
+				this.ms = inDate.getUTCMilliseconds();
+				this.second = inDate.getUTCSeconds();
+				this.minute = inDate.getUTCMinutes()+this.tz;
+				this.hour = inDate.getUTCHours();
+				this.day = inDate.getUTCDate();
+				this.month  = inDate.getUTCMonth();
+				this.year = inDate.getUTCFullYear();
 				// Minute could be out of bounds, apply
 				this.apply();
 			} else {
@@ -724,7 +723,7 @@
 	 * @returns {Date}
 	 */
 	CronDate.prototype.getDate = function (internal) {
-		if (internal || !(this.tz !== void 0)) {
+		if (internal || (this.tz === void 0 && this.utcOffset === void 0)) {
 			return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 		} else {
 			if (typeof this.tz === "number") {
