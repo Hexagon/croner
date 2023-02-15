@@ -107,6 +107,8 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 
 ## Installation
 
+If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](MIGRATION.md).
+
 ### Node.js
 
 ```npm install croner --save```

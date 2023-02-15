@@ -4,7 +4,7 @@
       "dictionaries": ["jsdoc", "closure"]
     },
     "source": {
-      "include": ["README.md","./src/"],
+      "include": ["README.md","MIGRATION.md","./src/"],
       "exclude": ["./docs","./src/minitz.js"],
       "excludePattern": "(node_modules|test|dist|coverage|^|\\/|\\\\)_"
     },

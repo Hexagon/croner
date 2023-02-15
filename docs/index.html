@@ -123,839 +123,132 @@
 
   <section class="readme">
     <article>
-      <p align="center">
-<img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
-Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. Most features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
-</p>
-<h1>Croner</h1>
-<p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <img src="https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master" alt="Deno CI"> <img src="https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master" alt="Bun CI"> <a href="https://badge.fury.io/js/croner"><img src="https://badge.fury.io/js/croner.svg" alt="npm version"></a> <a href="https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff" alt="Codacy Badge"></a> <a href="https://www.npmjs.org/package/croner"><img src="https://img.shields.io/npm/dw/croner.svg" alt="NPM Downloads"></a>
-<img src="https://img.shields.io/badge/dependencies-none-brightgreen" alt="No dependencies"> <a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a></p>
+      <h1>Migration</h1>
+<h2>Table of contents</h2>
 <ul>
-<li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
-<li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
-<li>Pause, resume, or stop execution after a task is scheduled.</li>
-<li>Works in Node.js &gt;=7.6 (both require and import).</li>
-<li>Works in Deno &gt;=1.16.</li>
-<li>Works in Bun &gt;=0.2.2</li>
-<li>Works in browsers as standalone, UMD or ES-module.</li>
-<li>Works with both JavaScriptCore and V8.</li>
-<li>Schedule using specific target time zones.</li>
-<li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
+<li><a href="#upgrading-croner">Upgrading croner</a></li>
+<li><a href="#migrating-from-cron">Migrationg from cron</a></li>
+<li><a href="#migrating-from-node-cron">Migrationg from node-cron</a></li>
 </ul>
-<p>Quick examples:</p>
-<pre class="prettyprint source lang-javascript"><code>// Basic: Run a function at the interval defined by a cron expression
-const job = Cron('*/5 * * * * *', () => {
-	console.log('This will run every fifth second');
+<h2>Upgrading croner</h2>
+<p>Croner follows the Semantic Versioning (SemVer) standard. SemVer is a versioning system that specifies how version numbers should be assigned and incremented in software projects. The system uses a three-part number scheme, consisting of MAJOR.MINOR.PATCH, which is used to communicate changes in the project's API and functionality.</p>
+<ul>
+<li>MAJOR version changes indicate breaking changes to the project's API or functionality.</li>
+<li>MINOR version changes indicate new functionality that is backwards-compatible with the previous version.</li>
+<li>PATCH version changes indicate bug fixes or other minor changes that are backwards-compatible with the previous version.</li>
+</ul>
+<p>Croner follow the above strictly, which means you can be fairly certain that a minor or patch bump won't cause any issue with your software.</p>
+<p>A major bump will probably require some level of manual intervention.</p>
+<p>If upgrading from a previous version of Croner, the most important breaking change to know about is <code>4.x</code> to <code>5.x</code>, where the way day-of-month and day-of-week is combined changed. <code>1.x</code>-<code>4.x</code> used <code>AND</code> while <code>&gt;=5.0</code> uses <code>OR</code> to comply with Vixie-cron. Read more about this in issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a>.</p>
+<h2>Migrating from Cron</h2>
+<p>If you're currently using the cron package and want to migrate to croner, here are the steps you can follow:</p>
+<h3>Step 1: Install Croner</h3>
+<p>The first step is to install the croner package. You can do this by running the following command in your terminal:</p>
+<pre class="prettyprint source"><code>npm install croner
+</code></pre>
+<h3>Step 2: Update your code to use Croner</h3>
+<p>The croner package has a slightly different API compared to the cron package. Here's an example of how to create a new <code>CronJob</code> using croner:</p>
+<pre class="prettyprint source lang-js"><code>// CronJob constructor is called just Cron in Croner
+const { Cron } = require('croner');
+
+// If you have a lot of code using the CrobJob constructor, you can re-use the name like this
+// const { Cron as CronJob } = require('croner');
+
+const job = new Cron('0 0 12 * * *', { /* option */ }, () => {
+  console.log('This job will run at 12:00 PM every day.');
 });
 
-// Enumeration: What dates do the next 100 sundays occur at?
-const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
-console.log(nextSundays);
-
-// Days left to a specific date
-const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
-console.log(Math.floor(msLeft/1000/3600/24) + &quot; days left to next christmas eve&quot;);
-
-// Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
-// This will run 2023-01-23 00:00:00 according to the time in Asia/Kolkata
-Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay') });
-
+job.start();
 </code></pre>
-<p>More <a href="#examples">examples</a>...</p>
-<h2>Why another JavaScript cron implementation</h2>
-<p>Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.</p>
+<p>The main differences between <code>cron</code> and <code>croner</code> are that croner uses an object for options, whereas cron uses parameters. Please have a look att <a href="/README.md#options">/README.md#options</a> to find the equivalents.</p>
+<p>Another difference is the method names, below is a list of <code>cron</code> methods with their <code>croner</code> equivalents.</p>
 <table>
 <thead>
 <tr>
-<th></th>
-<th style="text-align:center">croner</th>
-<th style="text-align:center">cronosjs</th>
-<th style="text-align:center">node-cron</th>
-<th style="text-align:center">cron</th>
-<th style="text-align:center">node-schedule</th>
+<th>Cron</th>
+<th>Croner</th>
+<th>Note</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Platforms</strong></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td>stop()</td>
+<td>pause()</td>
+<td>stop() in croner block further usage of the job, whereas pause() just pause it</td>
 </tr>
 <tr>
-<td>Node.js (CommonJS)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
+<td>start()</td>
+<td>resume()</td>
+<td></td>
 </tr>
 <tr>
-<td>Browser (ESMCommonJS)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td>lastDate()</td>
+<td>previous()</td>
+<td></td>
 </tr>
 <tr>
-<td>Deno (ESM)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td>nextDate()</td>
+<td>next()</td>
+<td></td>
 </tr>
 <tr>
-<td><strong>Features</strong></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>Typescript typings</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>dom-AND-dow</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>dom-OR-dow</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-</tr>
-<tr>
-<td>Next run</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-</tr>
-<tr>
-<td>Next n runs</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>Timezone</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-</tr>
-<tr>
-<td>Minimum interval</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>Controls (stop/resume)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-</tr>
-<tr>
-<td>Range (0-13)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-</tr>
-<tr>
-<td>Stepping (*/5)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-</tr>
-<tr>
-<td>Last day of month (L)</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center">✓</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td>nextDates(n)</td>
+<td>enumerate(n)</td>
+<td></td>
 </tr>
 </tbody>
 </table>
-<details>
-  <summary>In depth comparison of various libraries</summary>
+<h3>Step 3: Update your tests</h3>
+<p>If you have tests for your code, you'll need to update them to use croner instead of cron. Make sure to test that your jobs are still running as expected after the migration.</p>
+<h2>Migrating from node-cron</h2>
+<p>Migrating from node-cron to croner</p>
+<p><code>node-cron</code> is a popular npm package for scheduling cron jobs in Node.js applications. However, <code>croner</code> is a more modern alternative with additional features, options and improved performance. If you're currently using node-cron and want to migrate to croner, here's what you need to do:</p>
+<h3>Install croner package:</h3>
+<p>First, you need to install the croner package in your project. You can do this by running the following command in your terminal:</p>
+<p><code>npm install croner</code></p>
+<h3>Replace the import statement:</h3>
+<p>Next, you'll need to update the import statement for cron to croner. In the file where you use the node-cron package, replace the line that reads:</p>
+<pre class="prettyprint source lang-javascript"><code>const cron = require('node-cron');
+</code></pre>
+<p>with:</p>
+<pre class="prettyprint source lang-javascript"><code>const cron = require('croner');
+</code></pre>
+<h3>Update your cron job:</h3>
+<p>The syntax for setting up cron jobs is very similar, however the function and the options needs to be swapped. Here's an example of how to migrate a cron job that runs every minute 14 o'clock in Oslo:</p>
+<pre class="prettyprint source lang-javascript"><code>// node-cron
+cron.schedule('0 * 14 * * *', () => {
+  console.log('Running a task every minute');
+}, { timezone: &quot;Europe/Oslo&quot; });
+
+// croner
+Cron('0 * 14 * * *', { timezone: &quot;Europe/Oslo&quot; }, () => {
+  console.log('Running a task every minute');
+});
+</code></pre>
+<p>Croner supports some additional options that node-cron does not. See <a href="/README.md#options">/README.md#options</a> for a full list.</p>
+<p>The method names for controlling a job is also different, or functions differently, see below:</p>
 <table>
 <thead>
 <tr>
-<th></th>
-<th style="text-align:center">croner</th>
-<th style="text-align:center">cronosjs</th>
-<th style="text-align:center">node-cron</th>
-<th style="text-align:center">cron</th>
-<th style="text-align:center">node-schedule</th>
+<th>Cron</th>
+<th>Croner</th>
+<th>Note</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Size</strong></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td>stop()</td>
+<td>pause()</td>
+<td>stop() in croner block further usage of the job, whereas pause() just pause it</td>
 </tr>
 <tr>
-<td>Minified size (KB)</td>
-<td style="text-align:center">15.5</td>
-<td style="text-align:center">16.3</td>
-<td style="text-align:center">16.5</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center">-</td>
-</tr>
-<tr>
-<td>Bundlephobia  minzip (KB)</td>
-<td style="text-align:center">3.6</td>
-<td style="text-align:center">5.1</td>
-<td style="text-align:center">5.7</td>
-<td style="text-align:center">23.9</td>
-<td style="text-align:center">32.4</td>
-</tr>
-<tr>
-<td>Dependencies</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">3</td>
-</tr>
-<tr>
-<td><strong>Popularity</strong></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>Downloads/week [^1]</td>
-<td style="text-align:center">672K</td>
-<td style="text-align:center">30K</td>
-<td style="text-align:center">376K</td>
-<td style="text-align:center">1574K</td>
-<td style="text-align:center">804K</td>
-</tr>
-<tr>
-<td><strong>Quality</strong></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>Issues [^1]</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">2</td>
-<td style="text-align:center">118 :warning:</td>
-<td style="text-align:center">119 :warning:</td>
-<td style="text-align:center">135 :warning:</td>
-</tr>
-<tr>
-<td>Code coverage</td>
-<td style="text-align:center">99%</td>
-<td style="text-align:center">98%</td>
-<td style="text-align:center">100%</td>
-<td style="text-align:center">81%</td>
-<td style="text-align:center">94%</td>
-</tr>
-<tr>
-<td><strong>Performance</strong></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td>Ops/s <code>1 2 3 4 5 6</code></td>
-<td style="text-align:center">99 952</td>
-<td style="text-align:center">49 308</td>
-<td style="text-align:center">N/A :x:</td>
-<td style="text-align:center">Test failed :x:</td>
-<td style="text-align:center">2 299 :warning:</td>
-</tr>
-<tr>
-<td>Ops/s <code>0 0 0 29 2 *</code></td>
-<td style="text-align:center">65 392</td>
-<td style="text-align:center">17 138</td>
-<td style="text-align:center">N/A :x:</td>
-<td style="text-align:center">Test failed :x:</td>
-<td style="text-align:center">1 450 :warning:</td>
-</tr>
-<tr>
-<td><strong>Tests</strong></td>
-<td style="text-align:center"><strong>8/8</strong></td>
-<td style="text-align:center"><strong>7/8</strong></td>
-<td style="text-align:center"><strong>0/8</strong> [^4] :question:</td>
-<td style="text-align:center"><strong>1/8</strong> :warning:</td>
-<td style="text-align:center"><strong>7/8</strong></td>
-</tr>
-<tr>
-<td>Test <code>0 0 23 * * *</code></td>
-<td style="text-align:center">2022-10-09 00:40</td>
-<td style="text-align:center">2022-10-09 00:40</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2022-10-09 00:40</td>
-<td style="text-align:center">2022-10-09 00:40</td>
-</tr>
-<tr>
-<td>Test <code>0 0 0 L 2 *</code> [^2]</td>
-<td style="text-align:center">2023-02-28 00:00</td>
-<td style="text-align:center">2023-02-28 00:00</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2023-02-28 00:00</td>
-</tr>
-<tr>
-<td>Test <code>0 0 0 29 2 *</code></td>
-<td style="text-align:center">2024-02-29 00:00</td>
-<td style="text-align:center">2024-02-29 00:00</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2023-03-29 00:00  :x:</td>
-<td style="text-align:center">2024-02-29 00:00</td>
-</tr>
-<tr>
-<td>Test <code>0 0 0 29 2 6</code> [^3]</td>
-<td style="text-align:center">2048-02-09 00:00</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">N/A</td>
-</tr>
-<tr>
-<td>Test <code>0 0 0 15 2 *</code></td>
-<td style="text-align:center">2023-02-16 00:00</td>
-<td style="text-align:center">2023-02-16 00:00</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2023-03-15 00:00  :x:</td>
-<td style="text-align:center">2023-02-16 00:00</td>
-</tr>
-<tr>
-<td>Test <code>0 0 0 * 10 1</code></td>
-<td style="text-align:center">2022-10-10 00:00</td>
-<td style="text-align:center">2022-10-10 00:00</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2022-11-07 00:00 :x:</td>
-<td style="text-align:center">2022-10-10 00:00</td>
-</tr>
-<tr>
-<td>Test <code>0 0 23 31 3 *</code></td>
-<td style="text-align:center">2023-03-31 23:00</td>
-<td style="text-align:center">2023-03-31 23:00</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2023-04-01 23:00 :x:</td>
-<td style="text-align:center">2023-03-31 23:00</td>
-</tr>
-<tr>
-<td>Test <code>1 2 3 4 5 6</code></td>
-<td style="text-align:center">2023-05-04 03:02</td>
-<td style="text-align:center">2023-05-04 03:02</td>
-<td style="text-align:center">N/A</td>
-<td style="text-align:center">2023-06-03 03:02 :x:</td>
-<td style="text-align:center">2023-05-04 03:02</td>
+<td>start()</td>
+<td>resume()</td>
+<td></td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Note</strong></p>
-<ul>
-<li>Table last updated at 2022-10-23</li>
-<li>node-cron has no interface to predict when the function will run, so tests cannot be carried out.</li>
-<li>All tests and benchmarks were carried out using <a href="https://github.com/Hexagon/cron-comparison">https://github.com/Hexagon/cron-comparison</a></li>
-</ul>
-</blockquote>
-<p>[^1]: As of 2022-10-08
-[^2]: Requires support for L-modifier
-[^3]: In dom-AND-dow mode, only supported by croner at the moment.
-[^4]: Node-cron has no way of showing next run time.</p>
-</details>
-<h2>Installation</h2>
-<h3>Node.js</h3>
-<p><code>npm install croner --save</code></p>
-<p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>// ESM Import ...
-import Cron from &quot;croner&quot;;
-
-// ... or CommonJS Require
-const Cron = require(&quot;croner&quot;);
-</code></pre>
-<p>TypeScript</p>
-<p>Notes for TypeScript:</p>
-<ul>
-<li>If using strict eslint rules, specifically new-cap combined with no-new, you need to import and use lowercase <code>cron</code> instead of <code>{ Cron }</code>.</li>
-</ul>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;croner&quot;;
-
-const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
-	console.log(&quot;This will run every second.&quot;);
-});
-</code></pre>
-<h3>Bun</h3>
-<p><code>bun add croner</code></p>
-<blockquote>
-<p><strong>Note</strong> If you encounter problems during installation, try using <code>bun add croner --backend=copyfile</code>.</p>
-</blockquote>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;croner&quot;;
-</code></pre>
-<h3>Deno</h3>
-<p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.6.4/src/croner.js&quot;;
-
-Cron(&quot;* * * * * *&quot;, () => {
-	console.log(&quot;This will run every second.&quot;);
-});
-</code></pre>
-<p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.6.4/src/croner.js&quot;;
-
-const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
-	console.log(&quot;This will run every second.&quot;);
-});
-</code></pre>
-<h3>Browser</h3>
-<h4>Manual</h4>
-<ul>
-<li>Download the latest <a href="https://github.com/Hexagon/croner/archive/refs/heads/master.zip">zipball</a>.</li>
-<li>Unpack the zip file.</li>
-<li>Grab <code>croner.min.js</code> (UMD and standalone) or <code>croner.min.mjs</code> (ES-module) from the <a href="/dist">dist/</a> folder.</li>
-</ul>
-<h4>CDN</h4>
-<p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js&quot;>&lt;/script>
-</code></pre>
-<p>To use as an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
-<pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
-	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.mjs&quot;;
-
-	// ... see usage section ...
-&lt;/script>
-</code></pre>
-<h2>Documentation</h2>
-<p>Full documentation available at <a href="https://hexagon.github.io/croner/Cron.html">hexagon.github.io/croner</a>.</p>
-<p>The short version:</p>
-<h3>Signature</h3>
-<p>Cron takes three arguments</p>
-<ul>
-<li><a href="#pattern">pattern</a></li>
-<li><a href="#options">options</a> (optional)</li>
-<li>scheduled function (optional)</li>
-</ul>
-<pre class="prettyprint source lang-javascript"><code>const job = Cron(&quot;* * * * * *&quot; /* Or a date object, or ISO 8601 local time */ , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
-
-// If function is omitted in constructor, it can be scheduled later
-job.schedule((/* optional */ job, /* optional */ context) => {});		
-
-// States
-const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-const nextRuns = job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
-const prevRun = job.previous( );	
-const msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
-const isRunning = job.running();
-
-// Control scheduled execution
-job.pause();				
-job.resume();
-job.stop();
-
-</code></pre>
-<h4>Options</h4>
-<table>
-<thead>
-<tr>
-<th>Key</th>
-<th>Default value</th>
-<th>Data type</th>
-<th>Remarks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>name</td>
-<td>undefined</td>
-<td>String</td>
-<td>If you specify a name for the job, Croner will keep a reference to the job in exported array <code>scheduledJobs</code></td>
-</tr>
-<tr>
-<td>maxRuns</td>
-<td>Infinite</td>
-<td>Number</td>
-<td></td>
-</tr>
-<tr>
-<td>catch</td>
-<td>false</td>
-<td>Boolean</td>
-<td>Catch unhandled errors in triggered function. Passing <code>true</code> will silently ignore errors. Passing a callback function will trigger this callback on error.</td>
-</tr>
-<tr>
-<td>timezone</td>
-<td>undefined</td>
-<td>String</td>
-<td>Timezone in Europe/Stockholm format</td>
-</tr>
-<tr>
-<td>startAt</td>
-<td>undefined</td>
-<td>String</td>
-<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed)</td>
-</tr>
-<tr>
-<td>stopAt</td>
-<td>undefined</td>
-<td>String</td>
-<td>ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed)</td>
-</tr>
-<tr>
-<td>interval</td>
-<td>0</td>
-<td>Number</td>
-<td>Minimum number of seconds between triggers.</td>
-</tr>
-<tr>
-<td>paused</td>
-<td>false</td>
-<td>Boolean</td>
-<td>If the job should be paused from start.</td>
-</tr>
-<tr>
-<td>context</td>
-<td>undefined</td>
-<td>Any</td>
-<td>Passed as the second parameter to triggered function</td>
-</tr>
-<tr>
-<td>legacyMode</td>
-<td>true</td>
-<td>boolean</td>
-<td>Combine day-of-month and day-of-week using true = OR, false = AND</td>
-</tr>
-<tr>
-<td>unref</td>
-<td>false</td>
-<td>boolean</td>
-<td>Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running.</td>
-</tr>
-<tr>
-<td>utcOffset</td>
-<td>undefined</td>
-<td>number</td>
-<td>Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option <code>timezone</code> instead.</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Warning</strong>
-Unreferencing timers (option <code>unref</code>) is only supported by Node.js and Deno.
-Browsers have not yet implemented this feature, and it does not make sense to use it in a browser environment.</p>
-</blockquote>
-<h4>Pattern</h4>
-<p>The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:</p>
-<ul>
-<li>
-<p>Croner expressions have the following additional modifiers:</p>
-<ul>
-<li><em>?</em> A question mark is substituted with the time of Croner's initialization. For example <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if the time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
-<li><em>L</em> L can be used in the day of the month field to specify the last day of the month.</li>
-</ul>
-</li>
-<li>
-<p>Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).</p>
-</li>
-<li>
-<p>Croner also allows you to change how the day-of-week and day-of-month conditions are combined. By default, Croner (and Vixie cron) will trigger when either the day-of-month OR the day-of-week conditions match. For example, <code>0 20 1 * MON</code> will trigger on the first of the month as well as each Monday. If you want to use AND (so that it only triggers on Mondays that are also the first of the month), you can pass <code>{ legacyMode: false }</code>. For more information, see issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a>.</p>
-</li>
-</ul>
-<pre class="prettyprint source lang-javascript"><code>// ┌──────────────── (optional) second (0 - 59)
-// │ ┌────────────── minute (0 - 59)
-// │ │ ┌──────────── hour (0 - 23)
-// │ │ │ ┌────────── day of month (1 - 31)
-// │ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
-// │ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
-// │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
-// │ │ │ │ │ │
-// * * * * * *
-</code></pre>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Required</th>
-<th>Allowed values</th>
-<th>Allowed special characters</th>
-<th>Remarks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Seconds</td>
-<td>Optional</td>
-<td>0-59</td>
-<td>* , - / ?</td>
-<td></td>
-</tr>
-<tr>
-<td>Minutes</td>
-<td>Yes</td>
-<td>0-59</td>
-<td>* , - / ?</td>
-<td></td>
-</tr>
-<tr>
-<td>Hours</td>
-<td>Yes</td>
-<td>0-23</td>
-<td>* , - / ?</td>
-<td></td>
-</tr>
-<tr>
-<td>Day of Month</td>
-<td>Yes</td>
-<td>1-31</td>
-<td>* , - / ? L</td>
-<td></td>
-</tr>
-<tr>
-<td>Month</td>
-<td>Yes</td>
-<td>1-12 or JAN-DEC</td>
-<td>* , - / ?</td>
-<td></td>
-</tr>
-<tr>
-<td>Day of Week</td>
-<td>Yes</td>
-<td>0-7 or SUN-MON</td>
-<td>* , - / ?</td>
-<td>0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Note</strong>
-Weekday and month names are case-insensitive. Both <code>MON</code> and <code>mon</code> work.</p>
-</blockquote>
-<p>It is also possible to use the following &quot;nicknames&quot; as pattern.</p>
-<table>
-<thead>
-<tr>
-<th>Nickname</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>@yearly</td>
-<td>Run once a year, ie.  &quot;0 0 1 1 *&quot;.</td>
-</tr>
-<tr>
-<td>@annually</td>
-<td>Run once a year, ie.  &quot;0 0 1 1 *&quot;.</td>
-</tr>
-<tr>
-<td>@monthly</td>
-<td>Run once a month, ie. &quot;0 0 1 * *&quot;.</td>
-</tr>
-<tr>
-<td>@weekly</td>
-<td>Run once a week, ie.  &quot;0 0 * * 0&quot;.</td>
-</tr>
-<tr>
-<td>@daily</td>
-<td>Run once a day, ie.   &quot;0 0 * * *&quot;.</td>
-</tr>
-<tr>
-<td>@hourly</td>
-<td>Run once an hour, ie. &quot;0 * * * *&quot;.</td>
-</tr>
-</tbody>
-</table>
-<h3>Examples</h3>
-<h4>Expressions</h4>
-<pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
-Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
-	console.log('This will run every tenth second between second 15-45');
-	console.log('every fifth minute of hour 1,2 and 3 when day of month');
-	console.log('is the same as when Cron started, every saturday in January to March.');
-});
-</code></pre>
-<h4>Interval</h4>
-<pre class="prettyprint source lang-javascript"><code>// Trigger on specific interval combined with cron expression
-Cron('* * * 7-16 * MON-FRI', { interval: 90, legacyMode: false }, function () {
-	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
-});
-</code></pre>
-<h4>Find dates</h4>
-<pre class="prettyprint source lang-javascript"><code>// Find next month
-const nextMonth = Cron(&quot;@monthly&quot;).next(),
-	nextSunday = Cron(&quot;@weekly&quot;).next(),
-	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;, { legacyMode: false }).next(),
-	nextSunLastOfMonth = Cron(&quot;0 0 0 L * 7&quot;, { legacyMode: false }).next();
-
-console.log(&quot;First day of next month: &quot; +  nextMonth.toLocaleDateString());
-console.log(&quot;Next sunday: &quot; +  nextSunday.toLocaleDateString());
-console.log(&quot;Next saturday at 29th of february: &quot; +  nextSat29feb.toLocaleDateString());  // 2048-02-29
-console.log(&quot;Next month ending with a sunday: &quot; +  nextSunLastOfMonth.toLocaleDateString()); 
-</code></pre>
-<h4>With options</h4>
-<pre class="prettyprint source lang-javascript"><code>
-const job = Cron(
-	'* * * * *', 
-	{ 
-		maxRuns: Infinity, 
-		startAt: &quot;2021-11-01T00:00:00&quot;, 
-		stopAt: &quot;2021-12-01T00:00:00&quot;,
-		timezone: &quot;Europe/Stockholm&quot;
-	},
-	function() {
-		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00');
-	}
-);
-</code></pre>
-<h4>Job controls</h4>
-<pre class="prettyprint source lang-javascript"><code>const job = Cron('* * * * * *', (self) => {
-	console.log('This will run every second. Pause on second 10. Resume on 15. And quit on 20.');
-	console.log('Current second: ', new Date().getSeconds());
-	console.log('Previous run: ' + self.previous());
-	console.log('Next run: ' + self.next());
-});
-
-Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
-Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
-Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
-</code></pre>
-<h4>Passing a context</h4>
-<pre class="prettyprint source lang-javascript"><code>const data = {
-	what: &quot;stuff&quot;
-};
-
-Cron('* * * * * *', { context: data }, (_self, context) => {
-	console.log('This will print stuff: ' + context.what);
-});
-
-Cron('*/5 * * * * *', { context: data }, (self, context) => {
-	console.log('After this, other stuff will be printed instead');
-	context.what = &quot;other stuff&quot;;
-	self.stop();
-});
-</code></pre>
-<h4>Fire on a specific date/time</h4>
-<pre class="prettyprint source lang-javascript"><code>// A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
-// Always specify which timezone the ISO 8601 time string has with the timezone option.
-let job = Cron(&quot;2025-01-01T23:00:00&quot;,{timezone: &quot;Europe/Stockholm&quot;},() => {
-	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
-});
-
-if (job.next() === null) {
-	// The job will not fire for some reason
-} else {
-	console.log(&quot;Job will fire at &quot; + job.next());
-}
-</code></pre>
-<h4>Naming jobs</h4>
-<p>If you provide a name for the job using the option { name: '...' }, a reference to the job will be stored in the exported array <code>scheduledJobs</code>. Naming a job makes it accessible throughout your application.</p>
-<blockquote>
-<p><strong>Note</strong>
-If a job is stopped using <code>.stop()</code>, and goes out of scope, it will normally be eligible for garbage collection and will be deleted during the next garbage collection cycle. Keeping a reference by specifying option <code>name</code> prevents this from happening.</p>
-</blockquote>
-<pre class="prettyprint source lang-javascript"><code>// import { Cron, scheduledJobs } ...
-
-// Scoped job
-(() => {
-
-	// As we specify a name for the job, a reference will be kept in `scheduledJobs`
-	const job = Cron(&quot;* * * * * *&quot;, { name: &quot;Job1&quot; }, function () {
-		console.log(&quot;This will run every second&quot;);
-	});
-
-	job.pause();
-	console.log(&quot;Job paused&quot;);
-
-})();
-
-// Another scope, delayed 5 seconds
-setTimeout(() => {
-
-	// Find our job
-	// - scheduledJobs can either be imported separately { Cron, scheduledJobs }
-	//   or access through Cron.scheduledJobs
-	const job = scheduledJobs.find(j => j.name === &quot;Job1&quot;);
-
-	// Resume it
-	if (job) {
-		if(job.resume()) {
-			// This will happen
-			console.log(&quot;Job resumed successfully&quot;);
-		} else {
-			console.log(&quot;Job found, but could not be restarted. The job were probably stopped using `.stop()` which prevents resuming.&quot;);
-		}
-	} else {
-		console.error(&quot;Job not found&quot;);
-	}
-
-}, 5000);
-
-</code></pre>
-<h4>Act at completion</h4>
-<pre class="prettyprint source lang-javascript"><code>// Start a job firing once each 5th second, run at most 3 times
-const job = new Cron(&quot;0/5 * * * * *&quot;, { maxRuns: 3 }, (job) => {
-    
-    // Do work
-    console.log('Job Running');
-
-    // Is this the last execution?
-    if (!job.next()) {
-        console.log('Last execution');
-    }
-
-});
- 
-// Will there be no executions? 
-// This would trigger if you change maxRuns to 0, or manage to compose 
-// an impossible cron expression.
-if (!job.next() && !job.previous()) {
-    console.log('No executions scheduled');
-}
-</code></pre>
-<h2>Contributing</h2>
-<p>See <a href="/CONTRIBUTING.md">Contribution Guide</a></p>
-<p>... or ...</p>
-<p><a href='https://ko-fi.com/C1C7IEEYF' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
-<h2>License</h2>
-<p>MIT License</p>
+<p>That's it! By following these steps, you should be able to migrate from node-cron to croner without any issues.</p>
     </article>
   </section>
 
