@@ -137,9 +137,8 @@
 <li>MINOR version changes indicate new functionality that is backwards-compatible with the previous version.</li>
 <li>PATCH version changes indicate bug fixes or other minor changes that are backwards-compatible with the previous version.</li>
 </ul>
-<p>Croner follow the above strictly, which means you can be fairly certain that a minor or patch bump won't cause any issue with your software.</p>
-<p>A major bump will probably require some level of manual intervention.</p>
-<p>If upgrading from a previous version of Croner, the most important breaking change to know about is <code>4.x</code> to <code>5.x</code>, where the way day-of-month and day-of-week is combined changed. <code>1.x</code>-<code>4.x</code> used <code>AND</code> while <code>&gt;=5.0</code> uses <code>OR</code> to comply with Vixie-cron. Read more about this in issue <a href="https://github.com/Hexagon/croner/issues/53">#53</a>.</p>
+<p>Croner follows the above strictly, which means you can be fairly certain that a minor or patch bump won't cause any issues with your software. A major bump will probably require some level of manual intervention.</p>
+<p>If upgrading from a previous version of Croner, the most important breaking change to know about is from <code>4.x</code> to <code>5.x</code>, where the way day-of-month and day-of-week are combined has changed. Versions <code>1.x</code>-<code>4.x</code> used &quot;AND,&quot; while version <code>5.0</code> or later uses &quot;OR&quot; to comply with Vixie-cron. You can read more about this in issue #53. The new mode is, oddly enough, called <code>legacyMode</code> and can be disabled using the options.</p>
 <h2>Migrating from Cron</h2>
 <p>If you're currently using the cron package and want to migrate to croner, here are the steps you can follow:</p>
 <h3>Step 1: Install Croner</h3>
@@ -154,14 +153,14 @@ const { Cron } = require('croner');
 // If you have a lot of code using the CrobJob constructor, you can re-use the name like this
 // const { Cron as CronJob } = require('croner');
 
-const job = new Cron('0 0 12 * * *', { /* option */ }, () => {
+const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
   console.log('This job will run at 12:00 PM every day.');
 });
 
 job.start();
 </code></pre>
 <p>The main differences between <code>cron</code> and <code>croner</code> are that croner uses an object for options, whereas cron uses parameters. Please have a look att <a href="/README.md#options">/README.md#options</a> to find the equivalents.</p>
-<p>Another difference is the method names, below is a list of <code>cron</code> methods with their <code>croner</code> equivalents.</p>
+<p>Another difference is the method names. Below is a list of <code>cron</code> methods with their <code>croner</code> equivalents</p>
 <table>
 <thead>
 <tr>
@@ -226,7 +225,7 @@ Cron('0 * 14 * * *', { timezone: &quot;Europe/Oslo&quot; }, () => {
 });
 </code></pre>
 <p>Croner supports some additional options that node-cron does not. See <a href="/README.md#options">/README.md#options</a> for a full list.</p>
-<p>The method names for controlling a job is also different, or functions differently, see below:</p>
+<p>The method names for controlling a job are also different, or function differently. See below:</p>
 <table>
 <thead>
 <tr>
@@ -239,16 +238,21 @@ Cron('0 * 14 * * *', { timezone: &quot;Europe/Oslo&quot; }, () => {
 <tr>
 <td>stop()</td>
 <td>pause()</td>
-<td>stop() in croner block further usage of the job, whereas pause() just pause it</td>
+<td></td>
 </tr>
 <tr>
 <td>start()</td>
 <td>resume()</td>
 <td></td>
 </tr>
+<tr>
+<td>-</td>
+<td>stop()</td>
+<td>Completely stops a job by clearing the internal timeout and by blocking further execution.</td>
+</tr>
 </tbody>
 </table>
-<p>That's it! By following these steps, you should be able to migrate from node-cron to croner without any issues.</p>
+<p>That's it! By following these steps, you should be able to migrate from <code>node-cron</code> to <code>croner</code> without any issues.</p>
     </article>
   </section>
 

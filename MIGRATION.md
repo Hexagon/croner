@@ -14,11 +14,9 @@ Croner follows the Semantic Versioning (SemVer) standard. SemVer is a versioning
   * MINOR version changes indicate new functionality that is backwards-compatible with the previous version.
   * PATCH version changes indicate bug fixes or other minor changes that are backwards-compatible with the previous version.
 
-Croner follow the above strictly, which means you can be fairly certain that a minor or patch bump won't cause any issue with your software. 
+Croner follows the above strictly, which means you can be fairly certain that a minor or patch bump won't cause any issues with your software. A major bump will probably require some level of manual intervention.
 
-A major bump will probably require some level of manual intervention.
-
-If upgrading from a previous version of Croner, the most important breaking change to know about is `4.x` to `5.x`, where the way day-of-month and day-of-week is combined changed. `1.x`-`4.x` used `AND` while `>=5.0` uses `OR` to comply with Vixie-cron. Read more about this in issue [#53](https://github.com/Hexagon/croner/issues/53).
+If upgrading from a previous version of Croner, the most important breaking change to know about is from `4.x` to `5.x`, where the way day-of-month and day-of-week are combined has changed. Versions `1.x`-`4.x` used "AND," while version `5.0` or later uses "OR" to comply with Vixie-cron. You can read more about this in issue #53. The new mode is, oddly enough, called `legacyMode` and can be disabled using the options.
 
 ## Migrating from Cron
 
@@ -43,7 +41,7 @@ const { Cron } = require('croner');
 // If you have a lot of code using the CrobJob constructor, you can re-use the name like this
 // const { Cron as CronJob } = require('croner');
 
-const job = new Cron('0 0 12 * * *', { /* option */ }, () => {
+const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
   console.log('This job will run at 12:00 PM every day.');
 });
 
@@ -52,7 +50,7 @@ job.start();
 
 The main differences between `cron` and `croner` are that croner uses an object for options, whereas cron uses parameters. Please have a look att [/README.md#options](/README.md#options) to find the equivalents.
 
-Another difference is the method names, below is a list of `cron` methods with their `croner` equivalents.
+Another difference is the method names. Below is a list of `cron` methods with their `croner` equivalents
 
 | Cron | Croner | Note |
 | ---- | ------ | ---- |
@@ -110,11 +108,12 @@ Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
 
 Croner supports some additional options that node-cron does not. See [/README.md#options](/README.md#options) for a full list.
 
-The method names for controlling a job is also different, or functions differently, see below:
+The method names for controlling a job are also different, or function differently. See below:
 
 | Cron | Croner | Note |
 | ---- | ------ | ---- |
-| stop() | pause() | stop() in croner block further usage of the job, whereas pause() just pause it |
+| stop() | pause() | |
 | start() | resume() | |
+| -      | stop() | Completely stops a job by clearing the internal timeout and by blocking further execution. | 
 
-That's it! By following these steps, you should be able to migrate from node-cron to croner without any issues.
+That's it! By following these steps, you should be able to migrate from `node-cron` to `croner` without any issues.
