@@ -14,7 +14,7 @@ Croner follows the Semantic Versioning (SemVer) standard. SemVer is a versioning
   * MINOR version changes indicate new functionality that is backwards-compatible with the previous version.
   * PATCH version changes indicate bug fixes or other minor changes that are backwards-compatible with the previous version.
 
-Croner follows the above strictly, which means you can be fairly certain that a minor or patch bump won't cause any issues with your software. A major bump will probably require some level of manual intervention.
+Croner strictly follows the above, which means you can be fairly certain that a minor or patch bump will not cause any issues with your software. However, a major bump will likely require some level of manual intervention.
 
 If upgrading from a previous version of Croner, the most important breaking change to know about is from `4.x` to `5.x`, where the way day-of-month and day-of-week are combined has changed. Versions `1.x`-`4.x` used "AND," while version `5.0` or later uses "OR" to comply with Vixie-cron. You can read more about this in issue #53. The new mode is, oddly enough, called `legacyMode` and can be disabled using the options.
 
