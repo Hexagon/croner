@@ -1,6 +1,18 @@
-# Migration
+# Examples
 
-## Table of contents
+## Table of Contents
+
+*  [Expressions](#expressions)
+*  [Interval](#interval)
+*  [Find dates](#find-dates)
+*  [Various options](#various-options)
+*  [Job controls](#job-controls)
+*  [Passing a context](#passing-a-context)
+*  [Fire on a specific date/time](#fire-on-a-specific-datetime)
+*  [Time zone](#time-zone)
+*  [Naming jobs](#naming-jobs)
+
+Below are some examples of how to use Croner.
 
 ### Expressions
 ```javascript
@@ -34,7 +46,7 @@ console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateSt
 console.log("Next month ending with a sunday: " +  nextSunLastOfMonth.toLocaleDateString()); 
 ```
 
-### With options
+### Various options
 ```javascript
 
 const job = Cron(
