@@ -361,7 +361,7 @@ Cron.prototype.schedule = function (func, partial) {
 				|| "function" === typeof this.options.protect
 				|| this.options.protect instanceof Function
 			) {
-				(async (inst) => { inst.options.protect(inst); })(this);
+				(async (inst) => { await inst.options.protect(inst); })(this);
 			}
 
 			// This is a partial run, just reschedule
