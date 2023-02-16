@@ -1,8 +1,15 @@
 import { CronDate } from "./date.js";
+import { Cron } from "./croner.js";
 
 /**
  * @callback CatchCallbackFn
  * @param {unknown} e
+ * @param {Cron} job
+ */
+
+/**
+ * @callback ProtectCallbackFn
+ * @param {Cron} job
  */
 
 /**
@@ -15,6 +22,7 @@ import { CronDate } from "./date.js";
  * @property {boolean} [unref] - Abort job instantly if nothing else keeps the event loop running.
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [interval] - Minimum interval between executions, in seconds
+ * @property {boolean | ProtectCallbackFn} [protect] - Skip current run if job is already running
  * @property {string | Date} [startAt] - When to start running
  * @property {string | Date} [stopAt] - When to stop running
  * @property {string} [timezone] - Time zone in Europe/Stockholm format

@@ -53,7 +53,7 @@
     "build:minify": "uglifyjs dist/croner.cjs --source-map -o dist/croner.min.js && uglifyjs dist/croner.cjs --source-map -o dist/croner.min.cjs && uglifyjs dist/croner.mjs --source-map -o dist/croner.min.mjs",
     "build:typings": "tsc",
     "build:cleanup": "(rm dist/croner.mjs || del dist\\croner.mjs) || (rm dist/croner.cjs || del dist\\croner.cjs)",
-    "build:docs": "(rm -rf docs/* || rd /S /Q docs) && jsdoc -c .jsdoc.json"
+    "build:docs": "(rm -rf dist-docs/* || rd /S /Q dist-docs) || jsdoc -c .jsdoc.json"
   },
   "type": "module",
   "main": "./dist/croner.min.cjs",

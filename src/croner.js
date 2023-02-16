@@ -98,6 +98,15 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	
 	/** @type {CronPattern|undefined} */
 	this.pattern = void 0;
+
+	/** @type {boolean} */
+	this.blocking = false;
+
+	/** @type {CronDate} */
+	this.previousrun = void 0;
+
+	/** @type {CronDate} */
+	this.runstarted = void 0;
 	
 	// Check if we got a date, or a pattern supplied as first argument
 	// Then set either this.once or this.pattern
@@ -160,7 +169,7 @@ Cron.prototype.enumerate = function (n, previous) {
 };
 	
 /**
- * Is running?
+ * Indicates wether or not the cron job is active, e.g. awaiting next trigger
  * @public
  * 
  * @returns {boolean} - Running or not
@@ -170,9 +179,29 @@ Cron.prototype.running = function () {
 	const running = !this.options.paused && this.fn !== void 0;
 	return msLeft !== null && running;
 };
-	
+
 /**
- * Return previous run time
+ * Indicates wether or not the cron job is working
+ * @public
+ * 
+ * @returns {boolean} - Running or not
+ */
+Cron.prototype.working = function () {
+	return this.blocking;
+};
+
+/**
+ * Return current/previous run start time
+ * @public
+ * 
+ * @returns {Date | null} - Previous run time
+ */
+Cron.prototype.started = function () {
+	return this.runstarted ? this.runstarted.getDate() : null;
+};
+
+/**
+ * Return previous run end time
  * @public
  * 
  * @returns {Date | null} - Previous run time
@@ -180,6 +209,7 @@ Cron.prototype.running = function () {
 Cron.prototype.previous = function () {
 	return this.previousrun ? this.previousrun.getDate() : null;
 };
+
 	
 /**
  * Returns number of milliseconds to next run
@@ -271,48 +301,73 @@ Cron.prototype.schedule = function (func, partial) {
 	// Ok, go!
 	this.currentTimeout = setTimeout(() => {
 	
-		const now = new Date();
+		const now = new Date(),
+			shouldRun = 
+				waitMs !== maxDelay
+				&& !this.options.paused // Make cure we're not paused
+				&& now.getTime() >= target, // Make sure we're at target time
+			isBlocked = this.blocking && this.options.protect;
 
-		if( waitMs !== maxDelay && !this.options.paused && now.getTime() >= target ) {
+		if( shouldRun && !isBlocked ) {
 	
 			this.options.maxRuns--;
-	
-			// Always catch errors
-			//  - re-throw if options.catch is not set
-			//	- call callback if options.catch is set to a function
-			//  - ignore if options.catch is set to any other truthy value
-			if (this.options.catch) {
-				// We don't wan't croner to stop even if a job is running over next
-				// - so we wrap the function in a non-awaited anonymous function clause
-				(async (inst) => {
-					try {
-						await inst.fn(inst, inst.options.context);
-					} catch (_e) {
-						if (
-							Object.prototype.toString.call(inst.options.catch) === "[object Function]"
-							|| "function" === typeof inst.options.catch
-							|| inst.options.catch instanceof Function
-						) {
-							inst.options.catch(_e);
+
+			// We don't wan't croner to stop even if a job is running over next
+			// - so we wrap the call in a non-awaited anonymous function clause
+			(async (inst) => {
+
+				// Indicate that we're running
+				inst.blocking = true;
+
+				// Indicate current run
+				this.runstarted = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
+
+				// Always catch errors
+				//  - re-throw if options.catch is not set
+				//	- call callback if options.catch is set to a function
+				//  - ignore if options.catch is set to any other truthy value
+				if (this.options.catch) {
+						try {
+							await inst.fn(inst, inst.options.context);
+						} catch (_e) {
+							if (
+								Object.prototype.toString.call(inst.options.catch) === "[object Function]"
+								|| "function" === typeof inst.options.catch
+								|| inst.options.catch instanceof Function
+							) {
+								inst.options.catch(_e, inst);
+							}
+						} finally {		
+							// Indicate that we're done
+							inst.blocking = false;
 						}
-					}
-				})(this);
-			} else {
-				this.fn(this, this.options.context);
-			}
+				} else {
+					await this.fn(this, this.options.context);
+					// Indicate that we're done
+					inst.blocking = false;
+				}
+			})(this);
 	
 			// Set previous run to now
 			this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
-	
+
 			// Recurse
 			this.schedule();
 			
 		} else {
-			// Partial
+			// If this trigger were blocked, and protect is a function, trigger protect using a non awaited async function
+			if (shouldRun && isBlocked && 
+				Object.prototype.toString.call(this.options.protect) === "[object Function]"
+				|| "function" === typeof this.options.protect
+				|| this.options.protect instanceof Function
+			) {
+				(async (inst) => { inst.options.protect(inst) })(this);
+			}
+
+			// This is a partial run, just reschedule
 			this.schedule(undefined, now);
 		}
-	
-	
+
 	}, waitMs);
 
 	// If unref option is set - unref the current timeout, which allows the process to exit even if there is a pending schedule
