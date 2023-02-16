@@ -309,7 +309,9 @@ It is also possible to use the following "nicknames" as pattern.
 
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev) 
 
-All development happen in the dev branch, you can install latest development version of croner using
+A list of fixes and features currently released in dev (but not in master) is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
+
+You can install latest revision of the development branch by running the command below.
 
 ```
 npm install croner@dev
