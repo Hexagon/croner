@@ -327,20 +327,20 @@ Cron.prototype.schedule = function (func, partial) {
 				//	- call callback if options.catch is set to a function
 				//  - ignore if options.catch is set to any other truthy value
 				if (this.options.catch) {
-						try {
-							await inst.fn(inst, inst.options.context);
-						} catch (_e) {
-							if (
-								Object.prototype.toString.call(inst.options.catch) === "[object Function]"
+					try {
+						await inst.fn(inst, inst.options.context);
+					} catch (_e) {
+						if (
+							Object.prototype.toString.call(inst.options.catch) === "[object Function]"
 								|| "function" === typeof inst.options.catch
 								|| inst.options.catch instanceof Function
-							) {
-								inst.options.catch(_e, inst);
-							}
-						} finally {		
-							// Indicate that we're done
-							inst.blocking = false;
+						) {
+							inst.options.catch(_e, inst);
 						}
+					} finally {		
+						// Indicate that we're done
+						inst.blocking = false;
+					}
 				} else {
 					await this.fn(this, this.options.context);
 					// Indicate that we're done
@@ -361,7 +361,7 @@ Cron.prototype.schedule = function (func, partial) {
 				|| "function" === typeof this.options.protect
 				|| this.options.protect instanceof Function
 			) {
-				(async (inst) => { inst.options.protect(inst) })(this);
+				(async (inst) => { inst.options.protect(inst); })(this);
 			}
 
 			// This is a partial run, just reschedule

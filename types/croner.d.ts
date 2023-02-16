@@ -24,6 +24,8 @@ export class Cron {
     name: string | undefined;
     /** @type {CronOptions} */
     options: CronOptions;
+    /** @type {boolean} */
+    blocking: boolean;
     once: CronDate;
     pattern: CronPattern;
     fn: Function;
@@ -43,14 +45,28 @@ export class Cron {
      */
     enumerate(n: number, previous?: Date | string): Date[];
     /**
-     * Is running?
+     * Indicates wether or not the cron job is active, e.g. awaiting next trigger
      * @public
      *
      * @returns {boolean} - Running or not
      */
     public running(): boolean;
     /**
-     * Return previous run time
+     * Indicates wether or not the cron job is working
+     * @public
+     *
+     * @returns {boolean} - Running or not
+     */
+    public working(): boolean;
+    /**
+     * Return current/previous run start time
+     * @public
+     *
+     * @returns {Date | null} - Previous run time
+     */
+    public started(): Date | null;
+    /**
+     * Return previous run end time
      * @public
      *
      * @returns {Date | null} - Previous run time
@@ -96,6 +112,7 @@ export class Cron {
      */
     public schedule(func: Function, partial?: Date): Cron;
     currentTimeout: number;
+    runstarted: CronDate;
     previousrun: CronDate;
     private _next;
 }

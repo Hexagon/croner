@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+      Croner - Documentation
+  </title>
+
+  <link href="https://www.braintreepayments.com/images/favicon-ccda0b14.png" rel="icon" type="image/png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link id="google-font" href="https://fonts.googleapis.com/css?family=Roboto+Mono|Cutive+Mono|Roboto:300,400,700" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="styles/highlight-themes/current.css">
+  <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  <link type="text/css" rel="stylesheet" href="styles/collapsible.css">
+  <link type="text/css" rel="stylesheet" href="styles/style-switcher.css">
+  <link type="text/css" rel="stylesheet" href="styles/selectric.css">
+  
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+  <script src="https://embed.runkit.com"></script>
+  <style id="style-switcher-styles">
+    nav {
+        background: #282c34;
+    }
+    .hljs {
+        background: #1d2027;
+    }
+    .nav-container > ul > li.active a {
+        color: #dcdcdc;
+    }
+    .nav-container > ul > li.active a:hover {
+        color: #f78200;
+    }
+    .nav-container > ul > li.active ul {
+        border-color: #f78200;
+    }
+    h4.name {
+        color: #f78200;
+    }
+    .params > div > code, .params > div > em {
+        color: #f78200;
+    }
+    a, a:active {
+        color: #f78200;
+    }
+    .hljs-doctag, .hljs-keyword, .hljs-formula {
+        color: #f78200;
+    }
+    nav ul a:hover, nav ul a:active {
+        color: #f78200;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header-fixed">
+      <h1>
+        <a href="index.html" title="modernTemplate.title">
+            
+                <img alt="Croner" src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" />
+            
+            Croner
+        </a>
+      </h1>
+      <div class="center-header">
+          <ul>
+            
+          </ul>
+      </div>
+      <div class="right-header">
+           
+                <a href="https://github.com/hexagon/croner" title="View it on Github" style="">
+                    <i class="fab fa-github-alt"></i>
+                </a>
+           
+                <a href="https://www.npmjs.com/package/croner" title="View it on NPM" style="font-size: 19px">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </a>
+           
+      </div>
+  </header>
+
+  <svg style="display: none;">
+    <defs>
+      <symbol id="linkIcon" fill="#706d77" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+  <label for="nav-trigger" class="navicon-button x">
+    <div class="navicon"></div>
+  </label>
+
+  <label for="nav-trigger" class="overlay"></label>
+
+  <nav>
+    <div id="menu-container" class="scrollbar-inner">
+        <div class="nav-container">
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-working-nav"><a href="Cron.html#working">working</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+        </div>
+    </div>
+  </nav>
+
+  <div id="main">
+    
+      <h1 class="page-title">
+        Tutorial: EXAMPLES
+      </h1>
+    
+
+    <section>
+  <header>
+    
+
+    <h2>
+      EXAMPLES
+    </h2>
+  </header>
+
+  <article>
+    <h1>Migration</h1>
+<h2>Table of contents</h2>
+<h3>Expressions</h3>
+<pre class="prettyprint source lang-javascript"><code>// Run a function according to pattern
+Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
+	console.log('This will run every tenth second between second 15-45');
+	console.log('every fifth minute of hour 1,2 and 3 when day of month');
+	console.log('is the same as when Cron started, every saturday in January to March.');
+});
+</code></pre>
+<h3>Interval</h3>
+<pre class="prettyprint source lang-javascript"><code>// Trigger on specific interval combined with cron expression
+Cron('* * * 7-16 * MON-FRI', { interval: 90, legacyMode: false }, function () {
+	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
+});
+</code></pre>
+<h3>Find dates</h3>
+<pre class="prettyprint source lang-javascript"><code>// Find next month
+const nextMonth = Cron(&quot;@monthly&quot;).next(),
+	nextSunday = Cron(&quot;@weekly&quot;).next(),
+	nextSat29feb = Cron(&quot;0 0 0 29 2 6&quot;, { legacyMode: false }).next(),
+	nextSunLastOfMonth = Cron(&quot;0 0 0 L * 7&quot;, { legacyMode: false }).next();
+
+console.log(&quot;First day of next month: &quot; +  nextMonth.toLocaleDateString());
+console.log(&quot;Next sunday: &quot; +  nextSunday.toLocaleDateString());
+console.log(&quot;Next saturday at 29th of february: &quot; +  nextSat29feb.toLocaleDateString());  // 2048-02-29
+console.log(&quot;Next month ending with a sunday: &quot; +  nextSunLastOfMonth.toLocaleDateString()); 
+</code></pre>
+<h3>With options</h3>
+<pre class="prettyprint source lang-javascript"><code>
+const job = Cron(
+	'* * * * *', 
+	{ 
+		maxRuns: Infinity, 
+		startAt: &quot;2021-11-01T00:00:00&quot;, 
+		stopAt: &quot;2021-12-01T00:00:00&quot;,
+		timezone: &quot;Europe/Stockholm&quot;
+	},
+	function() {
+		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00');
+	}
+);
+</code></pre>
+<h3>Job controls</h3>
+<pre class="prettyprint source lang-javascript"><code>const job = Cron('* * * * * *', (self) => {
+	console.log('This will run every second. Pause on second 10. Resume on 15. And quit on 20.');
+	console.log('Current second: ', new Date().getSeconds());
+	console.log('Previous run: ' + self.previous());
+	console.log('Next run: ' + self.next());
+});
+
+Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
+Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
+Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
+</code></pre>
+<h3>Passing a context</h3>
+<pre class="prettyprint source lang-javascript"><code>const data = {
+	what: &quot;stuff&quot;
+};
+
+Cron('* * * * * *', { context: data }, (_self, context) => {
+	console.log('This will print stuff: ' + context.what);
+});
+
+Cron('*/5 * * * * *', { context: data }, (self, context) => {
+	console.log('After this, other stuff will be printed instead');
+	context.what = &quot;other stuff&quot;;
+	self.stop();
+});
+</code></pre>
+<h3>Fire on a specific date/time</h3>
+<pre class="prettyprint source lang-javascript"><code>// A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
+// Always specify which timezone the ISO 8601 time string has with the timezone option.
+let job = Cron(&quot;2025-01-01T23:00:00&quot;,{timezone: &quot;Europe/Stockholm&quot;},() => {
+	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
+});
+
+if (job.next() === null) {
+	// The job will not fire for some reason
+} else {
+	console.log(&quot;Job will fire at &quot; + job.next());
+}
+</code></pre>
+<h3>Time zone</h3>
+<pre class="prettyprint source lang-javascript"><code>let job = Cron(&quot;0 0 14 * * *&quot;,{ timezone: &quot;Europe/Stockholm&quot; },() => {
+	console.log('This will every day at 14:00 in time zone Europe/Stockholm');
+});
+
+
+if (job.next() === null) {
+	// The job will not fire for some reason
+} else {
+	console.log(&quot;Job will fire at &quot; + job.next());
+}
+</code></pre>
+<h3>Naming jobs</h3>
+<p>If you provide a name for the job using the option { name: '...' }, a reference to the job will be stored in the exported array <code>scheduledJobs</code>. Naming a job makes it accessible throughout your application.</p>
+<blockquote>
+<p><strong>Note</strong>
+If a job is stopped using <code>.stop()</code>, and goes out of scope, it will normally be eligible for garbage collection and will be deleted during the next garbage collection cycle. Keeping a reference by specifying option <code>name</code> prevents this from happening.</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>// import { Cron, scheduledJobs } ...
+
+// Scoped job
+(() => {
+
+	// As we specify a name for the job, a reference will be kept in `scheduledJobs`
+	const job = Cron(&quot;* * * * * *&quot;, { name: &quot;Job1&quot; }, function () {
+		console.log(&quot;This will run every second&quot;);
+	});
+
+	job.pause();
+	console.log(&quot;Job paused&quot;);
+
+})();
+
+// Another scope, delayed 5 seconds
+setTimeout(() => {
+
+	// Find our job
+	// - scheduledJobs can either be imported separately { Cron, scheduledJobs }
+	//   or access through Cron.scheduledJobs
+	const job = scheduledJobs.find(j => j.name === &quot;Job1&quot;);
+
+	// Resume it
+	if (job) {
+		if(job.resume()) {
+			// This will happen
+			console.log(&quot;Job resumed successfully&quot;);
+		} else {
+			console.log(&quot;Job found, but could not be restarted. The job were probably stopped using `.stop()` which prevents resuming.&quot;);
+		}
+	} else {
+		console.error(&quot;Job not found&quot;);
+	}
+
+}, 5000);
+
+</code></pre>
+<h3>Act at completion</h3>
+<pre class="prettyprint source lang-javascript"><code>// Start a job firing once each 5th second, run at most 3 times
+const job = new Cron(&quot;0/5 * * * * *&quot;, { maxRuns: 3 }, (job) => {
+    
+    // Do work
+    console.log('Job Running');
+
+    // Is this the last execution?
+    if (!job.next()) {
+        console.log('Last execution');
+    }
+
+});
+ 
+// Will there be no executions? 
+// This would trigger if you change maxRuns to 0, or manage to compose 
+// an impossible cron expression.
+if (!job.next() && !job.previous()) {
+    console.log('No executions scheduled');
+}
+</code></pre>
+<h3>Over-run protection</h3>
+<pre class="prettyprint source lang-javascript"><code>// Demo blocking function
+const blockForAWhile = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// (Optional) Callback to be triggered on a blocked call
+const protectCallback = (job) => console.log(`Call at ${new Date().toISOString()} were blocked by call started at ${job.started().toISOString()}`);
+
+// protect: can be set to ether true or a callback function, to enable over-run protection
+Cron(&quot;* * * * * *&quot;, { protect: protectCallback }, async (job) => {
+    console.log(`Call started at ${job.started().toISOString()} started`);
+    await blockForAWhile(4000);
+    console.log(`Call started at ${job.started().toISOString()} finished ${new Date().toISOString()}`);
+});
+
+/* Output
+Call started at 2023-02-16T20:47:07.005Z started
+Call at 2023-02-16T20:47:08.014Z were blocked by call started at 2023-02-16T20:47:07.005Z
+Call at 2023-02-16T20:47:09.012Z were blocked by call started at 2023-02-16T20:47:07.005Z
+Call at 2023-02-16T20:47:10.009Z were blocked by call started at 2023-02-16T20:47:07.005Z
+Call at 2023-02-16T20:47:11.007Z were blocked by call started at 2023-02-16T20:47:07.005Z
+Call started at 2023-02-16T20:47:07.005Z finished 2023-02-16T20:47:11.039Z
+*/
+</code></pre>
+  </article>
+</section>
+
+
+  <br class="clear">
+
+  <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.0</a>
+  </footer>
+
+    
+
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/pagelocation.js"></script>
+  <script src="scripts/scrollbar.js"></script>
+  <script src="scripts/collapsible.js"></script>
+  <script src="scripts/jquery.selectric.min.js"></script>
+  <script src="scripts/clipboard.min.js"></script>
+
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  
+  <script>
+      $(function () {
+          $('#menu-container').scrollbar();
+
+          
+      });
+    </script>
+</body>
+</html>

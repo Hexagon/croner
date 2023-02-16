@@ -32,6 +32,10 @@ export type CronOptions = {
      */
     interval?: number;
     /**
+     * - Skip current run if job is already running
+     */
+    protect?: boolean | ProtectCallbackFn;
+    /**
      * - When to start running
      */
     startAt?: string | Date;
@@ -56,10 +60,16 @@ export type CronOptions = {
      */
     context?: unknown;
 };
-export type CatchCallbackFn = (e: unknown) => any;
+export type CatchCallbackFn = (e: unknown, job: Cron) => any;
+export type ProtectCallbackFn = (job: Cron) => any;
 /**
  * @callback CatchCallbackFn
  * @param {unknown} e
+ * @param {Cron} job
+ */
+/**
+ * @callback ProtectCallbackFn
+ * @param {Cron} job
  */
 /**
  * @typedef {Object} CronOptions - Cron scheduler options
@@ -71,6 +81,7 @@ export type CatchCallbackFn = (e: unknown) => any;
  * @property {boolean} [unref] - Abort job instantly if nothing else keeps the event loop running.
  * @property {number} [maxRuns] - Maximum nuber of executions
  * @property {number} [interval] - Minimum interval between executions, in seconds
+ * @property {boolean | ProtectCallbackFn} [protect] - Skip current run if job is already running
  * @property {string | Date} [startAt] - When to start running
  * @property {string | Date} [stopAt] - When to stop running
  * @property {string} [timezone] - Time zone in Europe/Stockholm format
@@ -86,3 +97,4 @@ export type CatchCallbackFn = (e: unknown) => any;
  * @returns {CronOptions}
  */
 export function CronOptions(options: CronOptions): CronOptions;
+import { Cron } from "./croner.js";

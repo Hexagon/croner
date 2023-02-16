@@ -301,7 +301,19 @@ It is also possible to use the following "nicknames" as pattern.
 
 ## Contributing
 
+### Master branch
+
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) 
+
+### Dev branch
+
+![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev) 
+
+All development happen in the dev branch, you can install latest development version of croner using
+
+```
+npm install croner@dev
+```
 
 See [Contribution Guide](/CONTRIBUTING.md)
 

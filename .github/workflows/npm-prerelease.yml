@@ -1,19 +1,19 @@
 name: Publish to NPM
 on:
   release:
-    types: [released]
+    types: [prereleased]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: master
+          ref: dev
       - uses: actions/setup-node@v3.5.1
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
-      - run: npm publish
+      - run: npm publish --tag dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

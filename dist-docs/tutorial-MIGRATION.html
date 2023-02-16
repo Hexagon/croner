@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+      Croner - Documentation
+  </title>
+
+  <link href="https://www.braintreepayments.com/images/favicon-ccda0b14.png" rel="icon" type="image/png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link id="google-font" href="https://fonts.googleapis.com/css?family=Roboto+Mono|Cutive+Mono|Roboto:300,400,700" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="styles/highlight-themes/current.css">
+  <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  <link type="text/css" rel="stylesheet" href="styles/collapsible.css">
+  <link type="text/css" rel="stylesheet" href="styles/style-switcher.css">
+  <link type="text/css" rel="stylesheet" href="styles/selectric.css">
+  
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+  <script src="https://embed.runkit.com"></script>
+  <style id="style-switcher-styles">
+    nav {
+        background: #282c34;
+    }
+    .hljs {
+        background: #1d2027;
+    }
+    .nav-container > ul > li.active a {
+        color: #dcdcdc;
+    }
+    .nav-container > ul > li.active a:hover {
+        color: #f78200;
+    }
+    .nav-container > ul > li.active ul {
+        border-color: #f78200;
+    }
+    h4.name {
+        color: #f78200;
+    }
+    .params > div > code, .params > div > em {
+        color: #f78200;
+    }
+    a, a:active {
+        color: #f78200;
+    }
+    .hljs-doctag, .hljs-keyword, .hljs-formula {
+        color: #f78200;
+    }
+    nav ul a:hover, nav ul a:active {
+        color: #f78200;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header-fixed">
+      <h1>
+        <a href="index.html" title="modernTemplate.title">
+            
+                <img alt="Croner" src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" />
+            
+            Croner
+        </a>
+      </h1>
+      <div class="center-header">
+          <ul>
+            
+          </ul>
+      </div>
+      <div class="right-header">
+           
+                <a href="https://github.com/hexagon/croner" title="View it on Github" style="">
+                    <i class="fab fa-github-alt"></i>
+                </a>
+           
+                <a href="https://www.npmjs.com/package/croner" title="View it on NPM" style="font-size: 19px">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </a>
+           
+      </div>
+  </header>
+
+  <svg style="display: none;">
+    <defs>
+      <symbol id="linkIcon" fill="#706d77" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+  <label for="nav-trigger" class="navicon-button x">
+    <div class="navicon"></div>
+  </label>
+
+  <label for="nav-trigger" class="overlay"></label>
+
+  <nav>
+    <div id="menu-container" class="scrollbar-inner">
+        <div class="nav-container">
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-working-nav"><a href="Cron.html#working">working</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+        </div>
+    </div>
+  </nav>
+
+  <div id="main">
+    
+      <h1 class="page-title">
+        Tutorial: MIGRATION
+      </h1>
+    
+
+    <section>
+  <header>
+    
+
+    <h2>
+      MIGRATION
+    </h2>
+  </header>
+
+  <article>
+    <h1>Migration</h1>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#upgrading-croner">Upgrading croner</a></li>
+<li><a href="#migrating-from-cron">Migrationg from cron</a></li>
+<li><a href="#migrating-from-node-cron">Migrationg from node-cron</a></li>
+</ul>
+<h2>Upgrading croner</h2>
+<p>Croner follows the Semantic Versioning (SemVer) standard. SemVer is a versioning system that specifies how version numbers should be assigned and incremented in software projects. The system uses a three-part number scheme, consisting of MAJOR.MINOR.PATCH, which is used to communicate changes in the project's API and functionality.</p>
+<ul>
+<li>MAJOR version changes indicate breaking changes to the project's API or functionality.</li>
+<li>MINOR version changes indicate new functionality that is backwards-compatible with the previous version.</li>
+<li>PATCH version changes indicate bug fixes or other minor changes that are backwards-compatible with the previous version.</li>
+</ul>
+<p>Croner strictly follows the above, which means you can be fairly certain that a minor or patch bump will not cause any issues with your software. However, a major bump will likely require some level of manual intervention.</p>
+<p>If upgrading from a previous version of Croner, the most important breaking change to know about is from <code>4.x</code> to <code>5.x</code>, where the way day-of-month and day-of-week are combined has changed. Versions <code>1.x</code>-<code>4.x</code> used &quot;AND,&quot; while version <code>5.0</code> or later uses &quot;OR&quot; to comply with Vixie-cron. You can read more about this in issue #53. The new mode is, oddly enough, called <code>legacyMode</code> and can be disabled using the options.</p>
+<h2>Migrating from Cron</h2>
+<p>If you're currently using the cron package and want to migrate to croner, here are the steps you can follow:</p>
+<h3>Step 1: Install Croner</h3>
+<p>The first step is to install the croner package. You can do this by running the following command in your terminal:</p>
+<pre class="prettyprint source"><code>npm install croner
+</code></pre>
+<h3>Step 2: Update your code to use Croner</h3>
+<p>The croner package has a slightly different API compared to the cron package. Here's an example of how to create a new <code>CronJob</code> using croner:</p>
+<pre class="prettyprint source lang-js"><code>// CronJob constructor is called just Cron in Croner
+const { Cron } = require('croner');
+
+// If you have a lot of code using the CrobJob constructor, you can re-use the name like this
+// const { Cron as CronJob } = require('croner');
+
+const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
+  console.log('This job will run at 12:00 PM every day.');
+});
+
+job.start();
+</code></pre>
+<p>The main differences between <code>cron</code> and <code>croner</code> are that croner uses an object for options, whereas cron uses parameters. Please have a look att <a href="/README.md#options">/README.md#options</a> to find the equivalents.</p>
+<p>Another difference is the method names. Below is a list of <code>cron</code> methods with their <code>croner</code> equivalents</p>
+<table>
+<thead>
+<tr>
+<th>Cron</th>
+<th>Croner</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stop()</td>
+<td>pause()</td>
+<td>stop() in croner block further usage of the job, whereas pause() just pause it</td>
+</tr>
+<tr>
+<td>start()</td>
+<td>resume()</td>
+<td></td>
+</tr>
+<tr>
+<td>lastDate()</td>
+<td>previous()</td>
+<td></td>
+</tr>
+<tr>
+<td>nextDate()</td>
+<td>next()</td>
+<td></td>
+</tr>
+<tr>
+<td>nextDates(n)</td>
+<td>enumerate(n)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Step 3: Update your tests</h3>
+<p>If you have tests for your code, you'll need to update them to use croner instead of cron. Make sure to test that your jobs are still running as expected after the migration.</p>
+<h2>Migrating from node-cron</h2>
+<p>Migrating from node-cron to croner</p>
+<p><code>node-cron</code> is a popular npm package for scheduling cron jobs in Node.js applications. However, <code>croner</code> is a more modern alternative with additional features, options and improved performance. If you're currently using node-cron and want to migrate to croner, here's what you need to do:</p>
+<h3>Install croner package:</h3>
+<p>First, you need to install the croner package in your project. You can do this by running the following command in your terminal:</p>
+<p><code>npm install croner</code></p>
+<h3>Replace the import statement:</h3>
+<p>Next, you'll need to update the import statement for cron to croner. In the file where you use the node-cron package, replace the line that reads:</p>
+<pre class="prettyprint source lang-javascript"><code>const cron = require('node-cron');
+</code></pre>
+<p>with:</p>
+<pre class="prettyprint source lang-javascript"><code>const cron = require('croner');
+</code></pre>
+<h3>Update your cron job:</h3>
+<p>The syntax for setting up cron jobs is very similar, however the function and the options needs to be swapped. Here's an example of how to migrate a cron job that runs every minute 14 o'clock in Oslo:</p>
+<pre class="prettyprint source lang-javascript"><code>// node-cron
+cron.schedule('0 * 14 * * *', () => {
+  console.log('Running a task every minute');
+}, { timezone: &quot;Europe/Oslo&quot; });
+
+// croner
+Cron('0 * 14 * * *', { timezone: &quot;Europe/Oslo&quot; }, () => {
+  console.log('Running a task every minute');
+});
+</code></pre>
+<p>Croner supports some additional options that node-cron does not. See <a href="/README.md#options">/README.md#options</a> for a full list.</p>
+<p>The method names for controlling a job are also different, or function differently. See below:</p>
+<table>
+<thead>
+<tr>
+<th>Cron</th>
+<th>Croner</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stop()</td>
+<td>pause()</td>
+<td></td>
+</tr>
+<tr>
+<td>start()</td>
+<td>resume()</td>
+<td></td>
+</tr>
+<tr>
+<td>-</td>
+<td>stop()</td>
+<td>Completely stops a job by clearing the internal timeout and by blocking further execution.</td>
+</tr>
+</tbody>
+</table>
+<p>That's it! By following these steps, you should be able to migrate from <code>node-cron</code> to <code>croner</code> without any issues.</p>
+  </article>
+</section>
+
+
+  <br class="clear">
+
+  <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.0</a>
+  </footer>
+
+    
+
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/pagelocation.js"></script>
+  <script src="scripts/scrollbar.js"></script>
+  <script src="scripts/collapsible.js"></script>
+  <script src="scripts/jquery.selectric.min.js"></script>
+  <script src="scripts/clipboard.min.js"></script>
+
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  
+  <script>
+      $(function () {
+          $('#menu-container').scrollbar();
+
+          
+      });
+    </script>
+</body>
+</html>
