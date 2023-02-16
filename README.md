@@ -13,9 +13,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Pause, resume, or stop execution after a task is scheduled.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Schedule using specific target [time zones](/docs/EXAMPLES.md#time-zone).
-*   [Over-run protection](/docs/EXAMPLES.md#over-run-protection) with callback
-*   Built in [error handling](/docs/EXAMPLES.md#error-handling) with callback
+*   Schedule using specific target [time zones](docs/EXAMPLES.md#time-zone).
+*   [Over-run protection](docs/EXAMPLES.md#over-run-protection) with callback
+*   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 
 Quick examples:
@@ -108,7 +108,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 
 ## Installation
 
-If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](MIGRATION.md).
+If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](docs/MIGRATION.md).
 
 ### Node.js
 
@@ -186,7 +186,7 @@ To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS]
 <script src="https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js"></script>
 ```
 
-To use as an [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+To use as an [ES-module](https://developer.mozilla.org/en-USdocs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
@@ -246,7 +246,7 @@ job.stop();
 | legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
-| protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progrss. Pass either true of a callback function to enable |
+| protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
@@ -315,7 +315,7 @@ All development happen in the dev branch, you can install latest development ver
 npm install croner@dev
 ```
 
-See [Contribution Guide](/CONTRIBUTING.md)
+See [Contribution Guide](docs/CONTRIBUTING.md)
 
 ... or ...
 
