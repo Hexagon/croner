@@ -112,7 +112,9 @@ export class Cron {
      */
     public schedule(func: Function, partial?: Date): Cron;
     currentTimeout: number;
+    private _trigger;
     runstarted: CronDate;
+    private _checkTrigger;
     previousrun: CronDate;
     private _next;
 }

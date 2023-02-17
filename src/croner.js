@@ -53,6 +53,36 @@ const maxDelay = Math.pow(2, 32 - 1) - 1;
 const scheduledJobs = [];
 
 /**
+ * Helper function to check if a variable is a function
+ * @private
+ * 
+ * @param {?} [v] - Variable to check
+ * @returns {boolean}
+ */
+function isFn(v) {
+	return (
+		Object.prototype.toString.call(v) === "[object Function]"
+		|| "function" === typeof v
+		|| v instanceof Function
+	);
+}
+
+/**
+ * Helper function to unref a timer in both Deno and Node
+ * @private
+ * @param {unknown} [timer] - Timer to unref
+ */
+function unref(timer) {
+	/* global Deno */
+	if (typeof Deno !== "undefined" && typeof Deno.unrefTimer !== "undefined") {
+		Deno.unrefTimer(timer);
+	// Node
+	} else if(timer && typeof timer.unref !== "undefined") {
+		timer.unref();
+	}
+}
+
+/**
  * Cron entrypoint
  * 
  * @constructor
@@ -287,11 +317,10 @@ Cron.prototype.schedule = function (func, partial) {
 		this.fn = func;
 	}
 	
-	// Get ms to next run, bail out early if waitMs is null (no next run)
+	// Get ms to next run, bail out early if any of them is null (no next run)
 	let	waitMs = this.msToNext(partial ? partial : this.previousrun);
 	const target = this.next(partial ? partial :  this.previousrun);
-
-	if  ( waitMs === null )  return this;
+	if  ( waitMs === null || target === null )  return this;
 	
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
 	if( waitMs > maxDelay ) {
@@ -299,90 +328,85 @@ Cron.prototype.schedule = function (func, partial) {
 	}
 	
 	// Ok, go!
-	this.currentTimeout = setTimeout(() => {
-	
-		const now = new Date(),
-			shouldRun = 
-				waitMs !== maxDelay
-				&& !this.options.paused // Make cure we're not paused
-				&& now.getTime() >= target, // Make sure we're at target time
-			isBlocked = this.blocking && this.options.protect;
-
-		if( shouldRun && !isBlocked ) {
-	
-			this.options.maxRuns--;
-
-			// We don't wan't croner to stop even if a job is running over next
-			// - so we wrap the call in a non-awaited anonymous function clause
-			(async (inst) => {
-
-				// Indicate that we're running
-				inst.blocking = true;
-
-				// Indicate current run
-				this.runstarted = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
-
-				// Always catch errors
-				//  - re-throw if options.catch is not set
-				//	- call callback if options.catch is set to a function
-				//  - ignore if options.catch is set to any other truthy value
-				if (this.options.catch) {
-					try {
-						await inst.fn(inst, inst.options.context);
-					} catch (_e) {
-						if (
-							Object.prototype.toString.call(inst.options.catch) === "[object Function]"
-								|| "function" === typeof inst.options.catch
-								|| inst.options.catch instanceof Function
-						) {
-							inst.options.catch(_e, inst);
-						}
-					} finally {		
-						// Indicate that we're done
-						inst.blocking = false;
-					}
-				} else {
-					await this.fn(this, this.options.context);
-					// Indicate that we're done
-					inst.blocking = false;
-				}
-			})(this);
-	
-			// Set previous run to now
-			this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
-
-			// Recurse
-			this.schedule();
-			
-		} else {
-			// If this trigger were blocked, and protect is a function, trigger protect using a non awaited async function
-			if (shouldRun && isBlocked && 
-				Object.prototype.toString.call(this.options.protect) === "[object Function]"
-				|| "function" === typeof this.options.protect
-				|| this.options.protect instanceof Function
-			) {
-				(async (inst) => { await inst.options.protect(inst); })(this);
-			}
-
-			// This is a partial run, just reschedule
-			this.schedule(undefined, now);
-		}
-
-	}, waitMs);
+	this.currentTimeout = setTimeout(() => this._checkTrigger(target), waitMs);
 
 	// If unref option is set - unref the current timeout, which allows the process to exit even if there is a pending schedule
 	if (this.currentTimeout && this.options.unref) {
-		/* global Deno */
-		if (typeof Deno !== "undefined" && typeof Deno.unrefTimer !== "undefined") {
-			Deno.unrefTimer(this.currentTimeout);
-		// Node
-		} else if(typeof this.currentTimeout.unref !== "undefined") {
-			this.currentTimeout.unref();
-		}
+		unref(this.currentTimeout);
 	}
 
 	return this;
 	
+};
+
+/**
+ * Definitely trigger a run
+ * @private
+ * 
+ * @param {Date} initiationDate
+ */
+Cron.prototype._trigger = async function(initiationDate) {
+
+	this.blocking = true;
+
+	this.runstarted = new CronDate(initiationDate, this.options.timezone || this.options.utcOffset);
+
+	if (this.options.catch) {
+		try {
+			await this.fn(this, this.options.context);
+
+		} catch (_e) {
+			if (isFn(this.options.catch)) this.options.catch(_e, this);
+
+		} finally {
+			this.blocking = false;
+
+		}
+	} else {
+
+		// Trigger the function without catching
+		await this.fn(this, this.options.context);
+
+		this.blocking = false;
+	}
+};
+
+/**
+ * Called when it's time to trigger.
+ * Checks if all conditions are currently met, 
+ * then instantly triggers the scheduled function.
+ * @private
+ * 
+ * @param {Date} target - Target Date
+ */
+Cron.prototype._checkTrigger = function(target) {
+	
+	const 
+		now = new Date(),
+		shouldRun = !this.options.paused && now.getTime() >= target,
+		isBlocked = this.blocking && this.options.protect;
+
+	if( shouldRun && !isBlocked ) {
+
+		this.options.maxRuns--;
+
+		// We do not await this
+		this._trigger();
+
+		this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
+
+		this.schedule();
+		
+	} else {
+		// If this trigger were blocked, and protect is a function, trigger protect using a non awaited async function
+		if (shouldRun && isBlocked && isFn(this.options.protect)) {
+			this.options.protect(this);
+		}
+
+		// This is a partial run, just reschedule
+		this.schedule(undefined, now);
+	}
+
 };
 
 	
