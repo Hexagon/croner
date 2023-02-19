@@ -57,7 +57,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Over-run protection  |          ✓          |                    |              |                            |                    |
 | Error handling  |          ✓          |                    |              |                            |          ✓          |
 | Typescript typings        |          ✓          |         ✓            |           |                           |                     |
-| Unref timers (optional    |          ✓          |                     |                     |          ✓          |                     |
+| Unref timers (optional)    |          ✓          |                     |                     |          ✓          |                     |
 | dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | dom-AND-dow (optional)    |          ✓          |                     |           |                           |                     |
 | Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
