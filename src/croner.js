@@ -237,7 +237,7 @@ Cron.prototype.started = function () {
  * @returns {Date | null} - Previous run time
  */
 Cron.prototype.previous = function () {
-	return this.runstarted ? this.runstarted.getDate() : null;
+	return this.previousrun ? this.previousrun.getDate() : null;
 };
 	
 /**

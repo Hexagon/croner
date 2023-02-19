@@ -1356,7 +1356,7 @@
 	 * @returns {Date | null} - Previous run time
 	 */
 	Cron.prototype.previous = function () {
-		return this.runstarted ? this.runstarted.getDate() : null;
+		return this.previousrun ? this.previousrun.getDate() : null;
 	};
 		
 	/**
@@ -1520,6 +1520,7 @@
 		} else {
 			// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it)
 			if (shouldRun && isBlocked && isFn(this.options.protect)) {
+				// deno-lint-ignore require-await
 				(async (inst) => inst.options.protect(inst))(this);
 			}
 
