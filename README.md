@@ -12,7 +12,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](docs/EXAMPLES.md#time-zone).
-*   Build in [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
+*   Built in [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
 *   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Find the first date of the next month, the date of the next Tuesday, etc.
@@ -57,7 +57,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Over-run protection  |          ✓          |                    |              |                            |                    |
 | Error handling  |          ✓          |                    |              |                            |          ✓          |
 | Typescript typings        |          ✓          |         ✓            |           |                           |                     |
-| Unref timers (optional    |          ✓          |                     |                     |          ✓          |                     |
+| Unref timers (optional)    |          ✓          |                     |                     |          ✓          |                     |
 | dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | dom-AND-dow (optional)    |          ✓          |                     |           |                           |                     |
 | Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
