@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-working-nav"><a href="Cron.html#working">working</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
         </div>
     </div>
   </nav>
@@ -797,6 +797,97 @@
   
 
   <span class='name-container'>
+    <a class="link-icon" href="#busy">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id="busy">
+      <span class="type-signature"></span>.busy<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span>
+    </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Indicates wether or not the cron job is currently working</p>
+  </div>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line219">line 219</a>
+        </li>
+      </ul>
+    </dd>
+  
+
+  
+
+  
+
+  
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+        
+
+
+  
+
+  <span class='name-container'>
     <a class="link-icon" href="#enumerate">
       <svg height="20" width="20" style="fill: black;">
         <use xlink:href="#linkIcon"></use>
@@ -1068,7 +1159,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line251">line 251</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line250">line 250</a>
         </li>
       </ul>
     </dd>
@@ -1300,7 +1391,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line287">line 287</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line286">line 286</a>
         </li>
       </ul>
     </dd>
@@ -1348,7 +1439,7 @@
 
 
   <div class="description">
-    <p>Return previous run end time</p>
+    <p>Return previous run start time</p>
   </div>
 
 
@@ -1482,7 +1573,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line297">line 297</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line296">line 296</a>
         </li>
       </ul>
     </dd>
@@ -1730,7 +1821,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line309">line 309</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line308">line 308</a>
         </li>
       </ul>
     </dd>
@@ -1913,98 +2004,7 @@
     <dd class="tag-source">
       <ul class="dummy">
         <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line273">line 273</a>
-        </li>
-      </ul>
-    </dd>
-  
-
-  
-
-  
-
-  
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-        
-
-
-  
-
-  <span class='name-container'>
-    <a class="link-icon" href="#working">
-      <svg height="20" width="20" style="fill: black;">
-        <use xlink:href="#linkIcon"></use>
-      </svg>
-    </a>
-    <h4 class="name" id="working">
-      <span class="type-signature"></span>.working<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span>
-    </h4>
-  </span>
-
-  
-
-
-
-  <div class="description">
-    <p>Indicates wether or not the cron job is working</p>
-  </div>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source">
-      <ul class="dummy">
-        <li>
-          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line219">line 219</a>
+          <a href="croner.js.html">croner.js</a>, <a href="croner.js.html#line272">line 272</a>
         </li>
       </ul>
     </dd>

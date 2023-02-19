@@ -1,7 +1,8 @@
 let 
 	assert = require("uvu/assert"),
-	timeout = require("../util/timeout.cjs");
-
+	timeout = require("../util/timeout.cjs"),
+	sleep = require("../util/sleep.cjs");
+	
 module.exports = function (Cron, test, scheduledJobs) {
 
 	test("Created jobs should appear in the 'scheduledJobs' array", function() {
@@ -431,6 +432,28 @@ module.exports = function (Cron, test, scheduledJobs) {
 			}
 			ref.stop();
 		},500);
+	}));
+	test("Job should be working after 1500 ms",  timeout(4000, (resolve) => {
+		const job = Cron("* * * * * *", async () => {
+			await sleep(2000);
+		});
+		setTimeout(() => {
+			if (job.busy()) {
+				job.stop();
+				resolve();
+			}
+		},1500);
+	}));
+	test("Job should not be working after 3001 ms",  timeout(4000, (resolve) => {
+		const job = Cron("* * * * * *", async () => {
+			await sleep(2000);
+		});
+		setTimeout(() => {
+			if (!job.busy()) {
+				job.stop();
+				resolve();
+			}
+		},3001);
 	}));
 	test("shorthand schedule without options should not throw, and execute",  timeout(2000, (resolve, reject) => {
 		try {

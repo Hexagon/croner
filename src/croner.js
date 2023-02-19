@@ -211,12 +211,12 @@ Cron.prototype.running = function () {
 };
 
 /**
- * Indicates wether or not the cron job is working
+ * Indicates wether or not the cron job is currently working
  * @public
  * 
  * @returns {boolean} - Running or not
  */
-Cron.prototype.working = function () {
+Cron.prototype.busy = function () {
 	return this.blocking;
 };
 
@@ -231,15 +231,14 @@ Cron.prototype.started = function () {
 };
 
 /**
- * Return previous run end time
+ * Return previous run start time
  * @public
  * 
  * @returns {Date | null} - Previous run time
  */
 Cron.prototype.previous = function () {
-	return this.previousrun ? this.previousrun.getDate() : null;
+	return this.runstarted ? this.runstarted.getDate() : null;
 };
-
 	
 /**
  * Returns number of milliseconds to next run
@@ -356,7 +355,9 @@ Cron.prototype._trigger = async function(initiationDate) {
 			await this.fn(this, this.options.context);
 
 		} catch (_e) {
-			if (isFn(this.options.catch)) this.options.catch(_e, this);
+			if (isFn(this.options.catch)) {
+				((inst) => inst.options.catch(_e, inst))(this);
+			}
 
 		} finally {
 			this.blocking = false;
@@ -380,7 +381,7 @@ Cron.prototype._trigger = async function(initiationDate) {
  * @param {Date} target - Target Date
  */
 Cron.prototype._checkTrigger = function(target) {
-	
+
 	const 
 		now = new Date(),
 		shouldRun = !this.options.paused && now.getTime() >= target,
@@ -396,11 +397,12 @@ Cron.prototype._checkTrigger = function(target) {
 		this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
 
 		this.schedule();
-		
+
 	} else {
-		// If this trigger were blocked, and protect is a function, trigger protect using a non awaited async function
+		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it)
 		if (shouldRun && isBlocked && isFn(this.options.protect)) {
-			this.options.protect(this);
+			// deno-lint-ignore require-await
+			(async (inst) => inst.options.protect(inst))(this);
 		}
 
 		// This is a partial run, just reschedule

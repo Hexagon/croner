@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-working-nav"><a href="Cron.html#working">working</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
         </div>
     </div>
   </nav>
@@ -137,6 +137,9 @@
 <li><a href="#fire-on-a-specific-datetime">Fire on a specific date/time</a></li>
 <li><a href="#time-zone">Time zone</a></li>
 <li><a href="#naming-jobs">Naming jobs</a></li>
+<li><a href="#act-at-completion">Act at completion</a></li>
+<li><a href="#error-handling">Error handling</a></li>
+<li><a href="#over-run-protection">Overrun protection</a></li>
 </ul>
 <p>Below are some examples of how to use Croner.</p>
 <h3>Expressions</h3>
@@ -149,7 +152,7 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
 </code></pre>
 <h3>Interval</h3>
 <pre class="prettyprint source lang-javascript"><code>// Trigger on specific interval combined with cron expression
-Cron('* * * 7-16 * MON-FRI', { interval: 90, legacyMode: false }, function () {
+Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
 	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 </code></pre>
@@ -169,8 +172,7 @@ console.log(&quot;Next month ending with a sunday: &quot; +  nextSunLastOfMonth.
 <pre class="prettyprint source lang-javascript"><code>
 const job = Cron(
 	'* * * * *', 
-	{ 
-		maxRuns: Infinity, 
+	{
 		startAt: &quot;2021-11-01T00:00:00&quot;, 
 		stopAt: &quot;2021-12-01T00:00:00&quot;,
 		timezone: &quot;Europe/Stockholm&quot;
@@ -297,7 +299,22 @@ if (!job.next() && !job.previous()) {
     console.log('No executions scheduled');
 }
 </code></pre>
-<h3>Over-run protection</h3>
+<h3>Error handling</h3>
+<pre class="prettyprint source lang-javascript"><code>
+// Prepare an error handler
+const errorHandler = (e) => {
+	console.error(e);
+};
+
+// Start a job firing every second
+const job = new Cron(&quot;* * * * * *&quot;, { catch: errorHandler }, (job) => {
+	console.log('This will print!');
+	throw new Error(&quot;This will be catched and printed by the error handler&quot;);
+	console.log('This will not print, but the job will keep on triggering');
+});
+
+</code></pre>
+<h3>Overrun protection</h3>
 <pre class="prettyprint source lang-javascript"><code>// Demo blocking function
 const blockForAWhile = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

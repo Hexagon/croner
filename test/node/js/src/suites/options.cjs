@@ -87,7 +87,6 @@ module.exports = function (Cron, test) {
 			scheduler.next();
 		});
 	});
-
 	test("Valid unref should not throw", function () {
 		let 
 			scheduler = new Cron("0 0 12 * * *", { unref: true });
@@ -106,8 +105,26 @@ module.exports = function (Cron, test) {
 		scheduler.next();
 		assert.equal(scheduler.options.unref,false);
 	});
-
-
+	test("Valid utc offset should not throw", function () {
+		assert.not.throws(() => {
+			Cron("0 0 12 * * *", { utcOffset: -120});
+		});
+	});
+	test("Invalid utc offset should throw", function () {
+		assert.throws(() => {
+			Cron("0 0 12 * * *", { utcOffset: "hello"});
+		});
+	});
+	test("Out of bounds utc offset should throw", function () {
+		assert.throws(() => {
+			Cron("0 0 12 * * *", { utcOffset: 3000 });
+		});
+	});
+	test("Combining utcOffset with timezone should throw", function () {
+		assert.throws(() => {
+			Cron("0 0 12 * * *", { utcOffset: 60, timezone: "Europe/Stockholm" });
+		});
+	});
 	test("stopAt with time only should throw", function () {
 		assert.throws(() => {
 			let 
@@ -115,8 +132,6 @@ module.exports = function (Cron, test) {
 			scheduler.next();
 		});
 	});
-
-
 	test("0 0 0 * * * with startdate yesterday should return tomorrow, at 12:00:00", function () {
 		let 
 			dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day

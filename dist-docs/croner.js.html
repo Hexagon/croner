@@ -105,7 +105,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-working-nav"><a href="Cron.html#working">working</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
         </div>
     </div>
   </nav>
@@ -335,12 +335,12 @@ Cron.prototype.running = function () {
 };
 
 /**
- * Indicates wether or not the cron job is working
+ * Indicates wether or not the cron job is currently working
  * @public
  * 
  * @returns {boolean} - Running or not
  */
-Cron.prototype.working = function () {
+Cron.prototype.busy = function () {
 	return this.blocking;
 };
 
@@ -355,15 +355,14 @@ Cron.prototype.started = function () {
 };
 
 /**
- * Return previous run end time
+ * Return previous run start time
  * @public
  * 
  * @returns {Date | null} - Previous run time
  */
 Cron.prototype.previous = function () {
-	return this.previousrun ? this.previousrun.getDate() : null;
+	return this.runstarted ? this.runstarted.getDate() : null;
 };
-
 	
 /**
  * Returns number of milliseconds to next run
@@ -480,7 +479,9 @@ Cron.prototype._trigger = async function(initiationDate) {
 			await this.fn(this, this.options.context);
 
 		} catch (_e) {
-			if (isFn(this.options.catch)) this.options.catch(_e, this);
+			if (isFn(this.options.catch)) {
+				((inst) => inst.options.catch(_e, inst))(this);
+			}
 
 		} finally {
 			this.blocking = false;
@@ -503,8 +504,8 @@ Cron.prototype._trigger = async function(initiationDate) {
  * 
  * @param {Date} target - Target Date
  */
-Cron.prototype._checkTrigger = async function(target) {
-	
+Cron.prototype._checkTrigger = function(target) {
+
 	const 
 		now = new Date(),
 		shouldRun = !this.options.paused &amp;&amp; now.getTime() >= target,
@@ -520,11 +521,11 @@ Cron.prototype._checkTrigger = async function(target) {
 		this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
 
 		this.schedule();
-		
+
 	} else {
-		// If this trigger were blocked, and protect is a function, trigger protect using a non awaited async function
+		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it)
 		if (shouldRun &amp;&amp; isBlocked &amp;&amp; isFn(this.options.protect)) {
-			this.options.protect(this);
+			(async (inst) => inst.options.protect(inst))(this);
 		}
 
 		// This is a partial run, just reschedule

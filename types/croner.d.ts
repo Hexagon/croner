@@ -52,12 +52,12 @@ export class Cron {
      */
     public running(): boolean;
     /**
-     * Indicates wether or not the cron job is working
+     * Indicates wether or not the cron job is currently working
      * @public
      *
      * @returns {boolean} - Running or not
      */
-    public working(): boolean;
+    public busy(): boolean;
     /**
      * Return current/previous run start time
      * @public
@@ -66,7 +66,7 @@ export class Cron {
      */
     public started(): Date | null;
     /**
-     * Return previous run end time
+     * Return previous run start time
      * @public
      *
      * @returns {Date | null} - Previous run time

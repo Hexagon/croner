@@ -177,8 +177,8 @@ module.exports = function (Cron, test) {
 		assert.equal(Math.abs(nextRun.getTime()-compareDay.getTime())<13*60*60*1000, true);
 	});
 
-	test("0 30 2 * * * with 365 iterations should return 366 days from now in Europe/Berlin", function () {
-		let scheduler = new Cron("0 30 2 * * *", { timezone: "Europe/Berlin" }),
+	test("0 0 0 * * * with 365 iterations should return 366 days from now in Europe/Berlin", function () {
+		let scheduler = new Cron("0 0 0 * * *", { timezone: "Europe/Berlin" }),
 			prevRun = new Date(),
 			nextRun,
 			iterations = 365,

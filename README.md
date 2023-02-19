@@ -14,7 +14,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Schedule using specific target [time zones](docs/EXAMPLES.md#time-zone).
-*   [Over-run protection](docs/EXAMPLES.md#over-run-protection) with callback
+*   [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
 *   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 
@@ -217,11 +217,13 @@ const job = Cron("* * * * * *" /* Or a date object, or ISO 8601 local time */ , 
 job.schedule((/* optional */ job, /* optional */ context) => {});		
 
 // States
-const nextRun = job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-const nextRuns = job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
-const prevRun = job.previous( );	
-const msToNext = job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
-const isRunning = job.running();
+job.next( /*optional*/ previousRun );	// Get a Date object representing next run
+job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
+job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
+job.running(); // Scheduler is running (not paused or stopped)
+job.busy(); // Returns boolean showing if a triggered function is currenly working
+job.started(); // Date object showing when current (or last) run were started
+job.previous( ); // Date object showing when previous job were started
 
 // Control scheduled execution
 job.pause();				

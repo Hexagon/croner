@@ -11,6 +11,9 @@
 *  [Fire on a specific date/time](#fire-on-a-specific-datetime)
 *  [Time zone](#time-zone)
 *  [Naming jobs](#naming-jobs)
+*  [Act at completion](#act-at-completion)
+*  [Error handling](#error-handling)
+*  [Overrun protection](#over-run-protection)
 
 Below are some examples of how to use Croner.
 
@@ -27,7 +30,7 @@ Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
 ### Interval
 ```javascript
 // Trigger on specific interval combined with cron expression
-Cron('* * * 7-16 * MON-FRI', { interval: 90, legacyMode: false }, function () {
+Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
 	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 ```
@@ -51,8 +54,7 @@ console.log("Next month ending with a sunday: " +  nextSunLastOfMonth.toLocaleDa
 
 const job = Cron(
 	'* * * * *', 
-	{ 
-		maxRuns: Infinity, 
+	{
 		startAt: "2021-11-01T00:00:00", 
 		stopAt: "2021-12-01T00:00:00",
 		timezone: "Europe/Stockholm"
@@ -195,7 +197,25 @@ if (!job.next() && !job.previous()) {
 }
 ```
 
-### Over-run protection
+### Error handling
+
+```javascript
+
+// Prepare an error handler
+const errorHandler = (e) => {
+	console.error(e);
+};
+
+// Start a job firing every second
+const job = new Cron("* * * * * *", { catch: errorHandler }, (job) => {
+	console.log('This will print!');
+	throw new Error("This will be catched and printed by the error handler");
+	console.log('This will not print, but the job will keep on triggering');
+});
+
+```
+
+### Overrun protection
 
 ```javascript
 // Demo blocking function
