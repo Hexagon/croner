@@ -9,14 +9,15 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
-*   Find the first date of the next month, the date of the next Tuesday, etc.
-*   Pause, resume, or stop execution after a task is scheduled.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Schedule using specific target [time zones](docs/EXAMPLES.md#time-zone).
-*   [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
+*   Target different [time zones](docs/EXAMPLES.md#time-zone).
+*   Build in [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
 *   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
+*   Find the first date of the next month, the date of the next Tuesday, etc.
+*   Pause, resume, or stop execution after a task is scheduled.
+*   Uses Vixie-cron [pattern](#pattern), with a few additional features such as `L` for last day of month.
 
 Quick examples:
 
@@ -26,7 +27,7 @@ const job = Cron('*/5 * * * * *', () => {
 	console.log('This will run every fifth second');
 });
 
-// Enumeration: What dates do the next 100 sundays occur at?
+// Enumeration: What dates do the next 100 sundays occur on?
 const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
 console.log(nextSundays);
 
@@ -54,10 +55,11 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Deno (ESM)                     |          ✓          |                     |           |                           |                     |
 | **Features**                                                                                                                        |
 | Over-run protection  |          ✓          |                    |              |                            |                    |
-| Error handling  |          ✓          |                    |              |                            |                    |
+| Error handling  |          ✓          |                    |              |                            |          ✓          |
 | Typescript typings        |          ✓          |         ✓            |           |                           |                     |
-| dom-AND-dow               |          ✓          |                     |           |                           |                     |
+| Unref timers (optional    |          ✓          |                     |                     |          ✓          |                     |
 | dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| dom-AND-dow (optional)    |          ✓          |                     |           |                           |                     |
 | Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
 | Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
 | Timezone                  |          ✓          |           ✓         |     ✓       |        ✓                   |         ✓            |
@@ -77,9 +79,9 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
 | Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
 | **Popularity**                                                                                                                        |
-| Downloads/week [^1]        | 672K                | 30K                 | 376K      | 1574K                     | 804K                |
+| Downloads/week [^1]        | 576K                | 31K                 | 433K      | 2239K                     | 924K                |
 | **Quality**                                                                                                                        |
-| Issues [^1]                |                   0 |                   2 |   118 :warning: |                 119 :warning: |    135 :warning: |
+| Issues [^1]                |                   0 |                   2 |   127 :warning: |                 43 :warning: |    139 :warning: |
 | Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
 | **Performance**                                                                                                                        |
 | Ops/s `1 2 3 4 5 6`         | 99 952                    | 49 308                    | N/A :x:          | Test failed :x:      | 2 299 :warning:                    |
@@ -95,11 +97,11 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
 
 > **Note**
-> *   Table last updated at 2022-10-23
+> *   Table last updated at 2022-10-23, issues and downloads updated 2023-02-19
 > *   node-cron has no interface to predict when the function will run, so tests cannot be carried out.
 > *   All tests and benchmarks were carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
 
-[^1]: As of 2022-10-08
+[^1]: As of 2023-02-19
 [^2]: Requires support for L-modifier
 [^3]: In dom-AND-dow mode, only supported by croner at the moment.
 [^4]: Node-cron has no way of showing next run time.
@@ -153,7 +155,7 @@ import Cron from "croner";
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.6.4/src/croner.js";
+import Cron from "https://deno.land/x/croner@5.7.0/src/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -163,7 +165,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.6.4/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@5.7.0/src/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -301,23 +303,27 @@ It is also possible to use the following "nicknames" as pattern.
 | \@daily | Run once a day, ie.   "0 0 * * *". |
 | \@hourly | Run once an hour, ie. "0 * * * *". |
 
-## Contributing
+## Development
 
 ### Master branch
 
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) 
 
+This branch contains the latest stable code, released on npm's default channel (`latest`).
+
 ### Dev branch
 
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev) 
 
-A list of fixes and features currently released in dev (but not in master) is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
-
-You can install latest revision of the development branch by running the command below.
+This branch contains code currently being tested, and is released at channel `dev` on npm. You can install the latest revision of the development branch by running the command below.
 
 ```
 npm install croner@dev
 ```
+
+A list of fixes and features currently released in the `dev` branch (but not in `master`) is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
+
+### Contributing
 
 See [Contribution Guide](docs/CONTRIBUTING.md)
 

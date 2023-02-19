@@ -132,14 +132,15 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 <img src="https://img.shields.io/badge/dependencies-none-brightgreen" alt="No dependencies"> <a href="https://github.com/Hexagon/croner/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a></p>
 <ul>
 <li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
-<li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
-<li>Pause, resume, or stop execution after a task is scheduled.</li>
 <li>Works in Node.js &gt;=7.6 (both require and import), Deno &gt;=1.16 and Bun &gt;=0.2.2.</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
-<li>Schedule using specific target <a href="docs/EXAMPLES.md#time-zone">time zones</a>.</li>
-<li><a href="docs/EXAMPLES.md#overrun-protection">Overrun protection</a> with callback</li>
+<li>Target different <a href="docs/EXAMPLES.md#time-zone">time zones</a>.</li>
+<li>Build in <a href="docs/EXAMPLES.md#overrun-protection">Overrun protection</a> with callback</li>
 <li>Built in <a href="docs/EXAMPLES.md#error-handling">error handling</a> with callback</li>
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
+<li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
+<li>Pause, resume, or stop execution after a task is scheduled.</li>
+<li>Uses Vixie-cron <a href="#pattern">pattern</a>, with a few additional features such as <code>L</code> for last day of month.</li>
 </ul>
 <p>Quick examples:</p>
 <pre class="prettyprint source lang-javascript"><code>// Basic: Run a function at the interval defined by a cron expression
@@ -147,7 +148,7 @@ const job = Cron('*/5 * * * * *', () => {
 	console.log('This will run every fifth second');
 });
 
-// Enumeration: What dates do the next 100 sundays occur at?
+// Enumeration: What dates do the next 100 sundays occur on?
 const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
 console.log(nextSundays);
 
@@ -229,7 +230,7 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td style="text-align:center"></td>
 <td style="text-align:center"></td>
 <td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td style="text-align:center">✓</td>
 </tr>
 <tr>
 <td>Typescript typings</td>
@@ -240,11 +241,11 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td style="text-align:center"></td>
 </tr>
 <tr>
-<td>dom-AND-dow</td>
+<td>Unref timers (optional</td>
 <td style="text-align:center">✓</td>
 <td style="text-align:center"></td>
 <td style="text-align:center"></td>
-<td style="text-align:center"></td>
+<td style="text-align:center">✓</td>
 <td style="text-align:center"></td>
 </tr>
 <tr>
@@ -254,6 +255,14 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td style="text-align:center">✓</td>
 <td style="text-align:center">✓</td>
 <td style="text-align:center">✓</td>
+</tr>
+<tr>
+<td>dom-AND-dow (optional)</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
 </tr>
 <tr>
 <td>Next run</td>
@@ -377,11 +386,11 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 </tr>
 <tr>
 <td>Downloads/week [^1]</td>
-<td style="text-align:center">672K</td>
-<td style="text-align:center">30K</td>
-<td style="text-align:center">376K</td>
-<td style="text-align:center">1574K</td>
-<td style="text-align:center">804K</td>
+<td style="text-align:center">576K</td>
+<td style="text-align:center">31K</td>
+<td style="text-align:center">433K</td>
+<td style="text-align:center">2239K</td>
+<td style="text-align:center">924K</td>
 </tr>
 <tr>
 <td><strong>Quality</strong></td>
@@ -395,9 +404,9 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td>Issues [^1]</td>
 <td style="text-align:center">0</td>
 <td style="text-align:center">2</td>
-<td style="text-align:center">118 :warning:</td>
-<td style="text-align:center">119 :warning:</td>
-<td style="text-align:center">135 :warning:</td>
+<td style="text-align:center">127 :warning:</td>
+<td style="text-align:center">43 :warning:</td>
+<td style="text-align:center">139 :warning:</td>
 </tr>
 <tr>
 <td>Code coverage</td>
@@ -508,12 +517,12 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <blockquote>
 <p><strong>Note</strong></p>
 <ul>
-<li>Table last updated at 2022-10-23</li>
+<li>Table last updated at 2022-10-23, issues and downloads updated 2023-02-19</li>
 <li>node-cron has no interface to predict when the function will run, so tests cannot be carried out.</li>
 <li>All tests and benchmarks were carried out using <a href="https://github.com/Hexagon/cron-comparison">https://github.com/Hexagon/cron-comparison</a></li>
 </ul>
 </blockquote>
-<p>[^1]: As of 2022-10-08
+<p>[^1]: As of 2023-02-19
 [^2]: Requires support for L-modifier
 [^3]: In dom-AND-dow mode, only supported by croner at the moment.
 [^4]: Node-cron has no way of showing next run time.</p>
@@ -549,14 +558,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.6.4/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.7.0/src/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.6.4/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.7.0/src/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -827,15 +836,17 @@ Weekday and month names are case-insensitive. Both <code>MON</code> and <code>mo
 </tr>
 </tbody>
 </table>
-<h2>Contributing</h2>
+<h2>Development</h2>
 <h3>Master branch</h3>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <img src="https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master" alt="Deno CI"> <img src="https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master" alt="Bun CI"></p>
+<p>This branch contains the latest stable code, released on npm's default channel (<code>latest</code>).</p>
 <h3>Dev branch</h3>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev" alt="Node.js CI"> <img src="https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev" alt="Deno CI"> <img src="https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev" alt="Bun CI"></p>
-<p>A list of fixes and features currently released in dev (but not in master) is available <a href="https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev">here</a></p>
-<p>You can install latest revision of the development branch by running the command below.</p>
+<p>This branch contains code currently being tested, and is released at channel <code>dev</code> on npm. You can install the latest revision of the development branch by running the command below.</p>
 <pre class="prettyprint source"><code>npm install croner@dev
 </code></pre>
+<p>A list of fixes and features currently released in the <code>dev</code> branch (but not in <code>master</code>) is available <a href="https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev">here</a></p>
+<h3>Contributing</h3>
 <p>See <a href="docs/CONTRIBUTING.md">Contribution Guide</a></p>
 <p>... or ...</p>
 <p><a href='https://ko-fi.com/C1C7IEEYF' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>

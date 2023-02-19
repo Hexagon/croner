@@ -433,25 +433,29 @@ module.exports = function (Cron, test, scheduledJobs) {
 			ref.stop();
 		},500);
 	}));
-	test("Job should be working after 1500 ms",  timeout(4000, (resolve) => {
+	test("Job should be working after 1500 ms",  timeout(4000, (resolve, reject) => {
 		const job = Cron("* * * * * *", async () => {
 			await sleep(2000);
+			job.stop();
 		});
 		setTimeout(() => {
 			if (job.busy()) {
-				job.stop();
 				resolve();
+			} else {
+				reject();
 			}
 		},1500);
 	}));
-	test("Job should not be working after 3500 ms",  timeout(4000, (resolve) => {
+	test("Job should not be working after 3500 ms",  timeout(4000, (resolve, reject) => {
 		const job = Cron("* * * * * *", async () => {
 			await sleep(2000);
+			job.stop();
 		});
 		setTimeout(() => {
 			if (!job.busy()) {
-				job.stop();
 				resolve();
+			} else {
+				reject();
 			}
 		},3500);
 	}));
