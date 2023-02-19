@@ -444,7 +444,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			}
 		},1500);
 	}));
-	test("Job should not be working after 3001 ms",  timeout(4000, (resolve) => {
+	test("Job should not be working after 3500 ms",  timeout(4000, (resolve) => {
 		const job = Cron("* * * * * *", async () => {
 			await sleep(2000);
 		});
@@ -453,7 +453,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 				job.stop();
 				resolve();
 			}
-		},3001);
+		},3500);
 	}));
 	test("shorthand schedule without options should not throw, and execute",  timeout(2000, (resolve, reject) => {
 		try {

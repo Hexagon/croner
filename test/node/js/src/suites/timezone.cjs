@@ -177,12 +177,13 @@ module.exports = function (Cron, test) {
 		assert.equal(Math.abs(nextRun.getTime()-compareDay.getTime())<13*60*60*1000, true);
 	});
 
-	test("0 0 0 * * * with 365 iterations should return 366 days from now in Europe/Berlin", function () {
-		let scheduler = new Cron("0 0 0 * * *", { timezone: "Europe/Berlin" }),
-			prevRun = new Date(),
+	test("0 30 2 * * * with 365 iterations should return 366 days from now in Europe/Berlin", function () {
+		let startAt = new Date(Date.parse("2023-02-15T12:00:00.000Z")),
+			scheduler = new Cron("0 30 2 * * *", { timezone: "Europe/Berlin", startAt }),
+			prevRun = new Date(startAt.getTime()),
 			nextRun,
 			iterations = 365,
-			compareDay = new Date();
+			compareDay = new Date(startAt.getTime());
 			
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
