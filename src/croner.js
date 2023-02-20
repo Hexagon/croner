@@ -383,10 +383,8 @@ Cron.prototype._trigger = async function(initiationDate) {
 /**
  * Trigger a run manually
  * @public
- * 
- * @param {Date} initiationDate
  */
-Cron.prototype.trigger = async function(initiationDate) {
+Cron.prototype.trigger = async function() {
 	this._trigger();
 };
 
