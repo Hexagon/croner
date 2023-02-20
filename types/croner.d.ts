@@ -28,7 +28,7 @@ export class Cron {
     blocking: boolean;
     once: CronDate;
     pattern: CronPattern;
-    fn: Function;
+    fn: Function | CronOptions;
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
      *
@@ -114,8 +114,13 @@ export class Cron {
     currentTimeout: number;
     private _trigger;
     runstarted: CronDate;
-    private _checkTrigger;
     previousrun: CronDate;
+    /**
+     * Trigger a run manually
+     * @public
+     */
+    public trigger(): Promise<void>;
+    private _checkTrigger;
     private _next;
 }
 export namespace Cron {

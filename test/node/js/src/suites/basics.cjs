@@ -485,11 +485,11 @@ module.exports = function (Cron, test, scheduledJobs) {
 			reject(e);
 		}
 	}));
-	test("trigger should run a paused job",  timeout(4000, (resolve, reject) => {
+	test("trigger should run a paused job",  timeout(4000, (resolve) => {
 		let job = Cron("* * * * * *",{paused:true},() => { job.stop(); resolve(); });
 		job.trigger();
 	}));
-	test("trigger should run a stopped job",  timeout(4000, (resolve, reject) => {
+	test("trigger should run a stopped job",  timeout(4000, (resolve) => {
 		let job = Cron("* * * * * *",{paused:true},() => { job.stop(); resolve(); });
 		job.stop();
 		job.trigger();

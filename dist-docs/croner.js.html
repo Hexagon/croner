@@ -105,7 +105,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-trigger-nav"><a href="Cron.html#trigger">trigger</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
         </div>
     </div>
   </nav>
@@ -225,7 +225,7 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	// Make options and func optional and interchangable
 	let options, func;
 
-	if( typeof fnOrOptions1 === "function" ) {
+	if( isFn(fnOrOptions1) ) {
 		func = fnOrOptions1;
 	} else if( typeof fnOrOptions1 === "object" ) {
 		options = fnOrOptions1;
@@ -233,7 +233,7 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 		throw new Error("Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).");
 	}
 
-	if( typeof fnOrOptions2 === "function" ) {
+	if( isFn(fnOrOptions2) ) {
 		func = fnOrOptions2;
 	} else if( typeof fnOrOptions2 === "object" ) {
 		options = fnOrOptions2;
@@ -256,10 +256,16 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	/** @type {boolean} */
 	this.blocking = false;
 
-	/** @type {CronDate} */
+	/** 
+	 * Start time of previous trigger, updated after each trigger
+	 * @type {CronDate} 
+	 * */
 	this.previousrun = void 0;
 
-	/** @type {CronDate} */
+	/** 
+	 * Start time of current trigger, this is updated just before triggering
+	 * @type {CronDate} 
+	 * */
 	this.runstarted = void 0;
 	
 	// Check if we got a date, or a pattern supplied as first argument
@@ -284,11 +290,10 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 		} else {
 			scheduledJobs.push(this);
 		}
-		
 	}
 
 	return this;
-	
+
 }
 	
 /**
@@ -463,10 +468,10 @@ Cron.prototype.schedule = function (func, partial) {
 };
 
 /**
- * Definitely trigger a run
+ * Internal function to trigger a run, used by both scheduled and manual trigger
  * @private
  * 
- * @param {Date} initiationDate
+ * @param {Date} [initiationDate]
  */
 Cron.prototype._trigger = async function(initiationDate) {
 
@@ -494,6 +499,17 @@ Cron.prototype._trigger = async function(initiationDate) {
 
 		this.blocking = false;
 	}
+
+	this.previousrun = new CronDate(initiationDate, this.options.timezone || this.options.utcOffset);
+
+};
+
+/**
+ * Trigger a run manually
+ * @public
+ */
+Cron.prototype.trigger = async function() {
+	await this._trigger();
 };
 
 /**
@@ -518,9 +534,7 @@ Cron.prototype._checkTrigger = function(target) {
 		// We do not await this
 		this._trigger();
 
-		this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
-
-		this.schedule();
+		this.schedule(undefined, now);
 
 	} else {
 		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it)
@@ -592,7 +606,7 @@ export { Cron, scheduledJobs };
   <br class="clear">
 
   <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.1</a>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a>
   </footer>
 
     

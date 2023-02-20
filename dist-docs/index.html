@@ -103,7 +103,7 @@
   <nav>
     <div id="menu-container" class="scrollbar-inner">
         <div class="nav-container">
-            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
+            <h3>Classes</h3><ul><li id="Cron-nav"><a href="Cron.html">Cron</a><ul class='methods'><li data-type="method" id="Cron-busy-nav"><a href="Cron.html#busy">busy</a></li><li data-type="method" id="Cron-enumerate-nav"><a href="Cron.html#enumerate">enumerate</a></li><li data-type="method" id="Cron-msToNext-nav"><a href="Cron.html#msToNext">msToNext</a></li><li data-type="method" id="Cron-next-nav"><a href="Cron.html#next">next</a></li><li data-type="method" id="Cron-pause-nav"><a href="Cron.html#pause">pause</a></li><li data-type="method" id="Cron-previous-nav"><a href="Cron.html#previous">previous</a></li><li data-type="method" id="Cron-resume-nav"><a href="Cron.html#resume">resume</a></li><li data-type="method" id="Cron-running-nav"><a href="Cron.html#running">running</a></li><li data-type="method" id="Cron-schedule-nav"><a href="Cron.html#schedule">schedule</a></li><li data-type="method" id="Cron-started-nav"><a href="Cron.html#started">started</a></li><li data-type="method" id="Cron-stop-nav"><a href="Cron.html#stop">stop</a></li><li data-type="method" id="Cron-trigger-nav"><a href="Cron.html#trigger">trigger</a></li></ul></li><li id="CronDate-nav"><a href="CronDate.html">CronDate</a><ul class='methods'><li data-type="method" id="CronDate-getDate-nav"><a href="CronDate.html#getDate">getDate</a></li><li data-type="method" id="CronDate-getTime-nav"><a href="CronDate.html#getTime">getTime</a></li><li data-type="method" id="CronDate-increment-nav"><a href="CronDate.html#increment">increment</a></li></ul></li><li id="CronPattern-nav"><a href="CronPattern.html">CronPattern</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#maxDelay">maxDelay</a></li><li><a href="global.html#scheduledJobs">scheduledJobs</a></li></ul>
         </div>
     </div>
   </nav>
@@ -135,7 +135,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 <li>Works in Node.js &gt;=7.6 (both require and import), Deno &gt;=1.16 and Bun &gt;=0.2.2.</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
 <li>Target different <a href="docs/EXAMPLES.md#time-zone">time zones</a>.</li>
-<li>Build in <a href="docs/EXAMPLES.md#overrun-protection">Overrun protection</a> with callback</li>
+<li>Built in <a href="docs/EXAMPLES.md#overrun-protection">Overrun protection</a> with callback</li>
 <li>Built in <a href="docs/EXAMPLES.md#error-handling">error handling</a> with callback</li>
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
 <li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
@@ -241,7 +241,7 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 <td style="text-align:center"></td>
 </tr>
 <tr>
-<td>Unref timers (optional</td>
+<td>Unref timers (optional)</td>
 <td style="text-align:center">✓</td>
 <td style="text-align:center"></td>
 <td style="text-align:center"></td>
@@ -602,22 +602,22 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <pre class="prettyprint source lang-javascript"><code>const job = Cron(&quot;* * * * * *&quot; /* Or a date object, or ISO 8601 local time */ , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule((/* optional */ job, /* optional */ context) => {});		
+job.schedule((/* optional */ job, /* optional */ context) => {});
 
 // States
 job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
+job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next n runs according to pattern
 job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
-job.running(); // Scheduler is running (not paused or stopped)
-job.busy(); // Returns boolean showing if a triggered function is currenly working
-job.started(); // Date object showing when current (or last) run were started
-job.previous( ); // Date object showing when previous job were started
+job.running(); 		// Scheduler is running (not paused or stopped)
+job.busy(); 		// Returns boolean showing if a triggered function is currenly working
+job.started(); 		// Date object showing when current (or last) run were started
+job.previous( ); 	// Date object showing when previous job were started
 
-// Control scheduled execution
-job.pause();				
-job.resume();
-job.stop();
-
+// Job control
+job.trigger();		// Force a trigger instantly
+job.pause();		// Pause trigger
+job.resume();		// Resume trigger
+job.stop();			// Stop job completely, it isn't possible to resume after this
 </code></pre>
 <h4>Options</h4>
 <table>
@@ -863,7 +863,7 @@ Weekday and month names are case-insensitive. Both <code>MON</code> and <code>mo
   <br class="clear">
 
   <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.1</a>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a>
   </footer>
 
     
