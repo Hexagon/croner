@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: 'Create a report to help us improve. **Note**: Questions and feature requests should be posted under Discussions.'
+about: Create a bug report to help us improve. Questions and feature requests should be posted on the Discussions-page.
 title: ''
 labels: bug
 assignees: ''
