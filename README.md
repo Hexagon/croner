@@ -216,22 +216,22 @@ Cron takes three arguments
 const job = Cron("* * * * * *" /* Or a date object, or ISO 8601 local time */ , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule((/* optional */ job, /* optional */ context) => {});		
+job.schedule((/* optional */ job, /* optional */ context) => {});
 
 // States
 job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next 10 runs according to pattern
+job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next n runs according to pattern
 job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
-job.running(); // Scheduler is running (not paused or stopped)
-job.busy(); // Returns boolean showing if a triggered function is currenly working
-job.started(); // Date object showing when current (or last) run were started
-job.previous( ); // Date object showing when previous job were started
+job.running(); 		// Scheduler is running (not paused or stopped)
+job.busy(); 		// Returns boolean showing if a triggered function is currenly working
+job.started(); 		// Date object showing when current (or last) run were started
+job.previous( ); 	// Date object showing when previous job were started
 
-// Control scheduled execution
-job.pause();				
-job.resume();
-job.stop();
-
+// Job control
+job.trigger();		// Force a trigger instantly
+job.pause();		// Pause trigger
+job.resume();		// Resume trigger
+job.stop();			// Stop job completely, it isn't possible to resume after this
 ```
 
 #### Options

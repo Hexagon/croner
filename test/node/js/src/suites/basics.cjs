@@ -485,6 +485,15 @@ module.exports = function (Cron, test, scheduledJobs) {
 			reject(e);
 		}
 	}));
+	test("trigger should run a paused job",  timeout(4000, (resolve, reject) => {
+		let job = Cron("* * * * * *",{paused:true},() => { job.stop(); resolve(); });
+		job.trigger();
+	}));
+	test("trigger should run a stopped job",  timeout(4000, (resolve, reject) => {
+		let job = Cron("* * * * * *",{paused:true},() => { job.stop(); resolve(); });
+		job.stop();
+		job.trigger();
+	}));
 	test("previous run time should be null if not yet executed", function () {
 		let job = Cron("* * * 1 11 4",() => {});
 		let result = job.previous();

@@ -101,7 +101,7 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	// Make options and func optional and interchangable
 	let options, func;
 
-	if( typeof fnOrOptions1 === "function" ) {
+	if( isFn(fnOrOptions1) ) {
 		func = fnOrOptions1;
 	} else if( typeof fnOrOptions1 === "object" ) {
 		options = fnOrOptions1;
@@ -109,7 +109,7 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 		throw new Error("Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).");
 	}
 
-	if( typeof fnOrOptions2 === "function" ) {
+	if( isFn(fnOrOptions2) ) {
 		func = fnOrOptions2;
 	} else if( typeof fnOrOptions2 === "object" ) {
 		options = fnOrOptions2;
@@ -132,10 +132,16 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 	/** @type {boolean} */
 	this.blocking = false;
 
-	/** @type {CronDate} */
+	/** 
+	 * Start time of previous trigger, updated after each trigger
+	 * @type {CronDate} 
+	 * */
 	this.previousrun = void 0;
 
-	/** @type {CronDate} */
+	/** 
+	 * Start time of current trigger, this is updated just before triggering
+	 * @type {CronDate} 
+	 * */
 	this.runstarted = void 0;
 	
 	// Check if we got a date, or a pattern supplied as first argument
@@ -160,11 +166,10 @@ function Cron (pattern, fnOrOptions1, fnOrOptions2) {
 		} else {
 			scheduledJobs.push(this);
 		}
-		
 	}
 
 	return this;
-	
+
 }
 	
 /**
@@ -339,10 +344,10 @@ Cron.prototype.schedule = function (func, partial) {
 };
 
 /**
- * Definitely trigger a run
+ * Internal function to trigger a run, used by both scheduled and manual trigger
  * @private
  * 
- * @param {Date} initiationDate
+ * @param {Date} [initiationDate]
  */
 Cron.prototype._trigger = async function(initiationDate) {
 
@@ -370,6 +375,19 @@ Cron.prototype._trigger = async function(initiationDate) {
 
 		this.blocking = false;
 	}
+
+	this.previousrun = new CronDate(initiationDate, this.options.timezone || this.options.utcOffset);
+
+};
+
+/**
+ * Trigger a run manually
+ * @public
+ * 
+ * @param {Date} initiationDate
+ */
+Cron.prototype.trigger = async function(initiationDate) {
+	this._trigger();
 };
 
 /**
@@ -394,9 +412,7 @@ Cron.prototype._checkTrigger = function(target) {
 		// We do not await this
 		this._trigger();
 
-		this.previousrun = new CronDate(void 0, this.options.timezone || this.options.utcOffset);
-
-		this.schedule();
+		this.schedule(undefined, now);
 
 	} else {
 		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it)
