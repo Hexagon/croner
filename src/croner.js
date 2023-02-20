@@ -385,7 +385,7 @@ Cron.prototype._trigger = async function(initiationDate) {
  * @public
  */
 Cron.prototype.trigger = async function() {
-	this._trigger();
+	await this._trigger();
 };
 
 /**
