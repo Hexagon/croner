@@ -2,14 +2,14 @@ import { CronDate } from "./date.js";
 
 /**
  * Name for each part of the cron pattern
- * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dow")} CronPatternPart
+ * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek")} CronPatternPart
  */
 
 /**
  * Offset, 0 or -1. 
  * 
- * 0 for seconds,minutes and hours as they start on 1. 
- * -1 on days and months, as the start on 0
+ * 0 offset is used for seconds,minutes and hours as they start on 1. 
+ * -1 on days and months, as they start on 0
  * 
  * @typedef {Number} CronIndexOffset
  */
@@ -30,11 +30,11 @@ function CronPattern (pattern, timezone) {
 	this.hour			= Array(24).fill(0); // 0-23
 	this.day			= Array(31).fill(0); // 0-30 in array, 1-31 in config
 	this.month			= Array(12).fill(0); // 0-11 in array, 1-12 in config
-	this.dow			= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
+	this.dayOfWeek		= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 	this.lastDayOfMonth = false;
-	this.starDOM = false;
-	this.starDOW  = false;
+	this.starDOM = false;  // Asterisk used for dayOfMonth
+	this.starDOW  = false; // Asterisk used for dayOfWeek
 
 	this.parse();
 
@@ -107,11 +107,11 @@ CronPattern.prototype.parse = function () {
 	this.partToArray("hour",      parts[2], 0);
 	this.partToArray("day",       parts[3], -1);
 	this.partToArray("month",     parts[4], -1);
-	this.partToArray("dow",       parts[5], 0);
+	this.partToArray("dayOfWeek",       parts[5], 0);
 
 	// 0 = Sunday, 7 = Sunday
-	if( this.dow[7] ) {
-		this.dow[0] = 1;
+	if( this.dayOfWeek[7] ) {
+		this.dayOfWeek[0] = 1;
 	}
 
 };

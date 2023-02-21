@@ -119,7 +119,6 @@ export class Cron {
      */
     public schedule(func: Function, partial?: Date): Cron;
     private _trigger;
-    blocking: boolean;
     /**
      * Trigger a run manually
      * @public

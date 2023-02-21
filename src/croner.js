@@ -291,7 +291,10 @@ Cron.prototype.stop = function () {
  * @returns {boolean} - Wether pause was successful
  */
 Cron.prototype.pause = function () {
-	return (this._states.paused = true) && !this._states.kill;
+	
+	this._states.paused = true;
+
+	return !this._states.kill;
 };
 
 /**
@@ -301,7 +304,10 @@ Cron.prototype.pause = function () {
  * @returns {boolean} - Wether resume was successful
  */
 Cron.prototype.resume = function () {
-	return !(this._states.paused = false) && !this._states.kill;
+
+	this._states.paused = false;
+
+	return !this._states.kill;
 };
 
 /**
@@ -334,7 +340,9 @@ Cron.prototype.schedule = function (func, partial) {
 		waitMs = maxDelay;
 	}
 
-	// Ok, go!
+	// Start the timer loop
+	// _checkTrigger will either call _trigger (if it's time, croner isn't paused and whatever), 
+	// or recurse back to this function to wait for next trigger
 	this._states.currentTimeout = setTimeout(() => this._checkTrigger(target), waitMs);
 
 	// If unref option is set - unref the current timeout, which allows the process to exit even if there is a pending schedule
@@ -352,7 +360,8 @@ Cron.prototype.schedule = function (func, partial) {
  * @param {Date} [initiationDate]
  */
 Cron.prototype._trigger = async function (initiationDate) {
-	this.blocking = true;
+
+	this._states.blocking = true;
 
 	this._states.currentRun = new CronDate(
 		initiationDate,
@@ -364,22 +373,23 @@ Cron.prototype._trigger = async function (initiationDate) {
 			await this.fn(this, this.options.context);
 		} catch (_e) {
 			if (isFunction(this.options.catch)) {
-				((inst) => inst.options.catch(_e, inst))(this);
+				// Do not await catch, even if it is synchronous
+				setTimeout(() => this.options.catch(_e, this), 0);
 			}
-		} finally {
-			this.blocking = false;
 		}
 	} else {
 		// Trigger the function without catching
 		await this.fn(this, this.options.context);
 
-		this.blocking = false;
 	}
 
 	this._states.previousRun = new CronDate(
 		initiationDate,
 		this.options.timezone || this.options.utcOffset,
 	);
+
+	this._states.blocking = false;
+
 };
 
 /**
@@ -409,17 +419,15 @@ Cron.prototype._checkTrigger = function (target) {
 		// We do not await this
 		this._trigger();
 
-		this.schedule(undefined, now);
 	} else {
-		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it)
+		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it, even if it's an synchronous function)
 		if (shouldRun && isBlocked && isFunction(this.options.protect)) {
-			// deno-lint-ignore require-await
-			(async (inst) => inst.options.protect(inst))(this);
+			setTimeout(() => inst.options.protect(inst), 0);
 		}
-
-		// This is a partial run, just reschedule
-		this.schedule(undefined, now);
 	}
+
+	// Always reschedule
+	this.schedule(undefined, now);
 };
 
 /**
@@ -430,7 +438,7 @@ Cron.prototype._checkTrigger = function (target) {
  * @returns {CronDate | null} - Next run time
  */
 Cron.prototype._next = function (prev) {
-	const haspreviousRun = (prev || this._states.previousRun) ? true : false;
+	const hasPreviousRun = (prev || this._states.previousRun) ? true : false;
 
 	// Ensure previous run is a CronDate
 	prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
@@ -445,7 +453,7 @@ Cron.prototype._next = function (prev) {
 		new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(
 			this.pattern,
 			this.options,
-			haspreviousRun,
+			hasPreviousRun, // hasPreviousRun is used to allow 
 		);
 
 	if (this._states.once && this._states.once.getTime() <= prev.getTime()) {

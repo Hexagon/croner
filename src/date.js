@@ -6,6 +6,9 @@ import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-lin
 
 /** 
  * Constant defining the minimum number of days per month where index 0 = January etc.
+ * 
+ * Used to look if a date _could be_ out of bounds. The "could be" part is why february is pinned to 28 days.
+ * 
  * @private
  * 
  * @constant
@@ -170,7 +173,10 @@ CronDate.prototype.fromCronDate = function (d) {
 };
 
 /**
- * Reset internal parameters (seconds, minutes, hours) if any of them have exceeded (or could have exceeded) their ranges
+ * Reset internal parameters (seconds, minutes, hours) if any of them have exceeded (or could have exceeded) their normal ranges
+ * 
+ * Will alway return true on february 29th, as that is a date that _could_ be out of bounds
+ * 
  * @private
  */
 CronDate.prototype.apply = function () {
@@ -221,6 +227,7 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 	// Pre-calculate last day of month if needed
 	let lastDayOfMonth;
 	if (pattern.lastDayOfMonth) {
+		// This is an optimization for every month except february, which has different number of days different years
 		if (this.month !== 1) {
 			lastDayOfMonth = DaysOfMonth[this.month]; // About 20% performance increase when using L
 		} else {
@@ -268,6 +275,9 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 
 /**
  * Increment to next run time recursively
+ * 
+ * This function is currently capped at year 3000. Do you have a reason to go further? Open an issue on GitHub!
+
  * @private
  * 
  * @param {string} pattern - The pattern used to increment current state
@@ -333,13 +343,14 @@ CronDate.prototype.recurse = function (pattern, options, doing)  {
  */
 CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 	
-	// Always add one second, or minimum interval, then clear milliseconds and apply changes if seconds has gotten out of bounds
-	if (options.interval > 1 && hasPreviousRun) {
-		this.second += options.interval;
-	} else {
-		this.second += 1;
-	}
+	// Move to next second, or increment according to minimum interval indicated by option `interval: x`
+	// Do not increment a full interval if this is the very first run
+	this.second += (options.interval > 1 && hasPreviousRun) ? options.interval : 1;
+
+	// Always reset milliseconds, so we are at the next second exactly
 	this.ms = 0;
+
+	// Make sure seconds has not gotten out of bounds
 	this.apply();
 
 	// Recursively change each part (y, m, d ...) until next match is found, return null on failure
@@ -355,11 +366,18 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
  * @returns {Date}
  */
 CronDate.prototype.getDate = function (internal) {
-	if (internal || (this.tz === void 0 && this.utcOffset === void 0)) {
+	// If this is an internal call, return the date as is
+	// Also use this option when no timezone or utcOffset is set
+	if (internal || this.tz === void) {
 		return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 	} else {
+		// If .tz is a number, it indicates offset in minutes. UTC timestamp of the internal date objects will be off by the same number of minutes. 
+		// Restore this, and return a date object with correct time set.
 		if (typeof this.tz === "number") {
 			return new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute-this.tz, this.second, this.ms));
+
+		// If .tz is something else (hopefully a string), it indicates the timezone of the "local time" of the internal date object
+		// Use minitz to create a normal Date object, and return that.
 		} else {
 			return minitz(this.year, this.month+1, this.day, this.hour, this.minute, this.second, this.tz);
 		}

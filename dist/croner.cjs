@@ -1499,7 +1499,8 @@
 	 * @param {Date} [initiationDate]
 	 */
 	Cron.prototype._trigger = async function (initiationDate) {
-		this.blocking = true;
+
+		this._states.blocking = true;
 
 		this._states.currentRun = new CronDate(
 			initiationDate,
@@ -1513,20 +1514,20 @@
 				if (isFunction(this.options.catch)) {
 					((inst) => inst.options.catch(_e, inst))(this);
 				}
-			} finally {
-				this.blocking = false;
 			}
 		} else {
 			// Trigger the function without catching
 			await this.fn(this, this.options.context);
 
-			this.blocking = false;
 		}
 
 		this._states.previousRun = new CronDate(
 			initiationDate,
 			this.options.timezone || this.options.utcOffset,
 		);
+
+		this._states.blocking = false;
+
 	};
 
 	/**

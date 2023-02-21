@@ -442,7 +442,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			if (job.busy()) {
 				resolve();
 			} else {
-				reject();
+				reject(new Error("Job should have been busy"));
 			}
 		},1500);
 	}));
@@ -455,7 +455,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			if (!job.busy()) {
 				resolve();
 			} else {
-				reject();
+				reject(new Error("Job should not have been busy"));
 			}
 		},3500);
 	}));
@@ -535,7 +535,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	test("maxRuns should be inherited from scheduler to job", function () {
 		let scheduler = Cron("* * * 1 11 4", {maxRuns: 14}),
 			job = scheduler.schedule(() => {});
-		assert.equal(job.options.maxRuns,14);
+		assert.equal(job._states.maxRuns,14);
 		job.stop();
 	});
 
@@ -604,7 +604,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 		let 
 			scheduler = new Cron("* * * * * *", { maxRuns: 1 });
 		scheduler.schedule(function (self) {
-			assert.equal(self.options.maxRuns,0);
+			assert.equal(self._states.maxRuns,0);
 			assert.equal(typeof self.pause, "function");
 			resolve();
 		});
