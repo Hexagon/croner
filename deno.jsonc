@@ -10,11 +10,12 @@
             "include": ["test/deno"]
         },
         "options": {
-            "lineWidth": 100
+            "lineWidth": 100,
+            "useTabs": true
         }
     },
     "tasks": {
-        "test": "deno test --allow-none test/deno",
+        "test": "deno lint && deno fmt --check && deno test --allow-none test/deno",
         "benchmark": "deno bench --unstable test/deno/bench"
     }
 }

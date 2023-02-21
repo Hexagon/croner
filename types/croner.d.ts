@@ -20,13 +20,20 @@ export class Cron {
      * @returns {Cron}
      */
     constructor(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function);
-    /** @type {string|undefined} */
-    name: string | undefined;
-    /** @type {CronOptions} */
-    options: CronOptions;
-    /** @type {boolean} */
-    blocking: boolean;
-    once: CronDate;
+    /**
+     * @public
+     * @type {string|undefined} */
+    public name: string | undefined;
+    /**
+     * @public
+     * @type {CronOptions} */
+    public options: CronOptions;
+    /**
+     * Encapsulate all internal states in an object.
+     * Duplicate all options that can change to internal states, for example maxRuns and paused.
+     * @private
+     */
+    private _states;
     pattern: CronPattern;
     fn: Function | CronOptions;
     /**
@@ -111,10 +118,8 @@ export class Cron {
      * @returns {Cron}
      */
     public schedule(func: Function, partial?: Date): Cron;
-    currentTimeout: number;
     private _trigger;
-    runstarted: CronDate;
-    previousrun: CronDate;
+    blocking: boolean;
     /**
      * Trigger a run manually
      * @public
@@ -135,5 +140,5 @@ export namespace Cron {
  */
 export const scheduledJobs: Cron[];
 import { CronOptions } from "./options.js";
-import { CronDate } from "./date.js";
 import { CronPattern } from "./pattern.js";
+import { CronDate } from "./date.js";
