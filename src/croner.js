@@ -422,7 +422,7 @@ Cron.prototype._checkTrigger = function (target) {
 	} else {
 		// If this trigger were blocked, and protect is a function, trigger protect (without awaiting it, even if it's an synchronous function)
 		if (shouldRun && isBlocked && isFunction(this.options.protect)) {
-			setTimeout(() => inst.options.protect(inst), 0);
+			setTimeout(() => this.options.protect(this), 0);
 		}
 	}
 

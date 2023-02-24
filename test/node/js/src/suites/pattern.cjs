@@ -332,4 +332,47 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getFullYear(),2024);
 	});
 
+	test("0 0 0 * 2 LSUN should find last sunday of february 2024 (25/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 LSUN"),
+			prevRun = new Date(1703891808380), // From 30th of december 2023
+			nextRun = scheduler.next(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun.getDate(),25);
+		assert.equal(nextRun.getMonth(),1);
+		assert.equal(nextRun.getFullYear(),2024);
+	});
+
+	test("0 0 0 * 2 LSUN should find last thursday of february 2024 (29/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 LTHU"),
+			prevRun = new Date(1703891808380), // From 30th of december 2023
+			nextRun = scheduler.next(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun.getDate(),29);
+		assert.equal(nextRun.getMonth(),1);
+		assert.equal(nextRun.getFullYear(),2024);
+	});
+
+	test("0 0 0 * 2 LFRI should find last friday of february 2024 (23/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 LFRI"),
+			prevRun = new Date(1703891808380), // From 30th of december 2023
+			nextRun = scheduler.next(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun.getDate(),23);
+		assert.equal(nextRun.getMonth(),1);
+		assert.equal(nextRun.getFullYear(),2024);
+	});
+
+	test("0 0 0 * 2 LMON-SUN should find last thuirsday or friday of february 2024 (23/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 LTHU-FRI"),
+			prevRun = new Date(1703891808380), // From 30th of december 2023
+			nextRun = scheduler.next(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun.getDate(),23);
+		assert.equal(nextRun.getMonth(),1);
+		assert.equal(nextRun.getFullYear(),2024);
+	});
 };

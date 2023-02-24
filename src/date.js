@@ -226,7 +226,7 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 
 	// Pre-calculate last day of month if needed
 	let lastDayOfMonth;
-	if (pattern.lastDayOfMonth) {
+	if (pattern.lastDayOfMonth || pattern.lastWeekdayOfMonth) {
 		// This is an optimization for every month except february, which has different number of days different years
 		if (this.month !== 1) {
 			lastDayOfMonth = DaysOfMonth[this.month]; // About 20% performance increase when using L
@@ -251,7 +251,14 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 
 		// Special case for day of week
 		if (target === "day" && !pattern.starDOW) {
-			const dowMatch = pattern.dow[(fDomWeekDay + ((i-offset) - 1)) % 7];
+
+			let dowMatch = pattern.dayOfWeek[(fDomWeekDay + ((i-offset) - 1)) % 7];
+
+			// Extra check for l-flag
+			if (dowMatch && pattern.lastWeekdayOfMonth) {
+				dowMatch = dowMatch && ( i-offset > lastDayOfMonth - 7 );
+			}
+
 			// If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
 			// In all other cases use "AND"
 			if (options.legacyMode && !pattern.starDOM) {
@@ -368,7 +375,7 @@ CronDate.prototype.increment = function (pattern, options, hasPreviousRun) {
 CronDate.prototype.getDate = function (internal) {
 	// If this is an internal call, return the date as is
 	// Also use this option when no timezone or utcOffset is set
-	if (internal || this.tz === void) {
+	if (internal || this.tz === void 0) {
 		return new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms);
 	} else {
 		// If .tz is a number, it indicates offset in minutes. UTC timestamp of the internal date objects will be off by the same number of minutes. 

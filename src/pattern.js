@@ -33,6 +33,8 @@ function CronPattern (pattern, timezone) {
 	this.dayOfWeek		= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
 
 	this.lastDayOfMonth = false;
+	this.lastWeekdayOfMonth = false;
+
 	this.starDOM = false;  // Asterisk used for dayOfMonth
 	this.starDOW  = false; // Asterisk used for dayOfWeek
 
@@ -67,12 +69,18 @@ CronPattern.prototype.parse = function () {
 		parts.unshift("0");
 	}
 
-	// Convert 'L' to lastDayOfMonth flag,
+	// Convert 'L' to lastDayOfMonth flag in day-of-month field
 	if(parts[3].indexOf("L") >= 0) {
 		parts[3] = parts[3].replace("L","");
 		this.lastDayOfMonth = true;
 	}
 
+	// Convert 'L' to lastWeekdayOfMonth flag in day-of-week field
+	if(parts[5].indexOf("L") >= 0) {
+		parts[5] = parts[5].replace("L","");
+		this.lastWeekdayOfMonth = true;
+	}
+	
 	// Check for starDOM
 	if(parts[3] == "*") {
 		this.starDOM = true;
@@ -107,7 +115,7 @@ CronPattern.prototype.parse = function () {
 	this.partToArray("hour",      parts[2], 0);
 	this.partToArray("day",       parts[3], -1);
 	this.partToArray("month",     parts[4], -1);
-	this.partToArray("dayOfWeek",       parts[5], 0);
+	this.partToArray("dayOfWeek", parts[5], 0);
 
 	// 0 = Sunday, 7 = Sunday
 	if( this.dayOfWeek[7] ) {
