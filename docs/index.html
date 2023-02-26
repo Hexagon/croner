@@ -134,9 +134,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 <li>Trigger functions in JavaScript using <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression">Cron</a> syntax.</li>
 <li>Works in Node.js &gt;=7.6 (both require and import), Deno &gt;=1.16 and Bun &gt;=0.2.2.</li>
 <li>Works in browsers as standalone, UMD or ES-module.</li>
-<li>Target different <a href="docs/EXAMPLES.md#time-zone">time zones</a>.</li>
-<li>Built in <a href="docs/EXAMPLES.md#overrun-protection">Overrun protection</a> with callback</li>
-<li>Built in <a href="docs/EXAMPLES.md#error-handling">error handling</a> with callback</li>
+<li>Target different <a href="docs-src/EXAMPLES.md#time-zone">time zones</a>.</li>
+<li>Built in <a href="docs-src/EXAMPLES.md#overrun-protection">Overrun protection</a> with callback</li>
+<li>Built in <a href="docs-src/EXAMPLES.md#error-handling">error handling</a> with callback</li>
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
 <li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
 <li>Pause, resume, or stop execution after a task is scheduled.</li>
@@ -528,7 +528,7 @@ Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 [^4]: Node-cron has no way of showing next run time.</p>
 </details>
 <h2>Installation</h2>
-<p>If you are migrating from a different library such as <code>cron</code> or <code>node-cron</code>, or upgrading from a older version of croner, see <a href="docs/MIGRATION.md">MIGRATION.md</a>.</p>
+<p>If you are migrating from a different library such as <code>cron</code> or <code>node-cron</code>, or upgrading from a older version of croner, see <a href="docs-src/MIGRATION.md">MIGRATION.md</a>.</p>
 <h3>Node.js</h3>
 <p><code>npm install croner --save</code></p>
 <p>JavaScript</p>
@@ -582,7 +582,7 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
 <pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js&quot;>&lt;/script>
 </code></pre>
-<p>To use as an <a href="https://developer.mozilla.org/en-USdocs/Web/JavaScript/Guide/Modules">ES-module</a></p>
+<p>To use as an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES-module</a></p>
 <pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
 	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@6/dist/croner.min.js&quot;;
 
@@ -840,15 +840,17 @@ When using <code>L</code> in the Day of Week field, it affects all specified wee
 <h2>Development</h2>
 <h3>Master branch</h3>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI"> <img src="https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master" alt="Deno CI"> <img src="https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master" alt="Bun CI"></p>
-<p>This branch contains the latest stable code, released on npm's default channel (<code>latest</code>).</p>
+<p>This branch contains the latest stable code, released on npm's default channel <code>latest</code>. You can install the latest stable revision by running the command below.</p>
+<pre class="prettyprint source"><code>npm install croner --save
+</code></pre>
 <h3>Dev branch</h3>
 <p><img src="https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev" alt="Node.js CI"> <img src="https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev" alt="Deno CI"> <img src="https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev" alt="Bun CI"></p>
 <p>This branch contains code currently being tested, and is released at channel <code>dev</code> on npm. You can install the latest revision of the development branch by running the command below.</p>
 <pre class="prettyprint source"><code>npm install croner@dev
 </code></pre>
-<p>A list of fixes and features currently released in the <code>dev</code> branch (but not in <code>master</code>) is available <a href="https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev">here</a></p>
+<p>A list of fixes and features currently released in the <code>dev</code> branch is available <a href="https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev">here</a></p>
 <h3>Contributing</h3>
-<p>See <a href="docs/CONTRIBUTING.md">Contribution Guide</a></p>
+<p>See <a href="docs-src/CONTRIBUTING.md">Contribution Guide</a></p>
 <p>... or ...</p>
 <p><a href='https://ko-fi.com/C1C7IEEYF' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
 <h2>License</h2>

@@ -11,9 +11,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](docs/EXAMPLES.md#time-zone).
-*   Built in [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
-*   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
+*   Target different [time zones](docs-src/EXAMPLES.md#time-zone).
+*   Built in [Overrun protection](docs-src/EXAMPLES.md#overrun-protection) with callback
+*   Built in [error handling](docs-src/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Find the first date of the next month, the date of the next Tuesday, etc.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -110,7 +110,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 
 ## Installation
 
-If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](docs/MIGRATION.md).
+If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](docs-src/MIGRATION.md).
 
 ### Node.js
 
@@ -188,7 +188,7 @@ To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS]
 <script src="https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js"></script>
 ```
 
-To use as an [ES-module](https://developer.mozilla.org/en-USdocs/Web/JavaScript/Guide/Modules)
+To use as an [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
@@ -311,7 +311,11 @@ It is also possible to use the following "nicknames" as pattern.
 
 ![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) 
 
-This branch contains the latest stable code, released on npm's default channel (`latest`).
+This branch contains the latest stable code, released on npm's default channel `latest`. You can install the latest stable revision by running the command below.
+
+```
+npm install croner --save
+```
 
 ### Dev branch
 
@@ -323,11 +327,11 @@ This branch contains code currently being tested, and is released at channel `de
 npm install croner@dev
 ```
 
-A list of fixes and features currently released in the `dev` branch (but not in `master`) is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
+A list of fixes and features currently released in the `dev` branch is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
 
 ### Contributing
 
-See [Contribution Guide](docs/CONTRIBUTING.md)
+See [Contribution Guide](docs-src/CONTRIBUTING.md)
 
 ... or ...
 
