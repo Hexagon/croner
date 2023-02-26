@@ -183,7 +183,6 @@ function CronOptions(options) {
 	options.interval = (options.interval === void 0) ? 0 : parseInt(options.interval, 10);
 	options.utcOffset = (options.utcOffset === void 0) ? void 0 : parseInt(options.utcOffset, 10);
 	options.unref = (options.unref === void 0) ? false : options.unref;
-	options.kill = false;
 	
 	// startAt is set, validate it
 	if( options.startAt ) {

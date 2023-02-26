@@ -1,110 +1,4 @@
-export const __esModule: boolean;
-export default Cron;
-export type TimePoint = {
-    /**
-     * - 1970--
-     */
-    y: number;
-    /**
-     * - 1-12
-     */
-    m: number;
-    /**
-     * - 1-31
-     */
-    d: number;
-    /**
-     * - 0-24
-     */
-    h: number;
-    /**
-     * - 0-60 Minute
-     */
-    i: number;
-    /**
-     * - 0-60
-     */
-    s: number;
-    /**
-     * - Time zone in IANA database format 'Europe/Stockholm'
-     */
-    tz: string;
-};
-export type CatchCallbackFn = (e: unknown, job: Cron) => any;
-export type ProtectCallbackFn = (job: Cron) => any;
-/**
- * - Cron scheduler options
- */
-export type CronOptions = {
-    /**
-     * - Name of a job
-     */
-    name?: string;
-    /**
-     * - Job is paused
-     */
-    paused?: boolean;
-    /**
-     * - Job is about to be killed or killed
-     */
-    kill?: boolean;
-    /**
-     * - Continue exection even if a unhandled error is thrown by triggered function
-     * - If set to a function, execute function on catching the error.
-     */
-    catch?: boolean | CatchCallbackFn;
-    /**
-     * - Abort job instantly if nothing else keeps the event loop running.
-     */
-    unref?: boolean;
-    /**
-     * - Maximum nuber of executions
-     */
-    maxRuns?: number;
-    /**
-     * - Minimum interval between executions, in seconds
-     */
-    interval?: number;
-    /**
-     * - Skip current run if job is already running
-     */
-    protect?: boolean | ProtectCallbackFn;
-    /**
-     * - When to start running
-     */
-    startAt?: string | Date;
-    /**
-     * - When to stop running
-     */
-    stopAt?: string | Date;
-    /**
-     * - Time zone in Europe/Stockholm format
-     */
-    timezone?: string;
-    /**
-     * - Offset from UTC in minutes
-     */
-    utcOffset?: number;
-    /**
-     * - Combine day-of-month and day-of-week using true = OR, false = AND. Default is true = OR.
-     */
-    legacyMode?: boolean;
-    /**
-     * - Used to pass any object to scheduled function
-     */
-    context?: unknown;
-};
-/**
- * Name for each part of the cron pattern
- */
-export type CronPatternPart = ("second" | "minute" | "hour" | "day" | "month" | "dow");
-/**
- * Offset, 0 or -1.
- *
- * 0 for seconds,minutes and hours as they start on 1.
- * -1 on days and months, as the start on 0
- */
-export type CronIndexOffset = number;
+export = Cron;
 /**
  * Cron entrypoint
  *
@@ -114,8 +8,8 @@ export type CronIndexOffset = number;
  * @param {CronOptions|Function} [fnOrOptions2] - Options or function to be run each iteration of pattern
  * @returns {Cron}
  */
-export function Cron(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function): Cron;
-export class Cron {
+declare function Cron(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function): Cron;
+declare class Cron {
     /**
      * Cron entrypoint
      *
@@ -126,13 +20,20 @@ export class Cron {
      * @returns {Cron}
      */
     constructor(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function);
-    /** @type {string|undefined} */
-    name: string | undefined;
-    /** @type {CronOptions} */
-    options: CronOptions;
-    /** @type {boolean} */
-    blocking: boolean;
-    once: CronDate;
+    /**
+     * @public
+     * @type {string|undefined} */
+    public name: string | undefined;
+    /**
+     * @public
+     * @type {CronOptions} */
+    public options: CronOptions;
+    /**
+     * Encapsulate all internal states in an object.
+     * Duplicate all options that can change to internal states, for example maxRuns and paused.
+     * @private
+     */
+    private _states;
     pattern: CronPattern;
     fn: Function | CronOptions;
     /**
@@ -217,10 +118,7 @@ export class Cron {
      * @returns {Cron}
      */
     public schedule(func: Function, partial?: Date): Cron;
-    currentTimeout: any;
     private _trigger;
-    runstarted: CronDate;
-    previousrun: CronDate;
     /**
      * Trigger a run manually
      * @public
@@ -229,17 +127,9 @@ export class Cron {
     private _checkTrigger;
     private _next;
 }
-export namespace Cron {
-    export { Cron };
-    export { scheduledJobs };
+declare namespace Cron {
+    export { Cron, scheduledJobs, TimePoint, CatchCallbackFn, ProtectCallbackFn, CronOptions, CronPatternPart, CronIndexOffset };
 }
-/**
- * An array containing all named cron jobs.
- *
- * @constant
- * @type {Cron[]}
- */
-export const scheduledJobs: Cron[];
 /**
  * @callback CatchCallbackFn
  * @param {unknown} e
@@ -275,6 +165,130 @@ export const scheduledJobs: Cron[];
  * @returns {CronOptions}
  */
 declare function CronOptions(options: CronOptions): CronOptions;
+/**
+ * Name for each part of the cron pattern
+ * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek")} CronPatternPart
+ */
+/**
+ * Offset, 0 or -1.
+ *
+ * 0 offset is used for seconds,minutes and hours as they start on 1.
+ * -1 on days and months, as they start on 0
+ *
+ * @typedef {Number} CronIndexOffset
+ */
+/**
+ * Create a CronPattern instance from pattern string ('* * * * * *')
+ * @constructor
+ * @param {string} pattern - Input pattern
+ * @param {string} timezone - Input timezone, used for '?'-substitution
+ */
+declare function CronPattern(pattern: string, timezone: string): void;
+declare class CronPattern {
+    /**
+     * Name for each part of the cron pattern
+     * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek")} CronPatternPart
+     */
+    /**
+     * Offset, 0 or -1.
+     *
+     * 0 offset is used for seconds,minutes and hours as they start on 1.
+     * -1 on days and months, as they start on 0
+     *
+     * @typedef {Number} CronIndexOffset
+     */
+    /**
+     * Create a CronPattern instance from pattern string ('* * * * * *')
+     * @constructor
+     * @param {string} pattern - Input pattern
+     * @param {string} timezone - Input timezone, used for '?'-substitution
+     */
+    constructor(pattern: string, timezone: string);
+    pattern: string;
+    timezone: string;
+    second: any[];
+    minute: any[];
+    hour: any[];
+    day: any[];
+    month: any[];
+    dayOfWeek: any[];
+    lastDayOfMonth: boolean;
+    lastWeekdayOfMonth: boolean;
+    starDOM: boolean;
+    starDOW: boolean;
+    private parse;
+    private partToArray;
+    private throwAtIllegalCharacters;
+    private handleNumber;
+    private handleRangeWithStepping;
+    private handleRange;
+    private handleStepping;
+    private replaceAlphaDays;
+    private replaceAlphaMonths;
+    private handleNicknames;
+}
+/**
+ * - Cron scheduler options
+ */
+type CronOptions = {
+    /**
+     * - Name of a job
+     */
+    name?: string;
+    /**
+     * - Job is paused
+     */
+    paused?: boolean;
+    /**
+     * - Job is about to be killed or killed
+     */
+    kill?: boolean;
+    /**
+     * - Continue exection even if a unhandled error is thrown by triggered function
+     * - If set to a function, execute function on catching the error.
+     */
+    catch?: boolean | CatchCallbackFn;
+    /**
+     * - Abort job instantly if nothing else keeps the event loop running.
+     */
+    unref?: boolean;
+    /**
+     * - Maximum nuber of executions
+     */
+    maxRuns?: number;
+    /**
+     * - Minimum interval between executions, in seconds
+     */
+    interval?: number;
+    /**
+     * - Skip current run if job is already running
+     */
+    protect?: boolean | ProtectCallbackFn;
+    /**
+     * - When to start running
+     */
+    startAt?: string | Date;
+    /**
+     * - When to stop running
+     */
+    stopAt?: string | Date;
+    /**
+     * - Time zone in Europe/Stockholm format
+     */
+    timezone?: string;
+    /**
+     * - Offset from UTC in minutes
+     */
+    utcOffset?: number;
+    /**
+     * - Combine day-of-month and day-of-week using true = OR, false = AND. Default is true = OR.
+     */
+    legacyMode?: boolean;
+    /**
+     * - Used to pass any object to scheduled function
+     */
+    context?: unknown;
+};
 /**
  * Converts date to CronDate
  * @constructor
@@ -337,63 +351,52 @@ declare class CronDate {
     public getTime(): Date;
 }
 /**
- * Name for each part of the cron pattern
- * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dow")} CronPatternPart
+ * An array containing all named cron jobs.
+ *
+ * @constant
+ * @type {Cron[]}
  */
+declare const scheduledJobs: Cron[];
+type TimePoint = {
+    /**
+     * - 1970--
+     */
+    y: number;
+    /**
+     * - 1-12
+     */
+    m: number;
+    /**
+     * - 1-31
+     */
+    d: number;
+    /**
+     * - 0-24
+     */
+    h: number;
+    /**
+     * - 0-60 Minute
+     */
+    i: number;
+    /**
+     * - 0-60
+     */
+    s: number;
+    /**
+     * - Time zone in IANA database format 'Europe/Stockholm'
+     */
+    tz: string;
+};
+type CatchCallbackFn = (e: unknown, job: Cron) => any;
+type ProtectCallbackFn = (job: Cron) => any;
+/**
+ * Name for each part of the cron pattern
+ */
+type CronPatternPart = ("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek");
 /**
  * Offset, 0 or -1.
  *
- * 0 for seconds,minutes and hours as they start on 1.
- * -1 on days and months, as the start on 0
- *
- * @typedef {Number} CronIndexOffset
+ * 0 offset is used for seconds,minutes and hours as they start on 1.
+ * -1 on days and months, as they start on 0
  */
-/**
- * Create a CronPattern instance from pattern string ('* * * * * *')
- * @constructor
- * @param {string} pattern - Input pattern
- * @param {string} timezone - Input timezone, used for '?'-substitution
- */
-declare function CronPattern(pattern: string, timezone: string): void;
-declare class CronPattern {
-    /**
-     * Name for each part of the cron pattern
-     * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dow")} CronPatternPart
-     */
-    /**
-     * Offset, 0 or -1.
-     *
-     * 0 for seconds,minutes and hours as they start on 1.
-     * -1 on days and months, as the start on 0
-     *
-     * @typedef {Number} CronIndexOffset
-     */
-    /**
-     * Create a CronPattern instance from pattern string ('* * * * * *')
-     * @constructor
-     * @param {string} pattern - Input pattern
-     * @param {string} timezone - Input timezone, used for '?'-substitution
-     */
-    constructor(pattern: string, timezone: string);
-    pattern: string;
-    timezone: string;
-    second: any[];
-    minute: any[];
-    hour: any[];
-    day: any[];
-    month: any[];
-    dow: any[];
-    lastDayOfMonth: boolean;
-    starDOM: boolean;
-    starDOW: boolean;
-    private parse;
-    private partToArray;
-    private throwAtIllegalCharacters;
-    private handleNumber;
-    private handleRangeWithStepping;
-    private handleRange;
-    private handleStepping;
-    private replaceAlphaDays;
-    private replaceAlphaMonths;
-    private handleNicknames;
-}
+type CronIndexOffset = number;

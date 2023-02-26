@@ -46,13 +46,13 @@
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
     "test:ts": "tsc --strict --noEmit ./test/node/ts/basics.ts",
-    "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:dist && npm run build:typings && npm run build:minify &&npm run build:cleanup && npm run test:coverage && npm run test:dist",
-    "build:ci": "npm run test:lint && npm run build:typings && npm run build:dist npm run build:cleanup && npm run test:coverage && npm run test:dist",
+    "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:dist && npm run build:typings && npm run build:minify && npm run test:coverage && npm run test:dist",
+    "build:ci": "npm run test:lint && npm run build:dist && npm run build:typings && npm run test:coverage && npm run test:dist",
     "build:precleanup": "(rm -rf types/* || del /Q types\\*) && (rm -rf dist/* || del /Q dist\\*)",
     "build:dist": "rollup -c ./rollup.config.js",
-    "build:minify": "uglifyjs dist/croner.umd.js --source-map -o dist/croner.umd.min.js",
+    "build:minify": "uglifyjs dist/croner.umd.js --source-map -o dist/croner.umd.min.js && uglifyjs dist/croner.js --source-map -o dist/croner.min.js",
     "build:typings": "tsc && tsc --build tsconfig.cjs.json",
-    "build:docs": "((rm -rf dist-docs/* || rd /S /Q dist-docs) && jsdoc -c .jsdoc.json) || jsdoc -c .jsdoc.json"
+    "build:docs": "((rm -rf docs/* || rd /S /Q docs) && jsdoc -c .jsdoc.json) || jsdoc -c .jsdoc.json"
   },
   "type": "module",
   "main": "./dist/croner.cjs",
@@ -75,11 +75,11 @@
   },
   "devDependencies": {
     "c8": "^7.11.3",
-    "eslint": "^8.19.0",
+    "eslint": "8.34.0",
     "jsdoc": "^4.0.0",
     "jsdoc-chameleon-template": "^1.0.2",
     "minitz": "^4.0.0",
-    "rollup": "^3.2.3",
+    "rollup": "3.17.1",
     "typescript": "^4.7.4",
     "uglify-js": "^3.17.1",
     "uvu": "^0.5.6"

@@ -155,7 +155,7 @@ import Cron from "croner";
 JavaScript
 
 ```javascript
-import Cron from "https://deno.land/x/croner@5.7.0/src/croner.js";
+import Cron from "https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js";
 
 Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -165,7 +165,7 @@ Cron("* * * * * *", () => {
 TypeScript
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@5.7.0/src/croner.js";
+import { Cron } from "https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js";
 
 const _scheduler : Cron = new Cron("* * * * * *", () => {
 	console.log("This will run every second.");
@@ -178,21 +178,21 @@ const _scheduler : Cron = new Cron("* * * * * *", () => {
 
 *   Download the latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip).
 *   Unpack the zip file.
-*   Grab ```croner.min.js``` (UMD and standalone) or ```croner.min.mjs``` (ES-module) from the [dist/](/dist) folder.
+*   Grab ```croner.umd.min.js``` (UMD and standalone) or ```croner.min.js``` (ES-module) from the [dist/](/dist) folder.
 
 #### CDN
 
 To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js"></script>
 ```
 
 To use as an [ES-module](https://developer.mozilla.org/en-USdocs/Web/JavaScript/Guide/Modules)
 
 ```html
 <script type="module">
-	import Cron from "https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.mjs";
+	import Cron from "https://cdn.jsdelivr.net/npm/croner@6/dist/croner.min.js";
 
 	// ... see usage section ...
 </script>

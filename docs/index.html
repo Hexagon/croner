@@ -140,7 +140,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 <li>Includes <a href="https://www.typescriptlang.org/">TypeScript</a> typings.</li>
 <li>Find the first date of the next month, the date of the next Tuesday, etc.</li>
 <li>Pause, resume, or stop execution after a task is scheduled.</li>
-<li>Uses Vixie-cron <a href="#pattern">pattern</a>, with a few additional features such as <code>L</code> for last day of month.</li>
+<li>Uses Vixie-cron <a href="#pattern">pattern</a>, with a few additional features such as <code>L</code> for last day and weekday of month.</li>
 </ul>
 <p>Quick examples:</p>
 <pre class="prettyprint source lang-javascript"><code>// Basic: Run a function at the interval defined by a cron expression
@@ -558,14 +558,14 @@ const job : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 </code></pre>
 <h3>Deno</h3>
 <p>JavaScript</p>
-<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@5.7.0/src/croner.js&quot;;
+<pre class="prettyprint source lang-javascript"><code>import Cron from &quot;https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js&quot;;
 
 Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
 });
 </code></pre>
 <p>TypeScript</p>
-<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@5.7.0/src/croner.js&quot;;
+<pre class="prettyprint source lang-typescript"><code>import { Cron } from &quot;https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js&quot;;
 
 const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 	console.log(&quot;This will run every second.&quot;);
@@ -576,15 +576,15 @@ const _scheduler : Cron = new Cron(&quot;* * * * * *&quot;, () => {
 <ul>
 <li>Download the latest <a href="https://github.com/Hexagon/croner/archive/refs/heads/master.zip">zipball</a>.</li>
 <li>Unpack the zip file.</li>
-<li>Grab <code>croner.min.js</code> (UMD and standalone) or <code>croner.min.mjs</code> (ES-module) from the <a href="/dist">dist/</a> folder.</li>
+<li>Grab <code>croner.umd.min.js</code> (UMD and standalone) or <code>croner.min.js</code> (ES-module) from the <a href="/dist">dist/</a> folder.</li>
 </ul>
 <h4>CDN</h4>
 <p>To use as a <a href="https://github.com/umdjs/umd">UMD</a>-module (stand alone, <a href="https://requirejs.org/">RequireJS</a> etc.)</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.js&quot;>&lt;/script>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js&quot;>&lt;/script>
 </code></pre>
 <p>To use as an <a href="https://developer.mozilla.org/en-USdocs/Web/JavaScript/Guide/Modules">ES-module</a></p>
 <pre class="prettyprint source lang-html"><code>&lt;script type=&quot;module&quot;>
-	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@5/dist/croner.min.mjs&quot;;
+	import Cron from &quot;https://cdn.jsdelivr.net/npm/croner@6/dist/croner.min.js&quot;;
 
 	// ... see usage section ...
 &lt;/script>
@@ -731,8 +731,8 @@ Browsers have not yet implemented this feature, and it does not make sense to us
 <li>
 <p>Croner expressions have the following additional modifiers:</p>
 <ul>
-<li><em>?</em> A question mark is substituted with the time of Croner's initialization. For example <code>? ? * * * *</code> would be substituted with <code>25 8 * * * *</code> if the time is <code>&lt;any hour&gt;:08:25</code> at the time of <code>new Cron('? ? * * * *', &lt;...&gt;)</code>. The question mark can be used in any field.</li>
-<li><em>L</em> L can be used in the day of the month field to specify the last day of the month.</li>
+<li><em>?</em>: The question mark is substituted with the time of initialization. For example, ? ? * * * * would be substituted with 25 8 * * * * if the time is <any hour>:08:25 at the time of new Cron('? ? * * * *', &lt;...&gt;). The question mark can be used in any field.</li>
+<li><em>L</em>: L can be used in the day of the month field to specify the last day of the month. It can also be used in the day of the week field to specify the last specific weekday of the month, for example, the last Friday.</li>
 </ul>
 </li>
 <li>
@@ -792,14 +792,15 @@ Browsers have not yet implemented this feature, and it does not make sense to us
 <td>Day of Week</td>
 <td>Yes</td>
 <td>0-7 or SUN-MON</td>
-<td>* , - / ?</td>
+<td>* , - / ? L</td>
 <td>0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
 <p><strong>Note</strong>
-Weekday and month names are case-insensitive. Both <code>MON</code> and <code>mon</code> work.</p>
+Weekday and month names are case-insensitive. Both <code>MON</code> and <code>mon</code> work.
+When using <code>L</code> in the Day of Week field, it affects all specified weekdays. For example, <code>L5,6</code> means the last Friday and Saturday in the month.&quot;</p>
 </blockquote>
 <p>It is also possible to use the following &quot;nicknames&quot; as pattern.</p>
 <table>

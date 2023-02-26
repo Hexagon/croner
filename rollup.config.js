@@ -9,10 +9,13 @@ export default [
 		}
 	},
 	{
-		input: "./src/croner.js",
+		input: "./src/croner.single.js",
 		output: {
 			file: "dist/croner.cjs",
-			format: "commonjs"
+			format: "commonjs",
+			name: "Cron",
+			exports: "default"
+			
 		}
 	},
 	{	
