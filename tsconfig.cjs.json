@@ -1,0 +1,11 @@
+{
+    "include": ["dist/croner.cjs"],
+    "compilerOptions": {
+      "module": "CommonJS",
+      "lib": ["es6"],
+      "allowJs": true,
+      "declaration": true,
+      "emitDeclarationOnly": true,
+      "outDir": "types"
+    }
+  }

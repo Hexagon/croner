@@ -1,5 +1,5 @@
 {
-    "include": ["src/**/*"],
+    "include": ["dist/croner.js"],
     "compilerOptions": {
       "allowJs": true,
       "declaration": true,

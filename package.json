@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "5.7.1-dev.0",
+  "version": "6.0.0-dev.0",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://hexagon.github.io/croner",
@@ -46,29 +46,31 @@
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
     "test:ts": "tsc --strict --noEmit ./test/node/ts/basics.ts",
-    "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:typings && npm run build:dist && npm run build:minify && npm run build:cleanup && npm run test:coverage && npm run test:dist",
-    "build:ci": "npm run test:lint && npm run build:typings && npm run build:dist && npm run build:minify && npm run build:cleanup && npm run test:coverage && npm run test:dist",
+    "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:dist && npm run build:typings && npm run build:minify &&npm run build:cleanup && npm run test:coverage && npm run test:dist",
+    "build:ci": "npm run test:lint && npm run build:typings && npm run build:dist npm run build:cleanup && npm run test:coverage && npm run test:dist",
     "build:precleanup": "(rm -rf types/* || del /Q types\\*) && (rm -rf dist/* || del /Q dist\\*)",
     "build:dist": "rollup -c ./rollup.config.js",
-    "build:minify": "uglifyjs dist/croner.cjs --source-map -o dist/croner.min.js && uglifyjs dist/croner.cjs --source-map -o dist/croner.min.cjs && uglifyjs dist/croner.mjs --source-map -o dist/croner.min.mjs",
-    "build:typings": "tsc",
-    "build:cleanup": "(rm dist/croner.mjs || del dist\\croner.mjs) || (rm dist/croner.cjs || del dist\\croner.cjs)",
+    "build:minify": "uglifyjs dist/croner.umd.js --source-map -o dist/croner.umd.min.js",
+    "build:typings": "tsc && tsc --build tsconfig.cjs.json",
     "build:docs": "((rm -rf dist-docs/* || rd /S /Q dist-docs) && jsdoc -c .jsdoc.json) || jsdoc -c .jsdoc.json"
   },
   "type": "module",
-  "main": "./dist/croner.min.cjs",
-  "browser": "./dist/croner.min.js",
-  "module": "./dist/croner.min.mjs",
+  "main": "./dist/croner.cjs",
+  "browser": "./dist/croner.umd.js",
+  "module": "./dist/croner.js",
   "types": "./types/croner.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": {
         "types": "./types/croner.d.ts",
-        "default": "./dist/croner.min.mjs"
+        "default": "./dist/croner.js"
       },
-      "require": "./dist/croner.min.cjs",
-      "browser": "./dist/croner.min.js"
+      "require": {
+        "types": "./types/croner.d.cts",
+        "default": "./dist/croner.cjs"
+      },
+      "browser": "./dist/croner.umd.js"
     }
   },
   "devDependencies": {
