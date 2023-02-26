@@ -17,7 +17,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Find the first date of the next month, the date of the next Tuesday, etc.
 *   Pause, resume, or stop execution after a task is scheduled.
-*   Uses Vixie-cron [pattern](#pattern), with a few additional features such as `L` for last day of month.
+*   Uses Vixie-cron [pattern](#pattern), with a few additional features such as `L` for last day and weekday of month.
 
 Quick examples:
 
@@ -273,8 +273,8 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 ```
 
 *   Croner expressions have the following additional modifiers:
-	-   *?* A question mark is substituted with the time of Croner's initialization. For example `? ? * * * *` would be substituted with `25 8 * * * *` if the time is `<any hour>:08:25` at the time of `new Cron('? ? * * * *', <...>)`. The question mark can be used in any field.
-	-   *L* L can be used in the day of the month field to specify the last day of the month.
+	-   *?*: The question mark is substituted with the time of initialization. For example, ? ? * * * * would be substituted with 25 8 * * * * if the time is <any hour>:08:25 at the time of new Cron('? ? * * * *', <...>). The question mark can be used in any field.
+	-   *L*: L can be used in the day of the month field to specify the last day of the month. It can also be used in the day of the week field to specify the last specific weekday of the month, for example, the last Friday.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
@@ -287,10 +287,12 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 | Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
 | Day of Month | Yes      | 1-31           | * , - / ? L                |                                       |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ?                  | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L                | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0            |
 
 > **Note**
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
+> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `L5,6` means the last Friday and Saturday in the month."
+
 
 It is also possible to use the following "nicknames" as pattern.
 
