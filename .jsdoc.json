@@ -11,7 +11,7 @@
     "plugins": [
       "plugins/markdown"
     ],
-    "recurseDepth": 2,
+    "recurseDepth": 3,
     "template": {
       "title": "Croner",
       "shortTitle": "Croner",
@@ -89,7 +89,6 @@
       "tutorials": "./docs/",
       "destination": "./dist-docs/",
       "encoding": "utf8",
-      "private": false,
-      "template": "./node_modules/jsdoc-chameleon-template"
+      "private": false
     }
   }

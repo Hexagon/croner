@@ -1,7 +1,3 @@
-# Welcome to Croner contributing guide
-
-## New contributor guide
-
 To get an overview of the project, read the [README](README.md). Here are some resources to help you get started with open source contributions:
 
 -   [Set up Git](https://docs.github.com/en/get-started/quickstart/set-up-git)

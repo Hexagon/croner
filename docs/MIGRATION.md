@@ -1,6 +1,4 @@
-# Migration
-
-## Table of contents
+## Table of content
 
 *  [Upgrading croner](#upgrading-croner)
 *  [Migrationg from cron](#migrating-from-cron)
