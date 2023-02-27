@@ -31,8 +31,6 @@ Several methods are also renamed, to make them more descriptive.
 *   `running()` -> `isRunning()`
 *   `busy()` -> `isBusy()`
 
-
-
 ## Migrating from Cron
 
 If you're currently using the cron package and want to migrate to croner, here are the steps you can follow:
