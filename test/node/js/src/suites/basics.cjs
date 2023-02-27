@@ -15,14 +15,14 @@ module.exports = function (Cron, test, scheduledJobs) {
 	test("new Cron(...) should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("cron(...) without `new` should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = Cron("* * * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	
@@ -44,77 +44,77 @@ module.exports = function (Cron, test, scheduledJobs) {
 	test("Array passed as next date should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * * *");
-			scheduler.next([]);
+			scheduler.nextRun([]);
 		});
 	});
 
 	test("31st february should not be found", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * 31 2 *");
-			assert.equal(scheduler.next(),null);
+			assert.equal(scheduler.nextRun(),null);
 		});
 	});
 
 	test("Too high days should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * 32 * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Too low days should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * 0 * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Valid months should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * 1,2,3,4,5,6,7,8,9,10,11,12 *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Too high months should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * 7-13 *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Too low months should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * 0-3 *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Valid weekdays should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * 0,1,2,3,4,5,6,7");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Too high weekday should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * * 8");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Too low weekday should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * * -1");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
    
 	test("Too high hours minute should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * 0,23,24 * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
      
@@ -122,28 +122,28 @@ module.exports = function (Cron, test, scheduledJobs) {
 	test("Options as second argument should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * *", {maxRuns: 1});
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Options as third argument should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * *", () => {}, {maxRuns: 1});
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Text as second argument should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * * *", "bogus", {maxRuns: 1});
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Text as third argument should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * * *", {maxRuns: 1}, "bogus");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	
@@ -164,7 +164,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 
 		let 
 			now = new Date(),
-			nextRuns = Cron("*/30 * * * * *").enumerate(10);
+			nextRuns = Cron("*/30 * * * * *").nextRuns(10);
 
 		// Check number of times returned
 		assert.equal(nextRuns.length, 10);
@@ -184,7 +184,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 		// 20 minutes before now
 		let 
 			now = new Date(new Date().getTime()-1200*1000),
-			nextRuns = Cron("0 * * * * *").enumerate(10, now);
+			nextRuns = Cron("0 * * * * *").nextRuns(10, now);
 
 		// Check number of times returned
 		assert.equal(nextRuns.length, 10);
@@ -200,7 +200,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("@yearly should be replaced", function () {
-		let nextRuns = Cron("@yearly").enumerate(3, "2022-02-17T00:00:00");
+		let nextRuns = Cron("@yearly").nextRuns(3, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2023);
 		assert.equal(nextRuns[0].getMonth(),0);
 		assert.equal(nextRuns[0].getDate(),1);
@@ -209,14 +209,14 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("@annually should be replaced", function () {
-		let nextRuns = Cron("@annually").enumerate(3, "2022-02-17T00:00:00");
+		let nextRuns = Cron("@annually").nextRuns(3, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2023);
 		assert.equal(nextRuns[0].getMonth(),0);
 		assert.equal(nextRuns[0].getDate(),1);
 	});
 
 	test("@monthly should be replaced", function () {
-		let nextRuns = Cron("@monthly").enumerate(3, "2022-02-17T00:00:00");
+		let nextRuns = Cron("@monthly").nextRuns(3, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),2);
 		assert.equal(nextRuns[0].getDate(),1);
@@ -227,7 +227,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("@weekly should be replaced", function () {
-		let nextRuns = Cron("@weekly").enumerate(3, "2022-02-17T00:00:00");
+		let nextRuns = Cron("@weekly").nextRuns(3, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),20);
@@ -238,7 +238,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("@weekly should be replaced", function () {
-		let nextRuns = Cron("@daily").enumerate(3, "2022-02-17T12:00:00");
+		let nextRuns = Cron("@daily").nextRuns(3, "2022-02-17T12:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),18);
@@ -250,12 +250,12 @@ module.exports = function (Cron, test, scheduledJobs) {
 
 	test("@wekly should throw", function () {
 		assert.throws(() => {
-			Cron("@wekly").enumerate(3, "2022-02-17T12:00:00");
+			Cron("@wekly").nextRuns(3, "2022-02-17T12:00:00");
 		});
 	});
 
 	test("@hourly should be replaced", function () {
-		let nextRuns = Cron("@hourly").enumerate(3, "2022-02-16T23:59:00");
+		let nextRuns = Cron("@hourly").nextRuns(3, "2022-02-16T23:59:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),17);
@@ -267,62 +267,62 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Croner should increment seconds", function () {
-		let runs = Cron("* * * * * *").enumerate(4);
+		let runs = Cron("* * * * * *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should increment minutes", function () {
-		let runs = Cron("0 * * * * *").enumerate(4);
+		let runs = Cron("0 * * * * *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should increment hours", function () {
-		let runs = Cron("0 0 * * * *").enumerate(4);
+		let runs = Cron("0 0 * * * *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should increment days", function () {
-		let runs = Cron("0 0 0 * * *").enumerate(4);
+		let runs = Cron("0 0 0 * * *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 	test("Croner should increment months", function () {
-		let runs = Cron("0 0 0 1 * *").enumerate(4);
+		let runs = Cron("0 0 0 1 * *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should increment years", function () {
-		let runs = Cron("0 0 0 1 12 *").enumerate(4);
+		let runs = Cron("0 0 0 1 12 *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should increment weeks", function () {
-		let runs = Cron("0 0 0 * * 1").enumerate(4);
+		let runs = Cron("0 0 0 * * 1").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should increment last day of month", function () {
-		let runs = Cron("0 0 0 L * *").enumerate(4);
+		let runs = Cron("0 0 0 L * *").nextRuns(4);
 		assert.ok(runs[0] < runs[1]);
 		assert.ok(runs[1] < runs[2]);
 		assert.ok(runs[2] < runs[3]);
 	});
 
 	test("Croner should give correct last day of months", function () {
-		let runs = Cron("0 0 0 L * *").enumerate(4, "2022-01-01T00:00:00");
+		let runs = Cron("0 0 0 L * *").nextRuns(4, "2022-01-01T00:00:00");
 		
 		assert.equal(runs[0].getFullYear(), 2022);
 		assert.equal(runs[0].getMonth(), 0);
@@ -342,7 +342,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Croner should give correct last day of months when combined with other dates", function () {
-		let runs = Cron("0 0 0 15,L * *").enumerate(4, "2022-01-01T00:00:00");
+		let runs = Cron("0 0 0 15,L * *").nextRuns(4, "2022-01-01T00:00:00");
 
 		assert.equal(runs[0].getFullYear(), 2022);
 		assert.equal(runs[0].getMonth(), 0);
@@ -367,7 +367,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Impossible combination should result in null (non legacy mode)", function () {
-		let impossible = Cron("0 0 0 30 2 6", { legacyMode: false }).next(new Date(1634076000000));
+		let impossible = Cron("0 0 0 30 2 6", { legacyMode: false }).nextRun(new Date(1634076000000));
 		assert.equal(null, impossible);
 	});
 	test("scheduled job should not stop on unhandled error with option catch: true",  timeout(4000, (resolve) => {
@@ -439,7 +439,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			job.stop();
 		});
 		setTimeout(() => {
-			if (job.busy()) {
+			if (job.isBusy()) {
 				resolve();
 			} else {
 				reject(new Error("Job should have been busy"));
@@ -452,7 +452,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			job.stop();
 		});
 		setTimeout(() => {
-			if (!job.busy()) {
+			if (!job.isBusy()) {
 				resolve();
 			} else {
 				reject(new Error("Job should not have been busy"));
@@ -496,7 +496,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	}));
 	test("previous run time should be null if not yet executed", function () {
 		let job = Cron("* * * 1 11 4",() => {});
-		let result = job.previous();
+		let result = job.previousRun();
 		assert.equal(result,null);
 		job.stop();
 	});
@@ -505,7 +505,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			scheduler = new Cron("* * * * * *", { maxRuns: 1 });
 		scheduler.schedule(function () {});
 		setTimeout(function () {
-			let previous = scheduler.previous();
+			let previous = scheduler.previousRun();
 			// Do comparison
 			try {
 				assert.ok(previous>=new Date().getTime()-3000);
@@ -521,15 +521,15 @@ module.exports = function (Cron, test, scheduledJobs) {
 	test("Isrunning should not throw, and return correct value after control functions is used", function () {
 		let 
 			scheduler0 = new Cron("0 0 0 * * 0");
-		assert.equal(scheduler0.running(), false);
+		assert.equal(scheduler0.isRunning(), false);
 		scheduler0.schedule(() => {});
-		assert.equal(scheduler0.running(), true);
+		assert.equal(scheduler0.isRunning(), true);
 		scheduler0.pause();
-		assert.equal(scheduler0.running(), false);
+		assert.equal(scheduler0.isRunning(), false);
 		scheduler0.resume();
-		assert.equal(scheduler0.running(), true);
+		assert.equal(scheduler0.isRunning(), true);
 		scheduler0.stop();
-		assert.equal(scheduler0.running(), false);
+		assert.equal(scheduler0.isRunning(), false);
 	});
 
 	test("maxRuns should be inherited from scheduler to job", function () {
@@ -548,8 +548,8 @@ module.exports = function (Cron, test, scheduledJobs) {
 			left,
 			diff;
 
-		assert.equal(target.getTime(),scheduler.next().getTime());
-		if(target.getTime() === scheduler.next().getTime()) {
+		assert.equal(target.getTime(),scheduler.nextRun().getTime());
+		if(target.getTime() === scheduler.nextRun().getTime()) {
 			while(prevRun < target) {
 				left = scheduler.msToNext(prevRun);
 				diff = Math.abs((target.getTime() - prevRun.getTime())-left);
@@ -571,9 +571,9 @@ module.exports = function (Cron, test, scheduledJobs) {
 			left,
 			diff;
 		
-		assert.equal(target.getTime(),scheduler.next().getTime());
+		assert.equal(target.getTime(),scheduler.nextRun().getTime());
 		
-		if(target.getTime() === scheduler.next().getTime()) {
+		if(target.getTime() === scheduler.nextRun().getTime()) {
 			while(prevRun < target) {
 				left = scheduler.msToNext(prevRun);
 				diff = Math.abs((target.getTime() - prevRun.getTime())-left);
@@ -588,15 +588,15 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (croner mode)", function () {
-		assert.equal(Cron("0 0 0 1 11 4", { legacyMode: false }).next(new Date(1634076000000)).getFullYear(), 2029);
+		assert.equal(Cron("0 0 0 1 11 4", { legacyMode: false }).nextRun(new Date(1634076000000)).getFullYear(), 2029);
 	});
 
 	test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (legacy/default mode)", function () {
-		assert.equal(Cron("0 0 0 1 11 4").next(new Date(1634076000000)).getFullYear(), 2021);
+		assert.equal(Cron("0 0 0 1 11 4").nextRun(new Date(1634076000000)).getFullYear(), 2021);
 	});
 
 	test("Next saturday at 29th of february should occur 2048. Also test weekday an month names and case insensitivity (croner mode)", function () {
-		let nextSaturday29feb = Cron("0 0 0 29 feb SAT", { legacyMode: false }).next(new Date(1634076000000));
+		let nextSaturday29feb = Cron("0 0 0 29 feb SAT", { legacyMode: false }).nextRun(new Date(1634076000000));
 		assert.equal(nextSaturday29feb.getFullYear(),2048);
 	});
 
@@ -620,7 +620,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun),
+			nextRun = scheduler.nextRun(prevRun),
 			prevRun = nextRun;
 		}
 
@@ -643,7 +643,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			compareDay = new Date(new Date().getTime()+45*60*1000);
 
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun),
+			nextRun = scheduler.nextRun(prevRun),
 			prevRun = nextRun;
 		}
 
@@ -664,7 +664,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			compareDay = new Date(new Date().getTime()+45*60*1000);
 
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun),
+			nextRun = scheduler.nextRun(prevRun),
 			prevRun = nextRun;
 		}
 
@@ -677,45 +677,45 @@ module.exports = function (Cron, test, scheduledJobs) {
 
 	});
 
-	test("Fire-once should be supported by ISO 8601 string, past and .next() should return null", function () {
+	test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null", function () {
 		let 
 			scheduler0 = new Cron("2020-01-01T00:00:00");
-		assert.equal(scheduler0.next(),null);
+		assert.equal(scheduler0.nextRun(),null);
 	});
 
-	test("Fire-once should be supported by ISO 8601 string, past and .next() should return null (legacy mode)", function () {
+	test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null (legacy mode)", function () {
 		let 
 			scheduler0 = new Cron("2020-01-01T00:00:00", { legacyMode: true});
-		assert.equal(scheduler0.next(),null);
+		assert.equal(scheduler0.nextRun(),null);
 	});
 
-	test("Fire-once should be supported by ISO 8601 string, future and .next() should handle ISO 8601 UTC correctly", function () {
+	test("Fire-once should be supported by ISO 8601 string, future and .nextRun() should handle ISO 8601 UTC correctly", function () {
 		let 
 			scheduler0 = new Cron("2200-01-01T00:00:00Z", {timezone: "America/New_York"});
-		assert.equal(scheduler0.next().getTime(),new Date(Date.UTC(2200,0,1,0,0,0)).getTime());
+		assert.equal(scheduler0.nextRun().getTime(),new Date(Date.UTC(2200,0,1,0,0,0)).getTime());
 	});
 
-	test("Fire-once should be supported by ISO 8601 string, past and .enumerate() should return zero items", function () {
+	test("Fire-once should be supported by ISO 8601 string, past and .nextRuns() should return zero items", function () {
 		let 
 			scheduler0 = new Cron("2018-01-01T00:00:00"),
-			nextRun = scheduler0.enumerate(10);
+			nextRun = scheduler0.nextRuns(10);
 		assert.equal(nextRun.length, 0);
 	});
 
-	test("Fire-once should be supported by ISO 8601 local string, future and .next() should return correct date", function () {
+	test("Fire-once should be supported by ISO 8601 local string, future and .nextRun() should return correct date", function () {
 		let 
 			scheduler0 = new Cron("2200-01-01T00:00:00"),
-			nextRun = scheduler0.next();
+			nextRun = scheduler0.nextRun();
 		assert.equal(nextRun.getFullYear(), 2200);
 		assert.equal(nextRun.getMonth(), 0);
 		assert.equal(nextRun.getDate(), 1);
 		assert.equal(nextRun.getHours(), 0);
 	});
 
-	test("Fire-once should be supported by ISO 8601 UTC string, future and .next() should return correct date", function () {
+	test("Fire-once should be supported by ISO 8601 UTC string, future and .nextRun() should return correct date", function () {
 		let 
 			scheduler0 = new Cron("2200-01-01T00:00:00Z"),
-			nextRun = scheduler0.next();
+			nextRun = scheduler0.nextRun();
 		assert.equal(nextRun.getUTCFullYear(), 2200);
 		assert.equal(nextRun.getUTCMonth(), 0);
 		assert.equal(nextRun.getUTCDate(), 1);
@@ -723,29 +723,29 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 
-	test("Fire-once should be supported by ISO 8601 string, future and .enumerate() should return exactly one item", function () {
+	test("Fire-once should be supported by ISO 8601 string, future and .nextRuns() should return exactly one item", function () {
 		let 
 			scheduler0 = new Cron("2200-01-01T00:00:00"),
-			nextRun = scheduler0.enumerate(10);
+			nextRun = scheduler0.nextRuns(10);
 		assert.equal(nextRun.length, 1);
 	});
 
-	test("Fire-once should be supported by date, past and .next() should return null", function () {
+	test("Fire-once should be supported by date, past and .nextRun() should return null", function () {
 		let 
 			refTime = new Date(),
 			twoSecsBeforeNow = new Date(refTime.getTime() - 2000),
 			scheduler0 = new Cron(twoSecsBeforeNow),
-			nextRun = scheduler0.next();
+			nextRun = scheduler0.nextRun();
 		assert.equal(nextRun, null);
 	});
 
 
-	test("Fire-once should be supported by date, future and .next() should return correct date", function () {
+	test("Fire-once should be supported by date, future and .nextRun() should return correct date", function () {
 		let 
 			refTime = new Date(),
 			twoSecsFromNow = new Date(refTime.getTime() + 2000),
 			scheduler0 = new Cron(twoSecsFromNow),
-			nextRun = scheduler0.next();
+			nextRun = scheduler0.nextRun();
 		assert.equal(nextRun.getTime() > refTime.getTime(), true);
 		assert.equal(nextRun.getTime() < refTime.getTime()+4000, true);
 	});
@@ -754,7 +754,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 		assert.throws(() => {
 			let 
 				scheduler0 = new Cron("2020-13-01T00:00:00");
-			assert.equal(scheduler0.next(),null);
+			assert.equal(scheduler0.nextRun(),null);
 		});
 	});
 
@@ -762,12 +762,12 @@ module.exports = function (Cron, test, scheduledJobs) {
 		assert.throws(() => {
 			let 
 				scheduler0 = new Cron("2020-13-01T00:00:00Z");
-			assert.equal(scheduler0.next(),null);
+			assert.equal(scheduler0.nextRun(),null);
 		});
 	});
 
 	test("Weekday pattern should return correct weekdays", function () {
-		let nextRuns = new Cron("0 0 0 * * 5,6").enumerate(10, "2022-02-17T00:00:00");
+		let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),18);
@@ -780,7 +780,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-		let nextRuns = new Cron("0 0 0 * * 5,6").enumerate(10, "2022-02-17T00:00:00");
+		let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),18);
@@ -793,7 +793,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Weekday pattern should return correct combined with day of month (croner mode)", function () {
-		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: false }).enumerate(2, "2022-02-17T00:00:00");
+		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: false }).nextRuns(2, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),3);
 		assert.equal(nextRuns[0].getDate(),2);
@@ -803,7 +803,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-		let nextRuns = new Cron("0 0 0 * * 5,6").enumerate(10, "2022-02-17T00:00:00");
+		let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),18);
@@ -816,7 +816,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
-		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).enumerate(6, "2022-01-31T00:00:00");
+		let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).nextRuns(6, "2022-01-31T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
 		assert.equal(nextRuns[0].getDate(),2);
@@ -833,7 +833,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 	});
 
 	test("Weekday pattern should return correct alone (legacy mode)", function () {
-		let nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).enumerate(3, "2022-02-28T23:59:00");
+		let nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).nextRuns(3, "2022-02-28T23:59:00");
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),2);
 		assert.equal(nextRuns[0].getDate(),7);
@@ -852,7 +852,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 
 	test("Invalid date should throw", function () {
 		assert.throws(() => {
-			new Cron("15 9 * * mon", { legacyMode: true }).next(new Date("pizza"));
+			new Cron("15 9 * * mon", { legacyMode: true }).nextRun(new Date("pizza"));
 		});
 	});
 
@@ -860,7 +860,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 		const cron = new Cron("0 * * * mon,tue,wed,fri,sat,sun", {
 				legacyMode: true,
 			}),
-			next = cron.next(new Date("2022-03-31T11:40:34"));
+			next = cron.nextRun(new Date("2022-03-31T11:40:34"));
 		assert.equal(next.getFullYear(),2022);
 		assert.equal(next.getMonth(),3);
 		assert.equal(next.getDate(),1);
@@ -874,17 +874,17 @@ module.exports = function (Cron, test, scheduledJobs) {
 		}, () => {
 			const
 				now = new Date(),
-				nextParsed = new Date(cron.next().toLocaleString()),
+				nextParsed = new Date(cron.nextRun().toLocaleString()),
 				nowParsed = new Date(now.toLocaleString());
 			if (run === 1) {
 				try {
 					assert.equal(nowParsed.getTime(),nextParsed.getTime()-1000);
-					assert.equal(cron.previous(), null);
+					assert.equal(cron.previousRun(), null);
 				} catch (e) {
 					reject(e);
 				}
 			} else {
-				const prevParsed = new Date(cron.previous().toLocaleString());
+				const prevParsed = new Date(cron.previousRun().toLocaleString());
 				try {
 					assert.equal(nowParsed.getTime(),nextParsed.getTime()-1000);
 					assert.equal(nowParsed.getTime(),prevParsed.getTime()+1000);

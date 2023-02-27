@@ -8,7 +8,7 @@ module.exports = function (Cron, test) {
 		let 
 			dayOne = new Date("2021-10-31T20:00:00"), // Last day of DST
 			scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: dayOne }),
-			nextRun = scheduler.next(); // Next run in local time
+			nextRun = scheduler.nextRun(); // Next run in local time
 
 		// Do comparison
 		assert.equal(nextRun.getUTCHours(), 12);
@@ -19,7 +19,7 @@ module.exports = function (Cron, test) {
 		let 
 			dayOne = new Date("2021-10-31T20:00:00"),
 			scheduler = new Cron("0 0 12 * * *", {utcOffset: 0, startAt: dayOne }),
-			nextRun = scheduler.next(); // Next run in local time
+			nextRun = scheduler.nextRun(); // Next run in local time
 
 		// Do comparison
 		assert.equal(nextRun.getUTCHours(), 12);
@@ -30,7 +30,7 @@ module.exports = function (Cron, test) {
 		let 
 			dayOne = new Date("2021-10-31T20:00:00"),
 			scheduler = new Cron("0 0 13 * * *", {utcOffset: -120, startAt: dayOne }),
-			nextRun = scheduler.next(); // Next run in local time
+			nextRun = scheduler.nextRun(); // Next run in local time
 
 		// Do comparison
 		assert.equal(nextRun.getUTCHours(), 15);
@@ -40,15 +40,15 @@ module.exports = function (Cron, test) {
 		let 
 			dayOne = new Date("2021-10-31T20:00:00"),
 			scheduler = new Cron("0 0 13 * * *", {utcOffset: 480, startAt: dayOne }),
-			nextRun = scheduler.next(); // Next run in local time
+			nextRun = scheduler.nextRun(); // Next run in local time
 
 		// Do comparison
 		assert.equal(nextRun.getUTCHours(), 5);
 	});
 
 	test("getTime should return expected difference with different timezones (now)", function () {
-		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).next().getTime(),
-			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).next().getTime();
+		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).nextRun().getTime(),
+			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).nextRun().getTime();
 
 		// The time right now should be the same in utc wether in new york or stockholm. Allow a 4 second difference.
 		assert.ok(timeStockholm>=timeNewYork-4000);
@@ -61,8 +61,8 @@ module.exports = function (Cron, test) {
 		refTime.setMonth(8);
 
 		let
-			timeStockholm = Cron("0 0 12 30 10 *", {timezone: "Europe/Stockholm"}).next(refTime).getTime(),
-			timeNewYork = Cron("0 0 12 30 10 *", {timezone: "America/New_York"}).next(refTime).getTime(),
+			timeStockholm = Cron("0 0 12 30 10 *", {timezone: "Europe/Stockholm"}).nextRun(refTime).getTime(),
+			timeNewYork = Cron("0 0 12 30 10 *", {timezone: "America/New_York"}).nextRun(refTime).getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
 
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
@@ -78,8 +78,8 @@ module.exports = function (Cron, test) {
 		refTime.setHours(12);
 
 		let
-			timeStockholm = Cron("0 0 23 8 2 2", {timezone: "Europe/Stockholm"}).next(refTime),
-			timeNewYork = Cron("0 0 23 8 2 2", {timezone: "America/New_York"}).next(refTime);
+			timeStockholm = Cron("0 0 23 8 2 2", {timezone: "Europe/Stockholm"}).nextRun(refTime),
+			timeNewYork = Cron("0 0 23 8 2 2", {timezone: "America/New_York"}).nextRun(refTime);
 
 		assert.equal(timeStockholm.getUTCMonth(), 1);
 		assert.equal(timeStockholm.getUTCDate(), 8);
@@ -93,8 +93,8 @@ module.exports = function (Cron, test) {
 	});
 
 	test("getTime should return expected difference with different timezones (next 1st november)", function () {
-		let timeStockholm = Cron("0 0 12 1 11 *", {timezone: "Europe/Stockholm"}).next().getTime(),
-			timeNewYork = Cron("0 0 12 1 11 *", {timezone: "America/New_York"}).next().getTime(),
+		let timeStockholm = Cron("0 0 12 1 11 *", {timezone: "Europe/Stockholm"}).nextRun().getTime(),
+			timeNewYork = Cron("0 0 12 1 11 *", {timezone: "America/New_York"}).nextRun().getTime(),
 			diff = (timeNewYork-timeStockholm)/1000/3600;
 
 		// The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
@@ -112,7 +112,7 @@ module.exports = function (Cron, test) {
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun),
+			nextRun = scheduler.nextRun(prevRun),
 			prevRun = nextRun;
 		}
 
@@ -138,7 +138,7 @@ module.exports = function (Cron, test) {
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun),
+			nextRun = scheduler.nextRun(prevRun),
 			prevRun = nextRun;
 		}
 
@@ -163,7 +163,7 @@ module.exports = function (Cron, test) {
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun),
+			nextRun = scheduler.nextRun(prevRun),
 			prevRun = nextRun;
 		}
 
@@ -188,7 +188,7 @@ module.exports = function (Cron, test) {
 		compareDay.setDate(compareDay.getDate() + iterations);
 		
 		while(iterations-->0) {
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 			prevRun = nextRun;
 		}
 

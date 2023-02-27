@@ -15,7 +15,7 @@ const test3 : Cron = new Cron("2023-01-01T00:00:00", { timezone: "Europe/Stockho
 test3.schedule(() => {
 	console.log("This will run every second.");
 });
-test3.enumerate(10);
+test3.nextRuns(10);
 test3.pause();
 test3.resume();
 test3.stop();

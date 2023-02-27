@@ -19,7 +19,7 @@ module.exports = function (Cron, test) {
 		assert.not.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01 00:00:00" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -27,7 +27,7 @@ module.exports = function (Cron, test) {
 		assert.not.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { startAt: "2016-12-01" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -35,7 +35,7 @@ module.exports = function (Cron, test) {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { startAt: "hellu throw" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -43,7 +43,7 @@ module.exports = function (Cron, test) {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { startAt: "00:35:00" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -52,7 +52,7 @@ module.exports = function (Cron, test) {
 			let 
 				dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
 				scheduler = new Cron("0 0 12 * * *", { stopAt: dayBefore });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -60,7 +60,7 @@ module.exports = function (Cron, test) {
 		assert.not.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01 00:00:00" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -68,7 +68,7 @@ module.exports = function (Cron, test) {
 		assert.not.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "2016-12-01" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -76,7 +76,7 @@ module.exports = function (Cron, test) {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "hellu throw" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -84,25 +84,25 @@ module.exports = function (Cron, test) {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { unref: "hellu throw" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	test("Valid unref should not throw", function () {
 		let 
 			scheduler = new Cron("0 0 12 * * *", { unref: true });
-		scheduler.next();
+		scheduler.nextRun();
 	});
 	test("Setting unref to true should work", function () {
 		let 
 			scheduler = new Cron("0 0 12 * * *", { unref: true }, () => {});
-		scheduler.next();
+		scheduler.nextRun();
 		scheduler.stop();
 		assert.equal(scheduler.options.unref,true);
 	});
 	test("Undefined unref should set unref to false", function () {
 		let 
 			scheduler = new Cron("0 0 12 * * *");
-		scheduler.next();
+		scheduler.nextRun();
 		assert.equal(scheduler.options.unref,false);
 	});
 	test("Valid utc offset should not throw", function () {
@@ -129,7 +129,7 @@ module.exports = function (Cron, test) {
 		assert.throws(() => {
 			let 
 				scheduler = new Cron("0 0 12 * * *", { stopAt: "00:35:00" });
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	test("0 0 0 * * * with startdate yesterday should return tomorrow, at 12:00:00", function () {
@@ -144,7 +144,7 @@ module.exports = function (Cron, test) {
 		nextDay = new Date(nextDay.setHours(0));
 
 		scheduler = new Cron("0 0 0 * * *", { startAt: dayBefore });
-		nextRun = scheduler.next();
+		nextRun = scheduler.nextRun();
 
 		// Set seconds, minutes and hours to 00:00:00
 		nextDay.setMilliseconds(0);
@@ -161,7 +161,7 @@ module.exports = function (Cron, test) {
 		let 
 			dayBefore = new Date(new Date().getTime()-24*60*60*1000), // Subtract one day
 			scheduler = new Cron("0 0 12 * * *", { timezone: "Etc/UTC", stopAt: dayBefore.toISOString() }),
-			nextRun = scheduler.next();
+			nextRun = scheduler.nextRun();
 
 		// Do comparison
 		assert.equal(nextRun, null);
@@ -173,7 +173,7 @@ module.exports = function (Cron, test) {
 			scheduler = new Cron("* * * * * *", { maxRuns: 1 });
 		scheduler.schedule(function () {});
 		setTimeout(function () {
-			let nextRun = scheduler.next();
+			let nextRun = scheduler.nextRun();
 			// Do comparison
 			try {
 				assert.equal(nextRun, null);
@@ -189,7 +189,7 @@ module.exports = function (Cron, test) {
 			scheduler = new Cron("* * * * * *", { maxRuns: 1, legacyMode: true });
 		scheduler.schedule(function () {});
 		setTimeout(function () {
-			let nextRun = scheduler.next();
+			let nextRun = scheduler.nextRun();
 			// Do comparison
 			try {
 				assert.equal(nextRun, null);
@@ -208,7 +208,7 @@ module.exports = function (Cron, test) {
 				{ maxRuns: 1 }
 			);
 		setTimeout(function () {
-			let nextRun = scheduler.next();
+			let nextRun = scheduler.nextRun();
 			// Do comparison
 			try {
 				assert.equal(nextRun, null);
@@ -223,25 +223,25 @@ module.exports = function (Cron, test) {
 
 	test("Invalid interval should throw", function () {
 		assert.throws(() => {
-			Cron("* * * * * *", { interval: "a" }).enumerate(3, "2022-02-17T00:00:00");
+			Cron("* * * * * *", { interval: "a" }).nextRuns(3, "2022-02-17T00:00:00");
 		});
 	});
 
 	test("Negative interval should throw", function () {
 		assert.throws(() => {
-			Cron("* * * * * *", { interval: "-1" }).enumerate(3, "2022-02-17T00:00:00");
+			Cron("* * * * * *", { interval: "-1" }).nextRuns(3, "2022-02-17T00:00:00");
 		});
 	});
 
 	test("Positive string interval should not throw", function () {
 		assert.not.throws(() => {
-			Cron("* * * * * *", { interval: "102" }).enumerate(3, "2022-02-17T00:00:00");
+			Cron("* * * * * *", { interval: "102" }).nextRuns(3, "2022-02-17T00:00:00");
 		});
 	});
 
 
 	test("Valid interval should give correct run times", function () {
-		let nextRuns = Cron("0,30 * * * * *", { interval: 90 }).enumerate(3, "2022-02-16T00:00:00");
+		let nextRuns = Cron("0,30 * * * * *", { interval: 90 }).nextRuns(3, "2022-02-16T00:00:00");
 		
 		assert.equal(nextRuns[0].getFullYear(),2022);
 		assert.equal(nextRuns[0].getMonth(),1);
@@ -255,7 +255,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("The number of run times returned by enumerate() should not be more than maxRuns", function () {
-		let nextRuns = Cron("* * * * * *", { maxRuns: 5 }).enumerate(10);
+		let nextRuns = Cron("* * * * * *", { maxRuns: 5 }).nextRuns(10);
 		
 		assert.equal(nextRuns.length,5);
 	});

@@ -34,7 +34,6 @@ declare class Cron {
      * @private
      */
     private _states;
-    pattern: CronPattern;
     fn: Function | CronOptions;
     /**
      * Find next runtime, based on supplied date. Strips milliseconds.
@@ -42,7 +41,7 @@ declare class Cron {
      * @param {CronDate|Date|string} [prev] - Date to start from
      * @returns {Date | null} - Next run time
      */
-    next(prev?: CronDate | Date | string): Date | null;
+    nextRun(prev?: CronDate | Date | string): Date | null;
     /**
      * Find next n runs, based on supplied date. Strips milliseconds.
      *
@@ -50,35 +49,41 @@ declare class Cron {
      * @param {Date|string} [previous] - Date to start from
      * @returns {Date[]} - Next n run times
      */
-    enumerate(n: number, previous?: Date | string): Date[];
+    nextRuns(n: number, previous?: Date | string): Date[];
+    /**
+     * Return the original pattern, it there was one
+     *
+     * @returns {string|undefined} - Original pattern
+     */
+    getPattern(): string | undefined;
     /**
      * Indicates wether or not the cron job is active, e.g. awaiting next trigger
      * @public
      *
      * @returns {boolean} - Running or not
      */
-    public running(): boolean;
+    public isRunning(): boolean;
     /**
      * Indicates wether or not the cron job is currently working
      * @public
      *
      * @returns {boolean} - Running or not
      */
-    public busy(): boolean;
+    public isBusy(): boolean;
     /**
      * Return current/previous run start time
      * @public
      *
      * @returns {Date | null} - Previous run time
      */
-    public started(): Date | null;
+    public currentRun(): Date | null;
     /**
      * Return previous run start time
      * @public
      *
      * @returns {Date | null} - Previous run time
      */
-    public previous(): Date | null;
+    public previousRun(): Date | null;
     /**
      * Returns number of milliseconds to next run
      * @public
@@ -165,68 +170,6 @@ declare namespace Cron {
  * @returns {CronOptions}
  */
 declare function CronOptions(options: CronOptions): CronOptions;
-/**
- * Name for each part of the cron pattern
- * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek")} CronPatternPart
- */
-/**
- * Offset, 0 or -1.
- *
- * 0 offset is used for seconds,minutes and hours as they start on 1.
- * -1 on days and months, as they start on 0
- *
- * @typedef {Number} CronIndexOffset
- */
-/**
- * Create a CronPattern instance from pattern string ('* * * * * *')
- * @constructor
- * @param {string} pattern - Input pattern
- * @param {string} timezone - Input timezone, used for '?'-substitution
- */
-declare function CronPattern(pattern: string, timezone: string): void;
-declare class CronPattern {
-    /**
-     * Name for each part of the cron pattern
-     * @typedef {("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek")} CronPatternPart
-     */
-    /**
-     * Offset, 0 or -1.
-     *
-     * 0 offset is used for seconds,minutes and hours as they start on 1.
-     * -1 on days and months, as they start on 0
-     *
-     * @typedef {Number} CronIndexOffset
-     */
-    /**
-     * Create a CronPattern instance from pattern string ('* * * * * *')
-     * @constructor
-     * @param {string} pattern - Input pattern
-     * @param {string} timezone - Input timezone, used for '?'-substitution
-     */
-    constructor(pattern: string, timezone: string);
-    pattern: string;
-    timezone: string;
-    second: any[];
-    minute: any[];
-    hour: any[];
-    day: any[];
-    month: any[];
-    dayOfWeek: any[];
-    lastDayOfMonth: boolean;
-    lastWeekdayOfMonth: boolean;
-    starDOM: boolean;
-    starDOW: boolean;
-    private parse;
-    private partToArray;
-    private throwAtIllegalCharacters;
-    private handleNumber;
-    private handleRangeWithStepping;
-    private handleRange;
-    private handleStepping;
-    private replaceAlphaDays;
-    private replaceAlphaMonths;
-    private handleNicknames;
-}
 /**
  * - Cron scheduler options
  */

@@ -7,63 +7,63 @@ module.exports = function (Cron, test) {
 	test("Clean 6 part pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Clean 5 part pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("String object pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron(new String("* * * * * *"));
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	
 	test("Short pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	
 	test("Long pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* * * * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 	
 	test("Letter in pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* a * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Letter combined with star in pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* *a * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Number combined with star in pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* *1 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Invalid data type of pattern should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron(new Object());
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
@@ -71,10 +71,10 @@ module.exports = function (Cron, test) {
 		assert.not.throws(() => {
 			let 
 				scheduler0 = new Cron("0 0 0 * * 0");
-			scheduler0.next();
+			scheduler0.nextRun();
 			let
 				scheduler7 = new Cron("0 0 0 * * 7");
-			scheduler7.next();
+			scheduler7.nextRun();
 		});
 	});
 
@@ -82,14 +82,14 @@ module.exports = function (Cron, test) {
 		let 
 			scheduler0 = new Cron("0 0 0 * * 0"),
 			scheduler7 = new Cron("0 0 0 * * 7"),
-			nextRun0 = scheduler0.next(),
-			nextRun7 = scheduler7.next();
+			nextRun0 = scheduler0.nextRun(),
+			nextRun7 = scheduler7.nextRun();
 		assert.equal(nextRun0.getTime(),nextRun7.getTime());
 	});
 
 	test("0 0 0 * * * should return tomorrow, at 00:00:00", function () {
 		let scheduler = new Cron("0 0 0 * * *"),
-			nextRun = scheduler.next(),
+			nextRun = scheduler.nextRun(),
 
 			// ToDay/nextDay is a fix for DST in test
 			toDay = new Date(),
@@ -113,7 +113,7 @@ module.exports = function (Cron, test) {
 
 	test("new String(\"0 0 0 * * *\") should return tomorrow, at 00:00:00", function () {
 		let scheduler = new Cron(new String("0 0 0 * * *")),
-			nextRun = scheduler.next(),
+			nextRun = scheduler.nextRun(),
 
 			// ToDay/nextDay is a fix for DST in test
 			toDay = new Date(),
@@ -147,7 +147,7 @@ module.exports = function (Cron, test) {
 		// Set a fixed hour later than startAt, to be sure that the days doesn't overlap
 		nextDay =  new Date(nextDay.setUTCHours(14));
 		scheduler = new Cron("0 0 12 * * *", {timezone: "Etc/UTC", startAt: nextDay.toISOString() });
-		nextRun = scheduler.next();
+		nextRun = scheduler.nextRun();
 
 		// Set seconds, minutes and hours to 00:00:00
 		dayAfterNext.setMilliseconds(0);
@@ -171,7 +171,7 @@ module.exports = function (Cron, test) {
 		todayAt12.setMinutes(54);
 
 		scheduler = new Cron("* * 17 * * *");
-		nextRun = scheduler.next(todayAt12);
+		nextRun = scheduler.nextRun(todayAt12);
 
 		// Do comparison
 		assert.equal(nextRun.getHours(),17);
@@ -191,7 +191,7 @@ module.exports = function (Cron, test) {
 		todayAt12.setMinutes(54);
 
 		scheduler = new Cron("*/5 * 15 * * *");
-		nextRun = scheduler.next(todayAt12);
+		nextRun = scheduler.nextRun(todayAt12);
 
 		// Do comparison
 		assert.equal(nextRun.getHours(),15);
@@ -211,7 +211,7 @@ module.exports = function (Cron, test) {
 		todayAt12.setMinutes(54);
 
 		scheduler = new Cron("* * 15 * * *");
-		nextRun = scheduler.next(todayAt12);
+		nextRun = scheduler.nextRun(todayAt12);
 
 		// Do comparison
 		assert.equal(nextRun.getHours(),15);
@@ -230,7 +230,7 @@ module.exports = function (Cron, test) {
 		now.setSeconds(30);
 		
 		scheduler = new Cron("59 * ? ? ? ?");
-		nextRun = scheduler.next(now);
+		nextRun = scheduler.nextRun(now);
 
 		// Do compariso
 		assert.equal(nextRun.getTime() < now.getTime()+60000, true);
@@ -248,7 +248,7 @@ module.exports = function (Cron, test) {
 		now.setSeconds(30);
 		
 		scheduler = new Cron("? * ? ? ? ?");
-		nextRun = scheduler.next(now);
+		nextRun = scheduler.nextRun(now);
 
 		// Do compariso
 		assert.equal(nextRun.getTime() < now.getTime()+60000, true);
@@ -266,7 +266,7 @@ module.exports = function (Cron, test) {
 		now.setSeconds(30);
 		
 		scheduler = new Cron("* * ? ? ? ?", { timezone: "America/New_York"});
-		nextRun = scheduler.next(now);
+		nextRun = scheduler.nextRun(now);
 
 		// Do comparison
 		assert.equal(nextRun.getUTCHours(), now.getUTCHours());
@@ -283,7 +283,7 @@ module.exports = function (Cron, test) {
 		now.setSeconds(30);
 		
 		scheduler = new Cron("* ? ? ? ? ?");
-		nextRun = scheduler.next(now);
+		nextRun = scheduler.nextRun(now);
 
 		// Do compariso
 		assert.equal(nextRun.getTime() < now.getTime()+1500, true);
@@ -301,7 +301,7 @@ module.exports = function (Cron, test) {
 		todayAt12.setMinutes(54);
 
 		scheduler = new Cron("*/5 * 11 * * *"),
-		nextRun = scheduler.next(todayAt12);
+		nextRun = scheduler.nextRun(todayAt12);
 
 		// Do comparison
 		assert.equal(nextRun.getHours(),11);
@@ -313,7 +313,7 @@ module.exports = function (Cron, test) {
 	test("0 0 0 L 2 * should find last day of february(28 2022)", function () {
 		let scheduler = new Cron("0 0 0 L 2 *"),
 			prevRun = new Date(1643930208380), // From 4th of february 2022
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 
 		// Do comparison
 		assert.equal(nextRun.getDate(),28);
@@ -324,7 +324,7 @@ module.exports = function (Cron, test) {
 	test("0 0 0 L 2 * should find last day of february (29 2024)", function () {
 		let scheduler = new Cron("0 0 0 L 2 *"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 
 		// Do comparison
 		assert.equal(nextRun.getDate(),29);
@@ -335,7 +335,7 @@ module.exports = function (Cron, test) {
 	test("0 0 0 * 2 LSUN should find last sunday of february 2024 (25/2 2024)", function () {
 		let scheduler = new Cron("0 0 0 * 2 LSUN"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 
 		// Do comparison
 		assert.equal(nextRun.getDate(),25);
@@ -346,7 +346,7 @@ module.exports = function (Cron, test) {
 	test("0 0 0 * 2 LSUN should find last thursday of february 2024 (29/2 2024)", function () {
 		let scheduler = new Cron("0 0 0 * 2 LTHU"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 
 		// Do comparison
 		assert.equal(nextRun.getDate(),29);
@@ -357,7 +357,7 @@ module.exports = function (Cron, test) {
 	test("0 0 0 * 2 LFRI should find last friday of february 2024 (23/2 2024)", function () {
 		let scheduler = new Cron("0 0 0 * 2 LFRI"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 
 		// Do comparison
 		assert.equal(nextRun.getDate(),23);
@@ -368,7 +368,7 @@ module.exports = function (Cron, test) {
 	test("0 0 0 * 2 LMON-SUN should find last thuirsday or friday of february 2024 (23/2 2024)", function () {
 		let scheduler = new Cron("0 0 0 * 2 LTHU-FRI"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
-			nextRun = scheduler.next(prevRun);
+			nextRun = scheduler.nextRun(prevRun);
 
 		// Do comparison
 		assert.equal(nextRun.getDate(),23);

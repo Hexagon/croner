@@ -38,10 +38,10 @@ Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
 ### Find dates
 ```javascript
 // Find next month
-const nextMonth = Cron("@monthly").next(),
-	nextSunday = Cron("@weekly").next(),
-	nextSat29feb = Cron("0 0 0 29 2 6", { legacyMode: false }).next(),
-	nextSunLastOfMonth = Cron("0 0 0 L * 7", { legacyMode: false }).next();
+const nextMonth = Cron("@monthly").nextRun(),
+	nextSunday = Cron("@weekly").nextRun(),
+	nextSat29feb = Cron("0 0 0 29 2 6", { legacyMode: false }).nextRun(),
+	nextSunLastOfMonth = Cron("0 0 0 L * 7", { legacyMode: false }).nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
@@ -70,8 +70,8 @@ const job = Cron(
 const job = Cron('* * * * * *', (self) => {
 	console.log('This will run every second. Pause on second 10. Resume on 15. And quit on 20.');
 	console.log('Current second: ', new Date().getSeconds());
-	console.log('Previous run: ' + self.previous());
-	console.log('Next run: ' + self.next());
+	console.log('Previous run: ' + self.previousRun());
+	console.log('Next run: ' + self.nextRun());
 });
 
 Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
@@ -104,10 +104,10 @@ let job = Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
 	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
 });
 
-if (job.next() === null) {
+if (job.nextRun() === null) {
 	// The job will not fire for some reason
 } else {
-	console.log("Job will fire at " + job.next());
+	console.log("Job will fire at " + job.nextRun());
 }
 ```
 
@@ -118,10 +118,10 @@ let job = Cron("0 0 14 * * *",{ timezone: "Europe/Stockholm" },() => {
 });
 
 
-if (job.next() === null) {
+if (job.nextRun() === null) {
 	// The job will not fire for some reason
 } else {
-	console.log("Job will fire at " + job.next());
+	console.log("Job will fire at " + job.nextRun());
 }
 ```
 
@@ -183,7 +183,7 @@ const job = new Cron("0/5 * * * * *", { maxRuns: 3 }, (job) => {
     console.log('Job Running');
 
     // Is this the last execution?
-    if (!job.next()) {
+    if (!job.nextRun()) {
         console.log('Last execution');
     }
 
@@ -192,7 +192,7 @@ const job = new Cron("0/5 * * * * *", { maxRuns: 3 }, (job) => {
 // Will there be no executions? 
 // This would trigger if you change maxRuns to 0, or manage to compose 
 // an impossible cron expression.
-if (!job.next() && !job.previous()) {
+if (!job.nextRun() && !job.previousRun()) {
     console.log('No executions scheduled');
 }
 ```

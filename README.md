@@ -11,9 +11,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](docs-src/EXAMPLES.md#time-zone).
-*   Built in [Overrun protection](docs-src/EXAMPLES.md#overrun-protection) with callback
-*   Built in [error handling](docs-src/EXAMPLES.md#error-handling) with callback
+*   Target different [time zones](docs/EXAMPLES.md#time-zone).
+*   Built in [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
+*   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Find the first date of the next month, the date of the next Tuesday, etc.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -110,92 +110,31 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 
 ## Installation
 
-If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](docs-src/MIGRATION.md).
+> **Note**
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](docs/MIGRATION.md).
 
-### Node.js
+Install croner using your favorite package manager or CDN. then include it in you project: 
 
-```npm install croner --save```
-
-JavaScript
+Using Node.js or Bun
 
 ```javascript
 // ESM Import ...
-import Cron from "croner";
+import { Cron } from "croner";
 
 // ... or CommonJS Require
 const Cron = require("croner");
 ```
 
-TypeScript
-
-Notes for TypeScript:
-
-* If using strict eslint rules, specifically new-cap combined with no-new, you need to import and use lowercase `cron` instead of `{ Cron }`.
-
-```typescript
-import { Cron } from "croner";
-
-const job : Cron = new Cron("* * * * * *", () => {
-	console.log("This will run every second.");
-});
-```
-
-### Bun
-
-```bun add croner```
-
-> **Note** If you encounter problems during installation, try using `bun add croner --backend=copyfile`.
-
-```javascript
-import Cron from "croner";
-```
-
-### Deno
-
-JavaScript
-
-```javascript
-import Cron from "https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js";
-
-Cron("* * * * * *", () => {
-	console.log("This will run every second.");
-});
-```
-
-TypeScript
+Using Deno
 
 ```typescript
 import { Cron } from "https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js";
-
-const _scheduler : Cron = new Cron("* * * * * *", () => {
-	console.log("This will run every second.");
-});
 ```
 
-### Browser 
-
-#### Manual
-
-*   Download the latest [zipball](https://github.com/Hexagon/croner/archive/refs/heads/master.zip).
-*   Unpack the zip file.
-*   Grab ```croner.umd.min.js``` (UMD and standalone) or ```croner.min.js``` (ES-module) from the [dist/](/dist) folder.
-
-#### CDN
-
-To use as a [UMD](https://github.com/umdjs/umd)-module (stand alone, [RequireJS](https://requirejs.org/) etc.)
+In a webpage using the UMD-module
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js"></script>
-```
-
-To use as an [ES-module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
-
-```html
-<script type="module">
-	import Cron from "https://cdn.jsdelivr.net/npm/croner@6/dist/croner.min.js";
-
-	// ... see usage section ...
-</script>
 ```
 
 ## Documentation
@@ -210,28 +149,45 @@ Cron takes three arguments
 
 *   [pattern](#pattern)
 *   [options](#options) (optional) 
-*   scheduled function (optional)
+*   scheduleds function (optional)
 
 ```javascript
 const job = Cron("* * * * * *" /* Or a date object, or ISO 8601 local time */ , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
 job.schedule((/* optional */ job, /* optional */ context) => {});
+```
 
-// States
-job.next( /*optional*/ previousRun );	// Get a Date object representing next run
-job.enumerate(10, /*optional*/ startFrom ); // Get a array of Dates, containing next n runs according to pattern
-job.msToNext( /*optional*/ previousRun ); // Milliseconds left to next execution
-job.running(); 		// Scheduler is running (not paused or stopped)
-job.busy(); 		// Returns boolean showing if a triggered function is currenly working
-job.started(); 		// Date object showing when current (or last) run were started
-job.previous( ); 	// Date object showing when previous job were started
+The job will be sceduled to run at next matching time unless you supply option `{ paused: true }`. The `Cron(...)` constructor will return a Cron instance, later called `job`, which have a couple of methods and properties listed below.
 
-// Job control
+#### Status
+
+```javascript
+job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing next run
+job.nextRuns(10, /*optional*/ startFromDate ); // Get a array of Dates, containing next n runs according to pattern
+job.msToNext( /*optional*/ startFromDate ); // Milliseconds left to next execution
+job.currentRun(); 		// Date object showing when current (or last) run were started
+job.previousRun( ); 	// Date object showing when previous job were started
+
+job.isRunning(); 		// Indicates if there is a scheduled job (true or false)
+job.isBusy(); 			// Indicates if a job is currenctly doing work (true or false)
+
+job.getPattern(); 		// Returns the original pattern string
+```
+
+#### Control functions
+
+```javascript
 job.trigger();		// Force a trigger instantly
 job.pause();		// Pause trigger
 job.resume();		// Resume trigger
 job.stop();			// Stop job completely, it isn't possible to resume after this
+```
+
+#### Properties
+
+```javascript
+job.name 			// Optional job name, populated if a name were passed to options
 ```
 
 #### Options
@@ -327,11 +283,14 @@ This branch contains code currently being tested, and is released at channel `de
 npm install croner@dev
 ```
 
+> **Warning**
+> Expect breaking changes if you do not pin to a specific version.
+
 A list of fixes and features currently released in the `dev` branch is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
 
 ### Contributing
 
-See [Contribution Guide](docs-src/CONTRIBUTING.md)
+See [Contribution Guide](docs/CONTRIBUTING.md)
 
 ... or ...
 

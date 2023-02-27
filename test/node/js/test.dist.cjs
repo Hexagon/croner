@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 "use strict";
 const
-	Cron = require("../../../dist/croner.cjs"),
+	Cron = require("../../../dist/croner.min.cjs"),
 	test = require("./src/suite.cjs"),
-	{ scheduledJobs } = require("../../../dist/croner.cjs");
+	{ scheduledJobs } = require("../../../dist/croner.min.cjs");
 test(Cron, scheduledJobs);

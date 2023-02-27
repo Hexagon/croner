@@ -7,69 +7,69 @@ module.exports = function (Cron, test) {
 	test("Slash in pattern with wildcards both pre and post should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */* * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Slash in pattern with range pre should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* 15-45/15 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Slash in pattern with zero stepping should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */0 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Range with stepping with zero stepping should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* 10-20/0 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Range with stepping with illegal upper range should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* 10-70/5 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Range with stepping with illegal range should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* 50-40/5 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Slash in pattern with letter after should throw should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */a * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Slash in pattern with too high stepping should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */61 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	test("Multiple stepping should throw", function () {
 		assert.throws(() => {
 			let scheduler = new Cron("* */5/5 * * * *");
-			scheduler.next();
+			scheduler.nextRun();
 		});
 	});
 
 	
 	test("Steps for hours should yield correct hours", function () {
-		let nextRuns = new Cron("1 1 */3 * * *").enumerate(10, "2020-01-01T00:00:00");
+		let nextRuns = new Cron("1 1 */3 * * *").nextRuns(10, "2020-01-01T00:00:00");
 		assert.equal(nextRuns[0].getHours(),0);
 		assert.equal(nextRuns[1].getHours(),3);
 		assert.equal(nextRuns[2].getHours(),6);
@@ -83,7 +83,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Steps for hours should yield correct hours with range", function () {
-		let nextRuns = new Cron("1 1 0-23/3 * * *").enumerate(10, "2020-01-01T00:00:00");
+		let nextRuns = new Cron("1 1 0-23/3 * * *").nextRuns(10, "2020-01-01T00:00:00");
 		assert.equal(nextRuns[0].getHours(),0);
 		assert.equal(nextRuns[1].getHours(),3);
 		assert.equal(nextRuns[2].getHours(),6);
@@ -97,7 +97,7 @@ module.exports = function (Cron, test) {
 	});
 	
 	test("Steps for hours should yield correct hours with range and stepping and comma-separated values", function () {
-		let nextRuns = new Cron("1 1 0-12/3,1,10 * * *").enumerate(10, "2020-01-01T00:00:00");
+		let nextRuns = new Cron("1 1 0-12/3,1,10 * * *").nextRuns(10, "2020-01-01T00:00:00");
 		assert.equal(nextRuns[0].getHours(),0);
 		assert.equal(nextRuns[1].getHours(),1);
 		assert.equal(nextRuns[2].getHours(),3);
@@ -108,7 +108,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Steps for hours should yield correct hours with stepping and comma-separated values", function () {
-		let nextRuns = new Cron("1 1 12/3,1,10 * * *").enumerate(10, "2020-01-01T00:00:00");
+		let nextRuns = new Cron("1 1 12/3,1,10 * * *").nextRuns(10, "2020-01-01T00:00:00");
 		assert.equal(nextRuns[0].getHours(),1);
 		assert.equal(nextRuns[1].getHours(),10);
 		assert.equal(nextRuns[2].getHours(),12);
@@ -118,7 +118,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Steps for hours should yield correct hours with range and comma-separated values", function () {
-		let nextRuns = new Cron("1 1 0-6,1,10 * * *").enumerate(10, "2020-01-01T00:00:00");
+		let nextRuns = new Cron("1 1 0-6,1,10 * * *").nextRuns(10, "2020-01-01T00:00:00");
 		assert.equal(nextRuns[0].getHours(),0);
 		assert.equal(nextRuns[1].getHours(),1);
 		assert.equal(nextRuns[2].getHours(),2);
@@ -130,7 +130,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Steps for hours should yield correct hours with offset range and comma-separated values on wednesdays (legacy mode)", function () {
-		let nextRuns = new Cron("1 1 3-8/2,1,10 * * sat").enumerate(10, "2020-01-01T00:00:00");
+		let nextRuns = new Cron("1 1 3-8/2,1,10 * * sat").nextRuns(10, "2020-01-01T00:00:00");
 		assert.equal(nextRuns[0].getFullYear(),2020);
 		assert.equal(nextRuns[0].getMonth(),0);
 		assert.equal(nextRuns[0].getDate(),4);
@@ -143,7 +143,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Steps for months should yield correct months", function () {
-		let nextRuns = new Cron("1 1 1 */3 *").enumerate(10, "2020-12-31T23:59:59");
+		let nextRuns = new Cron("1 1 1 */3 *").nextRuns(10, "2020-12-31T23:59:59");
 		assert.equal(nextRuns[0].getMonth(),0);
 		assert.equal(nextRuns[1].getMonth(),3);
 		assert.equal(nextRuns[2].getMonth(),6);
@@ -151,7 +151,7 @@ module.exports = function (Cron, test) {
 	});
 
 	test("Steps for months should yield correct months with range", function () {
-		let nextRuns = new Cron("1 1 1 1-12/3 *").enumerate(10, "2020-12-31T23:59:59");
+		let nextRuns = new Cron("1 1 1 1-12/3 *").nextRuns(10, "2020-12-31T23:59:59");
 		assert.equal(nextRuns[0].getMonth(),0);
 		assert.equal(nextRuns[1].getMonth(),3);
 		assert.equal(nextRuns[2].getMonth(),6);

@@ -86,8 +86,8 @@
       "code": "Cousine|Cutive+Mono|IBM+Plex+Mono|Inconsolata|Nanum+Gothic+Coding|Oxygen+Mono|PT+Mono|Share+Tech+Mono|Source+Code+Pro|Ubuntu+Mono|VT323"
     },
     "opts": {
-      "tutorials": "./docs-src/",
-      "destination": "./docs/",
+      "tutorials": "./docs/",
+      "destination": "./dist-docs/",
       "encoding": "utf8",
       "private": false,
       "template": "./node_modules/jsdoc-chameleon-template"

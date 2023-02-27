@@ -22,8 +22,8 @@ THE SOFTWARE.
 
 */
 
-import Cron from "../../../dist/croner.js";
-import { Cron as Cron2, scheduledJobs } from "../../../dist/croner.js";
+import Cron from "../../../dist/croner.min.js";
+import { Cron as Cron2, scheduledJobs } from "../../../dist/croner.min.js";
 import test from "./src/suite.cjs";
 test(Cron, scheduledJobs);
 test(Cron2, scheduledJobs);

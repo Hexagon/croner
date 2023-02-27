@@ -3,12 +3,12 @@ import { Cron } from "../../../src/croner.js";
 
 test("31st february should not be found", function () {
 	const scheduler = new Cron("* * * 31 2 *");
-	expect(scheduler.next()).toBe(null);
+	expect(scheduler.nextRun()).toBe(null);
 });
 
 test("Next 10 run times is returned by enumeration(), and contain a reasonable time span", () => {
 	const now = new Date(),
-		nextRuns = Cron("*/30 * * * * *").enumerate(10);
+		nextRuns = Cron("*/30 * * * * *").nextRuns(10);
 
 	// Check number of times returned
 	expect(nextRuns.length).toBe(10);
@@ -23,7 +23,7 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
 });
 
 test("Weekday pattern should return correct alone (legacy mode)", function () {
-	const nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).enumerate(
+	const nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).nextRuns(
 		3,
 		"2022-02-28T23:59:00"
 	);

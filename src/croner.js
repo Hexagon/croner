@@ -136,22 +136,23 @@ function Cron(pattern, fnOrOptions1, fnOrOptions2) {
 
 		/** @type {boolean} */
 		paused: options ? options.paused : false,
+		
+		/**
+		 * @public
+		 * @type {CronPattern|undefined} */
+		pattern: void 0,
 	};
 
-	/**
-	 * @public
-	 * @type {CronPattern|undefined} */
-	this.pattern = void 0;
 
 	// Check if we got a date, or a pattern supplied as first argument
-	// Then set either this._states.once or this.pattern
+	// Then set either this._states.once or this._states.pattern
 	if (
 		pattern &&
 		(pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))
 	) {
 		this._states.once = new CronDate(pattern, this.options.timezone || this.options.utcOffset);
 	} else {
-		this.pattern = new CronPattern(pattern, this.options.timezone);
+		this._states.pattern = new CronPattern(pattern, this.options.timezone);
 	}
 
 	// Allow shorthand scheduling
@@ -181,7 +182,7 @@ function Cron(pattern, fnOrOptions1, fnOrOptions2) {
  * @param {CronDate|Date|string} [prev] - Date to start from
  * @returns {Date | null} - Next run time
  */
-Cron.prototype.next = function (prev) {
+Cron.prototype.nextRun = function (prev) {
 	const next = this._next(prev);
 	return next ? next.getDate() : null;
 };
@@ -193,17 +194,26 @@ Cron.prototype.next = function (prev) {
  * @param {Date|string} [previous] - Date to start from
  * @returns {Date[]} - Next n run times
  */
-Cron.prototype.enumerate = function (n, previous) {
+Cron.prototype.nextRuns = function (n, previous) {
 	if (n > this._states.maxRuns) {
 		n = this._states.maxRuns;
 	}
 	const enumeration = [];
 	let prev = previous || this._states.previousRun;
-	while (n-- && (prev = this.next(prev))) {
+	while (n-- && (prev = this.nextRun(prev))) {
 		enumeration.push(prev);
 	}
 
 	return enumeration;
+};
+
+/**
+ * Return the original pattern, it there was one
+ *
+ * @returns {string|undefined} - Original pattern
+ */
+Cron.prototype.getPattern = function () {
+	return this._states.pattern ? this._states.pattern.pattern : void 0;
 };
 
 /**
@@ -212,7 +222,7 @@ Cron.prototype.enumerate = function (n, previous) {
  *
  * @returns {boolean} - Running or not
  */
-Cron.prototype.running = function () {
+Cron.prototype.isRunning = function () {
 	const msLeft = this.msToNext(this._states.previousRun);
 	const running = !this._states.paused && this.fn !== void 0;
 	return msLeft !== null && running;
@@ -224,7 +234,7 @@ Cron.prototype.running = function () {
  *
  * @returns {boolean} - Running or not
  */
-Cron.prototype.busy = function () {
+Cron.prototype.isBusy = function () {
 	return this._states.blocking;
 };
 
@@ -234,7 +244,7 @@ Cron.prototype.busy = function () {
  *
  * @returns {Date | null} - Previous run time
  */
-Cron.prototype.started = function () {
+Cron.prototype.currentRun = function () {
 	return this._states.currentRun ? this._states.currentRun.getDate() : null;
 };
 
@@ -244,7 +254,7 @@ Cron.prototype.started = function () {
  *
  * @returns {Date | null} - Previous run time
  */
-Cron.prototype.previous = function () {
+Cron.prototype.previousRun = function () {
 	return this._states.previousRun ? this._states.previousRun.getDate() : null;
 };
 
@@ -332,7 +342,7 @@ Cron.prototype.schedule = function (func, partial) {
 
 	// Get ms to next run, bail out early if any of them is null (no next run)
 	let waitMs = this.msToNext(partial ? partial : this._states.previousRun);
-	const target = this.next(partial ? partial : this._states.previousRun);
+	const target = this.nextRun(partial ? partial : this._states.previousRun);
 	if (waitMs === null || target === null) return this;
 
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
@@ -451,7 +461,7 @@ Cron.prototype._next = function (prev) {
 	// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
 	const nextRun = this._states.once ||
 		new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(
-			this.pattern,
+			this._states.pattern,
 			this.options,
 			hasPreviousRun, // hasPreviousRun is used to allow 
 		);
