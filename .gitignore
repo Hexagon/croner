@@ -16,6 +16,9 @@ coverage
 # Deno lock file
 deno.lock
 
+# Bun lock file
+bun.lockb
+
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 
@@ -34,3 +37,6 @@ dist-docs
 
 # Local tests
 /test.js
+
+# VSCode user configuration
+.vscode

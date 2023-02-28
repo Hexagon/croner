@@ -3,7 +3,7 @@
 Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
-# Croner - Cron for JavaScript and TypeScript
+# Cron for JavaScript and TypeScript
 
 [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
@@ -11,9 +11,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](docs/EXAMPLES.md#time-zone).
-*   Built in [Overrun protection](docs/EXAMPLES.md#overrun-protection) with callback
-*   Built in [error handling](docs/EXAMPLES.md#error-handling) with callback
+*   Target different [time zones](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#time-zone).
+*   Built in [overrun protection](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#overrun-protection) with callback
+*   Built in [error handling](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#error-handling) with callback
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Find the first date of the next month, the date of the next Tuesday, etc.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -28,90 +28,25 @@ const job = Cron('*/5 * * * * *', () => {
 });
 
 // Enumeration: What dates do the next 100 sundays occur on?
-const nextSundays = Cron('0 0 0 * * 7').enumerate(100);
+const nextSundays = Cron('0 0 0 * * 7').nextRuns(100);
 console.log(nextSundays);
 
 // Days left to a specific date
-const msLeft = Cron('59 59 23 24 DEC *').next() - new Date();
+const msLeft = Cron('59 59 23 24 DEC *').nextRun() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 
 // Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
-// This will run 2023-01-23 00:00:00 according to the time in Asia/Kolkata
-Cron('2023-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+// This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
+Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
 ```
 
 More [examples](#examples)...
 
-## Why another JavaScript cron implementation
-
-Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.
-
-|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
-|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
-| **Platforms**                                                                                                                        |
-| Node.js (CommonJS)                   |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
-| Browser (ESMCommonJS)                  |          ✓          |          ✓          |           |                           |                     |
-| Deno (ESM)                     |          ✓          |                     |           |                           |                     |
-| **Features**                                                                                                                        |
-| Over-run protection  |          ✓          |                    |              |                            |                    |
-| Error handling  |          ✓          |                    |              |                            |          ✓          |
-| Typescript typings        |          ✓          |         ✓            |           |                           |                     |
-| Unref timers (optional)    |          ✓          |                     |                     |          ✓          |                     |
-| dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
-| dom-AND-dow (optional)    |          ✓          |                     |           |                           |                     |
-| Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
-| Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
-| Timezone                  |          ✓          |           ✓         |     ✓       |        ✓                   |         ✓            |
-| Minimum interval          |          ✓          |                     |              |                            |                      |
-| Controls (stop/resume)    |          ✓          |           ✓         |     ✓        |        ✓                   |         ✓           |   
-| Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
-| Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
-| Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
-
-<details>
-  <summary>In depth comparison of various libraries</summary>
-  
-|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
-|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
-| **Size**                                                                                                                        |
-| Minified size (KB)        | 15.5                | 16.3            | 16.5      | -                      | -                |
-| Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
-| Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
-| **Popularity**                                                                                                                        |
-| Downloads/week [^1]        | 576K                | 31K                 | 433K      | 2239K                     | 924K                |
-| **Quality**                                                                                                                        |
-| Issues [^1]                |                   0 |                   2 |   127 :warning: |                 43 :warning: |    139 :warning: |
-| Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
-| **Performance**                                                                                                                        |
-| Ops/s `1 2 3 4 5 6`         | 99 952                    | 49 308                    | N/A :x:          | Test failed :x:      | 2 299 :warning:                    |
-| Ops/s `0 0 0 29 2 *`         | 65 392                    | 17 138                    | N/A :x:          | Test failed :x:      | 1 450 :warning:                    |
-| **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
-| Test `0 0 23 * * *`         | 2022-10-09 00:40    | 2022-10-09 00:40    | N/A       | 2022-10-09 00:40          | 2022-10-09 00:40    |
-| Test `0 0 0 L 2 *` [^2]      | 2023-02-28 00:00 |          2023-02-28 00:00 | N/A       | N/A                       |          2023-02-28 00:00 |
-| Test `0 0 0 29 2 *`         |          2024-02-29 00:00 |          2024-02-29 00:00 | N/A       | 2023-03-29 00:00  :x:           |          2024-02-29 00:00 |
-| Test `0 0 0 29 2 6` [^3]     |          2048-02-09 00:00| N/A                 | N/A       | N/A                       | N/A                 |
-| Test `0 0 0 15 2 *`         |          2023-02-16 00:00 |          2023-02-16 00:00 | N/A       | 2023-03-15 00:00  :x:           |          2023-02-16 00:00 |
-| Test `0 0 0 * 10 1`         |          2022-10-10 00:00 |          2022-10-10 00:00 | N/A       | 2022-11-07 00:00 :x:           |          2022-10-10 00:00 |
-| Test `0 0 23 31 3 *`        | 2023-03-31 23:00    | 2023-03-31 23:00    | N/A       | 2023-04-01 23:00 :x:    | 2023-03-31 23:00    |
-| Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
-
-> **Note**
-> *   Table last updated at 2022-10-23, issues and downloads updated 2023-02-19
-> *   node-cron has no interface to predict when the function will run, so tests cannot be carried out.
-> *   All tests and benchmarks were carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
-
-[^1]: As of 2023-02-19
-[^2]: Requires support for L-modifier
-[^3]: In dom-AND-dow mode, only supported by croner at the moment.
-[^4]: Node-cron has no way of showing next run time.
-
-</details>
-
 ## Installation
 
 > **Note**
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](docs/MIGRATION.md).
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](https://github.com/Hexagon/croner/blob/master/docs/MIGRATION.md).
 
 Install croner using your favorite package manager or CDN. then include it in you project: 
 
@@ -128,7 +63,7 @@ const Cron = require("croner");
 Using Deno
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@6.0.0-dev.0/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@6.0.0/dist/croner.js";
 ```
 
 In a webpage using the UMD-module
@@ -139,10 +74,6 @@ In a webpage using the UMD-module
 
 ## Documentation
 
-Full documentation available at [hexagon.github.io/croner](https://hexagon.github.io/croner/Cron.html).
-
-The short version:
-
 ### Signature
 
 Cron takes three arguments
@@ -152,10 +83,14 @@ Cron takes three arguments
 *   scheduleds function (optional)
 
 ```javascript
-const job = Cron("* * * * * *" /* Or a date object, or ISO 8601 local time */ , /*optional*/ { maxRuns: 1 } , /*optional*/ () => {} );
+// Parameters
+// - First: Cron pattern, js date object (fire once), or ISO 8601 time string (fire once)
+// - Second: Options (optional)
+// - Third: Function run trigger (optional)
+const job = Cron("* * * * * *", { maxRuns: 1 }, () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule((/* optional */ job, /* optional */ context) => {});
+job.schedule(job, /* optional */ context) => {});
 ```
 
 The job will be sceduled to run at next matching time unless you supply option `{ paused: true }`. The `Cron(...)` constructor will return a Cron instance, later called `job`, which have a couple of methods and properties listed below.
@@ -163,11 +98,11 @@ The job will be sceduled to run at next matching time unless you supply option `
 #### Status
 
 ```javascript
-job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing next run
-job.nextRuns(10, /*optional*/ startFromDate ); // Get a array of Dates, containing next n runs according to pattern
+job.nextRun( /*optional*/ startFromDate );	// Get Date object representing next run
+job.nextRuns(10, /*optional*/ startFromDate ); // Get array of Dates, containing next n runs
 job.msToNext( /*optional*/ startFromDate ); // Milliseconds left to next execution
 job.currentRun(); 		// Date object showing when current (or last) run were started
-job.previousRun( ); 	// Date object showing when previous job were started
+job.previousRun( ); 		// Date object showing when previous job were started
 
 job.isRunning(); 		// Indicates if there is a scheduled job (true or false)
 job.isBusy(); 			// Indicates if a job is currenctly doing work (true or false)
@@ -181,7 +116,7 @@ job.getPattern(); 		// Returns the original pattern string
 job.trigger();		// Force a trigger instantly
 job.pause();		// Pause trigger
 job.resume();		// Resume trigger
-job.stop();			// Stop job completely, it isn't possible to resume after this
+job.stop();		// Stop job completely, it isn't possible to resume after this
 ```
 
 #### Properties
@@ -261,6 +196,71 @@ It is also possible to use the following "nicknames" as pattern.
 | \@daily | Run once a day, ie.   "0 0 * * *". |
 | \@hourly | Run once an hour, ie. "0 * * * *". |
 
+## Why another JavaScript cron implementation
+
+Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.
+
+|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
+|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
+| **Platforms**                                                                                                                        |
+| Node.js (CommonJS)                   |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Browser (ESMCommonJS)                  |          ✓          |          ✓          |           |                           |                     |
+| Deno (ESM)                     |          ✓          |                     |           |                           |                     |
+| **Features**                                                                                                                        |
+| Over-run protection  |          ✓          |                    |              |                            |                    |
+| Error handling  |          ✓          |                    |              |                            |          ✓          |
+| Typescript typings        |          ✓          |         ✓            |           |                           |                     |
+| Unref timers (optional)    |          ✓          |                     |                     |          ✓          |                     |
+| dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| dom-AND-dow (optional)    |          ✓          |                     |           |                           |                     |
+| Next run                  |          ✓          |          ✓          |           |           ✓              |           ✓         |
+| Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
+| Timezone                  |          ✓          |           ✓         |     ✓       |        ✓                   |         ✓            |
+| Minimum interval          |          ✓          |                     |              |                            |                      |
+| Controls (stop/resume)    |          ✓          |           ✓         |     ✓        |        ✓                   |         ✓           |   
+| Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
+| Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
+| Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
+
+<details>
+  <summary>In depth comparison of various libraries</summary>
+  
+|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
+|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
+| **Size**                                                                                                                        |
+| Minified size (KB)        | 15.5                | 16.3            | 16.5      | -                      | -                |
+| Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
+| Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
+| **Popularity**                                                                                                                        |
+| Downloads/week [^1]        | 576K                | 31K                 | 433K      | 2239K                     | 924K                |
+| **Quality**                                                                                                                        |
+| Issues [^1]                |                   0 |                   2 |   127 :warning: |                 43 :warning: |    139 :warning: |
+| Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
+| **Performance**                                                                                                                        |
+| Ops/s `1 2 3 4 5 6`         | 99 952                    | 49 308                    | N/A :x:          | Test failed :x:      | 2 299 :warning:                    |
+| Ops/s `0 0 0 29 2 *`         | 65 392                    | 17 138                    | N/A :x:          | Test failed :x:      | 1 450 :warning:                    |
+| **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
+| Test `0 0 23 * * *`         | 2022-10-09 00:40    | 2022-10-09 00:40    | N/A       | 2022-10-09 00:40          | 2022-10-09 00:40    |
+| Test `0 0 0 L 2 *` [^2]      | 2023-02-28 00:00 |          2023-02-28 00:00 | N/A       | N/A                       |          2023-02-28 00:00 |
+| Test `0 0 0 29 2 *`         |          2024-02-29 00:00 |          2024-02-29 00:00 | N/A       | 2023-03-29 00:00  :x:           |          2024-02-29 00:00 |
+| Test `0 0 0 29 2 6` [^3]     |          2048-02-09 00:00| N/A                 | N/A       | N/A                       | N/A                 |
+| Test `0 0 0 15 2 *`         |          2023-02-16 00:00 |          2023-02-16 00:00 | N/A       | 2023-03-15 00:00  :x:           |          2023-02-16 00:00 |
+| Test `0 0 0 * 10 1`         |          2022-10-10 00:00 |          2022-10-10 00:00 | N/A       | 2022-11-07 00:00 :x:           |          2022-10-10 00:00 |
+| Test `0 0 23 31 3 *`        | 2023-03-31 23:00    | 2023-03-31 23:00    | N/A       | 2023-04-01 23:00 :x:    | 2023-03-31 23:00    |
+| Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
+
+> **Note**
+> *   Table last updated at 2022-10-23, issues and downloads updated 2023-02-19
+> *   node-cron has no interface to predict when the function will run, so tests cannot be carried out.
+> *   All tests and benchmarks were carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
+
+[^1]: As of 2023-02-19
+[^2]: Requires support for L-modifier
+[^3]: In dom-AND-dow mode, only supported by croner at the moment.
+[^4]: Node-cron has no way of showing next run time.
+
+</details>
+
 ## Development
 
 ### Master branch
@@ -290,7 +290,7 @@ A list of fixes and features currently released in the `dev` branch is available
 
 ### Contributing
 
-See [Contribution Guide](docs/CONTRIBUTING.md)
+See [Contribution Guide](https://github.com/Hexagon/croner/blob/master/docs/CONTRIBUTING.md)
 
 ... or ...
 

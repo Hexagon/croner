@@ -1,10 +1,11 @@
+# Croner examples
+
 ## Table of Content
 
-*  [Expressions](#expressions)
-*  [Interval](#interval)
 *  [Find dates](#find-dates)
-*  [Various options](#various-options)
 *  [Job controls](#job-controls)
+*  [Options](#options)
+*  [Interval](#interval)
 *  [Passing a context](#passing-a-context)
 *  [Fire on a specific date/time](#fire-on-a-specific-datetime)
 *  [Time zone](#time-zone)
@@ -15,52 +16,20 @@
 
 Below are some examples of how to use Croner.
 
-### Expressions
-```javascript
-// Run a function according to pattern
-Cron('15-45/10 */5 1,2,3 ? JAN-MAR SAT', { legacyMode: false }, function () {
-	console.log('This will run every tenth second between second 15-45');
-	console.log('every fifth minute of hour 1,2 and 3 when day of month');
-	console.log('is the same as when Cron started, every saturday in January to March.');
-});
-```
-
-### Interval
-```javascript
-// Trigger on specific interval combined with cron expression
-Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
-	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
-});
-```
-
 ### Find dates
 ```javascript
 // Find next month
 const nextMonth = Cron("@monthly").nextRun(),
 	nextSunday = Cron("@weekly").nextRun(),
 	nextSat29feb = Cron("0 0 0 29 2 6", { legacyMode: false }).nextRun(),
-	nextSunLastOfMonth = Cron("0 0 0 L * 7", { legacyMode: false }).nextRun();
+	nextSunLastOfMonth = Cron("0 0 0 L * 7", { legacyMode: false }).nextRun(),
+    nextLastSundayOfMonth = Cron("0 0 0 * * L7").nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateString());  // 2048-02-29
-console.log("Next month ending with a sunday: " +  nextSunLastOfMonth.toLocaleDateString()); 
-```
-
-### Various options
-```javascript
-
-const job = Cron(
-	'* * * * *', 
-	{
-		startAt: "2021-11-01T00:00:00", 
-		stopAt: "2021-12-01T00:00:00",
-		timezone: "Europe/Stockholm"
-	},
-	function() {
-		console.log('This will run every minute, from 2021-11-01 to 2021-12-01 00:00:00');
-	}
-);
+console.log("Next month ending with a sunday: " +  nextSunLastOfMonth.toLocaleDateString());
+console.log("Next last sunday of month: " +  nextLastSundayOfMonth.toLocaleDateString());
 ```
 
 ### Job controls
@@ -75,6 +44,33 @@ const job = Cron('* * * * * *', (self) => {
 Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
 Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
 Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
+```
+
+### Options
+```javascript
+import { Cron } from "./dist/croner.js";
+
+const job = Cron(
+	'* * * * *', 
+	{
+		startAt: "2023-11-01T00:00:00", 
+		stopAt: "2023-12-01T00:00:00",
+		timezone: "Europe/Stockholm"
+	},
+	function() {
+		console.log('This will run every minute, from 2023-11-01 to 2023-12-01 00:00:00');
+	}
+);
+
+console.log('Will run first time at', job.nextRun().toLocaleString());
+```
+
+### Interval
+```javascript
+// Trigger on specific interval combined with cron expression
+Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
+	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
+});
 ```
 
 ### Passing a context
@@ -111,7 +107,7 @@ if (job.nextRun() === null) {
 
 ### Time zone
 ```javascript
-let job = Cron("0 0 14 * * *",{ timezone: "Europe/Stockholm" },() => {
+let job = Cron("0 0 14 * * *", { timezone: "Europe/Stockholm" }, () => {
 	console.log('This will every day at 14:00 in time zone Europe/Stockholm');
 });
 

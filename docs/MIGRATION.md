@@ -1,3 +1,5 @@
+# Migration
+
 ## Table of content
 
 *  [Upgrading croner](#upgrading-croner)
@@ -30,8 +32,6 @@ Several methods are also renamed, to make them more descriptive.
 *   `previous()`-> `previousRun()`
 *   `running()` -> `isRunning()`
 *   `busy()` -> `isBusy()`
-
-
 
 ## Migrating from Cron
 

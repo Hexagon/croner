@@ -86,7 +86,6 @@
       "code": "Cousine|Cutive+Mono|IBM+Plex+Mono|Inconsolata|Nanum+Gothic+Coding|Oxygen+Mono|PT+Mono|Share+Tech+Mono|Source+Code+Pro|Ubuntu+Mono|VT323"
     },
     "opts": {
-      "tutorials": "./docs/",
       "destination": "./dist-docs/",
       "encoding": "utf8",
       "private": false
