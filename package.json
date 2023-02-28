@@ -82,8 +82,5 @@
     "uglify-js": "^3.17.1",
     "uvu": "^0.5.6"
   },
-  "license": "MIT",
-  "dependencies": {
-    "taffydb": "^2.7.3"
-  }
+  "license": "MIT"
 }
