@@ -71,9 +71,12 @@ Another difference is the method names. Below is a list of `cron` methods with t
 | ---- | ------ | ---- |
 | stop() | pause() | stop() in croner block further usage of the job, whereas pause() just pause it |
 | start() | resume() | |
-| lastDate() | previous() | |
-| nextDate() | next() | |
-| nextDates(n) | enumerate(n) | |
+| lastDate() | previousRun() | |
+| nextDate() | nextRun() | |
+| nextDates(n) | nextRuns(n) | |
+| - | currentRun() | |
+| - | isRunning() | |
+| - | isBusy() | |
 
 ### Step 3: Update your tests
 
@@ -130,5 +133,11 @@ The method names for controlling a job are also different, or function different
 | stop() | pause() | |
 | start() | resume() | |
 | -      | stop() | Completely stops a job by clearing the internal timeout and by blocking further execution. | 
+| - | previousRun() | |
+| - | nextRun() | |
+| - | nextRuns(n) | |
+| - | currentRun() | |
+| - | isRunning() | |
+| - | isBusy() | |
 
 That's it! By following these steps, you should be able to migrate from `node-cron` to `croner` without any issues.
