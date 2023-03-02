@@ -1331,12 +1331,6 @@ function Cron(pattern, fnOrOptions1, fnOrOptions2) {
 		this._states.pattern = new CronPattern(pattern, this.options.timezone);
 	}
 
-	// Allow shorthand scheduling
-	if (func !== void 0) {
-		this.fn = func;
-		this.schedule();
-	}
-
 	// Only store the job in scheduledJobs if a name is specified in the options.
 	if (this.name) {
 		const existing = scheduledJobs.find((j) => j.name === this.name);
@@ -1347,6 +1341,12 @@ function Cron(pattern, fnOrOptions1, fnOrOptions2) {
 		} else {
 			scheduledJobs.push(this);
 		}
+	}
+
+	// Allow shorthand scheduling
+	if (func !== void 0) {
+		this.fn = func;
+		this.schedule();
 	}
 
 	return this;
@@ -1597,7 +1597,7 @@ Cron.prototype.trigger = async function () {
 Cron.prototype._checkTrigger = function (target) {
 	const now = new Date(),
 		shouldRun = !this._states.paused && now.getTime() >= target,
-		isBlocked = this.blocking && this.options.protect;
+		isBlocked = this._states.blocking && this.options.protect;
 
 	if (shouldRun && !isBlocked) {
 		this._states.maxRuns--;

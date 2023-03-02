@@ -216,13 +216,13 @@ const job = new Cron("* * * * * *", { catch: errorHandler }, (job) => {
 const blockForAWhile = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // (Optional) Callback to be triggered on a blocked call
-const protectCallback = (job) => console.log(`Call at ${new Date().toISOString()} were blocked by call started at ${job.started().toISOString()}`);
+const protectCallback = (job) => console.log(`Call at ${new Date().toISOString()} were blocked by call started at ${job.currentRun().toISOString()}`);
 
 // protect: can be set to ether true or a callback function, to enable over-run protection
 Cron("* * * * * *", { protect: protectCallback }, async (job) => {
-    console.log(`Call started at ${job.started().toISOString()} started`);
+    console.log(`Call started at ${job.currentRun().toISOString()} started`);
     await blockForAWhile(4000);
-    console.log(`Call started at ${job.started().toISOString()} finished ${new Date().toISOString()}`);
+    console.log(`Call started at ${job.currentRun().toISOString()} finished ${new Date().toISOString()}`);
 });
 
 /* Output

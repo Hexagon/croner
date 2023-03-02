@@ -433,6 +433,38 @@ module.exports = function (Cron, test, scheduledJobs) {
 			ref.stop();
 		},500);
 	}));
+	test("Job should only execute once with overryn protection",  timeout(4000, (resolve, reject) => {
+		let executions = 0;
+		const job = Cron("* * * * * *", { protect: true }, async () => {
+			executions++;
+			await sleep(4000);
+		});
+		setTimeout(() => {
+			if (executions === 1) {
+				job.stop();
+				resolve();
+			} else {
+				job.stop();
+				reject(new Error(`Job executed too many times (${executions})`));
+			}
+		},3500);
+	}));
+	test("Job should execute more than once without overrun protection",  timeout(4000, (resolve, reject) => {
+		let executions = 0;
+		const job = Cron("* * * * * *", async () => {
+			executions++;
+			await sleep(4000);
+		});
+		setTimeout(() => {
+			if (executions > 2) {
+				job.stop();
+				resolve();
+			} else {
+				job.stop();
+				reject(new Error("Job executed too many times"));
+			}
+		},3500);
+	}));
 	test("Job should be working after 1500 ms",  timeout(4000, (resolve, reject) => {
 		const job = Cron("* * * * * *", async () => {
 			await sleep(2000);
