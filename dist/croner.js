@@ -1289,12 +1289,20 @@ function Cron(pattern, fnOrOptions1, fnOrOptions2) {
 
 		/**
 		 * Start time of previous trigger, updated after each trigger
+		 * 
+		 * Stored to use as the actual previous run, even while a new trigger
+		 * is started. Used by the public funtion `.previousRun()`
+		 * 
 		 * @type {CronDate}
 		 */
 		previousRun: void 0,
 
 		/**
 		 * Start time of current trigger, this is updated just before triggering
+		 * 
+		 * This is used internally as "previous run", as we mostly want to know
+		 * when the previous run _started_
+		 * 
 		 * @type {CronDate}
 		 */
 		currentRun: void 0,
@@ -1373,7 +1381,7 @@ Cron.prototype.nextRuns = function (n, previous) {
 		n = this._states.maxRuns;
 	}
 	const enumeration = [];
-	let prev = previous || this._states.previousRun;
+	let prev = previous || this._states.currentRun;
 	while (n-- && (prev = this.nextRun(prev))) {
 		enumeration.push(prev);
 	}
@@ -1397,7 +1405,7 @@ Cron.prototype.getPattern = function () {
  * @returns {boolean} - Running or not
  */
 Cron.prototype.isRunning = function () {
-	const msLeft = this.msToNext(this._states.previousRun);
+	const msLeft = this.msToNext(this._states.currentRun);
 	const running = !this._states.paused && this.fn !== void 0;
 	return msLeft !== null && running;
 };
@@ -1515,8 +1523,8 @@ Cron.prototype.schedule = function (func, partial) {
 	}
 
 	// Get ms to next run, bail out early if any of them is null (no next run)
-	let waitMs = this.msToNext(partial ? partial : this._states.previousRun);
-	const target = this.nextRun(partial ? partial : this._states.previousRun);
+	let waitMs = this.msToNext(partial ? partial : this._states.currentRun);
+	const target = this.nextRun(partial ? partial : this._states.currentRun);
 	if (waitMs === null || target === null) return this;
 
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
@@ -1622,7 +1630,7 @@ Cron.prototype._checkTrigger = function (target) {
  * @returns {CronDate | null} - Next run time
  */
 Cron.prototype._next = function (prev) {
-	const hasPreviousRun = (prev || this._states.previousRun) ? true : false;
+	const hasPreviousRun = (prev || this._states.currentRun) ? true : false;
 
 	// Ensure previous run is a CronDate
 	prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
