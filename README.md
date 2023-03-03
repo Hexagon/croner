@@ -3,21 +3,24 @@
 Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
-# Cron for JavaScript and TypeScript
+# Croner - Cron for JavaScript and TypeScript
 
 [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
+*   Evaluate cron expressions and get a list of upcoming run times.
+*   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#time-zone).
-*   Built in [overrun protection](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#overrun-protection) with callback
-*   Built in [error handling](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#error-handling) with callback
+*   Built-in [overrun protection](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#overrun-protection)
+*   Built-in [error handling](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#error-handling)
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
-*   Find the first date of the next month, the date of the next Tuesday, etc.
+*   Support for asynchronous functions.
 *   Pause, resume, or stop execution after a task is scheduled.
-*   Uses Vixie-cron [pattern](#pattern), with a few additional features such as `L` for last day and weekday of month.
+*   Operates in-memory, with no need for a database or configuration files.
+*   Zero dependencies.
 
 Quick examples:
 
@@ -98,16 +101,17 @@ The job will be sceduled to run at next matching time unless you supply option `
 #### Status
 
 ```javascript
-job.nextRun( /*optional*/ startFromDate );	// Get Date object representing next run
-job.nextRuns(10, /*optional*/ startFromDate ); // Get array of Dates, containing next n runs
-job.msToNext( /*optional*/ startFromDate ); // Milliseconds left to next execution
-job.currentRun(); 		// Date object showing when current (or last) run were started
-job.previousRun( ); 		// Date object showing when previous job were started
+job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing the next run.
+job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
+job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
+job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
+job.previousRun( ); 		// Get a Date object showing when the previous job was started.
 
-job.isRunning(); 		// Indicates if there is a scheduled job (true or false)
-job.isBusy(); 			// Indicates if a job is currenctly doing work (true or false)
+job.isRunning(); 	// Indicates if the job is scheduled and not paused or killed (true or false).
+job.isStopped(); 	// Indicates if the job is permanently stopped using `stop()` (true or false).
+job.isBusy(); 		// Indicates if the job is currently busy doing work (true or false).
 
-job.getPattern(); 		// Returns the original pattern string
+job.getPattern(); 	// Returns the original pattern string
 ```
 
 #### Control functions
@@ -116,7 +120,8 @@ job.getPattern(); 		// Returns the original pattern string
 job.trigger();		// Force a trigger instantly
 job.pause();		// Pause trigger
 job.resume();		// Resume trigger
-job.stop();		// Stop job completely, it isn't possible to resume after this
+job.stop();		// Stop the job completely. It is not possible to resume after this.
+				// Note that this also removes named jobs from the exported `scheduledJobs` array.
 ```
 
 #### Properties
@@ -129,7 +134,7 @@ job.name 			// Optional job name, populated if a name were passed to options
 
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
-| name         | undefined      | String         | If you specify a name for the job, Croner will keep a reference to the job in exported array `scheduledJobs` |
+| name         | undefined      | String         | If you specify a name for the job, Croner will keep a reference to the job in the exported array `scheduledJobs`. The reference will be removed on `.stop()`. |
 | maxRuns      | Infinite       | Number         |                                       |
 | catch	       | false          | Boolean\|Function        | Catch unhandled errors in triggered function. Passing `true` will silently ignore errors. Passing a callback function will trigger this callback on error. |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |

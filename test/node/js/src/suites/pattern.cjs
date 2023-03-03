@@ -18,6 +18,11 @@ module.exports = function (Cron, test) {
 		});
 	});
 
+	test("Pattern should be returned by .getPattern() (0 0 0 * * *)", function () {
+		let job = new Cron("0 0 0 * * *");
+		assert.equal(job.getPattern(),"0 0 0 * * *");
+	});
+	
 	test("String object pattern should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron(new String("* * * * * *"));

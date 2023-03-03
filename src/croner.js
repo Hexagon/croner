@@ -8,7 +8,7 @@
 
   License:
 
-	Copyright (c) 2015-2022 Hexagon <github.com/Hexagon>
+	Copyright (c) 2015-2023 Hexagon <github.com/Hexagon>
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -225,15 +225,30 @@ Cron.prototype.getPattern = function () {
 };
 
 /**
- * Indicates wether or not the cron job is active, e.g. awaiting next trigger
+ * Indicates wether or not the cron job is scheduled and running, e.g. awaiting next trigger
  * @public
  *
  * @returns {boolean} - Running or not
  */
 Cron.prototype.isRunning = function () {
 	const msLeft = this.msToNext(this._states.currentRun);
-	const running = !this._states.paused && this.fn !== void 0;
-	return msLeft !== null && running;
+
+	const isRunning = !this._states.paused;
+	const isScheduled = this.fn !== void 0; 
+	// msLeft will be null if _states.kill is set to true, so we don't need to check this one, but we do anyway...
+	const notIsKilled = !this._states.kill;
+
+	return isRunning && isScheduled && notIsKilled && msLeft !== null;
+};
+
+/**
+ * Indicates wether or not the cron job is permanently stopped
+ * @public
+ *
+ * @returns {boolean} - Running or not
+ */
+Cron.prototype.isStopped = function () {
+	return this._states.kill;
 };
 
 /**
@@ -291,16 +306,31 @@ Cron.prototype.msToNext = function (prev) {
  * Stop execution
  *
  * Running this will forcefully stop the job, and prevent furter exection. `.resume()` will not work after stopping.
+ * It will also be removed from the scheduledJobs array if it were named.
  *
  * @public
  */
 Cron.prototype.stop = function () {
+
+	// If there is a job in progress, it will finish gracefully ...
+
+	// Flag as killed
 	this._states.kill = true;
-	// Stop any awaiting call
+
+	// Stop any waiting timer
 	if (this._states.currentTimeout) {
 		clearTimeout(this._states.currentTimeout);
 	}
+
+	// Remove job from the scheduledJobs array to free up the name, and allow the job to be
+	// garbage collected
+	const jobIndex = scheduledJobs.indexOf(this);
+	if (jobIndex >= 0) {
+		scheduledJobs.splice(jobIndex, 1);
+	}
 };
+
+
 
 /**
  * Pause execution

@@ -161,12 +161,19 @@ export class Cron {
      */
     getPattern(): string | undefined;
     /**
-     * Indicates wether or not the cron job is active, e.g. awaiting next trigger
+     * Indicates wether or not the cron job is scheduled and running, e.g. awaiting next trigger
      * @public
      *
      * @returns {boolean} - Running or not
      */
     public isRunning(): boolean;
+    /**
+     * Indicates wether or not the cron job is permanently stopped
+     * @public
+     *
+     * @returns {boolean} - Running or not
+     */
+    public isStopped(): boolean;
     /**
      * Indicates wether or not the cron job is currently working
      * @public
@@ -200,6 +207,7 @@ export class Cron {
      * Stop execution
      *
      * Running this will forcefully stop the job, and prevent furter exection. `.resume()` will not work after stopping.
+     * It will also be removed from the scheduledJobs array if it were named.
      *
      * @public
      */

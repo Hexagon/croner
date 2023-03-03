@@ -5,13 +5,6 @@ let
 	
 module.exports = function (Cron, test, scheduledJobs) {
 
-	test("Created jobs should appear in the 'scheduledJobs' array", function() {
-		const uniqueName = "TestJob3" + new Date().getTime().toString();
-		const job = new Cron("* * * * * *", { name: uniqueName});
-		assert.equal(scheduledJobs.find(j => j === job), job);
-		job.stop();
-	});
-
 	test("new Cron(...) should not throw", function () {
 		assert.not.throws(() => {
 			let scheduler = new Cron("* * * * * *");
@@ -370,6 +363,18 @@ module.exports = function (Cron, test, scheduledJobs) {
 		let impossible = Cron("0 0 0 30 2 6", { legacyMode: false }).nextRun(new Date(1634076000000));
 		assert.equal(null, impossible);
 	});
+	test("currentRun() and previousRun() should be set at correct points in time",  timeout(4000, (resolve) => {
+		let job = Cron("* * * * * *",() => { 
+			assert.ok(job.currentRun());
+			assert.equal(job.previousRun(), null);
+			job.stop();
+		});
+		assert.equal(job.currentRun(), null);
+		setTimeout(() => {
+			assert.ok(job.previousRun());
+			resolve();
+		},2000);
+	}));
 	test("scheduled job should not stop on unhandled error with option catch: true",  timeout(4000, (resolve) => {
 		let first = true;
 		let job = Cron("* * * * * *",{catch: true},() => { 
@@ -407,6 +412,13 @@ module.exports = function (Cron, test, scheduledJobs) {
 			Cron("* * * * * *", { name: uniqueName, paused: true });
 		}, "already taken");
 	});
+
+	test("Created jobs should appear in the 'scheduledJobs' array", function() {
+		const uniqueName = "TestJob3" + new Date().getTime().toString();
+		const job = new Cron("* * * * * *", { name: uniqueName});
+		assert.equal(scheduledJobs.find(j => j === job), job);
+	});
+
 	test("named job should be found in other scope",  timeout(4000, (resolve) => {
 		const uniqueName = "TestJob2" + new Date().getTime().toString();
 		(() => {
@@ -420,6 +432,17 @@ module.exports = function (Cron, test, scheduledJobs) {
 			}
 		},1500);
 	}));
+
+	test("named job should not be found after .stop()",  () => {
+		const uniqueName = "TestJob4" + new Date().getTime().toString();
+		const job = Cron("* * * * * *", { name: uniqueName });
+		const foundJob = Cron.scheduledJobs.find(j => j === job);
+		assert.equal(foundJob && foundJob.name === uniqueName, true);
+		job.stop();
+		const notFoundJob = Cron.scheduledJobs.find(j => j === job);
+		assert.equal(!!notFoundJob, false);
+	});
+
 	test("unnamed job should not be found in other scope",  timeout(4000, (resolve) => {
 		let ref;
 		(() => {
@@ -433,7 +456,8 @@ module.exports = function (Cron, test, scheduledJobs) {
 			ref.stop();
 		},500);
 	}));
-	test("Job should only execute once with overryn protection",  timeout(4000, (resolve, reject) => {
+
+	test("Job should only execute once with overrun protection",  timeout(4000, (resolve, reject) => {
 		let executions = 0;
 		const job = Cron("* * * * * *", { protect: true }, async () => {
 			executions++;
@@ -449,6 +473,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			}
 		},3500);
 	}));
+
 	test("Job should execute more than once without overrun protection",  timeout(4000, (resolve, reject) => {
 		let executions = 0;
 		const job = Cron("* * * * * *", async () => {
@@ -500,11 +525,17 @@ module.exports = function (Cron, test, scheduledJobs) {
 	}));
 	test("sanity check start stop resume", function () {
 		let job = Cron("* * * 1 11 4",() => {});
-		assert.not.throws(() => {
-			job.pause();
-			job.resume();
-			job.stop();
-		});
+		assert.equal(job.isRunning(), true);
+		assert.equal(job.isStopped(), false);
+		job.pause();
+		assert.equal(job.isRunning(), false);
+		assert.equal(job.isStopped(), false);
+		job.resume();
+		assert.equal(job.isRunning(), true);
+		assert.equal(job.isStopped(), false);
+		job.stop();
+		assert.equal(job.isRunning(), false);
+		assert.equal(job.isStopped(), true);
 	});
 	test("pause by options work",  timeout(2000, (resolve, reject) => {
 		try {

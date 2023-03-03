@@ -124,7 +124,7 @@ if (job.nextRun() === null) {
 If you provide a name for the job using the option { name: '...' }, a reference to the job will be stored in the exported array `scheduledJobs`. Naming a job makes it accessible throughout your application.
 
 > **Note**
-> If a job is stopped using `.stop()`, and goes out of scope, it will normally be eligible for garbage collection and will be deleted during the next garbage collection cycle. Keeping a reference by specifying option `name` prevents this from happening.
+> If a job is stopped using `.stop()`, it will be removed from the scheduledJobs array.
 
 
 ```javascript
@@ -157,7 +157,7 @@ setTimeout(() => {
 			// This will happen
 			console.log("Job resumed successfully");
 		} else {
-			console.log("Job found, but could not be restarted. The job were probably stopped using `.stop()` which prevents resuming.");
+			console.log("Job found, but could not be restarted. This should never happen, as the named jobs is _removed_ when using `.stop()`.");
 		}
 	} else {
 		console.error("Job not found");

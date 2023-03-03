@@ -74,10 +74,10 @@
   },
   "devDependencies": {
     "c8": "^7.11.3",
-    "eslint": "8.34.0",
+    "eslint": "^8.35.0",
     "jsdoc": "^4.0.0",
     "minitz": "^4.0.0",
-    "rollup": "3.17.1",
+    "rollup": "^3.18.0",
     "typescript": "^4.7.4",
     "uglify-js": "^3.17.1",
     "uvu": "^0.5.6"
