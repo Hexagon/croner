@@ -1597,8 +1597,7 @@ Cron.prototype._trigger = async function (initiationDate) {
 			await this.fn(this, this.options.context);
 		} catch (_e) {
 			if (isFunction(this.options.catch)) {
-				// Do not await catch, even if it is synchronous
-				setTimeout(() => this.options.catch(_e, this), 0);
+				this.options.catch(_e, this);
 			}
 		}
 	} else {
