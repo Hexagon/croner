@@ -1586,7 +1586,7 @@ Cron.prototype._trigger = async function (initiationDate) {
 	this._states.blocking = true;
 
 	this._states.currentRun = new CronDate(
-		initiationDate,
+		void 0, // We should use initiationDate, but that does not play well with fake timers in third party tests. In real world there is not much difference though */
 		this.options.timezone || this.options.utcOffset,
 	);
 
