@@ -457,14 +457,31 @@ module.exports = function (Cron, test, scheduledJobs) {
 		},500);
 	}));
 
-	test("Job should only execute once with overrun protection",  timeout(4000, (resolve, reject) => {
+	test("Job should execute twice with overrun protection",  timeout(4000, (resolve, reject) => {
 		let executions = 0;
 		const job = Cron("* * * * * *", { protect: true }, async () => {
 			executions++;
-			await sleep(4000);
+			await sleep(1100);
 		});
 		setTimeout(() => {
-			if (executions === 1) {
+			if (executions === 2) {
+				job.stop();
+				resolve();
+			} else {
+				job.stop();
+				reject(new Error(`Job executed too many times (${executions})`));
+			}
+		},3500);
+	}));
+
+	test("Job should execute twice with overrun protection (promise)",  timeout(4000, (resolve, reject) => {
+		let executions = 0;
+		const job = Cron("* * * * * *", { protect: true }, () => {
+			executions++;
+			return sleep(1100);
+		});
+		setTimeout(() => {
+			if (executions === 2) {
 				job.stop();
 				resolve();
 			} else {
@@ -476,9 +493,9 @@ module.exports = function (Cron, test, scheduledJobs) {
 
 	test("Job should execute more than once without overrun protection",  timeout(4000, (resolve, reject) => {
 		let executions = 0;
-		const job = Cron("* * * * * *", async () => {
+		const job = Cron("* * * * * *", { protect: false }, async () => {
 			executions++;
-			await sleep(4000);
+			await sleep(1100);
 		});
 		setTimeout(() => {
 			if (executions > 2) {
@@ -490,6 +507,7 @@ module.exports = function (Cron, test, scheduledJobs) {
 			}
 		},3500);
 	}));
+
 	test("Job should be working after 1500 ms",  timeout(4000, (resolve, reject) => {
 		const job = Cron("* * * * * *", async () => {
 			await sleep(2000);
