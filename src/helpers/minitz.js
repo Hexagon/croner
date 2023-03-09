@@ -2,7 +2,7 @@
 
 	minitz - MIT License - Hexagon <hexagon@56k.guru>
 
-	Version 4.0.4
+	Version 4.0.5
 	
 	------------------------------------------------------------------------------------
 
@@ -182,7 +182,11 @@ minitz.fromTZ = function(tp, throwOnInvalid) {
  *
  */
 minitz.toTZ = function (d, tzStr) {
-	const td = new Date(d.toLocaleString("sv-SE", {timeZone: tzStr}));
+
+	// - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
+	const localDateString = d.toLocaleString("en-US", {timeZone: tzStr}).replace(/[\u202f]/," ");
+
+	const td = new Date(localDateString);
 	return {
 		y: td.getFullYear(),
 		m: td.getMonth() + 1,
@@ -226,7 +230,7 @@ minitz.tp = (y,m,d,h,i,s,tz) => { return { y, m, d, h, i, s, tz: tz }; };
 function getTimezoneOffset(timeZone, date = new Date()) {
 
 	// Get timezone 
-	const tz = date.toLocaleString("en", {timeZone, timeStyle: "long"}).split(" ").slice(-1)[0];
+	const tz = date.toLocaleString("en-US", {timeZone: timeZone, timeZoneName: "short"}).split(" ").slice(-1)[0];
 
 	// Extract time in en-US format
 	// - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
