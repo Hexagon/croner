@@ -3,8 +3,8 @@
 ## Table of content
 
 *  [Upgrading croner](#upgrading-croner)
-*  [Migrationg from cron](#migrating-from-cron)
-*  [Migrationg from node-cron](#migrating-from-node-cron)
+*  [Migrating from cron](#migrating-from-cron)
+*  [Migrating from node-cron](#migrating-from-node-cron)
 
 ## Upgrading croner
 
