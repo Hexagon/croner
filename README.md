@@ -59,8 +59,8 @@ Using Node.js or Bun
 // ESM Import ...
 import { Cron } from "croner";
 
-// ... or CommonJS Require
-const Cron = require("croner");
+// ... or CommonJS Require, destructure to add type hints
+const { Cron } = require("croner");
 ```
 
 Using Deno
