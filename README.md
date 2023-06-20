@@ -44,7 +44,7 @@ Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 ```
 
-More [examples](#examples)...
+More [examples](/docs/EXAMPLES.md)...
 
 ## Installation
 
