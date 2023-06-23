@@ -44,7 +44,7 @@ Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 ```
 
-More [examples](#examples)...
+More [examples](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md)...
 
 ## Installation
 
