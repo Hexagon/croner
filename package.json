@@ -47,7 +47,7 @@
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
     "test:ts": "tsc --strict --noEmit ./test/node/ts/basics.ts",
     "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:dist && npm run build:typings && npm run build:minify && npm run test:dist",
-    "build:ci": "npm run test:lint && npm run build:dist && npm run build:typings && npm run test:coverage && npm run test:dist",
+    "build:ci": "npm run test:lint && npm run build:dist && npm run build:typings && npm run test:dist",
     "build:precleanup": "(rm -rf types/* || del /Q types\\*) && (rm -rf dist/* || del /Q dist\\*)",
     "build:dist": "rollup -c ./rollup.config.js",
     "build:minify": "uglifyjs dist/croner.umd.js --source-map -o dist/croner.umd.min.js && uglifyjs dist/croner.js --source-map -o dist/croner.min.js && uglifyjs dist/croner.cjs --source-map -o dist/croner.min.cjs",
