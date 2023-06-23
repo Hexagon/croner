@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "6.0.5-dev.0",
+  "version": "6.0.5",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://hexagon.github.io/croner",
@@ -43,11 +43,10 @@
     "test": "uvu test test.croner.js",
     "test:dist": "uvu test/node/js && npm run test:ts",
     "test:bun": "bun wiptest test/bun",
-    "test:coverage": "c8 --include=src npm test",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
     "test:ts": "tsc --strict --noEmit ./test/node/ts/basics.ts",
-    "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:dist && npm run build:typings && npm run build:minify && npm run test:coverage && npm run test:dist",
+    "build": "npm update && npm run build:precleanup && npm run test:lint && npm run build:dist && npm run build:typings && npm run build:minify && npm run test:dist",
     "build:ci": "npm run test:lint && npm run build:dist && npm run build:typings && npm run test:coverage && npm run test:dist",
     "build:precleanup": "(rm -rf types/* || del /Q types\\*) && (rm -rf dist/* || del /Q dist\\*)",
     "build:dist": "rollup -c ./rollup.config.js",
@@ -75,8 +74,7 @@
     }
   },
   "devDependencies": {
-    "c8": "^7.14.0",
-    "eslint": "^8.42.0",
+    "eslint": "^8.43.0",
     "jsdoc": "^4.0.0",
     "minitz": "^4.0.0",
     "rollup": "^3.25.1",
