@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "6.0.4",
+  "version": "6.0.5-dev.0",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://hexagon.github.io/croner",
@@ -27,10 +27,12 @@
   },
   "keywords": [
     "cron",
+    "front-end",
+    "backend",
     "parser",
     "croner",
     "schedule",
-    "sheduler",
+    "scheduler",
     "timer",
     "task",
     "job",
