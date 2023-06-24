@@ -1216,18 +1216,26 @@
 
 	  ------------------------------------------------------------------------------------  */
 
+
 	/**
-	 * Many JS engines stores the delay as a 32-bit signed integer internally.
-	 * This causes an integer overflow when using delays larger than 2147483647,
-	 * resulting in the timeout being executed immediately.
-	 *
-	 * All JS engines implements an immediate execution of delays larger that a 32-bit
-	 * int to keep the behaviour concistent.
-	 *
-	 * @constant
-	 * @type {number}
-	 */
-	const maxDelay = Math.pow(2, 32 - 1) - 1;
+	   * Many JS engines stores the delay as a 32-bit signed integer internally.
+	   * This causes an integer overflow when using delays larger than 2147483647,
+	   * resulting in the timeout being executed immediately.
+	   *
+	   * All JS engines implements an immediate execution of delays larger that a 32-bit
+	   * int to keep the behaviour concistent.
+	   * 
+	   * With this in mind, the absolute maximum value to use is
+	   * 
+	   * const maxDelay = Math.pow(2, 32 - 1) - 1
+	   * 
+	   * But due to a problem with certain javascript engines not behaving well when the
+	   * computer is suspended, we'll never wait more than 30 seconds between each trigger.
+	   *
+	   * @constant
+	   * @type {number}
+	   */
+	const maxDelay = 30 * 1000;
 
 	/**
 	 * An array containing all named cron jobs.
