@@ -1,27 +1,15 @@
 ---
 layout: page
-title: " 5. Examples"
+parent: "Usage"
+nav_order: 3
 ---
 
 # Examples
 
-## Table of Content
-
-*  [Find dates](#find-dates)
-*  [Job controls](#job-controls)
-*  [Options](#options)
-*  [Interval](#interval)
-*  [Passing a context](#passing-a-context)
-*  [Fire on a specific date/time](#fire-on-a-specific-datetime)
-*  [Time zone](#time-zone)
-*  [Naming jobs](#naming-jobs)
-*  [Act at completion](#act-at-completion)
-*  [Error handling](#error-handling)
-*  [Overrun protection](#over-run-protection)
-
-Below are some examples of how to use Croner.
+{:toc}
 
 ### Find dates
+
 ```javascript
 // Find next month
 const nextMonth = Cron("@monthly").nextRun(),

@@ -1,18 +1,21 @@
 ---
 layout: page
-title: " 2. Installation"
+title: "Installation"
+nav_order: 2
 ---
 
 # Installation
 
 ---
 
-> **Note**
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](https://github.com/Hexagon/croner/blob/master/docs/MIGRATION.md).
+{: .note-title }
+> NOTE
+>
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](https://hexagon.github.io/croner/migration.html).
 
 Croner can be installed using your preferred package manager or CDN. After installation, it can be included in your project as follows:
 
-### Using Node.js or Bun
+### Importing with Node.js or Bun
 
 For Node.js or Bun, you can use ESM Import or CommonJS Require:
 
@@ -22,11 +25,13 @@ For Node.js or Bun, you can use ESM Import or CommonJS Require:
     // or CommonJS Require, destructure to add type hints
     const { Cron } = require("croner");
 
-### Using Deno
+### Importing with Deno
 
 For Deno, import Croner from the provided URL:
 
-    import { Cron } from "https://deno.land/x/croner@6.0.3/dist/croner.js";
+    import { Cron } from "https://deno.land/x/croner@6.0.6/dist/croner.js";
+
+Make sure to replace `6.0.6` with the latest version.
 
 ### In a Webpage Using the UMD-module
 

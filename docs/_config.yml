@@ -1,6 +1,6 @@
-title: Croner - The Manual
+title: Croner
 
-description: Universal Process Manager
+description: Cron for JavaScript and TypeScript
 
 remote_theme: just-the-docs/just-the-docs
 
@@ -15,4 +15,16 @@ plugins:
   - jekyll-relative-links
   - jekyll-default-layout
   
+enable_copy_code_button: true
+
 # color_scheme: dark
+
+# Footer content
+footer_content: "Copyright &copy; 2012-2023 Hexagon. Distributed by an <a href=\"https://github.com/hexagon/croner/tree/master/LICENSE\">MIT license.</a>"
+last_edit_time_format: "%b %e %Y at %I:%M %p"
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub."
+gh_edit_repository: "https://github.com/hexagon/croner"
+gh_edit_branch: "dev"
+gh_edit_source: docs
+gh_edit_view_mode: "tree"

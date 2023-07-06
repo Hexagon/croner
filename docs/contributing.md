@@ -1,6 +1,7 @@
 ---
 layout: page
-title: " 6. Contributing"
+title: "Contributing"
+nav_order: 6
 ---
 
 # Contributing to Croner

@@ -51,8 +51,7 @@
     "build:precleanup": "(rm -rf types/* || del /Q types\\*) && (rm -rf dist/* || del /Q dist\\*)",
     "build:dist": "rollup -c ./rollup.config.js",
     "build:minify": "uglifyjs dist/croner.umd.js --source-map -o dist/croner.umd.min.js && uglifyjs dist/croner.js --source-map -o dist/croner.min.js && uglifyjs dist/croner.cjs --source-map -o dist/croner.min.cjs",
-    "build:typings": "tsc && tsc --build tsconfig.cjs.json",
-    "build:docs": "((rm -rf dist-docs/* || rd /S /Q dist-docs) && jsdoc -c .jsdoc.json) || jsdoc -c .jsdoc.json"
+    "build:typings": "tsc && tsc --build tsconfig.cjs.json"
   },
   "type": "module",
   "main": "./dist/croner.min.cjs",
@@ -75,7 +74,6 @@
   },
   "devDependencies": {
     "eslint": "^8.43.0",
-    "jsdoc": "^4.0.0",
     "minitz": "^4.0.0",
     "rollup": "^3.25.1",
     "typescript": "^5.1.3",

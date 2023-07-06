@@ -1,6 +1,6 @@
 <p align="center">
 <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
-Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
+Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>, and check out the full documentation on <a href="https://hexagon.github.io/croner">hexagon.github.io/croner</a>.<br>
 </p>
 
 # Croner - Cron for JavaScript and TypeScript
@@ -48,8 +48,10 @@ More [examples](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md).
 
 ## Installation
 
+Full documentation on installation and usage is found at <https://hexagon.github.io/croner>
+
 > **Note**
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](https://github.com/Hexagon/croner/blob/master/docs/MIGRATION.md).
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](https://hexagon.github.io/migration.html).
 
 Install croner using your favorite package manager or CDN. then include it in you project: 
 
