@@ -1,21 +1,14 @@
 ---
 layout: page
-title: " 4. Migration"
+title: "Migration"
+nav_order: 4
 ---
 
 # Migration
 
----
+{:toc}
 
-Croner is a versatile tool for scheduling JavaScript and TypeScript functions, providing a list of upcoming run times based on Cron syntax. This guide provides comprehensive instructions for migrating to Croner from previous versions or from other packages.
-
-## Table of Contents
-
-*  [Upgrading to Croner](#upgrading-to-croner)
-*  [Switching from Cron](#switching-from-cron)
-*  [Switching from node-cron](#switching-from-node-cron)
-
-## Upgrading to Croner
+## Upgrading Croner
 
 This section covers upgrading to Croner from previous versions. Croner follows the Semantic Versioning (SemVer) standard. Be mindful that major updates may cause breaking changes.
 
