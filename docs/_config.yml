@@ -1,0 +1,18 @@
+title: Croner - The Manual
+
+description: Universal Process Manager
+
+remote_theme: just-the-docs/just-the-docs
+
+url: https://hexagon.github.io/croner
+
+aux_links:
+  GitHub Repository: https://github.com/hexagon/croner
+  NPM Library: https://npmjs.com/package/croner
+  Deno Library: https://deno.land/x/croner
+
+plugins:
+  - jekyll-relative-links
+  - jekyll-default-layout
+  
+# color_scheme: dark
