@@ -1,4 +1,9 @@
-# Croner examples
+---
+layout: page
+title: " 5. Examples"
+---
+
+# Examples
 
 ## Table of Content
 

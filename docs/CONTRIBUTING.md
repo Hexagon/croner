@@ -1,3 +1,8 @@
+---
+layout: page
+title: " 6. Contributing"
+---
+
 # Contributing to Croner
 
 To get an overview of the project, read the [README](README.md). Here are some resources to help you get started with open source contributions:
