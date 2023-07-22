@@ -6,7 +6,7 @@ nav_order: 6
 
 # Contributing to Croner
 
-To get an overview of the project, read the [README](README.md). Here are some resources to help you get started with open source contributions:
+To get an overview of the project, read the [README](https://github.com/Hexagon/croner). Here are some resources to help you get started with open source contributions:
 
 -   [Set up Git](https://docs.github.com/en/get-started/quickstart/set-up-git)
 -   [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
@@ -50,7 +50,7 @@ Please run ```npm run build``` before committing, to update the dist-files, and 
 
 If you make changes to any function Interface, or to JSDoc in general, you should also run ```npm run build:docs``` to update the generated documentation.
 
-See [package.json](/package.json) scripts section for all available scripts.
+See [package.json](https://github.com/Hexagon/croner/blob/master/package.json) scripts section for all available scripts.
 
 Then, commit the changes once you are happy with them. 
 

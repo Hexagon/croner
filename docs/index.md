@@ -15,12 +15,12 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
-*   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month.
+*   Uses Vixie-cron [pattern](usage/pattern.md), with additional features such as `L` for last day and weekday of month.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#time-zone).
-*   Built-in [overrun protection](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#overrun-protection)
-*   Built-in [error handling](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#error-handling)
+*   Target different [time zones](usage/examples.md#time-zone).
+*   Built-in [overrun protection](usage/examples.md#overrun-protection)
+*   Built-in [error handling](usage/examples.md#error-handling)
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Support for asynchronous functions.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -60,7 +60,7 @@ Time is ISO 8601 local time, this will run 2024-01-23 00:00:00 according to the 
 Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 ```
 
-More examples at <https://hexagon.github.io/croner/usage/examples.html>
+More examples at [usage/examples.md]([usage/examples.md])
 
 {:toc}
 

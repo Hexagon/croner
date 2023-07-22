@@ -13,9 +13,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#time-zone).
-*   Built-in [overrun protection](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#overrun-protection)
-*   Built-in [error handling](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md#error-handling)
+*   Target different [time zones](https://hexagon.github.io/croner/usage/examples.html#time-zone).
+*   Built-in [overrun protection](https://hexagon.github.io/croner/usage/examples.html#overrun-protection)
+*   Built-in [error handling](https://hexagon.github.io/croner/usage/examples.html#error-handling)
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Support for asynchronous functions.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -44,14 +44,14 @@ Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 ```
 
-More [examples](https://github.com/Hexagon/croner/blob/master/docs/EXAMPLES.md)...
+More [examples](https://hexagon.github.io/croner/usage/examples.html)...
 
 ## Installation
 
 Full documentation on installation and usage is found at <https://hexagon.github.io/croner>
 
 > **Note**
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see [MIGRATION.md](https://hexagon.github.io/migration.html).
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see the [migration section](https://hexagon.github.io/croner/migration.html) of the manual.
 
 Install croner using your favorite package manager or CDN. then include it in you project: 
 
@@ -297,7 +297,7 @@ A list of fixes and features currently released in the `dev` branch is available
 
 ### Contributing
 
-See [Contribution Guide](https://github.com/Hexagon/croner/blob/master/docs/CONTRIBUTING.md)
+See [Contribution Guide](https://hexagon.github.io/croner/contributing.html)
 
 ... or ...
 
