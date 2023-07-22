@@ -11,7 +11,7 @@ nav_order: 2
 {: .note-title }
 > NOTE
 >
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](https://hexagon.github.io/croner/migration.html).
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](migration.md).
 
 Croner can be installed using your preferred package manager or CDN. After installation, it can be included in your project as follows:
 
