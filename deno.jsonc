@@ -1,18 +1,12 @@
 {
     "lint": {
-        "files": {
-            "include": ["src","test/deno"],
-            "exclude": ["dist","test/node"]
-        }
+        "include": ["src","test/deno"],
+        "exclude": ["dist","test/node"]
     },
     "fmt": {
-        "files": {
-            "include": ["test/deno"]
-        },
-        "options": {
-            "lineWidth": 100,
-            "useTabs": true
-        }
+        "include": ["test/deno"],
+        "lineWidth": 100,
+        "useTabs": true
     },
     "tasks": {
         "test": "deno lint && deno fmt --check && deno test --allow-none test/deno"
