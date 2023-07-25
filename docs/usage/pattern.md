@@ -30,6 +30,6 @@ You can also use the following "nicknames" as pattern:
 | \@daily | Run once a day, ie.   "0 0 * * *". |
 | \@hourly | Run once an hour, ie. "0 * * * *". |
 
-> **Note**
+{: .note }
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
 > When using `L` in the Day of Week field, it affects all specified weekdays. For example, `L5,6` means the last Friday and Saturday in the month.

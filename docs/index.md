@@ -12,7 +12,6 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 ## Features
 
-
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
 *   Uses Vixie-cron [pattern](usage/pattern.md), with additional features such as `L` for last day and weekday of month.
@@ -26,7 +25,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Pause, resume, or stop execution after a task is scheduled.
 *   Operates in-memory, with no need for a database or configuration files.
 *   Zero dependencies.
-*   Tried and tested, depended on by well known projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [ZWave JS](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
+*   Thoroughly tested and is relied upon by well-known projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [ZWave JS](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
 
 ## Quick examples
 
@@ -38,7 +37,7 @@ const job = new Cron('*/5 * * * * *', () => {
 });
 ```
 
-** Enumeration: What dates do the next 100 sundays occur on? **
+**What dates do the next 100 sundays occur on?**
 
 ```javascript
 const nextSundays = Cron('0 0 0 * * 7').nextRuns(100);
@@ -61,6 +60,39 @@ Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 ```
 
 More examples at [usage/examples.md]([usage/examples.md])
+
+## Feature comparison
+
+In this comparison, we outline the key differences between Croner and four other popular scheduling libraries: cronosjs, node-cron, cron, and node-schedule. The libraries are compared across various features such as platform compatibility, functionality, error handling, and Typescript support.
+
+The table below provides a brief overview of each library's features.
+
+|                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
+|---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
+| **Platforms**             |                     |                     |           |                           |                     |
+| Node.js (CommonJS)        |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Browser (ESMCommonJS)     |          ✓          |          ✓          |           |                           |                     |
+| Deno (ESM)                |          ✓          |                     |           |                           |                     |
+| **Features**              |                     |                     |           |                           |                     |
+| Over-run protection       |          ✓          |                     |           |                           |                     |
+| Error handling            |          ✓          |                     |           |                           |          ✓          |
+| Typescript typings        |          ✓          |         ✓            |           |                           |                     |
+| Unref timers (optional)   |          ✓          |                     |           |          ✓                |                     |
+| dom-OR-dow*                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| dom-AND-dow* (optional)    |          ✓          |                     |           |                           |                     |
+| Next run                  |          ✓          |          ✓          |           |           ✓               |          ✓          |
+| Next n runs               |          ✓          |          ✓          |           |           ✓               |                     |
+| Timezone                  |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Minimum interval          |          ✓          |                     |           |                           |                     |
+| Controls (stop/resume)    |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Range (0-13)              |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Stepping (*/5)            |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Last day of month (L)     |          ✓          |          ✓          |           |                           |                     |
+
+{: .note-title }
+> * DOM, DOW?
+>
+> DOM stands for Day of Month, and DOW stands for Day of Week.
 
 {:toc}
 

@@ -116,8 +116,8 @@ if (job.nextRun() === null) {
 
 If you provide a name for the job using the option { name: '...' }, a reference to the job will be stored in the exported array `scheduledJobs`. Naming a job makes it accessible throughout your application.
 
-> **Note**
-> If a job is stopped using `.stop()`, it will be removed from the scheduledJobs array.
+{: .note }
+If a job is stopped using `.stop()`, it will be removed from the scheduledJobs array.
 
 
 ```javascript
