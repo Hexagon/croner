@@ -30,10 +30,9 @@ function CronPattern (pattern, timezone) {
 	this.hour			= Array(24).fill(0); // 0-23
 	this.day			= Array(31).fill(0); // 0-30 in array, 1-31 in config
 	this.month			= Array(12).fill(0); // 0-11 in array, 1-12 in config
-	this.dayOfWeek		= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday;
+	this.dayOfWeek		= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
 
 	this.lastDayOfMonth = false;
-	this.lastWeekdayOfMonth = false;
 
 	this.starDOM = false;  // Asterisk used for dayOfMonth
 	this.starDOW  = false; // Asterisk used for dayOfWeek
@@ -74,12 +73,6 @@ CronPattern.prototype.parse = function () {
 		parts[3] = parts[3].replace("L","");
 		this.lastDayOfMonth = true;
 	}
-
-	// Convert 'L' to lastWeekdayOfMonth flag in day-of-week field
-	if(parts[5].indexOf("L") >= 0) {
-		parts[5] = parts[5].replace("L","");
-		this.lastWeekdayOfMonth = true;
-	}
 	
 	// Check for starDOM
 	if(parts[3] == "*") {
@@ -110,16 +103,16 @@ CronPattern.prototype.parse = function () {
 	this.throwAtIllegalCharacters(parts);
 
 	// Parse parts into arrays, validates as we go
-	this.partToArray("second",    parts[0], 0);
-	this.partToArray("minute",    parts[1], 0);
-	this.partToArray("hour",      parts[2], 0);
-	this.partToArray("day",       parts[3], -1);
-	this.partToArray("month",     parts[4], -1);
-	this.partToArray("dayOfWeek", parts[5], 0);
+	this.partToArray("second",    parts[0], 0, 1);
+	this.partToArray("minute",    parts[1], 0, 1);
+	this.partToArray("hour",      parts[2], 0, 1);
+	this.partToArray("day",       parts[3], -1, 1);
+	this.partToArray("month",     parts[4], -1, 1);
+	this.partToArray("dayOfWeek", parts[5], 0, 0b11111);
 
 	// 0 = Sunday, 7 = Sunday
-	if( this.dayOfWeek[7] ) {
-		this.dayOfWeek[0] = 1;
+	if(this.dayOfWeek[7]) {
+		this.dayOfWeek[0] = this.dayOfWeek[7];
 	}
 
 };
@@ -131,37 +124,38 @@ CronPattern.prototype.parse = function () {
  * @param {CronPatternPart} type - Seconds/minutes etc
  * @param {string} conf - Current pattern part - *, 0-1 etc
  * @param {CronIndexOffset} valueIndexOffset
+ * @param {number} defaultValue
  * @param {boolean} [recursed] - Is this a recursed call 
  */
-CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
+CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset, defaultValue) {
 
 	const arr = this[type];
 
 	// First off, handle wildcard
-	if( conf === "*" ) return arr.fill(1);
+	if( conf === "*" ) return arr.fill(defaultValue);
 
 	// Handle separated entries (,) by recursion
 	const split = conf.split(",");
 	if( split.length > 1 ) {
 		for( let i = 0; i < split.length; i++ ) {
-			this.partToArray(type, split[i], valueIndexOffset);
+			this.partToArray(type, split[i], valueIndexOffset, defaultValue);
 		}
 
 	// Handle range with stepping (x-y/z)
 	} else if( conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1 ) {
-		this.handleRangeWithStepping(conf, type, valueIndexOffset);
+		this.handleRangeWithStepping(conf, type, valueIndexOffset, defaultValue);
 	
 	// Handle range
 	} else if( conf.indexOf("-") !== -1 ) {
-		this.handleRange(conf, type, valueIndexOffset);
+		this.handleRange(conf, type, valueIndexOffset, defaultValue);
 
 	// Handle stepping
 	} else if( conf.indexOf("/") !== -1 ) {
-		this.handleStepping(conf, type, valueIndexOffset);
+		this.handleStepping(conf, type, valueIndexOffset, defaultValue);
 
 	// Anything left should be a number
 	} else if( conf !== "" ) {
-		this.handleNumber(conf, type, valueIndexOffset);
+		this.handleNumber(conf, type, valueIndexOffset, defaultValue);
 	}
 
 };
@@ -172,10 +166,10 @@ CronPattern.prototype.partToArray = function (type, conf, valueIndexOffset) {
  * 
  * @param {string[]} parts - Each part split as strings
  */
-CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
-	const reValidCron = /[^/*0-9,-]+/;
-	for(let i = 0; i < parts.length; i++) {
-		if( reValidCron.test(parts[i]) ) {
+CronPattern.prototype.throwAtIllegalCharacters = function(parts) {
+	for (let i = 0; i < parts.length; i++) {
+		const reValidCron = i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/;
+		if (reValidCron.test(parts[i])) {
 			throw new TypeError("CronPattern: configuration entry " + i + " (" + parts[i] + ") contains illegal characters.");
 		}
 	}
@@ -189,8 +183,11 @@ CronPattern.prototype.throwAtIllegalCharacters = function (parts) {
  * @param {string} type - One of "seconds", "minutes" etc
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
  */
-CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
-	const i = (parseInt(conf, 10) + valueIndexOffset);
+CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset, defaultValue) {
+	
+	let result = this.extractNth(conf, type);
+	
+	const i = (parseInt(result[0], 10) + valueIndexOffset);
 
 	if( isNaN(i) ) {
 		throw new TypeError("CronPattern: " + type + " is not a number: '" + conf + "'");
@@ -200,7 +197,53 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
 		throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
 	}
 
-	this[type][i] = 1;
+	this.setPart(type, i, result[1] || defaultValue);
+};
+
+/**
+ * Set a specific value for a specific part of the CronPattern.
+ * 
+ * @param {CronPatternPart} part - The specific part of the CronPattern, e.g., "second", "minute", etc.
+ * @param {number} index - The index to modify.
+ * @param {number} value - The value to set, typically 0 or 1, in case of "nth weekday" it will be the weekday number used for further processing
+ */
+CronPattern.prototype.setPart = function(part, index, value) {
+
+	// Ensure the part exists in our CronPattern.
+	if (!Object.prototype.hasOwnProperty.call(this,part)) {
+		throw new TypeError("CronPattern: Invalid part specified: " + part);
+	}
+
+	//  Special handling for dayOfWeek
+	if (part === "dayOfWeek") {
+		if ((index < 0 || index > 7) && index !== "L") {
+			throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+		}
+		this.setNthWeekdayOfMonth(index, value);
+		return;
+	}
+
+	// Validate the value for the specified part.
+	if (part === "second" || part === "minute") {
+		if (index < 0 || index >= 60) {
+			throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+		}
+	} else if (part === "hour") {
+		if (index < 0 || index >= 24) {
+			throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+		}
+	} else if (part === "day") {
+		if (index < 0 || index >= 31) {
+			throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+		}
+	} else if (part === "month") {
+		if (index < 0 || index >= 12) {
+			throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+		}
+	}
+
+	// Set the value for the specific part and index.
+	this[part][index] = value;
 };
 
 /**
@@ -211,8 +254,11 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset) {
  * @param {string} type - One of "seconds", "minutes" etc
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
  */
-CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset) {
-	const matches = conf.match(/^(\d+)-(\d+)\/(\d+)$/);
+CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset, defaultValue) {
+
+	let result = this.extractNth(conf, type);
+	
+	const matches = result[0].match(/^(\d+)-(\d+)\/(\d+)$/);
 
 	if( matches === null ) throw new TypeError("CronPattern: Syntax error, illegal range with stepping: '" + conf + "'");
 
@@ -232,20 +278,38 @@ CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndex
 	if( lower > upper ) throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
 
 	for (let i = lower; i <= upper; i += steps) {
-		this[type][i] = 1;
+		this.setPart(type, i, result[1] || defaultValue);
 	}
+};
+
+CronPattern.prototype.extractNth = function (conf, type) {
+	// Break out nth weekday (#) if exists
+	// - only allow if type os dayOfWeek
+	let rest = conf;
+	let nth;
+	if (rest.includes("#")) {
+		if (type !== "dayOfWeek") {
+			throw new Error("CronPattern: nth (#) only allowed in day-of-week field");
+		}
+		nth = rest.split("#")[1];
+		rest = rest.split("#")[0];
+	}
+	return [rest, nth];
 };
 
 /**
  * Take care of ranges (e.g. 1-20)
  * @private
  * 
- * @param {string} conf - Current part, expected to be a string like 1-20
+ * @param {string} conf - Current part, expected to be a string like 1-20, can contain L for last
  * @param {string} type - One of "seconds", "minutes" etc
  * @param {number} valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
  */
-CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
-	const split = conf.split("-");
+CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset, defaultValue) {
+
+	let result = this.extractNth(conf, type);
+
+	const split = result[0].split("-");
 
 	if( split.length !== 2 ) {
 		throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
@@ -271,7 +335,7 @@ CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
 	}
 
 	for( let i = lower; i <= upper; i++ ) {
-		this[type][i] = 1;
+		this.setPart(type, i, result[1] || defaultValue);
 	}
 };
 
@@ -282,9 +346,11 @@ CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset) {
  * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
  * @param {string} type - One of "seconds", "minutes" etc
  */
-CronPattern.prototype.handleStepping = function (conf, type) {
+CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset, defaultValue) {
 
-	const split = conf.split("/");
+	let result = this.extractNth(conf, type);
+
+	const split = result[0].split("/");
 
 	if( split.length !== 2 ) {
 		throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
@@ -302,7 +368,7 @@ CronPattern.prototype.handleStepping = function (conf, type) {
 	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, max steps for part is ("+this[type].length+")");
 
 	for( let i = start; i < this[type].length; i+= steps ) {
-		this[type][i] = 1;
+		this.setPart(type, i, result[1] || defaultValue);
 	}
 };
 
@@ -375,6 +441,27 @@ CronPattern.prototype.handleNicknames = function (pattern) {
 	} else {
 		return pattern;
 	}
+};
+
+/**
+ * Handle the nth weekday of the month logic using hash sign (e.g. FRI#2 for the second Friday of the month)
+ * @private
+ * 
+ * @param {number|string} index - 5 for friday, 31 (0b11111) for any day
+ * @param {number} nth - 2 for 2nd friday
+ */
+CronPattern.prototype.setNthWeekdayOfMonth = function(index, nthWeekday) {
+	const bitmask = [0b001, 0b010, 0b100, 0b1000, 0b10000];
+	if (nthWeekday === "L") {
+		this["dayOfWeek"][index] = 0b100000;
+	} else if (nthWeekday < 6 && nthWeekday > 0) {
+		this["dayOfWeek"][index] = bitmask[nthWeekday - 1];
+	} else if (nthWeekday === 0b11111) {
+		this["dayOfWeek"][index] = 0b11111;
+	} else {
+		throw new TypeError(`CronPattern: nth weekday of of range, should be 1-5 or L. Value: ${nthWeekday}`);
+	}
+    
 };
 
 export { CronPattern };

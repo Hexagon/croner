@@ -312,6 +312,7 @@ declare class CronDate {
      * @type {string|number|undefined}
      */
     tz: string | number | undefined;
+    private isNthWeekdayOfMonth;
     private fromDate;
     ms: number;
     second: number;

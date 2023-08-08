@@ -17,6 +17,16 @@ import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-lin
 */
 const DaysOfMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
 
+// Define a mapping of bitwise representations to their Nth values.
+const NTH_WEEKDAY_MAP = {
+	0b1: 1,
+	0b10: 2,
+	0b100: 3,
+	0b1000: 4,
+	0b10000: 5,
+	0b100000: -1 // Represents "Last"
+};
+
 /**
  * Array of work to be done, consisting of subarrays described below:
  * @private
@@ -72,6 +82,54 @@ function CronDate (d, tz) {
 	}
 
 }
+
+/**
+ * Check if the given date is the nth occurrence of a weekday in its month.
+ * @private
+ * 
+ * @param {number} year - The year.
+ * @param {number} month - The month (0 for January, 11 for December).
+ * @param {number} day - The day of the month.
+ * @param {number} nth - The nth occurrence (-1 for last).
+ * @return {boolean} - True if the date is the nth occurrence of its weekday, false otherwise.
+ */
+CronDate.prototype.isNthWeekdayOfMonth = function(year, month, day, nth) {
+	const date = new Date(Date.UTC(year, month, day));
+	const weekday = date.getUTCDay();
+
+	// For positive nth values
+	if (nth > 0 && nth < 6) {
+		let count = 0;
+		for (let d = 1; d <= day; d++) {
+			const tempDate = new Date(Date.UTC(year, month, d));
+			if (tempDate.getUTCDay() === weekday) {
+				count++;
+			}
+			if (count === nth + 1) {
+				return false;  // Found another occurrence in the same month after the nth one
+			}
+		}
+		return count === nth;
+	}
+	// -1 for last occurrence
+	else if ( nth === -1 ) {
+		let count = 0;
+		const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+		for (let d = daysInMonth; d >= day; d--) {
+			const tempDate = new Date(Date.UTC(year, month, d));
+			if (tempDate.getUTCDay() === weekday) {
+				count++;
+			}
+			if (count === (-nth) + 1) {
+				return false;  // Found another occurrence in the same month before the -nth one
+			}
+		}
+		return count === -nth;
+	} else {
+		throw new Error("CronDate: Invalid nth received by isNthWeekdayOfMonth");
+	}
+};
+
 
 /**
  * Sets internals using a Date 
@@ -226,7 +284,7 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 
 	// Pre-calculate last day of month if needed
 	let lastDayOfMonth;
-	if (pattern.lastDayOfMonth || pattern.lastWeekdayOfMonth) {
+	if (pattern.lastDayOfMonth) {
 		// This is an optimization for every month except february, which has different number of days different years
 		if (this.month !== 1) {
 			lastDayOfMonth = DaysOfMonth[this.month]; // About 20% performance increase when using L
@@ -254,9 +312,15 @@ CronDate.prototype.findNext = function (options, target, pattern, offset) {
 
 			let dowMatch = pattern.dayOfWeek[(fDomWeekDay + ((i-offset) - 1)) % 7];
 
-			// Extra check for l-flag
-			if (dowMatch && pattern.lastWeekdayOfMonth) {
-				dowMatch = dowMatch && ( i-offset > lastDayOfMonth - 7 );
+			// Extra check for nth weekday of month
+			// 0b011111 === All occurences of weekday in month
+			// 0b100000 === Last occurence of weekday in month
+			if (dowMatch && dowMatch !== 0b11111) {
+				if (NTH_WEEKDAY_MAP[dowMatch] !== undefined) {
+					dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, i - offset, NTH_WEEKDAY_MAP[dowMatch]);
+				} else {
+					throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
+				}
 			}
 
 			// If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
