@@ -88,6 +88,7 @@ The table below provides a brief overview of each library's features.
 | Range (0-13)              |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | Stepping (*/5)            |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | Last day of month (L)     |          ✓          |          ✓          |           |                           |                     |
+| Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
 
 {: .note-title }
 > * DOM, DOW?

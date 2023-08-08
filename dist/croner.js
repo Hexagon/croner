@@ -1022,7 +1022,7 @@ CronPattern.prototype.throwAtIllegalCharacters = function(parts) {
  */
 CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset, defaultValue) {
 	
-	let result = this.extractNth(conf, type);
+	const result = this.extractNth(conf, type);
 	
 	const i = (parseInt(result[0], 10) + valueIndexOffset);
 
@@ -1093,7 +1093,7 @@ CronPattern.prototype.setPart = function(part, index, value) {
  */
 CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndexOffset, defaultValue) {
 
-	let result = this.extractNth(conf, type);
+	const result = this.extractNth(conf, type);
 	
 	const matches = result[0].match(/^(\d+)-(\d+)\/(\d+)$/);
 
@@ -1144,7 +1144,7 @@ CronPattern.prototype.extractNth = function (conf, type) {
  */
 CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset, defaultValue) {
 
-	let result = this.extractNth(conf, type);
+	const result = this.extractNth(conf, type);
 
 	const split = result[0].split("-");
 
@@ -1183,9 +1183,9 @@ CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset, defa
  * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
  * @param {string} type - One of "seconds", "minutes" etc
  */
-CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset, defaultValue) {
+CronPattern.prototype.handleStepping = function (conf, type, _valueIndexOffset, defaultValue) {
 
-	let result = this.extractNth(conf, type);
+	const result = this.extractNth(conf, type);
 
 	const split = result[0].split("/");
 
