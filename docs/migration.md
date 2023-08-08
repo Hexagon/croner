@@ -27,6 +27,10 @@ For upgrading from version `5.x` to `6.x`, CommonJS and UMD builds were separate
     *   `running()` -> `isRunning()`
     *   `busy()` -> `isBusy()`
 
+### Upgrading from 6.x to 7.x
+
+Version `7.x` introduces significant changes, including the introduction of the nth weekday specifier `#`. Furthermore, there's a modification in the way `L` functions in the day-of-week field. In version `6.x`, `L` had flexibility in its positioning: both `LSUN` and `SUNL` were valid expressions to denote the last Sunday of the month. However, starting from version `7.x`, `L` must be used in conjunction with the nth weekday specifier `#`, like so: `SUN#L`.
+
 ## Switching from Cron
 
 If you're currently using the cron package and want to migrate to Croner, the following steps can guide you:

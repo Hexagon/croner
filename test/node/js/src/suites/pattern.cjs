@@ -337,8 +337,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getFullYear(),2024);
 	});
 
-	test("0 0 0 * 2 LSUN should find last sunday of february 2024 (25/2 2024)", function () {
-		let scheduler = new Cron("0 0 0 * 2 LSUN"),
+	test("0 0 0 * 2 SUN#L should find last sunday of february 2024 (25/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 SUN#L"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
 			nextRun = scheduler.nextRun(prevRun);
 
@@ -348,8 +348,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getFullYear(),2024);
 	});
 
-	test("0 0 0 * 2 LSUN should find last thursday of february 2024 (29/2 2024)", function () {
-		let scheduler = new Cron("0 0 0 * 2 LTHU"),
+	test("0 0 0 * 2 SUN#L should find last thursday of february 2024 (29/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 THU#L"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
 			nextRun = scheduler.nextRun(prevRun);
 
@@ -359,8 +359,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getFullYear(),2024);
 	});
 
-	test("0 0 0 * 2 LFRI should find last friday of february 2024 (23/2 2024)", function () {
-		let scheduler = new Cron("0 0 0 * 2 LFRI"),
+	test("0 0 0 * 2 FRI#L should find last friday of february 2024 (23/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 FRI#L"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
 			nextRun = scheduler.nextRun(prevRun);
 
@@ -370,8 +370,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getFullYear(),2024);
 	});
 
-	test("0 0 0 * 2 LMON-SUN should find last thuirsday or friday of february 2024 (23/2 2024)", function () {
-		let scheduler = new Cron("0 0 0 * 2 LTHU-FRI"),
+	test("0 0 0 * 2 THU-FRI#L should find last thursday or friday of february 2024 (23/2 2024)", function () {
+		let scheduler = new Cron("0 0 0 * 2 THU-FRI#L"),
 			prevRun = new Date(1703891808380), // From 30th of december 2023
 			nextRun = scheduler.nextRun(prevRun);
 
