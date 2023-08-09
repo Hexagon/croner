@@ -15,6 +15,16 @@ import { CronDate } from "./date.js";
  */
 
 /**
+ * Constants to represent different occurrences of a weekday in its month.
+ * - `LAST_OCCURRENCE`: The last occurrence of a weekday.
+ * - `ANY_OCCURRENCE`: Combines all individual weekday occurrence bitmasks, including the last.
+ * - `OCCURRENCE_BITMASKS`: An array of bitmasks, with each index representing the respective occurrence of a weekday (0-indexed). 
+ */
+export const LAST_OCCURRENCE = 0b100000;
+export const ANY_OCCURRENCE = 0b00001 | 0b00010 | 0b00100 | 0b01000 | 0b10000 | LAST_OCCURRENCE;
+export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b010000, 0b10000];
+
+/**
  * Create a CronPattern instance from pattern string ('* * * * * *')
  * @constructor
  * @param {string} pattern - Input pattern
@@ -30,7 +40,7 @@ function CronPattern (pattern, timezone) {
 	this.hour			= Array(24).fill(0); // 0-23
 	this.day			= Array(31).fill(0); // 0-30 in array, 1-31 in config
 	this.month			= Array(12).fill(0); // 0-11 in array, 1-12 in config
-	this.dayOfWeek		= Array(8).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
+	this.dayOfWeek		= Array(7).fill(0);  // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
 
 	this.lastDayOfMonth = false;
 
@@ -108,7 +118,7 @@ CronPattern.prototype.parse = function () {
 	this.partToArray("hour",      parts[2], 0, 1);
 	this.partToArray("day",       parts[3], -1, 1);
 	this.partToArray("month",     parts[4], -1, 1);
-	this.partToArray("dayOfWeek", parts[5], 0, 0b11111);
+	this.partToArray("dayOfWeek", parts[5], 0, ANY_OCCURRENCE);
 
 	// 0 = Sunday, 7 = Sunday
 	if(this.dayOfWeek[7]) {
@@ -193,10 +203,6 @@ CronPattern.prototype.handleNumber = function (conf, type, valueIndexOffset, def
 		throw new TypeError("CronPattern: " + type + " is not a number: '" + conf + "'");
 	}
 
-	if( i < 0 || i >= this[type].length ) {
-		throw new TypeError("CronPattern: " + type + " value out of range: '" + conf + "'");
-	}
-
 	this.setPart(type, i, result[1] || defaultValue);
 };
 
@@ -216,8 +222,10 @@ CronPattern.prototype.setPart = function(part, index, value) {
 
 	//  Special handling for dayOfWeek
 	if (part === "dayOfWeek") {
-		if ((index < 0 || index > 7) && index !== "L") {
-			throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+		// SUN can both be 7 and 0, normalize to 0 here
+		if (index === 7) index = 0;
+		if ((index < 0 || index > 6) && index !== "L") {
+			throw new RangeError("CronPattern: Invalid value for dayOfWeek: " + index);
 		}
 		this.setNthWeekdayOfMonth(index, value);
 		return;
@@ -274,7 +282,6 @@ CronPattern.prototype.handleRangeWithStepping = function (conf, type, valueIndex
 	if( steps === 0 ) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
 	if( steps > this[type].length ) throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part ("+this[type].length+")");
 
-	if( lower < 0 || upper >= this[type].length ) throw new TypeError("CronPattern: Value out of range: '" + conf + "'");
 	if( lower > upper ) throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
 
 	for (let i = lower; i <= upper; i += steps) {
@@ -324,11 +331,6 @@ CronPattern.prototype.handleRange = function (conf, type, valueIndexOffset, defa
 		throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
 	}
 
-	// Check that value is within range
-	if( lower < 0 || upper >= this[type].length ) {
-		throw new TypeError("CronPattern: Value out of range: '" + conf + "'");
-	}
-
 	//
 	if( lower > upper ) {
 		throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
@@ -371,7 +373,6 @@ CronPattern.prototype.handleStepping = function (conf, type, _valueIndexOffset, 
 		this.setPart(type, i, result[1] || defaultValue);
 	}
 };
-
 
 /**
  * Replace day name with day numbers
@@ -431,7 +432,7 @@ CronPattern.prototype.handleNicknames = function (pattern) {
 	if (cleanPattern === "@yearly" || cleanPattern === "@annually") {
 		return "0 0 1 1 *";
 	} else if (cleanPattern === "@monthly") {
-		return  "0 0 1 * *";
+		return "0 0 1 * *";
 	} else if (cleanPattern === "@weekly") {
 		return "0 0 * * 0";
 	} else if (cleanPattern === "@daily") {
@@ -447,21 +448,19 @@ CronPattern.prototype.handleNicknames = function (pattern) {
  * Handle the nth weekday of the month logic using hash sign (e.g. FRI#2 for the second Friday of the month)
  * @private
  * 
- * @param {number|string} index - 5 for friday, 31 (0b11111) for any day
- * @param {number} nth - 2 for 2nd friday
+ * @param {number} index - Weekday, example: 5 for friday
+ * @param {number} nthWeekday - bitmask, 2 (0x00010) for 2nd friday, 31 (ANY_OCCURRENCE, 0b100000) for any day
  */
 CronPattern.prototype.setNthWeekdayOfMonth = function(index, nthWeekday) {
-	const bitmask = [0b001, 0b010, 0b100, 0b1000, 0b10000];
 	if (nthWeekday === "L") {
-		this["dayOfWeek"][index] = 0b100000;
+		this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
 	} else if (nthWeekday < 6 && nthWeekday > 0) {
-		this["dayOfWeek"][index] = bitmask[nthWeekday - 1];
-	} else if (nthWeekday === 0b11111) {
-		this["dayOfWeek"][index] = 0b11111;
+		this["dayOfWeek"][index] = this["dayOfWeek"][index] | OCCURRENCE_BITMASKS[nthWeekday - 1];
+	} else if (nthWeekday === ANY_OCCURRENCE) {
+		this["dayOfWeek"][index] = ANY_OCCURRENCE;
 	} else {
 		throw new TypeError(`CronPattern: nth weekday of of range, should be 1-5 or L. Value: ${nthWeekday}`);
 	}
-    
 };
 
 export { CronPattern };
