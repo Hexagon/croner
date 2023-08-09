@@ -380,4 +380,58 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getMonth(),1);
 		assert.equal(nextRun.getFullYear(),2024);
 	});
+
+	test("0 0 0 * * SAT-SUN#L,SUN#1 should find last saturday or sunday of august 2023 (26-27/8 2023) as well as fist sunday of september", function () {
+
+		let scheduler = new Cron("0 0 0 * * SAT-SUN#L,SUN#1"),
+			prevRun = new Date(1691536579072), // From 9th of august 2023
+			nextRun = scheduler.nextRuns(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun[0].getDate(),26);
+		assert.equal(nextRun[0].getMonth(),7);
+		assert.equal(nextRun[0].getFullYear(),2023);
+
+		assert.equal(nextRun[1].getDate(),27);
+		assert.equal(nextRun[1].getMonth(),7);
+		assert.equal(nextRun[1].getFullYear(),2023);
+
+		assert.equal(nextRun[2].getDate(),3);
+		assert.equal(nextRun[2].getMonth(),8);
+		assert.equal(nextRun[2].getFullYear(),2023);
+
+		assert.equal(nextRun[3].getDate(),24);
+		assert.equal(nextRun[3].getMonth(),8);
+		assert.equal(nextRun[3].getFullYear(),2023);
+
+		assert.equal(nextRun[4].getDate(),30);
+		assert.equal(nextRun[4].getMonth(),8);
+		assert.equal(nextRun[4].getFullYear(),2023);
+
+	});
+
+	test("0 0 0 * * SUN-MON#3,MON-TUE#1 should work", function () {
+
+		let scheduler = new Cron("0 0 0 * * SUN-MON#3,MON-TUE#1"),
+			prevRun = new Date(1691536579072), // From 9th of august 2023
+			nextRun = scheduler.nextRuns(prevRun);
+
+		// Do comparison
+		assert.equal(nextRun[0].getDate(),20);
+		assert.equal(nextRun[0].getMonth(),7);
+		assert.equal(nextRun[0].getFullYear(),2023);
+
+		assert.equal(nextRun[1].getDate(),21);
+		assert.equal(nextRun[1].getMonth(),7);
+		assert.equal(nextRun[1].getFullYear(),2023);
+
+		assert.equal(nextRun[2].getDate(),4);
+		assert.equal(nextRun[2].getMonth(),8);
+		assert.equal(nextRun[2].getFullYear(),2023);
+
+		assert.equal(nextRun[3].getDate(),5);
+		assert.equal(nextRun[3].getMonth(),8);
+		assert.equal(nextRun[3].getFullYear(),2023);
+
+	});
 };
