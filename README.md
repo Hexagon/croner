@@ -1,6 +1,6 @@
 <p align="center">
 <img src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
-Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>, and check out the full documentation on <a href="https://hexagon.github.io/croner">hexagon.github.io/croner</a>.<br>
+Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>, and check out the full documentation on <a href="https://croner.56k.guru">croner.56k.guru</a>.<br>
 </p>
 
 # Croner - Cron for JavaScript and TypeScript
@@ -13,9 +13,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](https://hexagon.github.io/croner/usage/examples.html#time-zone).
-*   Built-in [overrun protection](https://hexagon.github.io/croner/usage/examples.html#overrun-protection)
-*   Built-in [error handling](https://hexagon.github.io/croner/usage/examples.html#error-handling)
+*   Target different [time zones](https://croner.56k.guru/usage/examples.html#time-zone).
+*   Built-in [overrun protection](https://croner.56k.guru/usage/examples.html#overrun-protection)
+*   Built-in [error handling](https://croner.56k.guru/usage/examples.html#error-handling)
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Support for asynchronous functions.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -44,14 +44,14 @@ Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 ```
 
-More [examples](https://hexagon.github.io/croner/usage/examples.html)...
+More [examples](https://croner.56k.guru/usage/examples.html)...
 
 ## Installation
 
-Full documentation on installation and usage is found at <https://hexagon.github.io/croner>
+Full documentation on installation and usage is found at <https://croner.56k.guru>
 
 > **Note**
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see the [migration section](https://hexagon.github.io/croner/migration.html) of the manual.
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see the [migration section](https://croner.56k.guru/migration.html) of the manual.
 
 Install croner using your favorite package manager or CDN. then include it in you project: 
 
@@ -297,7 +297,7 @@ A list of fixes and features currently released in the `dev` branch is available
 
 ### Contributing
 
-See [Contribution Guide](https://hexagon.github.io/croner/contributing.html)
+See [Contribution Guide](https://croner.56k.guru/contributing.html)
 
 ... or ...
 
