@@ -230,6 +230,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
 | Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
 | Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
+| Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
 
 <details>
   <summary>In depth comparison of various libraries</summary>
