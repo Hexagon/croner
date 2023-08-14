@@ -6,13 +6,15 @@ nav_order: 6
 
 # Contributing to Croner
 
+## Getting started
+
 To get an overview of the project, read the [README](https://github.com/Hexagon/croner). Here are some resources to help you get started with open source contributions:
 
 -   [Set up Git](https://docs.github.com/en/get-started/quickstart/set-up-git)
 -   [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
 -   [Collaborating with pull requests](https://docs.github.com/en/github/collaborating-with-pull-requests)
 
-## Getting started
+If you're looking to support Croner financially, consider checking out our [Sponsorship page](/sponsors).
 
 ### Issues
 
@@ -22,7 +24,7 @@ If you spot a problem with Croner, [search if an issue already exists](https://d
 
 #### Solve an issue
 
-Scan through our [existing issues](https://github.com/hexagon/croner/issues) to find one that interests you. You can narrow down the search using `labels` as filters. If you find an issue to work on, make a note in the comments so er van assign it to you. Then you are welcome to open a PR with a fix.
+Scan through our [existing issues](https://github.com/hexagon/croner/issues) to find one that interests you. You can narrow down the search using `labels` as filters. If you find an issue to work on, make a note in the comments so we can assign it to you. Then you are welcome to open a PR with a fix.
 
 ### Make Changes
 

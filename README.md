@@ -298,13 +298,17 @@ npm install croner@dev
 
 A list of fixes and features currently released in the `dev` branch is available [here](https://github.com/Hexagon/croner/issues?q=is%3Aopen+is%3Aissue+label%3Areleased-in-dev)
 
-### Contributing
+## Contributing & Support
 
-See [Contribution Guide](https://croner.56k.guru/contributing.html)
+Croner is founded and actively maintained by Hexagon. If you find value in Croner and want to contribute:
 
-... or ...
+- Code Contributions: See our [Contribution Guide](https://croner.56k.guru/contributing.html) for details on how to contribute code.
 
-<a href='https://ko-fi.com/C1C7IEEYF' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+- Sponsorship: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
+  - [Monthly Tiers](https://github.com/sponsors/Hexagon?frequency=recurring&sponsor=Hexagon): Gain benefits like listing in Croner's README and priority issue resolution.
+  - [One-Time Contributions](https://github.com/sponsors/Hexagon?frequency=one-time&sponsor=Hexagon): Buy Hexagon a coffee or burger, supporting ongoing dedication.
+
+Your trust, support, and contributions drive the project. Every bit, irrespective of its size, is deeply appreciated.
 
 ## License
 

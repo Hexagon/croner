@@ -5,7 +5,7 @@ parent: "Usage"
 nav_order: 3
 ---
 
-# Options
+# Configuration
 
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|

@@ -5,8 +5,7 @@ parent: "Usage"
 nav_order: 2
 ---
 
-## Pattern
-
+# Pattern
 
 The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:
 
