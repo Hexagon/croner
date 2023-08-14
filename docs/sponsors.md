@@ -8,6 +8,7 @@ nav_order: 7
 
 Croner was founded and is actively maintained by [Hexagon](https://github.com/Hexagon). While I've poured my heart and soul into the project, I'm deeply grateful to the broader community of [contributors](https://github.com/Hexagon/croner/graphs/contributors) who have collaborated to make Croner what it is today.
 
+
 ## Why Sponsor?
 
 Your sponsorship directly supports my ongoing efforts to enhance and improve Croner. By becoming a sponsor, you're fostering a broader open-source ecosystem and ensuring it remains free and accessible to all.
