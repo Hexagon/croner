@@ -15,6 +15,8 @@ nav_order: 2
 
 Croner can be installed using your preferred package manager or CDN. After installation, it can be included in your project as follows:
 
+{% include multiplex.html %}
+
 ### Importing with Node.js or Bun
 
 For Node.js or Bun, you can use ESM Import or CommonJS Require:

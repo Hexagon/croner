@@ -9,7 +9,6 @@ nav_order: 1
 Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
 </p>
 
-
 ## Features
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
@@ -95,5 +94,6 @@ The table below provides a brief overview of each library's features.
 >
 > DOM stands for Day of Month, and DOW stands for Day of Week.
 
+1. TOC
 {:toc}
 

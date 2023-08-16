@@ -6,7 +6,10 @@ nav_order: 3
 
 # Examples
 
+1. TOC
 {:toc}
+
+{% include multiplex.html %}
 
 ### Find dates
 

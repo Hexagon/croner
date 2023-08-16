@@ -28,6 +28,8 @@ job.schedule(job, /* optional */ context) => {});
 
 The job will be scheduled to run at the next matching time unless you supply the option `{ paused: true }`. The `Cron(...)` constructor will return a Cron instance, later referred to as `job`, which have a few methods and properties.
 
+{% include multiplex.html %}
+
 ## Status
 
 Check the status of the job using the following methods:
