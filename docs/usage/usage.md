@@ -7,6 +7,8 @@ nav_order: 3
 
 # Usage
 
+---
+
 The most basic usage of Croner for scheduling is:
 
 ```ts

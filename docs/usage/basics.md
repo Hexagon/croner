@@ -7,6 +7,8 @@ nav_order: 1
 
 # Basic usage
 
+---
+
 Croner uses the function `Cron()` which takes in three arguments:
 
 ```ts

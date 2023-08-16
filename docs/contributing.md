@@ -6,6 +6,8 @@ nav_order: 6
 
 # Contributing to Croner
 
+---
+
 ## Getting started
 
 To get an overview of the project, read the [README](https://github.com/Hexagon/croner). Here are some resources to help you get started with open source contributions:

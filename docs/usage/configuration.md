@@ -7,6 +7,8 @@ nav_order: 3
 
 # Configuration
 
+---
+
 | Key          | Default value  | Data type      | Remarks                               |
 |--------------|----------------|----------------|---------------------------------------|
 | name         | undefined      | String         | If you specify a name for the job, Croner will keep a reference to the job in the exported array `scheduledJobs`. The reference will be removed on `.stop()`. |
