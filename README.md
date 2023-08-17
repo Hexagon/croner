@@ -304,9 +304,7 @@ Croner is founded and actively maintained by Hexagon. If you find value in Crone
 
 - Code Contributions: See our [Contribution Guide](https://croner.56k.guru/contributing.html) for details on how to contribute code.
 
-- Sponsorship: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
-  - [Monthly Tiers](https://github.com/sponsors/Hexagon?frequency=recurring&sponsor=Hexagon): Gain benefits like listing in Croner's README and priority issue resolution.
-  - [One-Time Contributions](https://github.com/sponsors/Hexagon?frequency=one-time&sponsor=Hexagon): Buy Hexagon a coffee or burger, supporting ongoing dedication.
+- Sponsorship and Donations: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
 
 Your trust, support, and contributions drive the project. Every bit, irrespective of its size, is deeply appreciated.
 
