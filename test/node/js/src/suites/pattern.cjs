@@ -385,7 +385,7 @@ module.exports = function (Cron, test) {
 
 		let scheduler = new Cron("0 0 0 * * SAT-SUN#L,SUN#1"),
 			prevRun = new Date(1691536579072), // From 9th of august 2023
-			nextRun = scheduler.nextRuns(prevRun);
+			nextRun = scheduler.nextRuns(5, prevRun);
 
 		// Do comparison
 		assert.equal(nextRun[0].getDate(),26);
@@ -414,7 +414,7 @@ module.exports = function (Cron, test) {
 
 		let scheduler = new Cron("0 0 0 * * SUN-MON#3,MON-TUE#1"),
 			prevRun = new Date(1691536579072), // From 9th of august 2023
-			nextRun = scheduler.nextRuns(prevRun);
+			nextRun = scheduler.nextRuns(5, prevRun);
 
 		// Do comparison
 		assert.equal(nextRun[0].getDate(),20);
