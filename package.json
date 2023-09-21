@@ -73,9 +73,9 @@
     }
   },
   "devDependencies": {
-    "eslint": "^8.45.0",
+    "eslint": "^8.49.0",
     "minitz": "^4.0.5",
-    "rollup": "^3.26.3",
+    "rollup": "^3.29.2",
     "typescript": "^5.1.6",
     "uglify-js": "^3.17.4",
     "uvu": "^0.5.6"
