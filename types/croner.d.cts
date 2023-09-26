@@ -127,10 +127,9 @@ declare class Cron {
      * @public
      *
      * @param {Function} func - Function to be run each iteration of pattern
-     * @param {Date} [partial] - Internal function indicating a partial run
      * @returns {Cron}
      */
-    public schedule(func: Function, partial?: Date): Cron;
+    public schedule(func: Function): Cron;
     private _trigger;
     /**
      * Trigger a run manually

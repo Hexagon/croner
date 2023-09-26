@@ -1686,10 +1686,9 @@
 	 * @public
 	 *
 	 * @param {Function} func - Function to be run each iteration of pattern
-	 * @param {Date} [partial] - Internal function indicating a partial run
 	 * @returns {Cron}
 	 */
-	Cron.prototype.schedule = function (func, partial) {
+	Cron.prototype.schedule = function (func) {
 		// If a function is already scheduled, bail out
 		if (func && this.fn) {
 			throw new Error(
@@ -1702,8 +1701,8 @@
 		}
 
 		// Get ms to next run, bail out early if any of them is null (no next run)
-		let waitMs = this.msToNext(partial ? partial : this._states.currentRun);
-		const target = this.nextRun(partial ? partial : this._states.currentRun);
+		let waitMs = this.msToNext(this._states.currentRun);
+		const target = this.nextRun(this._states.currentRun);
 		if (waitMs === null || target === null) return this;
 
 		// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
@@ -1797,7 +1796,7 @@
 		}
 
 		// Always reschedule
-		this.schedule(undefined, now);
+		this.schedule();
 	};
 
 	/**
