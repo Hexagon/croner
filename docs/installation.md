@@ -31,9 +31,9 @@ For Node.js or Bun, you can use ESM Import or CommonJS Require:
 
 For Deno, import Croner from the provided URL:
 
-    import { Cron } from "https://deno.land/x/croner@6.0.6/dist/croner.js";
+    import { Cron } from "https://deno.land/x/croner@7.0.2/dist/croner.js";
 
-Make sure to replace `6.0.6` with the latest version.
+Make sure to replace `7.0.2` with the latest version.
 
 ### In a Webpage Using the UMD-module
 
