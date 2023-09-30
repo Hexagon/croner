@@ -1,5 +1,4 @@
 ---
-layout: page
 title: "Migration"
 nav_order: 4
 ---

@@ -1,5 +1,4 @@
 ---
-layout: page
 parent: "Usage"
 nav_order: 3
 ---

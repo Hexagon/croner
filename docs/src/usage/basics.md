@@ -1,5 +1,4 @@
 ---
-layout: page
 title: "Basics"
 parent: "Usage"
 nav_order: 1

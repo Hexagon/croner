@@ -1,0 +1,11 @@
+{
+    "tasks": {
+      "lume": "echo \"import 'lume/cli.ts'\" | deno run --unstable -A -",
+      "build": "deno task lume",
+      "serve": "deno task lume -s --port=8000"
+    },
+    "imports": {
+      "lume/": "https://deno.land/x/lume@v1.19.1/",
+      "lumocs/": "https://deno.land/x/lumocs@0.0.10/"
+    }
+  }

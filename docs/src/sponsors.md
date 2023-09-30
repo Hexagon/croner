@@ -1,5 +1,4 @@
 ---
-layout: page
 title: "Donations"
 nav_order: 7
 ---

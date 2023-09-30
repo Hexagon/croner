@@ -1,5 +1,4 @@
 ---
-layout: page
 title: "Pattern"
 parent: "Usage"
 nav_order: 2

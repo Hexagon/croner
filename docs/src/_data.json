@@ -1,0 +1,41 @@
+{
+    "lang": "en",
+    "layout": "page.njk",
+    "metas": {
+      "title": "=title",
+      "site": "Croner",
+      "lang": "en",
+      "description": "Cron for JavaScript and TypeScript"
+    },
+    "topLinks": [
+      {
+        "icon": "fab fa-github",
+        "title": "GitHub Repsitory",
+        "url": "https://github.com/hexagon/croner"
+      },
+      {
+        "icon": "fas fa-cube",
+        "title": "Deno.land/x",
+        "url": "https://deno.land/x/croner"
+      },
+      {
+        "icon": "fab fa-npm",
+        "title": "NPM Library",
+        "url": "https://npmjs.com/package/croner"
+      }
+    ],
+    "navLinks": [
+      {
+        "title": "GitHub Repsitory",
+        "url": "https://github.com/hexagon/croner"
+      },
+      {
+        "title": "Deno.land/x",
+        "url": "https://deno.land/x/croner"
+      },
+      {       
+        "title": "NPM Library",
+        "url": "https://npmjs.com/package/croner"
+      }
+    ]
+  }
