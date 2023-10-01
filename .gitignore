@@ -40,3 +40,6 @@ dist-docs
 
 # VSCode user configuration
 .vscode
+
+# Lume built site
+_site
