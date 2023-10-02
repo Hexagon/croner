@@ -7,8 +7,7 @@ nav_order: 3
 
 ---
 
-1. TOC
-{:toc}
+<!-- TOC -->
 
 {% include multiplex.html %}
 

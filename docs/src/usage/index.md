@@ -22,6 +22,3 @@ And the most basic usage of Croner for getting next execution time of a pattern 
 console.log(Cron("0 12 * * *).next());
 // 2023-07-08T12:00:00
 ```
-
-1. TOC
-{:toc}

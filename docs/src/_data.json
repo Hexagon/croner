@@ -1,13 +1,11 @@
 {
-    "lang": "en",
-    "layout": "page.njk",
     "metas": {
       "title": "=title",
       "site": "Croner",
       "lang": "en",
       "description": "Cron for JavaScript and TypeScript"
     },
-    "topLinks": [
+    "top_links": [
       {
         "icon": "fab fa-github",
         "title": "GitHub Repsitory",
@@ -24,7 +22,7 @@
         "url": "https://npmjs.com/package/croner"
       }
     ],
-    "navLinks": [
+    "nav_links": [
       {
         "title": "GitHub Repsitory",
         "url": "https://github.com/hexagon/croner"

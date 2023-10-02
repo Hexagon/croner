@@ -88,11 +88,9 @@ The table below provides a brief overview of each library's features.
 | Last day of month (L)     |          ✓          |          ✓          |           |                           |                     |
 | Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
 
-{: .note-title }
-> * DOM, DOW?
+> **DOM, DOW?**
 >
 > DOM stands for Day of Month, and DOW stands for Day of Week.
 
-1. TOC
-{:toc}
+<!-- TOC -->
 
