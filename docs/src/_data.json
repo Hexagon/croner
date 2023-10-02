@@ -5,6 +5,9 @@
       "lang": "en",
       "description": "Cron for JavaScript and TypeScript"
     },
+    "substitute": {
+      "$CRONER_VERSION": "7.0.2"
+    },
     "top_links": [
       {
         "icon": "fab fa-github",
