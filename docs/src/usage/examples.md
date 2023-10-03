@@ -13,7 +13,7 @@ nav_order: 3
 
 ### Find dates
 
-```javascript
+```ts
 // Find next month
 const nextMonth = Cron("@monthly").nextRun(),
 	nextSunday = Cron("@weekly").nextRun(),
@@ -29,7 +29,7 @@ console.log("Next last sunday of month: " +  nextLastSundayOfMonth.toLocaleDateS
 ```
 
 ### Job controls
-```javascript
+```ts
 const job = Cron('* * * * * *', (self) => {
 	console.log('This will run every second. Pause on second 10. Resume on 15. And quit on 20.');
 	console.log('Current second: ', new Date().getSeconds());
@@ -43,7 +43,7 @@ Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
 
 ### Options
-```javascript
+```ts
 import { Cron } from "./dist/croner.js";
 
 const job = Cron(
@@ -62,7 +62,7 @@ console.log('Will run first time at', job.nextRun().toLocaleString());
 ```
 
 ### Interval
-```javascript
+```ts
 // Trigger on specific interval combined with cron expression
 Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
 	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
@@ -70,7 +70,7 @@ Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
 ```
 
 ### Passing a context
-```javascript
+```ts
 const data = {
 	what: "stuff"
 };
@@ -87,7 +87,7 @@ Cron('*/5 * * * * *', { context: data }, (self, context) => {
 ```
 
 ### Fire on a specific date/time
-```javascript
+```ts
 // A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
 // Always specify which timezone the ISO 8601 time string has with the timezone option.
 let job = Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
@@ -102,7 +102,7 @@ if (job.nextRun() === null) {
 ```
 
 ### Time zone
-```javascript
+```ts
 let job = Cron("0 0 14 * * *", { timezone: "Europe/Stockholm" }, () => {
 	console.log('This will every day at 14:00 in time zone Europe/Stockholm');
 });
@@ -123,7 +123,7 @@ If you provide a name for the job using the option { name: '...' }, a reference 
 If a job is stopped using `.stop()`, it will be removed from the scheduledJobs array.
 
 
-```javascript
+```ts
 // import { Cron, scheduledJobs } ...
 
 // Scoped job
@@ -165,7 +165,7 @@ setTimeout(() => {
 
 ### Act at completion
 
-```javascript
+```ts
 // Start a job firing once each 5th second, run at most 3 times
 const job = new Cron("0/5 * * * * *", { maxRuns: 3 }, (job) => {
     
@@ -189,7 +189,7 @@ if (!job.nextRun() && !job.previousRun()) {
 
 ### Error handling
 
-```javascript
+```ts
 
 // Prepare an error handler
 const errorHandler = (e) => {
@@ -207,7 +207,7 @@ const job = new Cron("* * * * * *", { catch: errorHandler }, (job) => {
 
 ### Overrun protection
 
-```javascript
+```ts
 // Demo blocking function
 const blockForAWhile = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

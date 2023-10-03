@@ -27,4 +27,4 @@ nav_order: 3
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
 > Browsers have not yet implemented this feature, and it does not make sense to use it in a browser environment.
-
+{ .warning }

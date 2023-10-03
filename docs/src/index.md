@@ -29,7 +29,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 **Run a function at the interval defined by a cron expression**
 
-```javascript
+```ts
 const job = new Cron('*/5 * * * * *', () => {
 	console.log('This will run every five seconds');
 });
@@ -37,14 +37,14 @@ const job = new Cron('*/5 * * * * *', () => {
 
 **What dates do the next 100 sundays occur on?**
 
-```javascript
+```ts
 const nextSundays = Cron('0 0 0 * * 7').nextRuns(100);
 console.log(nextSundays);
 ```
 
 **Days left to a specific date**
 
-```javascript
+```ts
 const msLeft = Cron('59 59 23 24 DEC *').nextRun() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
@@ -53,7 +53,7 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 
 Time is ISO 8601 local time, this will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
 
-```javascript
+```ts
 Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 ```
 
@@ -88,9 +88,7 @@ The table below provides a brief overview of each library's features.
 | Last day of month (L)     |          ✓          |          ✓          |           |                           |                     |
 | Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
 
-> **DOM, DOW?**
->
+> **DOM and DOW?**<br>
 > DOM stands for Day of Month, and DOW stands for Day of Week.
-
-<!-- TOC -->
+{ .note }
 

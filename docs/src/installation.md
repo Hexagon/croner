@@ -7,12 +7,10 @@ nav_order: 2
 
 ---
 
-{: .note-title }
-> NOTE
->
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](migration.md).
-
 Croner can be installed using your preferred package manager or CDN. After installation, it can be included in your project as follows:
+
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](migration.md).
+{ .note }
 
 {% include multiplex.html %}
 
@@ -20,17 +18,21 @@ Croner can be installed using your preferred package manager or CDN. After insta
 
 For Node.js or Bun, you can use ESM Import or CommonJS Require:
 
-    // ESM Import
-    import { Cron } from "croner";
+```ts
+// ESM Import
+import { Cron } from "croner";
 
-    // or CommonJS Require, destructure to add type hints
-    const { Cron } = require("croner");
+// or CommonJS Require, destructure to add type hints
+const { Cron } = require("croner");
+```
 
 ### Importing with Deno
 
 For Deno, import Croner from the provided URL:
 
-    import { Cron } from "https://deno.land/x/croner@$CRONER_VERSION/dist/croner.js";
+```ts
+import { Cron } from "https://deno.land/x/croner@$CRONER_VERSION/dist/croner.js";
+```
 
 Make sure to replace `$CRONER_VERSION` with the latest version.
 
@@ -38,4 +40,4 @@ Make sure to replace `$CRONER_VERSION` with the latest version.
 
 To use Croner in a webpage, you can load it as a UMD module from a CDN:
 
-    <script src="https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js"></script>
+`<script src="https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js"></script>`

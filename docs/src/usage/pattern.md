@@ -12,7 +12,7 @@ nav_order: 2
 
 The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:
 
-```javascript
+```ts
 // ┌──────────────── (optional) second (0 - 59)
 // │ ┌────────────── minute (0 - 59)
 // │ │ ┌──────────── hour (0 - 23)
@@ -43,10 +43,10 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
 | Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L #               | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0<br># is used to specify nth occurrence of a weekday            |
 
-{: .note }
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
 > When using `L` in the Day of Week field, it affects all specified weekdays. For example, `L5,6` means the last Friday and Saturday in the month."
 > The # character can be used to specify the "nth" weekday of the month. For example, 5#2 represents the second Friday of the month.
+{ .note }
 
 It is also possible to use the following "nicknames" as pattern.
 

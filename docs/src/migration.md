@@ -23,12 +23,12 @@ If upgrading from version `4.x` to `5.x`, the most significant change is the way
 
 For upgrading from version `5.x` to `6.x`, CommonJS and UMD builds were separated in the dist folder. Several method names were also changed to make them more descriptive:
 
-    *   `next()` -> `nextRun()`
-    *   `enumerate()` -> `nextRuns()`
-    *   `current()` -> `currentRun()`
-    *   `previous()`-> `previousRun()`
-    *   `running()` -> `isRunning()`
-    *   `busy()` -> `isBusy()`
+*   `next()` -> `nextRun()`
+*   `enumerate()` -> `nextRuns()`
+*   `current()` -> `currentRun()`
+*   `previous()`-> `previousRun()`
+*   `running()` -> `isRunning()`
+*   `busy()` -> `isBusy()`
 
 ### Upgrading from 6.x to 7.x
 
@@ -42,23 +42,27 @@ If you're currently using the cron package and want to migrate to Croner, the fo
 
 To install the croner package, run the following command in your terminal:
 
-    npm install croner
+```bash
+npm install croner
+```
 
 ### Step 2: Update your code to use Croner
 
 The croner package has a different API compared to the cron package. Here's an example of how to create a new `CronJob` using croner:
 
-    // CronJob constructor is called just Cron in Croner
-    const { Cron } = require('croner');
+```ts
+// CronJob constructor is called just Cron in Croner
+const { Cron } = require('croner');
 
-    // If you have a lot of code using the CrobJob constructor, you can re-use the name like this
-    // const { Cron as CronJob } = require('croner');
+// If you have a lot of code using the CrobJob constructor, you can re-use the name like this
+// const { Cron as CronJob } = require('croner');
 
-    const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
-      console.log('This job will run at 12:00 PM every day.');
-    });
+const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
+    console.log('This job will run at 12:00 PM every day.');
+});
 
-    job.start();
+job.start();
+```
 
 ### Step 3: Update your tests
 
@@ -72,30 +76,38 @@ Here's how to migrate from the node-cron package to Croner:
 
 First, install the croner package in your project:
 
-    npm install croner
+```bash
+npm install croner
+```
 
 ### Replace the import statement:
 
 Next, update the import statement for cron to croner. Replace the line that reads:
 
-    const cron = require('node-cron');
+```ts
+const cron = require('node-cron');
+```
 
 with:
 
-    const cron = require('croner');
+```ts
+const cron = require('croner');
+```
 
 ### Update your cron job:
 
 Here's an example of how to migrate a cron job:
 
-    // node-cron
-    cron.schedule('0 * 14 * * *', () => {
-      console.log('Running a task every minute');
-    }, { timezone: "Europe/Oslo" });
+```ts
+// node-cron
+cron.schedule('0 * 14 * * *', () => {
+    console.log('Running a task every minute');
+}, { timezone: "Europe/Oslo" });
 
-    // croner
-    Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
-      console.log('Running a task every minute');
-    });
+// croner
+Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
+    console.log('Running a task every minute');
+});
+```
 
 By following these steps, you should be able to migrate from `node-cron` to `croner` without any issues.
