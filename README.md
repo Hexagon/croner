@@ -191,7 +191,7 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 
 > **Note**
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
-> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `L5,6` means the last Friday and Saturday in the month."
+> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `5,6#L` means the last Friday and Saturday in the month."
 > The # character can be used to specify the "nth" weekday of the month. For example, 5#2 represents the second Friday of the month.
 
 It is also possible to use the following "nicknames" as pattern.
