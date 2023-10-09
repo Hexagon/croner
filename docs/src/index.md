@@ -74,7 +74,7 @@ The table below provides a brief overview of each library's features.
 | **Features**              |                     |                     |           |                           |                     |
 | Over-run protection       |          ✓          |                     |           |                           |                     |
 | Error handling            |          ✓          |                     |           |                           |          ✓          |
-| Typescript typings        |          ✓          |         ✓            |           |                           |                     |
+| Typescript typings        |          ✓          |         ✓            |           |            ✓              |                     |
 | Unref timers (optional)   |          ✓          |                     |           |          ✓                |                     |
 | dom-OR-dow*                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | dom-AND-dow* (optional)    |          ✓          |                     |           |                           |                     |

@@ -191,7 +191,7 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 
 > **Note**
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
-> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `5,6#L` means the last Friday and Saturday in the month."
+> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `5-6#L` means the last Friday and Saturday in the month."
 > The # character can be used to specify the "nth" weekday of the month. For example, 5#2 represents the second Friday of the month.
 
 It is also possible to use the following "nicknames" as pattern.
@@ -218,7 +218,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | **Features**                                                                                                                        |
 | Over-run protection  |          ✓          |                    |              |                            |                    |
 | Error handling  |          ✓          |                    |              |                            |          ✓          |
-| Typescript typings        |          ✓          |         ✓            |           |                           |                     |
+| Typescript typings        |          ✓          |         ✓            |           |            ✓              |                     |
 | Unref timers (optional)    |          ✓          |                     |                     |          ✓          |                     |
 | dom-OR-dow                |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | dom-AND-dow (optional)    |          ✓          |                     |           |                           |                     |
@@ -242,29 +242,21 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
 | Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
 | **Popularity**                                                                                                                        |
-| Downloads/week [^1]        | 576K                | 31K                 | 433K      | 2239K                     | 924K                |
+| Downloads/week [^1]        | 2019K                | 31K                 | 447K      | 1366K                     | 1046K                |
 | **Quality**                                                                                                                        |
-| Issues [^1]                |                   0 |                   2 |   127 :warning: |                 43 :warning: |    139 :warning: |
+| Issues [^1]                |                   0 |                   2 |   133 :warning: |                 13 |    145 :warning: |
 | Code coverage              |                   99%  | 98%                    | 100%                | 81%                              | 94%                 |
 | **Performance**                                                                                                                        |
-| Ops/s `1 2 3 4 5 6`         | 99 952                    | 49 308                    | N/A :x:          | Test failed :x:      | 2 299 :warning:                    |
-| Ops/s `0 0 0 29 2 *`         | 65 392                    | 17 138                    | N/A :x:          | Test failed :x:      | 1 450 :warning:                    |
-| **Tests**                 | **8/8**             | **7/8**             | **0/8** [^4] :question:    |  **1/8** :warning:                  | **7/8**             |
-| Test `0 0 23 * * *`         | 2022-10-09 00:40    | 2022-10-09 00:40    | N/A       | 2022-10-09 00:40          | 2022-10-09 00:40    |
-| Test `0 0 0 L 2 *` [^2]      | 2023-02-28 00:00 |          2023-02-28 00:00 | N/A       | N/A                       |          2023-02-28 00:00 |
-| Test `0 0 0 29 2 *`         |          2024-02-29 00:00 |          2024-02-29 00:00 | N/A       | 2023-03-29 00:00  :x:           |          2024-02-29 00:00 |
-| Test `0 0 0 29 2 6` [^3]     |          2048-02-09 00:00| N/A                 | N/A       | N/A                       | N/A                 |
-| Test `0 0 0 15 2 *`         |          2023-02-16 00:00 |          2023-02-16 00:00 | N/A       | 2023-03-15 00:00  :x:           |          2023-02-16 00:00 |
-| Test `0 0 0 * 10 1`         |          2022-10-10 00:00 |          2022-10-10 00:00 | N/A       | 2022-11-07 00:00 :x:           |          2022-10-10 00:00 |
-| Test `0 0 23 31 3 *`        | 2023-03-31 23:00    | 2023-03-31 23:00    | N/A       | 2023-04-01 23:00 :x:    | 2023-03-31 23:00    |
-| Test `1 2 3 4 5 6`          | 2023-05-04 03:02 | 2023-05-04 03:02 | N/A          | 2023-06-03 03:02 :x:  | 2023-05-04 03:02 |
+| Ops/s `1 2 3 4 5 6`         | 160 651                    | 55 593                    | N/A :x:          | 6 313 :warning:      | 2 726 :warning:                    |
+| Ops/s `0 0 0 29 2 *`         | 176 714                    | 67 920                    | N/A :x:          | 3 104 :warning:      | 737 :warning:                    |
+| **Tests**                 | **11/11**             | **10/11**            | **0/11** [^4] :question:    |  **7/11** :warning:                  | **9/11**             |
 
 > **Note**
-> *   Table last updated at 2022-10-23, issues and downloads updated 2023-02-19
+> *   Table last updated at 2023-10-10
 > *   node-cron has no interface to predict when the function will run, so tests cannot be carried out.
 > *   All tests and benchmarks were carried out using [https://github.com/Hexagon/cron-comparison](https://github.com/Hexagon/cron-comparison)
 
-[^1]: As of 2023-02-19
+[^1]: As of 2023-10-10
 [^2]: Requires support for L-modifier
 [^3]: In dom-AND-dow mode, only supported by croner at the moment.
 [^4]: Node-cron has no way of showing next run time.
