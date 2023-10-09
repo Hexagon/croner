@@ -238,9 +238,9 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
 | **Size**                                                                                                                        |
-| Minified size (KB)        | 15.5                | 16.3            | 16.5      | -                      | -                |
-| Bundlephobia  minzip (KB) | 3.6                 | 5.1                 | 5.7       |                   23.9 | 32.4              |
-| Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 |
+| Minified size (KB)        | 17.0                | 14.9            | 15.2      | 85.4 :warning:                      | 100.5 :warning:                |
+| Bundlephobia  minzip (KB) | 5.0                 | 5.1                 | 5.7       |                   25.8 | 29.2 :warning:             |
+| Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 :warning: |
 | **Popularity**                                                                                                                        |
 | Downloads/week [^1]        | 2019K                | 31K                 | 447K      | 1366K                     | 1046K                |
 | **Quality**                                                                                                                        |
