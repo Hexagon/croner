@@ -523,6 +523,10 @@
 
 		const arr = this[type];
 
+		// Error on empty part
+		const lastDayOfMonth = (type === "day" && this.lastDayOfMonth);
+		if( conf === "" && !lastDayOfMonth ) throw new TypeError("CronPattern: configuration entry " + type + " (" + conf + ") is empty, check for trailing spaces.");
+		
 		// First off, handle wildcard
 		if( conf === "*" ) return arr.fill(defaultValue);
 

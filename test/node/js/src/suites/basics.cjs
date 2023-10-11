@@ -172,6 +172,18 @@ module.exports = function (Cron, test, scheduledJobs) {
 
 	});
 
+	test("Extra whitespace at beginning should throw", () => {
+		assert.throws(() => {
+			Cron(" 0 0 12 9 *").nextRun();
+		});
+	});
+
+	test("Extra whitespace at end should throw", () => {
+		assert.throws(() => {
+			Cron("0 0 12 9 * ").nextRun();
+		});
+	});
+
 	test("Next 10 run times is returned by enumeration(), and contain a reasonable time span, when using modified start time", () => {
 
 		// 20 minutes before now
