@@ -1,0 +1,9 @@
+/* Force white background on logo */
+.logo {
+    background-color: var(--bg__light);
+    padding-right: 8px;
+    padding-left: 5px;
+    padding-top: 5px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
