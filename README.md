@@ -13,9 +13,9 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month and `#` for nth weekday of month.
 *   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
 *   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](https://croner.56k.guru/usage/examples.html#time-zone).
-*   Built-in [overrun protection](https://croner.56k.guru/usage/examples.html#overrun-protection)
-*   Built-in [error handling](https://croner.56k.guru/usage/examples.html#error-handling)
+*   Target different [time zones](https://croner.56k.guru/usage/examples/#time-zone).
+*   Built-in [overrun protection](https://croner.56k.guru/usage/examples/#overrun-protection)
+*   Built-in [error handling](https://croner.56k.guru/usage/examples/#error-handling)
 *   Includes [TypeScript](https://www.typescriptlang.org/) typings.
 *   Support for asynchronous functions.
 *   Pause, resume, or stop execution after a task is scheduled.
@@ -44,14 +44,14 @@ Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Y
 
 ```
 
-More [examples](https://croner.56k.guru/usage/examples.html)...
+More [examples](https://croner.56k.guru/usage/examples/)...
 
 ## Installation
 
 Full documentation on installation and usage is found at <https://croner.56k.guru>
 
 > **Note**
-> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see the [migration section](https://croner.56k.guru/migration.html) of the manual.
+> If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see the [migration section](https://croner.56k.guru/migration/) of the manual.
 
 Install croner using your favorite package manager or CDN. then include it in you project: 
 
@@ -294,7 +294,7 @@ A list of fixes and features currently released in the `dev` branch is available
 
 Croner is founded and actively maintained by Hexagon. If you find value in Croner and want to contribute:
 
-- Code Contributions: See our [Contribution Guide](https://croner.56k.guru/contributing.html) for details on how to contribute code.
+- Code Contributions: See our [Contribution Guide](https://croner.56k.guru/contributing/) for details on how to contribute code.
 
 - Sponsorship and Donations: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
 
