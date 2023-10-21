@@ -1554,14 +1554,14 @@ Cron.prototype.getPattern = function () {
  * @returns {boolean} - Running or not
  */
 Cron.prototype.isRunning = function () {
-	const msLeft = this.msToNext(this._states.currentRun);
+	const nextRunTime = this.nextRun(this._states.currentRun);
 
 	const isRunning = !this._states.paused;
 	const isScheduled = this.fn !== void 0; 
 	// msLeft will be null if _states.kill is set to true, so we don't need to check this one, but we do anyway...
 	const notIsKilled = !this._states.kill;
 
-	return isRunning && isScheduled && notIsKilled && msLeft !== null;
+	return isRunning && isScheduled && notIsKilled && nextRunTime !== null;
 };
 
 /**
@@ -1612,14 +1612,14 @@ Cron.prototype.previousRun = function () {
  * @returns {number | null}
  */
 Cron.prototype.msToNext = function (prev) {
+	
+	prev = prev || new Date();
+
 	// Get next run time
 	const next = this._next(prev);
 
-	// Default previous for millisecond calculation
-	prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
-
 	if (next) {
-		return (next.getTime(true) - prev.getTime(true));
+		return (next.getTime() - prev.getTime());
 	} else {
 		return null;
 	}
@@ -1700,9 +1700,12 @@ Cron.prototype.schedule = function (func) {
 		this.fn = func;
 	}
 
-	// Get ms to next run, bail out early if any of them is null (no next run)
-	let waitMs = this.msToNext(this._states.currentRun);
+	// Get actual ms to next run, bail out early if any of them is null (no next run)						
+	let waitMs = this.msToNext();
+
+	// Get the target date based on previous run
 	const target = this.nextRun(this._states.currentRun);
+
 	if (waitMs === null || target === null) return this;
 
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
