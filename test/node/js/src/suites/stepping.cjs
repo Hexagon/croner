@@ -158,4 +158,19 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns[3].getMonth(),9);
 	});
 
+	test("Steps for months should yield correct months with range and start date", function () {
+		let nextRuns = new Cron("1 1 1 5/2 *").nextRuns(10, "2020-12-31T23:59:59");
+		assert.equal(nextRuns[0].getMonth(),4);
+		assert.equal(nextRuns[1].getMonth(),6);
+		assert.equal(nextRuns[2].getMonth(),8);
+		assert.equal(nextRuns[3].getMonth(),10);
+		assert.equal(nextRuns[4].getMonth(),4);
+	});
+	
+	test("Steps for days should yield correct days with range and start date", function () {
+		let nextRuns = new Cron("1 1 5/3 * *").nextRuns(10, "2020-12-31T23:59:59");
+		assert.equal(nextRuns[0].getDate(),5);
+		assert.equal(nextRuns[1].getDate(),8);
+		assert.equal(nextRuns[2].getDate(),11);
+	});
 };

@@ -734,7 +734,7 @@
 	 * @param {string} conf - Current part, expected to be a string like * /20 (without the space)
 	 * @param {string} type - One of "seconds", "minutes" etc
 	 */
-	CronPattern.prototype.handleStepping = function (conf, type, _valueIndexOffset, defaultValue) {
+	CronPattern.prototype.handleStepping = function (conf, type, valueIndexOffset, defaultValue) {
 
 		const result = this.extractNth(conf, type);
 
@@ -746,7 +746,7 @@
 
 		let start = 0;
 		if( split[0] !== "*" ) {
-			start = parseInt(split[0], 10);
+			start = parseInt(split[0], 10) + valueIndexOffset;
 		}
 
 		const steps = parseInt(split[1], 10);
