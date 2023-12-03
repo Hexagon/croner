@@ -8,7 +8,7 @@
 
 		minitz - MIT License - Hexagon <hexagon@56k.guru>
 
-		Version 4.0.5
+		Version 4.0.6
 		
 		------------------------------------------------------------------------------------
 
@@ -236,7 +236,7 @@
 	function getTimezoneOffset(timeZone, date = new Date()) {
 
 		// Get timezone 
-		const tz = date.toLocaleString("en-US", {timeZone: timeZone, timeZoneName: "short"}).split(" ").slice(-1)[0];
+		const tz = date.toLocaleString("en-US", {timeZone: timeZone, timeZoneName: "shortOffset"}).split(" ").slice(-1)[0];
 
 		// Extract time in en-US format
 		// - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
