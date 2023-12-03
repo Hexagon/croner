@@ -42,7 +42,7 @@
   "scripts": {
     "test": "uvu test test.croner.js",
     "test:dist": "uvu test/node/js && npm run test:ts",
-    "test:bun": "bun wiptest test/bun",
+    "test:bun": "bun test test/bun",
     "test:lint": "eslint ./**/*.js ./**/*.cjs",
     "test:lint:fix": "eslint --fix  ./**/*.js ./**/*.cjs",
     "test:ts": "tsc --strict --noEmit ./test/node/ts/basics.ts",

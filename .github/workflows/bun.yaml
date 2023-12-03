@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        bun-version: ["v0.2.2"]
+        bun-version: ["v1.x"]
         timezone: ["America/New_York", "Europe/Berlin"]
 
     steps:
