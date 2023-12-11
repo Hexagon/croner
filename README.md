@@ -11,7 +11,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
 *   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month and `#` for nth weekday of month.
-*   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
+*   Works in Node.js >=18 (both require and import), Deno >=1.16 and Bun >=1.0.0.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](https://croner.56k.guru/usage/examples/#time-zone).
 *   Built-in [overrun protection](https://croner.56k.guru/usage/examples/#overrun-protection)
@@ -68,7 +68,7 @@ const { Cron } = require("croner");
 Using Deno
 
 ```typescript
-import { Cron } from "https://deno.land/x/croner@7.0.5/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@8.0.0/dist/croner.js";
 ```
 
 In a webpage using the UMD-module

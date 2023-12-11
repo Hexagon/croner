@@ -13,7 +13,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
 *   Uses Vixie-cron [pattern](usage/pattern.md), with additional features such as `L` for last day and weekday of month and `#` for nth weekday of month.
-*   Works in Node.js >=7.6 (both require and import), Deno >=1.16 and Bun >=0.2.2.
+*   Works in Node.js >=18.0 (both require and import), Deno >=1.16 and Bun >=1.0.0.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](usage/examples.md#time-zone).
 *   Built-in [overrun protection](usage/examples.md#overrun-protection)
