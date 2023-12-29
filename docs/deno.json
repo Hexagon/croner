@@ -5,7 +5,7 @@
       "serve": "deno task lume -s --port=8000"
     },
     "imports": {
-      "lume/": "https://deno.land/x/lume@v1.19.1/",
-      "lumocs/": "https://deno.land/x/lumocs@0.0.25/"
+      "lume/": "https://deno.land/x/lume@v2.0.1/",
+      "lumocs/": "https://deno.land/x/lumocs@0.1.0/"
     }
   }
