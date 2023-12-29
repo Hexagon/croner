@@ -6,6 +6,6 @@
     },
     "imports": {
       "lume/": "https://deno.land/x/lume@v2.0.1/",
-      "lumocs/": "https://deno.land/x/lumocs@0.1.1/"
+      "lumocs/": "https://deno.land/x/lumocs@0.1.2/"
     }
   }
