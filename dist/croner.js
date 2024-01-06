@@ -1704,7 +1704,8 @@ Cron.prototype.schedule = function (func) {
 	// Get the target date based on previous run
 	const target = this.nextRun(this._states.currentRun);
 
-	if (waitMs === null || target === null) return this;
+	// isNaN added to prevent infinite loop
+	if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
 
 	// setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
 	if (waitMs > maxDelay) {
