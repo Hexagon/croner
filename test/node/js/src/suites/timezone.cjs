@@ -50,7 +50,7 @@ module.exports = function (Cron, test) {
 		let timeStockholm = Cron("* * * * * *", {timezone: "Europe/Stockholm"}).nextRun().getTime(),
 			timeNewYork = Cron("* * * * * *", {timezone: "America/New_York"}).nextRun().getTime();
 
-		// The time right now should be the same in utc wether in new york or stockholm. Allow a 4 second difference.
+		// The time right now should be the same in utc whether in new york or stockholm. Allow a 4 second difference.
 		assert.ok(timeStockholm>=timeNewYork-4000);
 		assert.ok(timeStockholm<=timeNewYork+4000);
 	});
