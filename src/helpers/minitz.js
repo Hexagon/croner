@@ -2,7 +2,7 @@
 
 	minitz - MIT License - Hexagon <hexagon@56k.guru>
 
-	Version 4.0.5
+	Version 4.0.5-custom.1
 	
 	------------------------------------------------------------------------------------
 
@@ -230,7 +230,11 @@ minitz.tp = (y,m,d,h,i,s,tz) => { return { y, m, d, h, i, s, tz: tz }; };
 function getTimezoneOffset(timeZone, date = new Date()) {
 
 	// Get timezone 
-	const tz = date.toLocaleString("en-US", {timeZone: timeZone, timeZoneName: "short"}).split(" ").slice(-1)[0];
+	let tz = date.toLocaleString("en-US", {timeZone: timeZone, timeZoneName: "short"}).split(" ").slice(-1)[0];
+
+	// Convert non-supported timezones
+	// - Hotfix for AST, AKST and AKDT 7.0-branch of Croner, fixed for real in 8.0
+	tz = tz.replace(/\bAKST\b/g, "-0900").replace(/\bAKDT\b/g, "-0800").replace(/\bAST\b/g, "-0400");
 
 	// Extract time in en-US format
 	// - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
