@@ -1548,7 +1548,7 @@ Cron.prototype.getPattern = function () {
 };
 
 /**
- * Indicates wether or not the cron job is scheduled and running, e.g. awaiting next trigger
+ * Indicates whether or not the cron job is scheduled and running, e.g. awaiting next trigger
  * @public
  *
  * @returns {boolean} - Running or not
@@ -1565,7 +1565,7 @@ Cron.prototype.isRunning = function () {
 };
 
 /**
- * Indicates wether or not the cron job is permanently stopped
+ * Indicates whether or not the cron job is permanently stopped
  * @public
  *
  * @returns {boolean} - Running or not
@@ -1575,7 +1575,7 @@ Cron.prototype.isStopped = function () {
 };
 
 /**
- * Indicates wether or not the cron job is currently working
+ * Indicates whether or not the cron job is currently working
  * @public
  *
  * @returns {boolean} - Running or not

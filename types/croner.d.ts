@@ -161,21 +161,21 @@ export class Cron {
      */
     getPattern(): string | undefined;
     /**
-     * Indicates wether or not the cron job is scheduled and running, e.g. awaiting next trigger
+     * Indicates whether or not the cron job is scheduled and running, e.g. awaiting next trigger
      * @public
      *
      * @returns {boolean} - Running or not
      */
     public isRunning(): boolean;
     /**
-     * Indicates wether or not the cron job is permanently stopped
+     * Indicates whether or not the cron job is permanently stopped
      * @public
      *
      * @returns {boolean} - Running or not
      */
     public isStopped(): boolean;
     /**
-     * Indicates wether or not the cron job is currently working
+     * Indicates whether or not the cron job is currently working
      * @public
      *
      * @returns {boolean} - Running or not
