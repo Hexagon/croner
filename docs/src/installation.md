@@ -31,7 +31,11 @@ const { Cron } = require("croner");
 For Deno, import Croner from the provided URL:
 
 ```ts
+// From deno.land/x
 import { Cron } from "https://deno.land/x/croner@$CRONER_VERSION/dist/croner.js";
+
+// ... or jsr.io
+import { Cron } from "jsr:@hexagon/croner@$CRONER_VERSION";
 ```
 
 Make sure to replace `$CRONER_VERSION` with the latest version.

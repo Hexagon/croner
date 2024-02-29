@@ -446,7 +446,7 @@ CronPattern.prototype.parse = function () {
 
 	// Validite number of configuration entries
 	if( parts.length < 5 || parts.length > 6 ) {
-		throw new TypeError("CronPattern: invalid configuration format ('" + this.pattern + "'), exacly five or six space separated parts required.");
+		throw new TypeError("CronPattern: invalid configuration format ('" + this.pattern + "'), exactly five or six space separated parts are required.");
 	}
 
 	// If seconds is omitted, insert 0 for seconds
