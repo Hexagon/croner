@@ -6,7 +6,7 @@
       "description": "Cron for JavaScript and TypeScript"
     },
     "substitute": {
-      "$CRONER_VERSION": "8.0.1"
+      "$CRONER_VERSION": "8.0.2"
     },
     "top_links": [
       {

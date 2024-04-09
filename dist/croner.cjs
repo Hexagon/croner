@@ -1085,7 +1085,20 @@ CronDate.prototype.apply = function () {
  * @param {Date} date - Input date
  */
 CronDate.prototype.fromString = function (str) {
-	return this.fromDate(minitz.fromTZISO(str, this.tz));
+	if (typeof this.tz === "number") {
+		// Parse without timezone
+		const inDate = minitz.fromTZISO(str);
+		this.ms = inDate.getUTCMilliseconds();
+		this.second = inDate.getUTCSeconds();
+		this.minute = inDate.getUTCMinutes();
+		this.hour = inDate.getUTCHours();
+		this.day = inDate.getUTCDate();
+		this.month  = inDate.getUTCMonth();
+		this.year = inDate.getUTCFullYear();
+		this.apply();
+	} else {
+		return this.fromDate(minitz.fromTZISO(str, this.tz));
+	}
 };
 
 /**

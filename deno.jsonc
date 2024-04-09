@@ -1,6 +1,6 @@
 {
     "name": "@hexagon/croner",
-    "version": "8.0.1",
+    "version": "8.0.2",
     "exports": "./dist/croner.js",
     "lint": {
         "include": ["src","test/deno"],
