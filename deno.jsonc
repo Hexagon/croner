@@ -4,7 +4,7 @@
     "exports": "./dist/croner.js",
     "lint": {
         "include": ["src","test/deno"],
-        "exclude": ["dist","test/node"]
+        "exclude": ["dist","test/node", "src/options.js", "src/date.js"]
     },
     "fmt": {
         "include": ["test/deno"],
