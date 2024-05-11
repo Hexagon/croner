@@ -260,4 +260,25 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRuns.length,5);
 	});
 
+	test("Valid interval starting in the past should give correct start date", function () {
+		const now = new Date();
+    
+		const yesterday = new Date(now);
+		yesterday.setDate(now.getDate() - 1);
+		yesterday.setHours(19, 31, 2);
+	
+		const sixDaysFromNow = new Date(now);
+		sixDaysFromNow.setDate(now.getDate() + 6);
+		sixDaysFromNow.setHours(19, 31, 2);
+	
+		const nextRun = Cron("* * * * * *", { interval: 60 * 60 * 24 * 7, startAt: yesterday.toISOString() }).nextRun();
+		
+		assert.equal(nextRun.getFullYear(), sixDaysFromNow.getFullYear());
+		assert.equal(nextRun.getMonth(), sixDaysFromNow.getMonth());
+		assert.equal(nextRun.getDate(), sixDaysFromNow.getDate());
+		assert.equal(nextRun.getHours(), sixDaysFromNow.getHours());
+		assert.equal(nextRun.getMinutes(), sixDaysFromNow.getMinutes());
+		assert.equal(nextRun.getSeconds(), sixDaysFromNow.getSeconds());
+	});
+
 };
