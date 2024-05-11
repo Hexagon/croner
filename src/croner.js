@@ -496,7 +496,19 @@ Cron.prototype._checkTrigger = function (target) {
  * @returns {CronDate | null} - Next run time
  */
 Cron.prototype._next = function (prev) {
-	const hasPreviousRun = (prev || this._states.currentRun) ? true : false;
+	let hasPreviousRun = (prev || this._states.currentRun) ? true : false;
+
+	// If no previous run, and startAt and interval is set, calculate when the last run should have been
+	if (!prev && this.options.startAt && this.options.interval) {
+		prev = this.options.startAt;
+		const now = new CronDate(undefined, this.options.timezone || this.options.utcOffset);
+		let prevTimePlusInterval = prev.getTime() + this.options.interval * 1000;
+		while (prevTimePlusInterval <= now.getTime()) {
+			prev = new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(this._states.pattern, this.options, true);
+			prevTimePlusInterval = prev.getTime() + this.options.interval * 1000;
+		}
+		hasPreviousRun = true;
+	}
 
 	// Ensure previous run is a CronDate
 	prev = new CronDate(prev, this.options.timezone || this.options.utcOffset);
