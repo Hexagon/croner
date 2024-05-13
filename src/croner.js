@@ -224,7 +224,7 @@ Cron.prototype.nextRuns = function (n, previous) {
 };
 
 /**
- * Return the original pattern, it there was one
+ * Return the original pattern, if there was one
  *
  * @returns {string|undefined} - Original pattern
  */

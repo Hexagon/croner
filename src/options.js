@@ -1,7 +1,7 @@
 import { CronDate } from "./date.js";
 
 // This import is only used by tsc for generating type definitions from js/jsdoc
-import { Cron } from "./croner.js"; // eslint-disable-line no-unused-vars
+import { Cron } from "./croner.js";
 
 /**
  * @callback CatchCallbackFn
