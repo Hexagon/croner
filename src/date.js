@@ -2,7 +2,7 @@ import { minitz } from "./helpers/minitz.js";
 
 // This import is only used by tsc for generating type definitions from js/jsdoc
 // deno-lint-ignore no-unused-vars
-import { CronOptions as CronOptions } from "./options.js"; // eslint-disable-line no-unused-vars
+import { CronOptions as CronOptions } from "./options.js";
 import { LAST_OCCURRENCE, ANY_OCCURRENCE, OCCURRENCE_BITMASKS } from "./pattern.js";
 
 /** 
