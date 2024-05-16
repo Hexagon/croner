@@ -1,9 +1,9 @@
 {
   "name": "croner",
-  "version": "8.0.3-dev.0",
+  "version": "8.0.3-dev.1",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
-  "homepage": "https://hexagon.github.io/croner",
+  "homepage": "https://croner.56k.guru",
   "contributors": [
     {
       "name": "Pehr Boman",
