@@ -281,4 +281,22 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getSeconds(), sixDaysFromNow.getSeconds());
 	});
 
+	test("Valid interval starting in the future should give correct start date", function () {
+
+		const now = new Date();
+	
+		const tomorrow = new Date(now);
+		tomorrow.setDate(now.getDate() + 1);
+		tomorrow.setHours(0, 31, 2);
+	
+		const nextRun = Cron("* * * * * *", { interval: 60 * 60 * 24 * 7, startAt: tomorrow.toISOString() }).nextRun();
+		
+		assert.equal(nextRun.getFullYear(), tomorrow.getFullYear());
+		assert.equal(nextRun.getMonth(), tomorrow.getMonth());
+		assert.equal(nextRun.getDate(), tomorrow.getDate());
+		assert.equal(nextRun.getHours(), tomorrow.getHours());
+		assert.equal(nextRun.getMinutes(), tomorrow.getMinutes());
+		// The seconds are not checked because there will be no previous run, so CronDate.increment() will add 1 second to the nextRun
+	});
+
 };
