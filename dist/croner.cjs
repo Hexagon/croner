@@ -1552,7 +1552,7 @@ Cron.prototype.nextRuns = function (n, previous) {
 };
 
 /**
- * Return the original pattern, it there was one
+ * Return the original pattern, if there was one
  *
  * @returns {string|undefined} - Original pattern
  */
@@ -1828,14 +1828,7 @@ Cron.prototype._next = function (prev) {
 
 	// If no previous run, and startAt and interval is set, calculate when the last run should have been
 	if (!prev && this.options.startAt && this.options.interval) {
-		prev = this.options.startAt;
-		const now = new CronDate(undefined, this.options.timezone || this.options.utcOffset);
-		let prevTimePlusInterval = prev.getTime() + this.options.interval * 1000;
-		while (prevTimePlusInterval <= now.getTime()) {
-			prev = new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(this._states.pattern, this.options, true);
-			prevTimePlusInterval = prev.getTime() + this.options.interval * 1000;
-		}
-		hasPreviousRun = true;
+		[prev, hasPreviousRun] = this._calculatePreviousRun(prev, hasPreviousRun);
 	}
 
 	// Ensure previous run is a CronDate
@@ -1867,6 +1860,25 @@ Cron.prototype._next = function (prev) {
 		// All seem good, return next run
 		return nextRun;
 	}
+};
+/**
+ * Calculate the previous run if no previous run is supplied, but startAt and interval are set.
+ * This calculation is only necessary if the startAt time is before the current time.
+ * Should only be called from the _next function.
+ * @private
+ **/
+Cron.prototype._calculatePreviousRun = function (prev, hasPreviousRun) {
+	const now = new CronDate(undefined, this.options.timezone || this.options.utcOffset);
+	if (this.options.startAt.getTime() <= now.getTime()) {
+		prev = this.options.startAt;
+		let prevTimePlusInterval = prev.getTime() + this.options.interval * 1000;
+		while (prevTimePlusInterval <= now.getTime()) {
+			prev = new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(this._states.pattern, this.options, true);
+			prevTimePlusInterval = prev.getTime() + this.options.interval * 1000;
+		}
+		hasPreviousRun = true;
+	}
+	return [prev, hasPreviousRun];
 };
 
 Cron.Cron = Cron;

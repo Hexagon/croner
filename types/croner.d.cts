@@ -51,7 +51,7 @@ declare class Cron {
      */
     nextRuns(n: number, previous?: Date | string): Date[];
     /**
-     * Return the original pattern, it there was one
+     * Return the original pattern, if there was one
      *
      * @returns {string|undefined} - Original pattern
      */
@@ -138,6 +138,7 @@ declare class Cron {
     public trigger(): Promise<void>;
     private _checkTrigger;
     private _next;
+    private _calculatePreviousRun;
 }
 declare namespace Cron {
     export { Cron, scheduledJobs, TimePoint, CatchCallbackFn, ProtectCallbackFn, CronOptions, CronPatternPart, CronIndexOffset };

@@ -155,7 +155,7 @@ export class Cron {
      */
     nextRuns(n: number, previous?: Date | string): Date[];
     /**
-     * Return the original pattern, it there was one
+     * Return the original pattern, if there was one
      *
      * @returns {string|undefined} - Original pattern
      */
@@ -242,6 +242,7 @@ export class Cron {
     public trigger(): Promise<void>;
     private _checkTrigger;
     private _next;
+    private _calculatePreviousRun;
 }
 export namespace Cron {
     export { Cron };
