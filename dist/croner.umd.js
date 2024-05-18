@@ -1870,6 +1870,9 @@
 	 * This calculation is only necessary if the startAt time is before the current time.
 	 * Should only be called from the _next function.
 	 * @private
+	 * @param {CronDate|Date|string|undefined} prev - previousRun
+	 * @param {boolean} hasPreviousRun - has a previous run
+	 * @returns {[{CronDate | undefined}, {boolean}]} - previousRun, hasPreviousRun
 	 **/
 	Cron.prototype._calculatePreviousRun = function (prev, hasPreviousRun) {
 		const now = new CronDate(undefined, this.options.timezone || this.options.utcOffset);
