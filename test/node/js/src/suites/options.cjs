@@ -296,7 +296,8 @@ module.exports = function (Cron, test) {
 		assert.equal(nextRun.getDate(), tomorrow.getDate());
 		assert.equal(nextRun.getHours(), tomorrow.getHours());
 		assert.equal(nextRun.getMinutes(), tomorrow.getMinutes());
-		// The seconds are not checked because there will be no previous run, so CronDate.increment() will add 1 second to the nextRun
+		assert.equal(nextRun.getSeconds(), tomorrow.getSeconds());
+		
 	});
 
 };

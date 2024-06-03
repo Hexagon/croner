@@ -1825,8 +1825,10 @@ Cron.prototype._next = function (prev) {
 	let hasPreviousRun = (prev || this._states.currentRun) ? true : false;
 
 	// If no previous run, and startAt and interval is set, calculate when the last run should have been
+	let startAtInFutureWithInterval = false;
 	if (!prev && this.options.startAt && this.options.interval) {
 		[prev, hasPreviousRun] = this._calculatePreviousRun(prev, hasPreviousRun);
+		startAtInFutureWithInterval = (!prev) ? true : false;
 	}
 
 	// Ensure previous run is a CronDate
@@ -1838,12 +1840,17 @@ Cron.prototype._next = function (prev) {
 	}
 
 	// Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
-	const nextRun = this._states.once ||
-		new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(
+	let nextRun = this._states.once ||
+		new CronDate(prev, this.options.timezone || this.options.utcOffset);
+
+	// if the startAt is in the future and the interval is set, then the prev is already set to the startAt, so there is no need to increment it
+	if(!startAtInFutureWithInterval && nextRun !== this._states.once) {
+		nextRun = nextRun.increment(
 			this._states.pattern,
 			this.options,
 			hasPreviousRun, // hasPreviousRun is used to allow 
 		);
+	}
 
 	if (this._states.once && this._states.once.getTime() <= prev.getTime()) {
 		return null;
