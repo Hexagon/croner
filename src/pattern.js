@@ -22,7 +22,7 @@ import { CronDate } from "./date.js";
  */
 export const LAST_OCCURRENCE = 0b100000;
 export const ANY_OCCURRENCE = 0b00001 | 0b00010 | 0b00100 | 0b01000 | 0b10000 | LAST_OCCURRENCE;
-export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b010000, 0b10000];
+export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000];
 
 /**
  * Create a CronPattern instance from pattern string ('* * * * * *')
