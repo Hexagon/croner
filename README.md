@@ -89,7 +89,7 @@ Cron takes three arguments
 
 *   [pattern](#pattern)
 *   [options](#options) (optional) 
-*   scheduleds function (optional)
+*   scheduled function (optional)
 
 ```javascript
 // Parameters
