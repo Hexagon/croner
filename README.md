@@ -5,7 +5,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 # Croner - Cron for JavaScript and TypeScript
 
-[![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4978bdbf495941c087ecb32b120f28ff)](https://www.codacy.com/gh/Hexagon/croner/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/croner&amp;utm_campaign=Badge_Grade) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
+[![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![JSR](https://jsr.io/badges/@hexagon/croner)](https://jsr.io/@hexagon/croner) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
@@ -53,7 +53,7 @@ Full documentation on installation and usage is found at <https://croner.56k.gur
 > **Note**
 > If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from a older version of croner, see the [migration section](https://croner.56k.guru/migration/) of the manual.
 
-Install croner using your favorite package manager or CDN. then include it in you project: 
+Install croner using your favorite package manager or CDN, then include it in you project: 
 
 Using Node.js or Bun
 
@@ -69,10 +69,10 @@ Using Deno
 
 ```typescript
 // From deno.land/x
-import { Cron } from "https://deno.land/x/croner@8.1.1/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@8.1.2/dist/croner.js";
 
 // ... or jsr.io
-import { Cron } from "jsr:@hexagon/croner@8.1.1";
+import { Cron } from "jsr:@hexagon/croner@8.1.2";
 ```
 
 In a webpage using the UMD-module
