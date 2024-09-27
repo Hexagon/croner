@@ -43,3 +43,6 @@ dist-docs
 
 # Lume built site
 _site
+
+# TypeScript incremental compilation information
+.tsbuildinfo

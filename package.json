@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "8.1.1",
+  "version": "8.1.2",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://croner.56k.guru",
@@ -73,11 +73,11 @@
     }
   },
   "devDependencies": {
-    "eslint": "^9.2.0",
+    "eslint": "^9.11.1",
     "minitz": "^4.0.6",
-    "rollup": "^4.8.0",
-    "typescript": "^5.1.6",
-    "uglify-js": "^3.17.4",
+    "rollup": "^4.22.5",
+    "typescript": "^5.6.2",
+    "uglify-js": "^3.19.3",
     "uvu": "^0.5.6"
   },
   "license": "MIT"
