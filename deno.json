@@ -1,0 +1,32 @@
+{
+    "name": "@hexagon/croner",
+    "version": "9.0.0-dev.0",
+    "exports": "./src/croner.ts",
+    "lint": {
+      "include": ["src", "test", "build"]
+    },
+    "fmt": {
+      "include": ["src", "test", "build"],
+      "lineWidth": 100
+    },
+    "test": {
+      "exclude": ["dist", "build"]
+    },
+    "tasks": {
+      "build:clean": "deno run --allow-read --allow-write build/clean.ts",
+      "build:npm": "deno run --allow-read --allow-write build/npm.ts",
+      "build": "deno task build:clean && deno run --allow-read --allow-write --allow-env --allow-run build/esbuild.ts && deno task build:npm",
+      "check-deps": "deno run -A jsr:@check/deps"
+    },
+    "imports": {
+      "@cross/fs": "jsr:@cross/fs@^0.1.11",
+      "@cross/utils": "jsr:@cross/utils@^0.16.0",
+      "@deno/dnt": "jsr:@deno/dnt@^0.41.3",
+      "@std/path": "jsr:@std/path@^1.0.6",
+      "esbuild": "npm:esbuild@^0.24.0",
+      "esbuild-plugin-d.ts": "npm:esbuild-plugin-d.ts@^1.3.0"
+    },
+    "publish": {
+      "exclude": ["build", "dist", "docs", "test", "package.json", ".github"]
+    }
+}
