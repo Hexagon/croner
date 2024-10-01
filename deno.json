@@ -3,7 +3,7 @@
     "version": "9.0.0-dev.0",
     "exports": "./src/croner.ts",
     "lint": {
-      "include": ["src", "test", "build"]
+      "include": ["src", "build"]
     },
     "fmt": {
       "include": ["src", "test", "build"],

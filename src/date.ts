@@ -1,7 +1,12 @@
-import { minitz } from "./helpers/minitz.js";
+import { minitz } from "./helpers/minitz.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
-import { ANY_OCCURRENCE, LAST_OCCURRENCE, OCCURRENCE_BITMASKS } from "./pattern.ts";
+import {
+  ANY_OCCURRENCE,
+  type CronPattern,
+  LAST_OCCURRENCE,
+  OCCURRENCE_BITMASKS,
+} from "./pattern.ts";
 
 /**
  * Constant defining the minimum number of days per month where index 0 = January etc.
@@ -25,7 +30,10 @@ const DaysOfMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
  *   from pattern. Offset should be -1
  * ]
  */
-const RecursionSteps = [
+type RecursionTarget = "month" | "day" | "hour" | "minute" | "second";
+type RecursionTargetNext = RecursionTarget | "year";
+type RecursionStep = [RecursionTarget, RecursionTargetNext, number];
+const RecursionSteps: RecursionStep[] = [
   ["month", "year", 0],
   ["day", "month", -1],
   ["hour", "day", 0],
@@ -46,42 +54,42 @@ class CronDate {
    * Current milliseconds
    * @type {number}
    */
-  ms: number;
+  ms!: number;
 
   /**
    * Current second (0-59), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
-  second: number;
+  second!: number;
 
   /**
    * Current minute (0-59), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
-  minute: number;
+  minute!: number;
 
   /**
    * Current hour (0-23), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
-  hour: number;
+  hour!: number;
 
   /**
    * Current day (1-31), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
-  day: number;
+  day!: number;
 
   /**
    * Current month (1-12), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
-  month: number;
+  month!: number;
   /**
    * Current full year, in local time or target timezone specified by `this.tz`
    */
-  year: number;
-  CronDate(d: CronDate | Date | string, tz?: string | number) {
+  year!: number;
+  constructor(d?: CronDate | Date | string, tz?: string | number) {
     /**
      * TimeZone
      * @type {string|number|undefined}
@@ -90,7 +98,7 @@ class CronDate {
 
     // Populate object using input date, or throw
     if (d && d instanceof Date) {
-      if (!isNaN(d)) {
+      if (!isNaN(d as unknown as number)) {
         this.fromDate(d);
       } else {
         throw new TypeError("CronDate: Invalid date passed to CronDate constructor");
@@ -249,8 +257,8 @@ class CronDate {
       this.month = inDate.getUTCMonth();
       this.year = inDate.getUTCFullYear();
       this.apply();
-    } else {
-      return this.fromDate(minitz.fromTZISO(str, this.tz));
+    } else if (this.tz === undefined) {
+      return this.fromDate(minitz.fromTZISO(str, this.tz === undefined ? "UTC" : this.tz));
     }
   }
 
@@ -259,10 +267,10 @@ class CronDate {
    */
   private findNext(
     options: CronOptions,
-    target: string,
+    target: RecursionTarget,
     pattern: CronPattern,
     offset: number,
-  ): boolean {
+  ): number {
     const originalTarget = this[target];
 
     // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster
@@ -287,22 +295,22 @@ class CronDate {
 
     for (let i = this[target] + offset; i < pattern[target].length; i++) {
       // this applies to all "levels"
-      let match = pattern[target][i];
+      let match: number = pattern[target][i];
 
       // Special case for last day of month
       if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
-        match = true;
+        match = 1;
       }
 
       // Special case for day of week
       if (target === "day" && !pattern.starDOW) {
-        let dowMatch = pattern.dayOfWeek[(fDomWeekDay + ((i - offset) - 1)) % 7];
+        let dowMatch = pattern.dayOfWeek[(fDomWeekDay! + ((i - offset) - 1)) % 7];
 
         // Extra check for nth weekday of month
         // 0b011111 === All occurences of weekday in month
         // 0b100000 === Last occurence of weekday in month
         if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
-          dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, i - offset, dowMatch);
+          dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, i - offset, dowMatch) ? 1 : 0;
         } else if (dowMatch) {
           throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
         }
@@ -338,7 +346,7 @@ class CronDate {
    * @param doing Which part to increment, 0 represent first item of RecursionSteps-array etc.
    * @return Returns itthis for chaining, or null if increment wasnt possible
    */
-  private recurse(pattern: string, options: CronOptions, doing: number): CronDate | null {
+  private recurse(pattern: CronPattern, options: CronOptions, doing: number): CronDate | null {
     // Find next month (or whichever part we're at)
     const res = this.findNext(options, RecursionSteps[doing][0], pattern, RecursionSteps[doing][2]);
 
@@ -390,13 +398,15 @@ class CronDate {
    * @return Returns itthis for chaining, or null if increment wasnt possible
    */
   public increment(
-    pattern: string,
+    pattern: CronPattern,
     options: CronOptions,
     hasPreviousRun: boolean,
   ): CronDate | null {
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
-    this.second += (options.interval > 1 && hasPreviousRun) ? options.interval : 1;
+    this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
+      ? options.interval
+      : 1;
 
     // Always reset milliseconds, so we are at the next second exactly
     this.ms = 0;
@@ -413,7 +423,7 @@ class CronDate {
    *
    * @param internal If this is an internal call
    */
-  public getDate(internal: boolean): Date {
+  public getDate(internal?: boolean): Date {
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
@@ -445,14 +455,17 @@ class CronDate {
         // If .tz is something else (hopefully a string), it indicates the timezone of the "local time" of the internal date object
         // Use minitz to create a normal Date object, and return that.
       } else {
-        return minitz(
-          this.year,
-          this.month + 1,
-          this.day,
-          this.hour,
-          this.minute,
-          this.second,
-          this.tz,
+        return minitz.fromTZ(
+          minitz.tp(
+            this.year,
+            this.month + 1,
+            this.day,
+            this.hour,
+            this.minute,
+            this.second,
+            this.tz,
+          ),
+          false,
         );
       }
     }

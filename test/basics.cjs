@@ -954,7 +954,7 @@ module.exports = function (Cron, test, scheduledJobs) {
   });
 
   test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
-    let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).nextRuns(
+    const nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).nextRuns(
       6,
       "2022-01-31T00:00:00",
     );
@@ -974,7 +974,7 @@ module.exports = function (Cron, test, scheduledJobs) {
   });
 
   test("Weekday pattern should return correct alone (legacy mode)", function () {
-    let nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).nextRuns(
+    const nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).nextRuns(
       3,
       "2022-02-28T23:59:00",
     );

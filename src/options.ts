@@ -13,12 +13,12 @@ interface CronOptions {
   maxRuns?: number;
   interval?: number;
   protect?: boolean | ProtectCallbackFn;
-  startAt?: string | Date;
-  stopAt?: string | Date;
+  startAt?: string | Date | CronDate;
+  stopAt?: string | Date | CronDate;
   timezone?: string;
   utcOffset?: number;
   legacyMode?: boolean;
-  context?: any;
+  context?: unknown;
 }
 
 function CronOptions(options?: CronOptions): CronOptions {

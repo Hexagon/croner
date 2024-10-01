@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import { dtsPlugin } from "esbuild-plugin-d.ts";
 import { exit } from "@cross/utils";
 import { dirname, fromFileUrl, resolve } from "@std/path";
-import type { cp } from "@cross/fs";
+// import type { cp } from "@cross/fs";
 
 let relativeProjectRoot = "../";
 const outputFolder = "dist";
@@ -15,6 +15,9 @@ const tsConfig = {
   compilerOptions: {
     rootDir: resolve(relativeProjectRoot, "src"),
     outDir: resolve(relativeProjectRoot, "dist"),
+    emitDeclarationOnly: true,
+    allowImportingTsExtensions: true,
+    target: "ES6",
   },
 };
 

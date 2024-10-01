@@ -31,7 +31,7 @@ export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000]
  */
 class CronPattern {
   pattern: string;
-  timezone: string;
+  timezone?: string;
   second: number[];
   minute: number[];
   hour: number[];
@@ -42,7 +42,7 @@ class CronPattern {
   starDOM: boolean;
   starDOW: boolean;
 
-  constructor(pattern: string, timezone: string) {
+  constructor(pattern: string, timezone?: string) {
     this.pattern = pattern;
     this.timezone = timezone;
 
@@ -209,7 +209,12 @@ class CronPattern {
    * @param type One of "seconds", "minutes" etc
    * @param valueIndexOffset -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
    */
-  private handleNumber(conf: string, type: string, valueIndexOffset: number, defaultValue: number) {
+  private handleNumber(
+    conf: string,
+    type: CronPatternPart,
+    valueIndexOffset: number,
+    defaultValue: number,
+  ) {
     const result = this.extractNth(conf, type);
 
     const i = parseInt(result[0], 10) + valueIndexOffset;
@@ -228,7 +233,7 @@ class CronPattern {
    * @param index The index to modify.
    * @param value The value to set, typically 0 or 1, in case of "nth weekday" it will be the weekday number used for further processing
    */
-  private setPart(part: CronPatternPart, index: number, value: number) {
+  private setPart(part: CronPatternPart, index: number, value: number | string) {
     // Ensure the part exists in our CronPattern.
     if (!Object.prototype.hasOwnProperty.call(this, part)) {
       throw new TypeError("CronPattern: Invalid part specified: " + part);
@@ -238,7 +243,7 @@ class CronPattern {
     if (part === "dayOfWeek") {
       // SUN can both be 7 and 0, normalize to 0 here
       if (index === 7) index = 0;
-      if ((index < 0 || index > 6) && index !== "L") {
+      if (index < 0 || index > 6) {
         throw new RangeError("CronPattern: Invalid value for dayOfWeek: " + index);
       }
       this.setNthWeekdayOfMonth(index, value);
@@ -265,7 +270,7 @@ class CronPattern {
     }
 
     // Set the value for the specific part and index.
-    this[part][index] = value;
+    this[part][index] = value as number;
   }
 
   /**
@@ -277,7 +282,7 @@ class CronPattern {
    */
   private handleRangeWithStepping(
     conf: string,
-    type: string,
+    type: CronPatternPart,
     valueIndexOffset: number,
     defaultValue: number,
   ) {
@@ -289,10 +294,11 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal range with stepping: '" + conf + "'");
     }
 
-    let [, lower, upper, steps] = matches;
-    lower = parseInt(lower, 10) + valueIndexOffset;
-    upper = parseInt(upper, 10) + valueIndexOffset;
-    steps = parseInt(steps, 10);
+    const [, lowerMatch, upperMatch, stepMatch] = matches;
+
+    const lower = parseInt(lowerMatch, 10) + valueIndexOffset;
+    const upper = parseInt(upperMatch, 10) + valueIndexOffset;
+    const steps = parseInt(stepMatch, 10);
 
     if (isNaN(lower)) throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
     if (isNaN(upper)) throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
@@ -339,7 +345,12 @@ class CronPattern {
    * @param type - One of "seconds", "minutes" etc
    * @param valueIndexOffset - -1 for day of month, and month, as they start at 1. 0 for seconds, hours, minutes
    */
-  private handleRange(conf: string, type: string, valueIndexOffset: number, defaultValue: number) {
+  private handleRange(
+    conf: string,
+    type: CronPatternPart,
+    valueIndexOffset: number,
+    defaultValue: number,
+  ) {
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("-");
@@ -375,7 +386,7 @@ class CronPattern {
    */
   private handleStepping(
     conf: string,
-    type: string,
+    type: CronPatternPart,
     valueIndexOffset: number,
     defaultValue: number,
   ) {
@@ -480,12 +491,12 @@ class CronPattern {
    * @param index Weekday, example: 5 for friday
    * @param nthWeekday bitmask, 2 (0x00010) for 2nd friday, 31 (ANY_OCCURRENCE, 0b100000) for any day
    */
-  private setNthWeekdayOfMonth(index: number, nthWeekday: number) {
-    if (nthWeekday === "L") {
+  private setNthWeekdayOfMonth(index: number, nthWeekday: number | string) {
+    if (typeof nthWeekday !== "number" && nthWeekday === "L") {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
-    } else if (nthWeekday < 6 && nthWeekday > 0) {
+    } else if (typeof nthWeekday === "number" && nthWeekday < 6 && nthWeekday > 0) {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | OCCURRENCE_BITMASKS[nthWeekday - 1];
-    } else if (nthWeekday === ANY_OCCURRENCE) {
+    } else if (typeof nthWeekday === "number" && nthWeekday === ANY_OCCURRENCE) {
       this["dayOfWeek"][index] = ANY_OCCURRENCE;
     } else {
       throw new TypeError(

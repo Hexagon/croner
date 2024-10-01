@@ -18,12 +18,15 @@ function isFunction(v: unknown) {
  * @private
  * @param {unknown} [timer] - Timer to unref
  */
+//@ts-ignore Cross Runtime
 function unrefTimer(timer: NodeJS.Timeout | number) {
-  /* global Deno */
+  //@ts-ignore Cross Runtime
   if (typeof Deno !== "undefined" && typeof Deno.unrefTimer !== "undefined") {
+    //@ts-ignore Cross Runtime
     Deno.unrefTimer(timer as number);
-    // Node
+    //@ts-ignore Cross Runtime
   } else if (timer && typeof (timer as NodeJS.Timeout).unref !== "undefined") {
+    //@ts-ignore Cross Runtime
     (timer as NodeJS.Timeout).unref();
   }
 }

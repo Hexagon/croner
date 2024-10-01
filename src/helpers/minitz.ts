@@ -28,16 +28,15 @@
 
   ------------------------------------------------------------------------------------  */
 
-/**
- * @typedef {Object} TimePoint
- * @property {Number} y - 1970--
- * @property {Number} m - 1-12
- * @property {Number} d - 1-31
- * @property {Number} h - 0-24
- * @property {Number} i - 0-60 Minute
- * @property {Number} s - 0-60
- * @property {string} tz - Time zone in IANA database format 'Europe/Stockholm'
- */
+interface TimePoint {
+  y: number; // 1970--
+  m: number; // 1-12
+  d: number; // 1-31
+  h: number; // 0-24
+  i: number; // 0-60 Minute
+  s: number; // 0-60
+  tz: string; // Time zone in IANA database format 'Europe/Stockholm'
+}
 
 /**
  * Converts a date/time from a specific timezone to a normal date object using the system local time
@@ -58,7 +57,16 @@
  * 										skipped, going from 23:59:59 to 01:00:00. Setting this flag makes the library throw an exception instead.
  * @returns {date} - Normal date object with correct UTC and system local time
  */
-function minitz(y, m, d, h, i, s, tz, throwOnInvalid) {
+function minitz(
+  y: number,
+  m: number,
+  d: number,
+  h: number,
+  i: number,
+  s: number,
+  tz: string,
+  throwOnInvalid?: boolean,
+) {
   return minitz.fromTZ(minitz.tp(y, m, d, h, i, s, tz), throwOnInvalid);
 }
 
@@ -75,7 +83,7 @@ function minitz(y, m, d, h, i, s, tz, throwOnInvalid) {
  * 										skipped, going from 23:59:59 to 01:00:00. Setting this flag makes the library throw an exception instead.
  * @return {date} - Normal date object
  */
-minitz.fromTZISO = (localTimeStr, tz, throwOnInvalid) => {
+minitz.fromTZISO = (localTimeStr: string, tz: string, throwOnInvalid?: boolean) => {
   return minitz.fromTZ(parseISOLocal(localTimeStr, tz), throwOnInvalid);
 };
 
@@ -91,7 +99,7 @@ minitz.fromTZISO = (localTimeStr, tz, throwOnInvalid) => {
  * 										skipped, going from 23:59:59 to 01:00:00. Setting this flag makes the library throw an exception instead.
  * @returns {date} - Normal date object
  */
-minitz.fromTZ = function (tp, throwOnInvalid) {
+minitz.fromTZ = function (tp: TimePoint, throwOnInvalid?: boolean) {
   const // Construct a fake Date object with UTC date/time set to local date/time in source timezone
   inDate = new Date(Date.UTC(
     tp.y,
@@ -171,7 +179,7 @@ minitz.fromTZ = function (tp, throwOnInvalid) {
  * 	new Date().toLocaleTimeString("sv-SE", { timeZone: "America/New_York" }),
  * );
  */
-minitz.toTZ = function (d, tzStr) {
+minitz.toTZ = function (d: Date, tzStr: string) {
   // - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
   const localDateString = d.toLocaleString("en-US", { timeZone: tzStr }).replace(/[\u202f]/, " ");
 
@@ -203,7 +211,7 @@ minitz.toTZ = function (d, tzStr) {
  *
  * @returns {TimePoint}
  */
-minitz.tp = (y, m, d, h, i, s, tz) => {
+minitz.tp = (y: number, m: number, d: number, h: number, i: number, s: number, tz: string) => {
   return { y, m, d, h, i, s, tz: tz };
 };
 
@@ -217,7 +225,7 @@ minitz.tp = (y, m, d, h, i, s, tz) => {
  *
  * @returns {number} - Offset in ms between UTC and timeZone
  */
-function getTimezoneOffset(timeZone, date = new Date()) {
+function getTimezoneOffset(timeZone: string, date = new Date()) {
   // Get timezone
   const tz =
     date.toLocaleString("en-US", { timeZone: timeZone, timeZoneName: "shortOffset" }).split(" ")
@@ -241,12 +249,12 @@ function getTimezoneOffset(timeZone, date = new Date()) {
  * 					  with all components, e.g. 2015-11-24T19:40:00
  * @returns {TimePoint} - TimePoint instance from parsing the string
  */
-function parseISOLocal(dtStr, tz) {
+function parseISOLocal(dtStr: string, tz: string) {
   // Parse date using built in Date.parse
   const pd = new Date(Date.parse(dtStr));
 
   // Check for completeness
-  if (isNaN(pd)) {
+  if (isNaN(pd as unknown as number)) {
     throw new Error("minitz: Invalid ISO8601 passed to parser.");
   }
 
