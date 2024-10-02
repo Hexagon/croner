@@ -1,0 +1,32 @@
+{
+  "name": "@hexagon/croner",
+  "version": "9.0.0-dev.2",
+  "exports": "./src/croner.ts",
+  "lint": {
+    "include": ["src", "build"]
+  },
+  "fmt": {
+    "include": ["src", "test", "build"],
+    "lineWidth": 100
+  },
+  "tasks": {
+    "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts && deno test",
+    "build:clean": "deno run --allow-read --allow-write build/clean.ts",
+    "build:npm": "deno run --allow-read --allow-write build/npm.ts",
+    "build": "deno task build:clean && deno task pre-commit && deno run --allow-read --allow-write --allow-env --allow-run build/esbuild.ts && deno task build:npm",
+    "check-deps": "deno run -A jsr:@check/deps"
+  },
+  "imports": {
+    "@cross/fs": "jsr:@cross/fs@~0.1.11",
+    "@cross/test": "jsr:@cross/test@~0.0.9",
+    "@cross/utils": "jsr:@cross/utils@~0.16.0",
+    "@deno/dnt": "jsr:@deno/dnt@~0.41.3",
+    "@std/assert": "jsr:@std/assert@~1.0.6",
+    "@std/path": "jsr:@std/path@~1.0.6",
+    "esbuild": "npm:esbuild@~0.24.0",
+    "esbuild-plugin-d.ts": "npm:esbuild-plugin-d.ts@~1.3.0"
+  },
+  "publish": {
+    "exclude": ["build", "dist", "docs", "test", "package.json", ".github"]
+  }
+}

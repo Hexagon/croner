@@ -38,14 +38,14 @@ const job = new Cron('*/5 * * * * *', () => {
 **What dates do the next 100 sundays occur on?**
 
 ```ts
-const nextSundays = Cron('0 0 0 * * 7').nextRuns(100);
+const nextSundays = new Cron('0 0 0 * * 7').nextRuns(100);
 console.log(nextSundays);
 ```
 
 **Days left to a specific date**
 
 ```ts
-const msLeft = Cron('59 59 23 24 DEC *').nextRun() - new Date();
+const msLeft = new Cron('59 59 23 24 DEC *').nextRun() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 ```
 
@@ -54,7 +54,7 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 Time is ISO 8601 local time, this will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
 
 ```ts
-Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 ```
 
 More examples at [usage/examples.md]([usage/examples.md])
