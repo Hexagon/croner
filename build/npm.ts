@@ -17,7 +17,8 @@ async function generatePackageJson() {
 
   // Define package.json template
   const packageJson = {
-    name: denoConfig.name,
+    name: "croner",
+    //name: denoConfig.name,
     version: denoConfig.version,
     "description":
       "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",

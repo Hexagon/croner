@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import { dtsPlugin } from "esbuild-plugin-d.ts";
 import { exit } from "@cross/utils";
 import { dirname, fromFileUrl, resolve } from "@std/path";
-// import type { cp } from "@cross/fs";
+import { cp } from "@cross/fs";
 
 let relativeProjectRoot = "../";
 const outputFolder = "dist";
@@ -13,9 +13,7 @@ relativeProjectRoot = resolve(currentScriptDir, relativeProjectRoot);
 const tsConfig = {
   declaration: true,
   compilerOptions: {
-    rootDir: resolve(relativeProjectRoot, "src"),
-    outDir: resolve(relativeProjectRoot, "dist"),
-    emitDeclarationOnly: true,
+    outFile: resolve(relativeProjectRoot, "dist", "croner.d.ts"),
     allowImportingTsExtensions: true,
     target: "ES6",
   },
@@ -71,4 +69,7 @@ try {
 }
 
 // Copy .d.ts to .d.cts
-//await cp(resolve(relativeProjectRoot, outputFolder, 'croner.d.ts'),resolve(relativeProjectRoot, outputFolder, 'croner.d.cts'));
+await cp(
+  resolve(relativeProjectRoot, outputFolder, "croner.d.ts"),
+  resolve(relativeProjectRoot, outputFolder, "croner.d.cts"),
+);

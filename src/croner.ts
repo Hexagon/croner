@@ -95,12 +95,12 @@ type CronState = {
 class Cron {
   name: string | undefined;
   options: CronOptions;
-  _states: CronState;
-  fn?: Function;
+  private _states: CronState;
+  private fn?: Function;
   constructor(
     pattern: string | Date,
-    fnOrOptions1: CronOptions | Function,
-    fnOrOptions2: CronOptions | Function,
+    fnOrOptions1?: CronOptions | Function,
+    fnOrOptions2?: CronOptions | Function,
   ) {
     // Make options and func optional and interchangable
     let options, func;
@@ -531,4 +531,4 @@ class Cron {
   }
 }
 export default Cron;
-export { Cron, scheduledJobs };
+export { Cron, CronDate, CronOptions, CronPattern, scheduledJobs };
