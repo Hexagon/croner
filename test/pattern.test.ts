@@ -1,8 +1,6 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron, scheduledJobs } from "../src/croner.ts";
-import { sleep, timeout } from "./utils.ts";
-import { exit } from "@cross/utils";
+import { Cron } from "../src/croner.ts";
 
 test("Stepping without asterisk should not throw", function () {
   let scheduler = new Cron("/3 * * * * *");
@@ -132,8 +130,6 @@ test('new String("0 0 0 * * *") should return tomorrow, at 00:00:00', function (
   // Do comparison
   assertEquals(nextRun?.getTime(), nextDay.getTime());
 });
-
-exit(0);
 
 test("0 0 12 * * * with startdate tomorrow should return day after tomorrow, at 12:00:00", function () {
   let nextDay = new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // Add one day

@@ -54,6 +54,7 @@ class CronPattern {
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
 
     this.lastDayOfMonth = false;
+
     this.starDOM = false; // Asterisk used for dayOfMonth
     this.starDOW = false; // Asterisk used for dayOfWeek
 
@@ -500,13 +501,14 @@ class CronPattern {
   private setNthWeekdayOfMonth(index: number, nthWeekday: number | string) {
     if (typeof nthWeekday !== "number" && nthWeekday === "L") {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
-    } else if (typeof nthWeekday === "number" && nthWeekday < 6 && nthWeekday > 0) {
-      this["dayOfWeek"][index] = this["dayOfWeek"][index] | OCCURRENCE_BITMASKS[nthWeekday - 1];
-    } else if (typeof nthWeekday === "number" && nthWeekday === ANY_OCCURRENCE) {
+    } else if (nthWeekday === ANY_OCCURRENCE) {
       this["dayOfWeek"][index] = ANY_OCCURRENCE;
+    } else if (nthWeekday as number < 6 && nthWeekday as number > 0) {
+      this["dayOfWeek"][index] = this["dayOfWeek"][index] |
+        OCCURRENCE_BITMASKS[nthWeekday as number - 1];
     } else {
       throw new TypeError(
-        `CronPattern: nth weekday of of range, should be 1-5 or L. Value: ${nthWeekday}`,
+        `CronPattern: nth weekday out of range, should be 1-5 or L. Value: ${nthWeekday}, Type: ${typeof nthWeekday}`,
       );
     }
   }

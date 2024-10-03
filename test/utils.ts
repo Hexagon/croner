@@ -1,6 +1,7 @@
 // Convenience function for asynchronous testing
 export function timeout(timeoutMs: number, fn: Function) {
   return () => {
+    //@ts-ignore Cross Runtime
     let to: number | NodeJS.Timeout | undefined;
     return new Promise((resolve, reject) => {
       fn(resolve, reject);

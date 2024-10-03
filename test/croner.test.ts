@@ -232,7 +232,7 @@ test("@hourly should be replaced (UTC)", function () {
   assertEquals(nextRuns[2].getUTCHours(), 2);
 });
 
-/*test("@hourly should be replaced (Local)", function () {
+test("@hourly should be replaced (Local)", function () {
   let nextRuns = new Cron("@hourly").nextRuns(3, "2022-02-16T23:59:00");
   assertEquals(nextRuns[0].getFullYear(), 2022);
   assertEquals(nextRuns[0].getMonth(), 1);
@@ -242,7 +242,7 @@ test("@hourly should be replaced (UTC)", function () {
   assertEquals(nextRuns[1].getDate(), 17);
   assertEquals(nextRuns[1].getHours(), 1);
   assertEquals(nextRuns[2].getHours(), 2);
-});*/
+});
 
 test("Croner should increment seconds", function () {
   let runs = new Cron("* * * * * *").nextRuns(4);
@@ -857,8 +857,6 @@ test(
   }),
 );
 
-/*
-
 test(
   "pause by options work",
   //@ts-ignore
@@ -877,11 +875,11 @@ test(
   }),
 );
 
-
+/*
 test(
   "Job should execute twice with overrun protection",
   //@ts-ignore
-  timeout(4000, (resolve, reject) => {
+   timeout(4000, async (resolve, reject) => {
     let executions = 0;
     const job = new Cron("* * * * * *", { protect: true }, async () => {
       executions++;
@@ -890,9 +888,11 @@ test(
     setTimeout(() => {
       if (executions === 2) {
         job.stop();
+        console.log("wat1");
         resolve();
       } else {
         job.stop();
+        console.log("wat2");
         reject(new Error(`Job executed too many times (${executions})`));
       }
     }, 3500);
@@ -976,7 +976,6 @@ test(
   }),
 );
 
-
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null", function () {
   let scheduler0 = new Cron("2020-01-01T00:00:00");
   assertEquals(scheduler0.nextRun(), null);
@@ -1038,6 +1037,5 @@ test("Fire-once should be supported by date, future and .nextRun() should return
   assertEquals(nextRun && nextRun?.getTime() > refTime.getTime(), true);
   assertEquals(nextRun && nextRun?.getTime() < refTime.getTime() + 4000, true);
 });
-
 
 */

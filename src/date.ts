@@ -248,7 +248,7 @@ class CronDate {
   private fromString(str: string) {
     if (typeof this.tz === "number") {
       // Parse without timezone
-      const inDate = minitz.fromTZISO(str, "UTC");
+      const inDate = minitz.fromTZISO(str);
       this.ms = inDate.getUTCMilliseconds();
       this.second = inDate.getUTCSeconds();
       this.minute = inDate.getUTCMinutes();
@@ -257,8 +257,8 @@ class CronDate {
       this.month = inDate.getUTCMonth();
       this.year = inDate.getUTCFullYear();
       this.apply();
-    } else if (this.tz === undefined) {
-      return this.fromDate(minitz.fromTZISO(str, this.tz === undefined ? "UTC" : this.tz));
+    } else {
+      return this.fromDate(minitz.fromTZISO(str, this.tz));
     }
   }
 

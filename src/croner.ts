@@ -277,7 +277,7 @@ class Cron {
     const next = this._next(prev);
 
     if (next) {
-      if (prev instanceof CronDate) {
+      if (prev instanceof CronDate || prev instanceof Date) {
         return (next.getTime() - prev.getTime());
       } else {
         return (next.getTime() - new CronDate(prev).getTime());
@@ -520,14 +520,14 @@ class Cron {
     let newPrev: CronDate | undefined | null = prev as CronDate;
     if ((this.options.startAt as CronDate).getTime() <= now.getTime()) {
       newPrev = this.options.startAt as CronDate;
-      let prevTimePlusInterval = (prev as CronDate).getTime() + this.options.interval! * 1000;
+      let prevTimePlusInterval = (newPrev as CronDate).getTime() + this.options.interval! * 1000;
       while (prevTimePlusInterval <= now.getTime()) {
-        newPrev = new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(
+        newPrev = new CronDate(newPrev, this.options.timezone || this.options.utcOffset).increment(
           this._states.pattern,
           this.options,
           true,
         );
-        prevTimePlusInterval = (prev as CronDate).getTime() + this.options.interval! * 1000;
+        prevTimePlusInterval = (newPrev as CronDate).getTime() + this.options.interval! * 1000;
       }
       hasPreviousRun = true;
     }
