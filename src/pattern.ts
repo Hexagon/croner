@@ -67,7 +67,8 @@ class CronPattern {
 
   private parse(): void {
     // Sanity check
-    if (!(typeof this.pattern === "string")) {
+    //@ts-ignore string check
+    if (!(typeof this.pattern === "string" || this.pattern instanceof String)) {
       throw new TypeError("CronPattern: Pattern has to be of type string.");
     }
 
@@ -396,6 +397,11 @@ class CronPattern {
 
     if (split.length !== 2) {
       throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
+    }
+
+    // Inject missing asterisk (/3 insted of */3)
+    if (split[0] === "") {
+      split[0] = "*";
     }
 
     let start = 0;

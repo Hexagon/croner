@@ -89,7 +89,7 @@ class CronDate {
    * Current full year, in local time or target timezone specified by `this.tz`
    */
   year!: number;
-  constructor(d?: CronDate | Date | string, tz?: string | number) {
+  constructor(d?: CronDate | Date | string | null, tz?: string | number) {
     /**
      * TimeZone
      * @type {string|number|undefined}

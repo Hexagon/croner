@@ -1,7 +1,7 @@
 // Convenience function for asynchronous testing
-const timeout = (timeoutMs, fn) => {
+export function timeout(timeoutMs: number, fn: Function) {
   return () => {
-    let to = void 0;
+    let to: number | NodeJS.Timeout | undefined;
     return new Promise((resolve, reject) => {
       fn(resolve, reject);
       to = setTimeout(() => {
@@ -11,6 +11,8 @@ const timeout = (timeoutMs, fn) => {
       clearTimeout(to);
     });
   };
-};
+}
 
-module.exports = timeout;
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
