@@ -3,6 +3,7 @@ import { test } from "@cross/test";
 import { Cron, scheduledJobs } from "../src/croner.ts";
 import { sleep, timeout } from "./utils.ts";
 
+
 test("new Cron(...) should not throw", function () {
   let scheduler = new Cron("* * * * * *");
   scheduler.nextRun();
@@ -103,7 +104,6 @@ test("Too high hours minute should throw", function () {
     scheduler.nextRun();
   });
 });
-
 test(
   "Context is passed",
   //@ts-ignore
