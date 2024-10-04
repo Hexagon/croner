@@ -178,7 +178,7 @@ class Cron {
    * @param prev - Date to start from
    * @returns  Next run time
    */
-  public nextRun(prev?: CronDate | Date | string): Date | null {
+  public nextRun(prev?: CronDate | Date | string | null): Date | null {
     const next = this._next(prev);
     return next ? next.getDate(false) : null;
   }
@@ -190,7 +190,7 @@ class Cron {
    * @param previous - Date to start from
    * @returns - Next n run times
    */
-  public nextRuns(n: number, previous: Date | string): Date[] {
+  public nextRuns(n: number, previous?: Date | string): Date[] {
     if (this._states.maxRuns !== undefined && n > this._states.maxRuns) {
       n = this._states.maxRuns;
     }
@@ -277,7 +277,7 @@ class Cron {
     const next = this._next(prev);
 
     if (next) {
-      if (prev instanceof CronDate) {
+      if (prev instanceof CronDate || prev instanceof Date) {
         return (next.getTime() - prev.getTime());
       } else {
         return (next.getTime() - new CronDate(prev).getTime());
@@ -422,6 +422,13 @@ class Cron {
   }
 
   /**
+   * Returns number of runs left, undefined = unlimited
+   */
+  public runsLeft(): number | undefined {
+    return this._states.maxRuns;
+  }
+
+  /**
    * Called when it's time to trigger.
    * Checks if all conditions are currently met,
    * then instantly triggers the scheduled function.
@@ -452,7 +459,7 @@ class Cron {
   /**
    * Internal version of next. Cron needs millseconds internally, hence _next.
    */
-  private _next(previousRun?: CronDate | Date | string) {
+  private _next(previousRun?: CronDate | Date | string | null) {
     let hasPreviousRun = (previousRun || this._states.currentRun) ? true : false;
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
@@ -506,21 +513,21 @@ class Cron {
    * Should only be called from the _next function.
    */
   private _calculatePreviousRun(
-    prev: CronDate | Date | string | undefined,
+    prev: CronDate | Date | string | undefined | null,
     hasPreviousRun: boolean,
   ): [CronDate | undefined, boolean] {
     const now = new CronDate(undefined, this.options.timezone || this.options.utcOffset);
     let newPrev: CronDate | undefined | null = prev as CronDate;
     if ((this.options.startAt as CronDate).getTime() <= now.getTime()) {
       newPrev = this.options.startAt as CronDate;
-      let prevTimePlusInterval = (prev as CronDate).getTime() + this.options.interval! * 1000;
+      let prevTimePlusInterval = (newPrev as CronDate).getTime() + this.options.interval! * 1000;
       while (prevTimePlusInterval <= now.getTime()) {
-        newPrev = new CronDate(prev, this.options.timezone || this.options.utcOffset).increment(
+        newPrev = new CronDate(newPrev, this.options.timezone || this.options.utcOffset).increment(
           this._states.pattern,
           this.options,
           true,
         );
-        prevTimePlusInterval = (prev as CronDate).getTime() + this.options.interval! * 1000;
+        prevTimePlusInterval = (newPrev as CronDate).getTime() + this.options.interval! * 1000;
       }
       hasPreviousRun = true;
     }

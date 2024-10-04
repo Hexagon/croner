@@ -2,7 +2,7 @@
 
 	minitz - MIT License - Hexagon <hexagon@56k.guru>
 
-	Version 4.0.6
+	Version 5.0.0
 
 	------------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ interface TimePoint {
   h: number; // 0-24
   i: number; // 0-60 Minute
   s: number; // 0-60
-  tz: string; // Time zone in IANA database format 'Europe/Stockholm'
+  tz?: string; // Time zone in IANA database format 'Europe/Stockholm'
 }
 
 /**
@@ -83,7 +83,7 @@ function minitz(
  * 										skipped, going from 23:59:59 to 01:00:00. Setting this flag makes the library throw an exception instead.
  * @return {date} - Normal date object
  */
-minitz.fromTZISO = (localTimeStr: string, tz: string, throwOnInvalid?: boolean) => {
+minitz.fromTZISO = (localTimeStr: string, tz?: string, throwOnInvalid?: boolean) => {
   return minitz.fromTZ(parseISOLocal(localTimeStr, tz), throwOnInvalid);
 };
 
@@ -211,7 +211,7 @@ minitz.toTZ = function (d: Date, tzStr: string) {
  *
  * @returns {TimePoint}
  */
-minitz.tp = (y: number, m: number, d: number, h: number, i: number, s: number, tz: string) => {
+minitz.tp = (y: number, m: number, d: number, h: number, i: number, s: number, tz?: string) => {
   return { y, m, d, h, i, s, tz: tz };
 };
 
@@ -225,7 +225,7 @@ minitz.tp = (y: number, m: number, d: number, h: number, i: number, s: number, t
  *
  * @returns {number} - Offset in ms between UTC and timeZone
  */
-function getTimezoneOffset(timeZone: string, date = new Date()) {
+function getTimezoneOffset(timeZone?: string, date = new Date()) {
   // Get timezone
   const tz =
     date.toLocaleString("en-US", { timeZone: timeZone, timeZoneName: "shortOffset" }).split(" ")
@@ -249,7 +249,7 @@ function getTimezoneOffset(timeZone: string, date = new Date()) {
  * 					  with all components, e.g. 2015-11-24T19:40:00
  * @returns {TimePoint} - TimePoint instance from parsing the string
  */
-function parseISOLocal(dtStr: string, tz: string) {
+function parseISOLocal(dtStr: string, tz?: string) {
   // Parse date using built in Date.parse
   const pd = new Date(Date.parse(dtStr));
 

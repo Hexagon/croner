@@ -1,6 +1,6 @@
 {
   "name": "@hexagon/croner",
-  "version": "9.0.0-dev.2",
+  "version": "9.0.0-dev.4",
   "exports": "./src/croner.ts",
   "lint": {
     "include": ["src", "build"]
@@ -10,10 +10,11 @@
     "lineWidth": 100
   },
   "tasks": {
-    "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts && deno test",
+    "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts",
+    "test": "deno test",
     "build:clean": "deno run --allow-read --allow-write build/clean.ts",
     "build:npm": "deno run --allow-read --allow-write build/npm.ts",
-    "build": "deno task build:clean && deno task pre-commit && deno run --allow-read --allow-write --allow-env --allow-run build/esbuild.ts && deno task build:npm",
+    "build": "deno task build:clean && deno task pre-commit && deno run --allow-read --allow-write --allow-env --allow-run build/esbuild.ts && deno task build:npm && deno task test",
     "check-deps": "deno run -A jsr:@check/deps"
   },
   "imports": {

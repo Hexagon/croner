@@ -54,6 +54,7 @@ class CronPattern {
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
 
     this.lastDayOfMonth = false;
+
     this.starDOM = false; // Asterisk used for dayOfMonth
     this.starDOW = false; // Asterisk used for dayOfWeek
 
@@ -67,7 +68,8 @@ class CronPattern {
 
   private parse(): void {
     // Sanity check
-    if (!(typeof this.pattern === "string")) {
+    //@ts-ignore string check
+    if (!(typeof this.pattern === "string" || this.pattern instanceof String)) {
       throw new TypeError("CronPattern: Pattern has to be of type string.");
     }
 
@@ -398,6 +400,11 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
     }
 
+    // Inject missing asterisk (/3 insted of */3)
+    if (split[0] === "") {
+      split[0] = "*";
+    }
+
     let start = 0;
     if (split[0] !== "*") {
       start = parseInt(split[0], 10) + valueIndexOffset;
@@ -494,13 +501,14 @@ class CronPattern {
   private setNthWeekdayOfMonth(index: number, nthWeekday: number | string) {
     if (typeof nthWeekday !== "number" && nthWeekday === "L") {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
-    } else if (typeof nthWeekday === "number" && nthWeekday < 6 && nthWeekday > 0) {
-      this["dayOfWeek"][index] = this["dayOfWeek"][index] | OCCURRENCE_BITMASKS[nthWeekday - 1];
-    } else if (typeof nthWeekday === "number" && nthWeekday === ANY_OCCURRENCE) {
+    } else if (nthWeekday === ANY_OCCURRENCE) {
       this["dayOfWeek"][index] = ANY_OCCURRENCE;
+    } else if (nthWeekday as number < 6 && nthWeekday as number > 0) {
+      this["dayOfWeek"][index] = this["dayOfWeek"][index] |
+        OCCURRENCE_BITMASKS[nthWeekday as number - 1];
     } else {
       throw new TypeError(
-        `CronPattern: nth weekday of of range, should be 1-5 or L. Value: ${nthWeekday}`,
+        `CronPattern: nth weekday out of range, should be 1-5 or L. Value: ${nthWeekday}, Type: ${typeof nthWeekday}`,
       );
     }
   }
