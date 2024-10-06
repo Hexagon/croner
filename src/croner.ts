@@ -301,7 +301,7 @@ class Cron {
 
     // Stop any waiting timer
     if (this._states.currentTimeout) {
-      clearTimeout(this._states.currentTimeout);
+      clearTimeout(this._states.currentTimeout as number);
     }
 
     // Remove job from the scheduledJobs array to free up the name, and allow the job to be

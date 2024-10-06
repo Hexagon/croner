@@ -3,7 +3,6 @@ import { test } from "@cross/test";
 import { Cron, scheduledJobs } from "../src/croner.ts";
 import { sleep, timeout } from "./utils.ts";
 
-
 test("new Cron(...) should not throw", function () {
   let scheduler = new Cron("* * * * * *");
   scheduler.nextRun();
@@ -875,29 +874,26 @@ test(
   }),
 );
 
-/*
 test(
   "Job should execute twice with overrun protection",
-  //@ts-ignore
-   timeout(4000, async (resolve, reject) => {
+  (_context, done) => {
     let executions = 0;
     const job = new Cron("* * * * * *", { protect: true }, async () => {
       executions++;
-      await sleep(1100);
+      await sleep(2000);
     });
     setTimeout(() => {
-      if (executions === 2) {
+      if (executions === 1) {
         job.stop();
-        console.log("wat1");
-        resolve();
+        done();
       } else {
         job.stop();
-        console.log("wat2");
-        reject(new Error(`Job executed too many times (${executions})`));
       }
-    }, 3500);
-  }),
+    }, 2500);
+  },
+  { waitForCallback: true, timeout: 3000 },
 );
+/*
 
 test(
   "Job should execute twice with overrun protection (promise)",

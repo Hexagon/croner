@@ -9,7 +9,7 @@ export function timeout(timeoutMs: number, fn: Function) {
         reject(new Error("Timeout"));
       }, timeoutMs);
     }).finally(() => {
-      clearTimeout(to);
+      clearTimeout(to as number);
     });
   };
 }
