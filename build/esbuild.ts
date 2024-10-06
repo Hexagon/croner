@@ -13,7 +13,7 @@ relativeProjectRoot = resolve(currentScriptDir, relativeProjectRoot);
 const tsConfig = {
   declaration: true,
   compilerOptions: {
-    outFile: resolve(relativeProjectRoot, "dist", "croner.d.ts"),
+    outFile: resolve(relativeProjectRoot, "dist", "croner.min.d.ts"),
     allowImportingTsExtensions: true,
     target: "ES6",
   },
@@ -28,8 +28,9 @@ async function build() {
   // CommonJS build
   await esbuild.build({
     entryPoints: [resolve(relativeProjectRoot, "src/croner.ts")],
-    outfile: resolve(relativeProjectRoot, outputFolder, "croner.cjs"),
+    outfile: resolve(relativeProjectRoot, outputFolder, "croner.min.cjs"),
     bundle: true,
+    minify: true,
     platform: "node",
     format: "cjs",
     sourcemap: false,
@@ -39,8 +40,9 @@ async function build() {
   // UMD build
   await esbuild.build({
     entryPoints: [resolve(relativeProjectRoot, "src/croner.ts")],
-    outfile: resolve(relativeProjectRoot, outputFolder, "croner.umd.js"),
+    outfile: resolve(relativeProjectRoot, outputFolder, "croner.umd.min.js"),
     bundle: true,
+    minify: true,
     platform: "browser",
     format: "iife",
     globalName: "croner",
@@ -51,8 +53,9 @@ async function build() {
   // ESM build
   await esbuild.build({
     entryPoints: [resolve(relativeProjectRoot, "src/croner.ts")],
-    outfile: resolve(relativeProjectRoot, outputFolder, "croner.js"),
+    outfile: resolve(relativeProjectRoot, outputFolder, "croner.min.js"),
     bundle: true,
+    minify: true,
     platform: "neutral",
     format: "esm",
     sourcemap: false,
@@ -70,6 +73,6 @@ try {
 
 // Copy .d.ts to .d.cts
 await cp(
-  resolve(relativeProjectRoot, outputFolder, "croner.d.ts"),
-  resolve(relativeProjectRoot, outputFolder, "croner.d.cts"),
+  resolve(relativeProjectRoot, outputFolder, "croner.min.d.ts"),
+  resolve(relativeProjectRoot, outputFolder, "croner.min.d.cts"),
 );
