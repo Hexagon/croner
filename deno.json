@@ -1,6 +1,6 @@
 {
   "name": "@hexagon/croner",
-  "version": "9.0.0-dev.4",
+  "version": "9.0.0-dev.5",
   "exports": "./src/croner.ts",
   "lint": {
     "include": ["src", "build"]
@@ -21,7 +21,6 @@
     "@cross/fs": "jsr:@cross/fs@~0.1.11",
     "@cross/test": "jsr:@cross/test@~0.0.9",
     "@cross/utils": "jsr:@cross/utils@~0.16.0",
-    "@deno/dnt": "jsr:@deno/dnt@~0.41.3",
     "@std/assert": "jsr:@std/assert@~1.0.6",
     "@std/path": "jsr:@std/path@~1.0.6",
     "esbuild": "npm:esbuild@~0.24.0",

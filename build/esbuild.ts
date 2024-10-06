@@ -43,7 +43,7 @@ async function build() {
     bundle: true,
     platform: "browser",
     format: "iife",
-    globalName: "base64",
+    globalName: "croner",
     sourcemap: false,
     plugins: [dtsPluginInstance],
   });
