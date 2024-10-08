@@ -1,8 +1,7 @@
 /* A few sanity checks for the distributed build */
-
 import { assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron } from "../dist/croner.min.js";
+import { Cron } from "../dist/croner.js";
 
 test("new Cron(...) should not throw", function () {
   let scheduler = new Cron("* * * * * *");
