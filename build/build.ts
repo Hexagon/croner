@@ -41,17 +41,7 @@ const buildConfigs = [
     platform: "neutral",
     format: "esm",
     plugins: [dtsPlugin({
-      experimentalBundling: true,
-      tsconfig: {
-        declarations: true,
-        compilerOptions: {
-          //@ts-ignore outDir is valid
-          allowImportingTsExtensions: true,
-          target: "ES2015",
-          lib: ["ES2015", "dom"],
-          moduleResolution: "bundler"
-        },
-      },
+      experimentalBundling: true
     })]
   },
 ];
