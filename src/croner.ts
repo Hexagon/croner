@@ -30,7 +30,7 @@
   ------------------------------------------------------------------------------------  */
 import { CronDate } from "./date.ts";
 import { CronPattern } from "./pattern.ts";
-import { CronOptions } from "./options.ts";
+import { type CronOptions, CronOptionsHandler } from "./options.ts";
 import { isFunction, unrefTimer } from "./utils.ts";
 
 /**
@@ -126,7 +126,7 @@ class Cron {
     }
 
     this.name = options ? options.name : void 0;
-    this.options = CronOptions(options);
+    this.options = CronOptionsHandler(options);
 
     this._states = {
       kill: false,
@@ -537,5 +537,5 @@ class Cron {
     return [newPrev, hasPreviousRun];
   }
 }
-export default Cron;
-export { Cron, CronDate, CronOptions, CronPattern, scheduledJobs };
+
+export { Cron, CronDate, type CronOptions, CronPattern, scheduledJobs };

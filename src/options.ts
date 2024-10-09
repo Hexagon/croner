@@ -21,7 +21,7 @@ interface CronOptions {
   context?: unknown;
 }
 
-function CronOptions(options?: CronOptions): CronOptions {
+function CronOptionsHandler(options?: CronOptions): CronOptions {
   if (options === void 0) {
     options = {};
   }
@@ -74,4 +74,4 @@ function CronOptions(options?: CronOptions): CronOptions {
   return options;
 }
 
-export { CronOptions };
+export { CronOptionsHandler, type CronOptions };

@@ -1,0 +1,11 @@
+{
+    "declarations": true,
+    "compilerOptions": {
+      //@ts-ignore outDir is valid
+      "emitDeclarationOnly": true,
+      "allowImportingTsExtensions": true,
+      "target": "ES2015",
+      "lib": ["ES2015", "dom"],
+      "moduleResolution": "bundler"
+    },
+  }

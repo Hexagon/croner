@@ -17,18 +17,7 @@ const baseConfig = {
   entryPoints: [resolve(relativeProjectRoot, "src", "croner.ts")],
   bundle: true,
   minify: true,
-  sourcemap: false,
-  plugins: [dtsPlugin({
-    tsconfig: {
-      declarations: true,
-      compilerOptions: {
-        //@ts-ignore outDir is valid
-        allowImportingTsExtensions: true,
-        target: "ES6",
-        outFile: resolve(resolvedDistPath, "croner.d.ts"),
-      },
-    },
-  })],
+  sourcemap: false
 };
 
 /* - All esbuild targets */
@@ -37,21 +26,33 @@ const buildConfigs = [
     ...baseConfig,
     outfile: resolve(resolvedDistPath, "croner.cjs"),
     platform: "node",
-    format: "cjs",
+    format: "cjs"
   },
   {
     ...baseConfig,
     outfile: resolve(resolvedDistPath, "croner.umd.js"),
     platform: "browser",
     format: "iife",
-    globalName: "Cron",
-    plugins: [],
+    globalName: "Cron"
   },
   {
     ...baseConfig,
-    outfile: resolve(resolvedDistPath, "croner.js"),
+    outdir: resolvedDistPath,
     platform: "neutral",
     format: "esm",
+    plugins: [dtsPlugin({
+      experimentalBundling: true,
+      tsconfig: {
+        declarations: true,
+        compilerOptions: {
+          //@ts-ignore outDir is valid
+          allowImportingTsExtensions: true,
+          target: "ES2015",
+          lib: ["ES2015", "dom"],
+          moduleResolution: "bundler"
+        },
+      },
+    })]
   },
 ];
 
