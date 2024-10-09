@@ -156,7 +156,7 @@ async function generatePackageJson() {
   // Define package.json template
   const packageJson = {
     ...basePackageJson,
-    name: denoConfig.name,
+    name: "croner",
     version: denoConfig.version,
   };
 
