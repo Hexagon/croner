@@ -1,0 +1,8 @@
+{
+  "declarations": true,
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "target": "ES2015"
+  }
+}

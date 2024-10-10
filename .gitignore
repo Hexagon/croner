@@ -51,3 +51,6 @@ _site
 dist
 package.json
 package-lock.json
+
+# TypeScript configuration is added on-demand
+tsconfig.json
