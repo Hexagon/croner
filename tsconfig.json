@@ -1,10 +1,11 @@
 {
-    "include": ["dist/croner.js"],
+    "declarations": true,
     "compilerOptions": {
-      "allowJs": true,
-      "declaration": true,
+      //@ts-ignore outDir is valid
       "emitDeclarationOnly": true,
-      "esModuleInterop": true,
-      "outDir": "types"
-    }
+      "allowImportingTsExtensions": true,
+      "target": "ES2015",
+      "lib": ["ES2015", "dom"],
+      "moduleResolution": "bundler"
+    },
   }

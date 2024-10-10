@@ -1,3 +1,1 @@
-dist/* linguist-generated
-dist-docs/* linguist-documentation
 src/helpers/minitz.ts linguist-vendored

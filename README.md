@@ -26,21 +26,21 @@ Quick examples:
 
 ```javascript
 // Basic: Run a function at the interval defined by a cron expression
-const job = Cron('*/5 * * * * *', () => {
+const job = new Cron('*/5 * * * * *', () => {
 	console.log('This will run every fifth second');
 });
 
 // Enumeration: What dates do the next 100 sundays occur on?
-const nextSundays = Cron('0 0 0 * * 7').nextRuns(100);
+const nextSundays = new Cron('0 0 0 * * 7').nextRuns(100);
 console.log(nextSundays);
 
 // Days left to a specific date
-const msLeft = Cron('59 59 23 24 DEC *').nextRun() - new Date();
+const msLeft = new Cron('59 59 23 24 DEC *').nextRun() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 
 // Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
 // This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
-Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
 ```
 
@@ -96,13 +96,13 @@ Cron takes three arguments
 // - First: Cron pattern, js date object (fire once), or ISO 8601 time string (fire once)
 // - Second: Options (optional)
 // - Third: Function run trigger (optional)
-const job = Cron("* * * * * *", { maxRuns: 1 }, () => {} );
+const job = new Cron("* * * * * *", { maxRuns: 1 }, () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
 job.schedule(job, /* optional */ context) => {});
 ```
 
-The job will be sceduled to run at next matching time unless you supply option `{ paused: true }`. The `Cron(...)` constructor will return a Cron instance, later called `job`, which have a couple of methods and properties listed below.
+The job will be sceduled to run at next matching time unless you supply option `{ paused: true }`. The `new Cron(...)` constructor will return a Cron instance, later called `job`, which have a couple of methods and properties listed below.
 
 #### Status
 
