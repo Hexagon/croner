@@ -17,7 +17,7 @@ const baseConfig = {
   entryPoints: [resolve(relativeProjectRoot, "src", "croner.ts")],
   bundle: true,
   minify: true,
-  sourcemap: false
+  sourcemap: false,
 };
 
 /* - All esbuild targets */
@@ -26,14 +26,14 @@ const buildConfigs = [
     ...baseConfig,
     outfile: resolve(resolvedDistPath, "croner.cjs"),
     platform: "node",
-    format: "cjs"
+    format: "cjs",
   },
   {
     ...baseConfig,
     outfile: resolve(resolvedDistPath, "croner.umd.js"),
     platform: "browser",
     format: "iife",
-    globalName: "Cron"
+    globalName: "Cron",
   },
   {
     ...baseConfig,
@@ -41,8 +41,8 @@ const buildConfigs = [
     platform: "neutral",
     format: "esm",
     plugins: [dtsPlugin({
-      experimentalBundling: true
-    })]
+      experimentalBundling: true,
+    })],
   },
 ];
 

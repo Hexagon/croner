@@ -74,4 +74,4 @@ function CronOptionsHandler(options?: CronOptions): CronOptions {
   return options;
 }
 
-export { CronOptionsHandler, type CronOptions };
+export { type CronOptions, CronOptionsHandler };
