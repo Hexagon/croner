@@ -1,6 +1,6 @@
 {
   "name": "@hexagon/croner",
-  "version": "9.0.0-dev.9",
+  "version": "9.0.0-dev.10",
   "exports": "./src/croner.ts",
   "lint": {
     "include": ["src", "build"]
@@ -26,7 +26,7 @@
     "@std/fs": "jsr:@std/fs@^1.0.4",
     "@std/path": "jsr:@std/path@~1.0.6",
     "esbuild": "npm:esbuild@~0.24.0",
-    "esbuild-plugin-d.ts": "npm:esbuild-plugin-d.ts@~1.3.0"
+    "esbuild-plugin-d.ts": "npm:esbuild-plugin-d.ts@~1.3.1-canary.3"
   },
   "publish": {
     "exclude": ["build", "dist", "docs", "test", "package.json", ".github"]
