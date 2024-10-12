@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { readFile, rm, rmdir, writeFile, cp } from "@cross/fs";
+import { cp, readFile, rm, rmdir, writeFile } from "@cross/fs";
 import { expandGlob } from "@std/fs";
 import { dtsPlugin } from "esbuild-plugin-d.ts";
 
@@ -100,11 +100,15 @@ if (Deno.args[1] === "clean") {
       outdir: resolvedDistPath,
       platform: "node",
       format: "cjs",
-      outExtension: { ".js": ".cjs" }
+      outExtension: { ".js": ".cjs" },
     },
     {
-      outdir: resolvedDistPath,
-      outExtension: { ".js": ".umd.js" },
+      entryPoints: [],
+      stdin: {
+        contents: 'import { Cron } from "./croner.ts";module.exports = Cron;',
+        resolveDir: "./src/",
+      },
+      outfile: resolve(resolvedDistPath, "croner.umd.js"),
       platform: "browser",
       format: "iife",
       globalName: "Cron",
@@ -120,7 +124,7 @@ if (Deno.args[1] === "clean") {
             declaration: true,
             emitDeclarationOnly: true,
             allowImportingTsExtensions: true,
-            lib: ["es6", "dom"]
+            lib: ["es6", "dom"],
           },
         },
       })],

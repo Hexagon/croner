@@ -38,6 +38,24 @@ Version `7.x` introduces significant changes, including the introduction of the 
 
 Version `8.x` introduces no significant changes in the API for Croner. However, a major change is the discontinuation of support for Node.js versions prior to `18.0`. It is crucial to ensure that your environment is running Node.js `18.0` or higher before upgrading to `8.x`. If you rely on Node <= `16` you should stick with `7.x`.
 
+### Upgrading from 8.x to 9.x
+
+Version 9.x brings several changes to Croner to fix existing issues and ensure consistency in code:
+
+### Changes to the API
+
+* `new` is no longer optional. Previously, it was possible to instantiate Croner using `Cron(/*...*/)` now, you need to use `new Cron(/* ... */)`.
+
+* The default export is removed. Previously, you could `import Cron from`, now you need to `import { Cron } from`. The same goes for require.
+
+### Changes to the file structure
+
+* Files in the `/dist` directory are always minified, no need to be explicit with that through the file names. As a result, `croner.min.js` is now `croner.js`.
+
+* Typings are moved from `/types` to `/dist`.
+
+* Only the `/src` directory is exposed in the JSR module.
+
 ## Switching from Cron
 
 If you're currently using the cron package and want to migrate to Croner, the following steps can guide you:

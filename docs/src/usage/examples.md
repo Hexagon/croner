@@ -16,11 +16,11 @@ nav_order: 3
 
 ```ts
 // Find next month
-const nextMonth = Cron("@monthly").nextRun(),
-	nextSunday = Cron("@weekly").nextRun(),
-	nextSat29feb = Cron("0 0 0 29 2 6", { legacyMode: false }).nextRun(),
-	nextSunLastOfMonth = Cron("0 0 0 L * 7", { legacyMode: false }).nextRun(),
-    nextLastSundayOfMonth = Cron("0 0 0 * * L7").nextRun();
+const nextMonth = new Cron("@monthly").nextRun(),
+	nextSunday = new Cron("@weekly").nextRun(),
+	nextSat29feb = new Cron("0 0 0 29 2 6", { legacyMode: false }).nextRun(),
+	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { legacyMode: false }).nextRun(),
+    nextLastSundayOfMonth = new Cron("0 0 0 * * L7").nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
@@ -31,23 +31,23 @@ console.log("Next last sunday of month: " +  nextLastSundayOfMonth.toLocaleDateS
 
 ### Job controls
 ```ts
-const job = Cron('* * * * * *', (self) => {
+const job = new Cron('* * * * * *', (self) => {
 	console.log('This will run every second. Pause on second 10. Resume on 15. And quit on 20.');
 	console.log('Current second: ', new Date().getSeconds());
 	console.log('Previous run: ' + self.previousRun());
 	console.log('Next run: ' + self.nextRun());
 });
 
-Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
-Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
-Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
+new Cron('10 * * * * *', {maxRuns: 1}, () => job.pause());
+new Cron('15 * * * * *', {maxRuns: 1}, () => job.resume());
+new Cron('20 * * * * *', {maxRuns: 1}, () => job.stop());
 ```
 
 ### Options
 ```ts
 import { Cron } from "./dist/croner.js";
 
-const job = Cron(
+const job = new Cron(
 	'* * * * *', 
 	{
 		startAt: "2023-11-01T00:00:00", 
@@ -76,11 +76,11 @@ const data = {
 	what: "stuff"
 };
 
-Cron('* * * * * *', { context: data }, (_self, context) => {
+new Cron('* * * * * *', { context: data }, (_self, context) => {
 	console.log('This will print stuff: ' + context.what);
 });
 
-Cron('*/5 * * * * *', { context: data }, (self, context) => {
+new Cron('*/5 * * * * *', { context: data }, (self, context) => {
 	console.log('After this, other stuff will be printed instead');
 	context.what = "other stuff";
 	self.stop();
@@ -91,7 +91,7 @@ Cron('*/5 * * * * *', { context: data }, (self, context) => {
 ```ts
 // A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
 // Always specify which timezone the ISO 8601 time string has with the timezone option.
-let job = Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
+let job = new Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
 	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
 });
 
@@ -104,7 +104,7 @@ if (job.nextRun() === null) {
 
 ### Time zone
 ```ts
-let job = Cron("0 0 14 * * *", { timezone: "Europe/Stockholm" }, () => {
+let job = new Cron("0 0 14 * * *", { timezone: "Europe/Stockholm" }, () => {
 	console.log('This will every day at 14:00 in time zone Europe/Stockholm');
 });
 
@@ -131,7 +131,7 @@ If a job is stopped using `.stop()`, it will be removed from the scheduledJobs a
 (() => {
 
 	// As we specify a name for the job, a reference will be kept in `scheduledJobs`
-	const job = Cron("* * * * * *", { name: "Job1" }, function () {
+	const job = new Cron("* * * * * *", { name: "Job1" }, function () {
 		console.log("This will run every second");
 	});
 
