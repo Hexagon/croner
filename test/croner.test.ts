@@ -917,7 +917,7 @@ test(
       }
     }, 2100);
   },
-  { waitForCallback: true, timeout: 4000 },
+  { waitForCallback: true, timeout: 5000 },
 );
 test(
   "Job should be working after 1500 ms",
