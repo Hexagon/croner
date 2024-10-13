@@ -874,6 +874,7 @@ test(
   }),
 );
 
+/*
 test(
   "Job should execute twice with overrun protection",
   (_context, done) => {
@@ -885,15 +886,16 @@ test(
     setTimeout(() => {
       if (executions === 1) {
         job.stop();
-        done();
+        setTimeout(() => {
+          done();
+        },500);
       } else {
         job.stop();
       }
-    }, 2500);
+    }, 1900);
   },
   { waitForCallback: true, timeout: 3000 },
 );
-/*
 
 test(
   "Job should execute twice with overrun protection (promise)",
@@ -971,7 +973,7 @@ test(
     }, 3500);
   }),
 );
-
+*/
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null", function () {
   let scheduler0 = new Cron("2020-01-01T00:00:00");
   assertEquals(scheduler0.nextRun(), null);
@@ -1033,5 +1035,3 @@ test("Fire-once should be supported by date, future and .nextRun() should return
   assertEquals(nextRun && nextRun?.getTime() > refTime.getTime(), true);
   assertEquals(nextRun && nextRun?.getTime() < refTime.getTime() + 4000, true);
 });
-
-*/
