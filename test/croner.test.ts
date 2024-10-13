@@ -938,42 +938,47 @@ test(
     }, 3500);
   }),
 );
-
+*/
 test(
   "Job should be working after 1500 ms",
-  //@ts-ignore
-  timeout(4000, (resolve, reject) => {
+  (context, done) => {
+    let sleepPromise;
     const job = new Cron("* * * * * *", async () => {
-      await sleep(2000);
       job.stop();
+      sleepPromise = sleep(2000);
+      await sleepPromise;
     });
-    setTimeout(() => {
+    setTimeout(async () => {
       if (job.isBusy()) {
-        resolve();
+        await sleepPromise!;
+        done();
       } else {
-        reject(new Error("Job should have been busy"));
+        /* Let it time out */
       }
     }, 1500);
-  }),
+  },
+  { waitForCallback: true, timeout: 4000 },
 );
 test(
-  "Job should not be working after 3500 ms",
-  //@ts-ignore
-  timeout(4000, (resolve, reject) => {
+  "Job should not be working after 1500 ms",
+  (context, done) => {
+    let sleepPromise;
     const job = new Cron("* * * * * *", async () => {
-      await sleep(2000);
       job.stop();
+      sleepPromise = sleep(2000);
+      await sleepPromise;
     });
-    setTimeout(() => {
-      if (!job.isBusy()) {
-        resolve();
+    setTimeout(async () => {
+      if (job.isBusy()) {
+        /* Let it time out */
       } else {
-        reject(new Error("Job should not have been busy"));
+        await sleepPromise!;
+        done();
       }
     }, 3500);
-  }),
+  },
+  { waitForCallback: true, timeout: 4000 },
 );
-*/
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null", function () {
   let scheduler0 = new Cron("2020-01-01T00:00:00");
   assertEquals(scheduler0.nextRun(), null);
