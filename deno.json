@@ -11,12 +11,12 @@
   },
   "tasks": {
     "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts",
-    "test": "deno test --allow-read",
+    "test": "deno task build:clean && deno test --allow-read",
     "build:prep": "deno cache --allow-scripts=npm:esbuild build/build.ts",
     "build:clean": "deno run --allow-read --allow-write --allow-env build/build.ts -- clean",
     "build:npm": "deno run --allow-read --allow-write --allow-env build/build.ts -- package",
     "build:esbuild": "deno run --allow-read --allow-write --allow-env --allow-run build/build.ts -- build",
-    "build": "deno task build:prep && deno task build:clean && deno task build:esbuild && deno task test && deno task build:npm",
+    "build": "deno task build:clean && deno task test && deno task build:prep && deno task build:esbuild  && deno task build:npm",
     "check-deps": "deno run -A jsr:@check/deps"
   },
   "imports": {
