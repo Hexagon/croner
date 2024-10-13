@@ -874,71 +874,51 @@ test(
   }),
 );
 
-/*
 test(
-  "Job should execute twice with overrun protection",
+  "Job should execute once with overrun protection",
   (_context, done) => {
     let executions = 0;
+    let sleepPromise;
     const job = new Cron("* * * * * *", { protect: true }, async () => {
       executions++;
-      await sleep(2000);
+      sleepPromise = sleep(2500);
+      await sleepPromise;
     });
-    setTimeout(() => {
+    setTimeout(async () => {
       if (executions === 1) {
         job.stop();
-        setTimeout(() => {
-          done();
-        },500);
+        await sleepPromise!;
+        done();
       } else {
         job.stop();
       }
-    }, 1900);
+    }, 2100);
   },
   { waitForCallback: true, timeout: 3000 },
 );
 
 test(
-  "Job should execute twice with overrun protection (promise)",
-  //@ts-ignore
-  timeout(4000, (resolve, reject) => {
+  "Job should execute twice (or thrice) with overrun protection",
+  (_context, done) => {
     let executions = 0;
-    const job = new Cron("* * * * * *", { protect: true }, () => {
-      executions++;
-      return sleep(1100);
-    });
-    setTimeout(() => {
-      if (executions === 2) {
-        job.stop();
-        resolve();
-      } else {
-        job.stop();
-        reject(new Error(`Job executed too many times (${executions})`));
-      }
-    }, 3500);
-  }),
-);
-
-test(
-  "Job should execute more than once without overrun protection",
-  //@ts-ignore
-  timeout(4000, (resolve, reject) => {
-    let executions = 0;
+    let sleepPromise;
     const job = new Cron("* * * * * *", { protect: false }, async () => {
       executions++;
-      await sleep(1100);
+      sleepPromise = sleep(2500);
+      await sleepPromise;
     });
-    setTimeout(() => {
-      if (executions > 2) {
+    setTimeout(async () => {
+      if (executions === 2 || executions === 3) {
         job.stop();
-        resolve();
+        await sleepPromise!;
+        done();
       } else {
         job.stop();
-        reject(new Error("Job executed too many times"));
       }
-    }, 3500);
-  }),
+    }, 2100);
+  },
+  { waitForCallback: true, timeout: 4000 },
 );
-*/
 test(
   "Job should be working after 1500 ms",
   (context, done) => {
