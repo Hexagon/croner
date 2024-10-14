@@ -125,7 +125,7 @@ class Cron {
       );
     }
 
-    this.name = options ? options.name : void 0;
+    this.name = options?.name;
     this.options = CronOptionsHandler(options);
 
     this._states = {
@@ -175,8 +175,8 @@ class Cron {
   /**
    * Find next runtime, based on supplied date. Strips milliseconds.
    *
-   * @param prev - Date to start from
-   * @returns  Next run time
+   * @param prev - Optional. Date to start from. Can be a CronDate, Date object, or a string representing a date.
+   * @returns The next run time as a Date object, or null if there is no next run.
    */
   public nextRun(prev?: CronDate | Date | string | null): Date | null {
     const next = this._next(prev);

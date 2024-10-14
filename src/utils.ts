@@ -1,9 +1,9 @@
 /**
- * Helper function to check if a variable is a function
- * @private
+ * Helper function to check if a variable is a function.
  *
- * @param {?} [v] - Variable to check
- * @returns {boolean}
+ * @param v The variable to check.
+ * @returns True if the variable is a function, false otherwise.
+ * @private
  */
 function isFunction(v: unknown) {
   return (
@@ -14,9 +14,10 @@ function isFunction(v: unknown) {
 }
 
 /**
- * Helper function to unref a timer in both Deno and Node
+ * Helper function to unref a timer in both Deno and Node.js.
+ *
+ * @param timer The timer to unref.
  * @private
- * @param {unknown} [timer] - Timer to unref
  */
 //@ts-ignore Cross Runtime
 function unrefTimer(timer: NodeJS.Timeout | number) {

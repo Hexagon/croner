@@ -338,14 +338,26 @@ class CronDate {
   }
 
   /**
-   * Increment to next run time recursively
+   * Increment to next run time recursively.
    *
-   * This function is currently capped at year 3000. Do you have a reason to go further? Open an issue on GitHub!
+   * This function traverses the date components (year, month, day, hour, minute, second)
+   * to find the next date and time that matches the cron pattern. It uses a recursive
+   * approach to handle the dependencies between different components. For example,
+   * if the day changes, the hour, minute, and second need to be reset.
    *
-   * @param pattern The pattern used to increment current state
-   * @param options Cron options used for incrementing
-   * @param doing Which part to increment, 0 represent first item of RecursionSteps-array etc.
-   * @return Returns itthis for chaining, or null if increment wasnt possible
+   * The recursion is currently limited to the year 3000 to prevent potential
+   * infinite loops or excessive stack depth. If you need to schedule beyond
+   * the year 3000, please open an issue on GitHub to discuss possible solutions.
+   *
+   * @param pattern The cron pattern used to determine the next run time.
+   * @param options The cron options that influence the incrementing behavior.
+   * @param doing The index of the `RecursionSteps` array indicating the current
+   *              date component being processed. 0 represents "month", 1 represents "day", etc.
+   *
+   * @returns This `CronDate` instance for chaining, or null if incrementing
+   *          was not possible (e.g., reached year 3000 limit or no matching date).
+   *
+   * @private
    */
   private recurse(pattern: CronPattern, options: CronOptions, doing: number): CronDate | null {
     // Find next month (or whichever part we're at)
@@ -393,10 +405,10 @@ class CronDate {
   /**
    * Increment to next run time
    *
-   * @param pattern The pattern used to increment current state
-   * @param options Cron options used for incrementing
-   * @param hasPreviousRun If this run should adhere to minimum interval
-   * @return Returns itthis for chaining, or null if increment wasnt possible
+   * @param pattern The pattern used to increment the current date.
+   * @param options Cron options used for incrementing.
+   * @param hasPreviousRun True if there was a previous run, false otherwise. This is used to determine whether to apply the minimum interval.
+   * @returns This CronDate instance for chaining, or null if incrementing was not possible (e.g., reached year 3000 limit).
    */
   public increment(
     pattern: CronPattern,

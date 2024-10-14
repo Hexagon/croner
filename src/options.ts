@@ -4,23 +4,102 @@ import type { Cron } from "./croner.ts";
 type CatchCallbackFn = (e: unknown, job: Cron) => void;
 type ProtectCallbackFn = (job: Cron) => void;
 
+/**
+ * Options for configuring cron jobs.
+ *
+ * @interface
+ */
 interface CronOptions {
+  /**
+   * The name of the cron job. If provided, the job will be added to the
+   * `scheduledJobs` array, allowing it to be accessed by name.
+   */
   name?: string;
+
+  /**
+   * If true, the job will be paused initially.
+   * @default false
+   */
   paused?: boolean;
+
+  /**
+   * If true, the job will be stopped permanently.
+   * @default false
+   */
   kill?: boolean;
+
+  /**
+   * If true, errors thrown by the job function will be caught.
+   * If a function is provided, it will be called with the error and the job instance.
+   * @default false
+   */
   catch?: boolean | CatchCallbackFn;
+
+  /**
+   * If true, the underlying timer will be unreferenced, allowing the Node.js
+   * process to exit even if the job is still running.
+   * @default false
+   */
   unref?: boolean;
+
+  /**
+   * The maximum number of times the job will run.
+   * @default Infinity
+   */
   maxRuns?: number;
+
+  /**
+   * The minimum interval between job executions, in seconds.
+   * @default 1
+   */
   interval?: number;
+
+  /**
+   * If true, prevents the job from running if the previous execution is still in progress.
+   * If a function is provided, it will be called if the job is blocked.
+   * @default false
+   */
   protect?: boolean | ProtectCallbackFn;
+
+  /**
+   * The date and time at which the job should start running.
+   */
   startAt?: string | Date | CronDate;
+
+  /**
+   * The date and time at which the job should stop running.
+   */
   stopAt?: string | Date | CronDate;
+
+  /**
+   * The timezone for the cron job.
+   */
   timezone?: string;
+
+  /**
+   * The UTC offset for the cron job, in minutes.
+   */
   utcOffset?: number;
+
+  /**
+   * If true, enables legacy mode for compatibility with older cron implementations.
+   * @default true
+   */
   legacyMode?: boolean;
+
+  /**
+   * An optional context object that will be passed to the job function.
+   */
   context?: unknown;
 }
 
+/**
+ * Processes and validates cron options.
+ *
+ * @param options The cron options to handle.
+ * @returns The processed and validated cron options.
+ * @throws {Error} If any of the options are invalid.
+ */
 function CronOptionsHandler(options?: CronOptions): CronOptions {
   if (options === void 0) {
     options = {};
