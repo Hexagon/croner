@@ -46,3 +46,11 @@ _site
 
 # TypeScript incremental compilation information
 .tsbuildinfo
+
+# Built NPM package
+dist
+package.json
+package-lock.json
+
+# TypeScript configuration is added on-demand
+tsconfig.json

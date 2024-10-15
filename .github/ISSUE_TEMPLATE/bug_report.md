@@ -26,7 +26,8 @@ A clear and concise description of what you expected to happen.
 **System:**
  - OS: [e.g. iOS, Linux, Windows]
  - Runtime [Node.js, Deno, Bun, Chrome, Safari, Firefox]
- - Version [e.g. 22]
+ - Runtime Version [e.g. 22]
+ - Croner Version [e.g. 9.0.0-dev.11]
 
 **Additional context**
 Add any other context about the problem here.

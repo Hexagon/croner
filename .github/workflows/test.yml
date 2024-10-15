@@ -1,0 +1,23 @@
+name: Cross Runtime Tests
+
+on: 
+  push:
+    branches: [main, dev, dev-9.0]
+  pull_request:
+    branches: [main, dev, dev-9.0]
+
+jobs:
+  deno_ci:
+    uses: cross-org/workflows/.github/workflows/deno-ci.yml@main
+    with:
+      entrypoint: src/croner.ts
+      lint_docs: false
+  bun_ci:
+    uses: cross-org/workflows/.github/workflows/bun-ci.yml@main
+    with:
+      jsr_dependencies: "@cross/test @std/assert"
+  node_ci:
+    uses: cross-org/workflows/.github/workflows/node-ci.yml@main
+    with:
+      test_target: "test/*.test.ts"
+      jsr_dependencies: "@cross/test @std/assert"

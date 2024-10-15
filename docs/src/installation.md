@@ -44,4 +44,4 @@ Make sure to replace `$CRONER_VERSION` with the latest version.
 
 To use Croner in a webpage, you can load it as a UMD module from a CDN:
 
-`<script src="https://cdn.jsdelivr.net/npm/croner@6/dist/croner.umd.min.js"></script>`
+`<script src="https://cdn.jsdelivr.net/npm/croner@9/dist/croner.umd.js"></script>`

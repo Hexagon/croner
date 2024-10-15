@@ -8,10 +8,10 @@ nav_order: 1
 
 ---
 
-Croner uses the function `Cron()` which takes in three arguments:
+Croner uses the function `new Cron()` which takes in three arguments:
 
 ```ts
-const job = Cron(
+const job = new Cron(
     /* The pattern */
     "* * * * * *",
     /* Options (optional) */
