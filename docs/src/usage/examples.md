@@ -10,8 +10,6 @@ nav_order: 3
 
 <!-- TOC -->
 
-{% include multiplex.html %}
-
 ### Find dates
 
 ```ts

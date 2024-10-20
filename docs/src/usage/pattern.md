@@ -8,8 +8,6 @@ nav_order: 2
 
 ---
 
-{% include multiplex.html %}
-
 The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:
 
 ```ts

@@ -9,8 +9,6 @@ nav_order: 4
 
 <!-- TOC -->
 
-{% include multiplex.html %}
-
 ## Upgrading Croner
 
 This section covers upgrading to Croner from previous versions. Croner follows the Semantic Versioning (SemVer) standard. Be mindful that major updates may cause breaking changes.

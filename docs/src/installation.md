@@ -12,8 +12,6 @@ Croner can be installed using your preferred package manager or CDN. After insta
 > If you are migrating from a different library such as `cron` or `node-cron`, or upgrading from an older version of croner, see the [Migration Guide](migration.md).
 { .note }
 
-{% include multiplex.html %}
-
 ### Importing with Node.js or Bun
 
 For Node.js or Bun, you can use ESM Import or CommonJS Require:
