@@ -2,9 +2,9 @@ name: Cross Runtime Tests
 
 on: 
   push:
-    branches: [main, dev, dev-9.0]
+    branches: [main, dev]
   pull_request:
-    branches: [main, dev, dev-9.0]
+    branches: [main, dev]
 
 jobs:
   deno_ci:
