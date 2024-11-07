@@ -65,7 +65,7 @@ console.log('Will run first time at', job.nextRun().toLocaleString());
 ### Interval
 ```ts
 // Trigger on specific interval combined with cron expression
-Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
+new Cron('* * 7-16 * * MON-FRI', { interval: 90 }, function () {
 	console.log('This will trigger every 90th second at 7-16 on mondays to fridays.');
 });
 ```
@@ -216,7 +216,7 @@ const blockForAWhile = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const protectCallback = (job) => console.log(`Call at ${new Date().toISOString()} were blocked by call started at ${job.currentRun().toISOString()}`);
 
 // protect: can be set to ether true or a callback function, to enable over-run protection
-Cron("* * * * * *", { protect: protectCallback }, async (job) => {
+new Cron("* * * * * *", { protect: protectCallback }, async (job) => {
     console.log(`Call started at ${job.currentRun().toISOString()} started`);
     await blockForAWhile(4000);
     console.log(`Call started at ${job.currentRun().toISOString()} finished ${new Date().toISOString()}`);
