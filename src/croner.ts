@@ -31,7 +31,7 @@
 import { CronDate } from "./date.ts";
 import { CronPattern } from "./pattern.ts";
 import { type CronOptions, CronOptionsHandler } from "./options.ts";
-import { isFunction, unrefTimer } from "./utils.ts";
+import { isCronCallback, isFunction, unrefTimer } from "./utils.ts";
 
 /**
  * Many JS engines stores the delay as a 32-bit signed integer internally.
@@ -85,6 +85,19 @@ type CronState = {
 };
 
 /**
+ * Callback function type
+ *
+ * @param self - Reference to the Cron instance that triggered the callback
+ * @param context - Optional context value passed through options.context
+ *
+ * @returns void or Promise<void> for async callbacks
+ */
+export type CronCallback = (
+  self: InstanceType<typeof Cron>,
+  context: unknown,
+) => void | Promise<void>;
+
+/**
  * Cron entrypoint
  *
  * @constructor
@@ -96,11 +109,11 @@ class Cron {
   name: string | undefined;
   options: CronOptions;
   private _states: CronState;
-  private fn?: Function;
+  private fn?: CronCallback;
   constructor(
     pattern: string | Date,
-    fnOrOptions1?: CronOptions | Function,
-    fnOrOptions2?: CronOptions | Function,
+    fnOrOptions1?: CronOptions | CronCallback,
+    fnOrOptions2?: CronOptions | CronCallback,
   ) {
     // Make options and func optional and interchangable
     let options, func;
@@ -164,8 +177,8 @@ class Cron {
     }
 
     // Allow shorthand scheduling
-    if (func !== void 0 && isFunction(func)) {
-      this.fn = func as Function;
+    if (func !== void 0 && isCronCallback(func)) {
+      this.fn = func;
       this.schedule();
     }
 
@@ -339,7 +352,7 @@ class Cron {
    *
    * @param func - Function to be run each iteration of pattern
    */
-  public schedule(func?: Function): Cron {
+  public schedule(func?: CronCallback): Cron {
     // If a function is already scheduled, bail out
     if (func && this.fn) {
       throw new Error(

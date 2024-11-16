@@ -1,3 +1,5 @@
+import type { CronCallback } from "./croner.ts";
+
 /**
  * Helper function to check if a variable is a function.
  *
@@ -11,6 +13,17 @@ function isFunction(v: unknown) {
     "function" === typeof v ||
     v instanceof Function
   );
+}
+
+/**
+ * Type guard to check if a variable is a valid CronCallback function.
+ *
+ * @param v The variable to check.
+ * @returns Type predicate indicating if the variable is a CronCallback.
+ * @private
+ */
+export function isCronCallback(v: unknown): v is CronCallback {
+  return isFunction(v);
 }
 
 /**
