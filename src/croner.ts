@@ -271,8 +271,6 @@ class Cron {
    * @param prev Starting date, defaults to now - minimum interval
    */
   public msToNext(prev?: CronDate | Date | string): number | null {
-    prev = prev || new Date();
-
     // Get next run time
     const next = this._next(prev);
 
