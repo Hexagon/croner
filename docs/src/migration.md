@@ -111,7 +111,7 @@ const cron = require('node-cron');
 with:
 
 ```ts
-const cron = require('croner');
+const { Cron } = require('croner');
 ```
 
 ### Update your cron job:
@@ -120,12 +120,12 @@ Here's an example of how to migrate a cron job:
 
 ```ts
 // node-cron
-cron.schedule('0 * 14 * * *', () => {
+cron.schedule('* * * * *', () => {
     console.log('Running a task every minute');
 }, { timezone: "Europe/Oslo" });
 
 // croner
-Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
+new Cron('* * * * *', { timezone: "Europe/Oslo" }, () => {
     console.log('Running a task every minute');
 });
 ```
