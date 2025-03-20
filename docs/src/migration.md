@@ -113,7 +113,7 @@ const cron = require('node-cron');
 with:
 
 ```ts
-const cron = require('croner');
+const { Cron } = require('croner');
 ```
 
 ### Update your cron job:
@@ -127,7 +127,7 @@ cron.schedule('0 * 14 * * *', () => {
 }, { timezone: "Europe/Oslo" });
 
 // croner
-Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
+new Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
     console.log('Running a task every minute');
 });
 ```
