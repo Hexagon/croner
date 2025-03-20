@@ -122,12 +122,12 @@ Here's an example of how to migrate a cron job:
 
 ```ts
 // node-cron
-cron.schedule('0 * 14 * * *', () => {
+cron.schedule('* * * * *', () => {
     console.log('Running a task every minute');
 }, { timezone: "Europe/Oslo" });
 
 // croner
-new Cron('0 * 14 * * *', { timezone: "Europe/Oslo" }, () => {
+new Cron('* * * * *', { timezone: "Europe/Oslo" }, () => {
     console.log('Running a task every minute');
 });
 ```
