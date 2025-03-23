@@ -1021,10 +1021,9 @@ test("Fire-once should be supported by date, future and .nextRun() should return
   assertEquals(nextRun && nextRun?.getTime() < refTime.getTime() + 4000, true);
 });
 
-test('Number of milliseconds to next run should be < 1s when interval is paired with a PerSecondJob', () => {
+test("Number of milliseconds to next run should be < 1s when interval is paired with a PerSecondJob", () => {
   const cron = new Cron("* * * * * *", {
     interval: 5,
-  })
+  });
   assertEquals(cron.msToNext()! < 1000, true);
 });
-
