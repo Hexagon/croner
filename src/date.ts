@@ -47,7 +47,7 @@ const RecursionSteps: RecursionStep[] = [
  * @param d Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
  * @param tz String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
  */
-class CronDate {
+class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
@@ -90,7 +90,7 @@ class CronDate {
    */
   year!: number;
 
-  constructor(d?: CronDate | Date | string | null, tz?: string | number) {
+  constructor(d?: CronDate<T> | Date | string | null, tz?: string | number) {
     /**
      * TimeZone
      * @type {string|number|undefined}
@@ -205,7 +205,7 @@ class CronDate {
    *
    * @param {CronDate} d - Input date
    */
-  private fromCronDate(d: CronDate) {
+  private fromCronDate(d: CronDate<T>) {
     this.tz = d.tz;
     this.year = d.year;
     this.month = d.month;
@@ -267,7 +267,7 @@ class CronDate {
    * Find next match of current part
    */
   private findNext(
-    options: CronOptions,
+    options: CronOptions<T>,
     target: RecursionTarget,
     pattern: CronPattern,
     offset: number,
@@ -359,7 +359,11 @@ class CronDate {
    *
    * @private
    */
-  private recurse(pattern: CronPattern, options: CronOptions, doing: number): CronDate | null {
+  private recurse(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | null {
     // Find next month (or whichever part we're at)
     const res = this.findNext(options, RecursionSteps[doing][0], pattern, RecursionSteps[doing][2]);
 
@@ -412,9 +416,9 @@ class CronDate {
    */
   public increment(
     pattern: CronPattern,
-    options: CronOptions,
+    options: CronOptions<T>,
     hasPreviousRun: boolean,
-  ): CronDate | null {
+  ): CronDate<T> | null {
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
