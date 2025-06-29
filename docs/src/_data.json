@@ -11,7 +11,7 @@
     "top_links": [
       {
         "icon": "fab fa-github",
-        "title": "GitHub Repsitory",
+        "title": "GitHub Repository",
         "url": "https://github.com/hexagon/croner"
       },
       {
@@ -27,7 +27,7 @@
     ],
     "nav_links": [
       {
-        "title": "GitHub Repsitory",
+        "title": "GitHub Repository",
         "url": "https://github.com/hexagon/croner"
       },
       {
