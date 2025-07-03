@@ -400,3 +400,58 @@ test("0 0 0 * * SUN-MON#3,MON-TUE#1 should work", function () {
   assertEquals(nextRun[3].getMonth(), 8);
   assertEquals(nextRun[3].getFullYear(), 2023);
 });
+
+test("W Modifier: '15W' on a weekday should run on the 15th", function () {
+  // July 15, 2025 is a Tuesday
+  const scheduler = new Cron("0 0 0 15W 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 15);
+});
+
+test("W Modifier: '19W' on a Saturday should run on Friday the 18th", function () {
+  // July 19, 2025 is a Saturday
+  const scheduler = new Cron("0 0 0 19W 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 18);
+});
+
+test("W Modifier: '20W' on a Sunday should run on Monday the 21st", function () {
+  // July 20, 2025 is a Sunday
+  const scheduler = new Cron("0 0 0 20W 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 21);
+});
+
+test("W Modifier: '1W' on a Saturday should run on Monday the 3rd", function () {
+  // August 2, 2025 is a Saturday, but we test for the 1st.
+  // June 1, 2025 is a Sunday. The nearest weekday is Monday, June 2nd.
+  const scheduler = new Cron("0 0 0 1W 6 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-05-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 2);
+  assertEquals(nextRun?.getUTCMonth(), 5); // June
+});
+
+test("W Modifier: '31W' on a Sunday should run on Friday the 29th", function () {
+    // August 31, 2025 is a Sunday. The nearest weekday is Friday, August 29th.
+    const scheduler = new Cron("0 0 0 31W 8 *", { timezone: "Etc/UTC" });
+    const nextRun = scheduler.nextRun("2025-08-01T00:00:00Z");
+    assertEquals(nextRun?.getUTCDate(), 29);
+});
+
+test("W Modifier: Should throw when used in the minute field", function () {
+  assertThrows(() => {
+    new Cron("0 15W * * * *");
+  }, TypeError, "contains illegal characters");
+});
+
+test("W Modifier: Should throw when used in the day-of-week field", function () {
+  assertThrows(() => {
+    new Cron("0 0 * * * 2W");
+  }, TypeError, "contains illegal characters");
+});
+
+test("W Modifier: Should throw when used with a range", function () {
+  assertThrows(() => {
+    new Cron("0 0 0 15W-20 * *");
+  }, TypeError, "W is not allowed in a range");
+});
