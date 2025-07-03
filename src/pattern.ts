@@ -3,7 +3,7 @@ import { CronDate } from "./date.ts";
 /**
  * Name for each part of the cron pattern
  */
-type CronPatternPart = "second" | "minute" | "hour" | "day" | "month" | "dayOfWeek";
+type CronPatternPart = "second" | "minute" | "hour" | "day" | "month" | "dayOfWeek" | "nearestWeekdays";
 
 /**
  * Offset, 0 or -1.
@@ -41,6 +41,7 @@ class CronPattern {
   lastDayOfMonth: boolean;
   starDOM: boolean;
   starDOW: boolean;
+  nearestWeekdays: number[];
 
   constructor(pattern: string, timezone?: string) {
     this.pattern = pattern;
@@ -54,6 +55,7 @@ class CronPattern {
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
 
     this.lastDayOfMonth = false;
+    this.nearestWeekdays = Array(31).fill(0); // 0-30 in array, 1-31 in config
 
     this.starDOM = false; // Asterisk used for dayOfMonth
     this.starDOW = false; // Asterisk used for dayOfWeek
@@ -183,8 +185,9 @@ class CronPattern {
     } else if (conf.indexOf("/") !== -1) {
       this.handleStepping(conf, type, valueIndexOffset, defaultValue);
 
-      // Anything left should be a number
+      // Anything left should be a number, potentially with a modifier
     } else if (conf !== "") {
+
       this.handleNumber(conf, type, valueIndexOffset, defaultValue);
     }
   }
@@ -195,7 +198,10 @@ class CronPattern {
    */
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
-      const reValidCron = i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/;
+      const reValidCron =
+        (i === 3)
+          ? /[^/*0-9,-WL]+/
+          : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/);
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
@@ -206,7 +212,7 @@ class CronPattern {
   }
 
   /**
-   * Nothing but a number left, handle that
+   * Nothing but a number, potentially with a modifier, left - handle that
    *
    * @param conf Current part, expected to be a number, as a string
    * @param type One of "seconds", "minutes" etc
@@ -218,7 +224,19 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+
+    // Check for existance of a nth-modifier
     const result = this.extractNth(conf, type);
+
+    // Check for existance of a nearest weekday modifier
+    const nearestWeekdayModifier = conf.toUpperCase().includes("W");
+    if (type !== "day" && nearestWeekdayModifier) {
+      throw new TypeError("CronPattern: Nearest weekday modifier (W) only allowed in day-of-month.");
+    }
+    // - actually change type to nearestWeekdays if the W modifier exists
+    if (nearestWeekdayModifier) {
+      type = "nearestWeekdays"
+    }
 
     const i = parseInt(result[0], 10) + valueIndexOffset;
 
@@ -227,6 +245,7 @@ class CronPattern {
     }
 
     this.setPart(type, i, result[1] || defaultValue);
+
   }
 
   /**
@@ -262,7 +281,7 @@ class CronPattern {
       if (index < 0 || index >= 24) {
         throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
       }
-    } else if (part === "day") {
+    } else if (part === "day" || part === "nearestWeekdays") {
       if (index < 0 || index >= 31) {
         throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
       }
@@ -289,6 +308,11 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in ranges with stepping.");
+    }
+
     const result = this.extractNth(conf, type);
 
     const matches = result[0].match(/^(\d+)-(\d+)\/(\d+)$/);
@@ -354,6 +378,11 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in a range.");
+    }
+
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("-");
@@ -393,6 +422,9 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in parts with stepping.");
+    }
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("/");
