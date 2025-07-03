@@ -76,13 +76,14 @@ class CronPattern {
     // Handle @yearly, @monthly etc
     if (this.pattern.indexOf("@") >= 0) this.pattern = this.handleNicknames(this.pattern).trim();
 
-    // Split configuration on whitespace
-    const parts = this.pattern.replace(/\s+/g, " ").split(" ");
+    // Split pattern on any whitespace, which ensures correct handling of both
+    // space and tab delimiters common in the cron pattern format.
+    const parts = this.pattern.match(/\S+/g) || [""];
 
-    // Validite number of configuration entries
+    // Validite number of entries in pattern
     if (parts.length < 5 || parts.length > 6) {
       throw new TypeError(
-        "CronPattern: invalid configuration format ('" + this.pattern +
+        "CronPattern: invalid format ('" + this.pattern +
           "'), exactly five or six space separated parts are required.",
       );
     }
