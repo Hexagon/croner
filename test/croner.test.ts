@@ -135,16 +135,20 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
   assertEquals(nextRuns[9].getTime() < now.getTime() + 6 * 60 * 1000, true);
 });
 
-test("Extra whitespace at beginning should throw", () => {
-  assertThrows(() => {
-    new Cron(" 0 0 12 9 *").nextRun();
-  });
+test("Extra whitespace at beginning should not throw", () => {
+  new Cron(" 0 0 12 9 *").nextRun();
 });
 
-test("Extra whitespace at end should throw", () => {
-  assertThrows(() => {
-    new Cron("0 0 12 9 * ").nextRun();
-  });
+test("Extra whitespace at end should not throw", () => {
+  new Cron("0 0 12 9 * ").nextRun();
+});
+
+test("Tab as whitespace should not throw", () => {
+  new Cron("0 0 12  9 * ").nextRun();
+});
+
+test("Mixed whitespace should not throw", () => {
+  new Cron("    0   0     12  9 *  ").nextRun();
 });
 
 test("Next 10 run times is returned by enumeration(), and contain a reasonable time span, when using modified start time", () => {
