@@ -152,7 +152,7 @@ class CronDate {
     // It's already a weekday
     return day;
   }
-  
+
   /**
    * Check if the given date is the nth occurrence of a weekday in its month.
    *
@@ -381,7 +381,7 @@ class CronDate {
           match = match && dowMatch;
         }
       }
-      
+
       if (match) {
         this[target] = i - offset;
 
