@@ -25,6 +25,7 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 *   Croner expressions have the following additional modifiers:
 	-   *?*: The question mark is substituted with the time of initialization. For example, ? ? * * * * would be substituted with 25 8 * * * * if the time is <any hour>:08:25 at the time of new Cron('? ? * * * *', <...>). The question mark can be used in any field.
 	-   *L*: The letter 'L' can be used in the day of the month field to indicate the last day of the month. When used in the day of the week field in conjunction with the # character, it denotes the last specific weekday of the month. For example, `5#L` represents the last Friday of the month.
+	-	*W*: The letter `W` can be used in the day-of-month field to select the weekday (Monday-Friday) nearest to a given day. For example, `10W` will trigger on the weekday closest to the 10th of the month. If the 10th is a Saturday, the job will run on Friday the 9th. If the 10th is a Sunday, it will run on Monday the 11th. The `W` modifier cannot be used with a range or stepping (e.g., `10-12W` is invalid).
 	-	*#*: The # character specifies the "nth" occurrence of a particular day within a month. For example, supplying 
 	`5#2` in the day of week field signifies the second Friday of the month. This can be combined with ranges and supports day names. For instance, MON-FRI#2 would match the Monday through Friday of the second week of the month.
 
@@ -37,13 +38,15 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 | Seconds      | Optional | 0-59           | * , - / ?                  |                                       |
 | Minutes      | Yes      | 0-59           | * , - / ?                  |                                       |
 | Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
-| Day of Month | Yes      | 1-31           | * , - / ? L                |                                       |
+| Day of Month | Yes      | 1-31           | * , - / ? L W                |                                       |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
 | Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L #               | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0<br># is used to specify nth occurrence of a weekday            |
 
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
 > When using `L` in the Day of Week field, it affects all specified weekdays. For example, `5-6#L` means the last Friday and Saturday in the month."
-> The # character can be used to specify the "nth" weekday of the month. For example, 5#2 represents the second Friday of the month.
+> The `#` character can be used to specify the "nth" weekday of the month. For example, `5#2` represents the second Friday of the month.
+> The `W` character operates within the current month. If the 1st is a saturday `1W` would match monday the 3rd as opposed to friday the month before.
+
 { .note }
 
 It is also possible to use the following "nicknames" as pattern.

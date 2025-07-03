@@ -3,7 +3,14 @@ import { CronDate } from "./date.ts";
 /**
  * Name for each part of the cron pattern
  */
-type CronPatternPart = "second" | "minute" | "hour" | "day" | "month" | "dayOfWeek" | "nearestWeekdays";
+type CronPatternPart =
+  | "second"
+  | "minute"
+  | "hour"
+  | "day"
+  | "month"
+  | "dayOfWeek"
+  | "nearestWeekdays";
 
 /**
  * Offset, 0 or -1.
@@ -187,7 +194,6 @@ class CronPattern {
 
       // Anything left should be a number, potentially with a modifier
     } else if (conf !== "") {
-
       this.handleNumber(conf, type, valueIndexOffset, defaultValue);
     }
   }
@@ -198,10 +204,9 @@ class CronPattern {
    */
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
-      const reValidCron =
-        (i === 3)
-          ? /[^/*0-9,-WL]+/
-          : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/);
+      const reValidCron = (i === 3)
+        ? /[^/*0-9,-WL]+/
+        : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/);
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
@@ -224,18 +229,19 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
-
     // Check for existance of a nth-modifier
     const result = this.extractNth(conf, type);
 
     // Check for existance of a nearest weekday modifier
     const nearestWeekdayModifier = conf.toUpperCase().includes("W");
     if (type !== "day" && nearestWeekdayModifier) {
-      throw new TypeError("CronPattern: Nearest weekday modifier (W) only allowed in day-of-month.");
+      throw new TypeError(
+        "CronPattern: Nearest weekday modifier (W) only allowed in day-of-month.",
+      );
     }
     // - actually change type to nearestWeekdays if the W modifier exists
     if (nearestWeekdayModifier) {
-      type = "nearestWeekdays"
+      type = "nearestWeekdays";
     }
 
     const i = parseInt(result[0], 10) + valueIndexOffset;
@@ -245,7 +251,6 @@ class CronPattern {
     }
 
     this.setPart(type, i, result[1] || defaultValue);
-
   }
 
   /**
@@ -308,7 +313,6 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
-    
     if (conf.toUpperCase().includes("W")) {
       throw new TypeError("CronPattern: Syntax error, W is not allowed in ranges with stepping.");
     }
@@ -378,7 +382,6 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
-    
     if (conf.toUpperCase().includes("W")) {
       throw new TypeError("CronPattern: Syntax error, W is not allowed in a range.");
     }
