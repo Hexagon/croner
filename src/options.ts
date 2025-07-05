@@ -9,7 +9,7 @@ type ProtectCallbackFn = (job: Cron) => void;
  *
  * @interface
  */
-interface CronOptions {
+interface CronOptions<T = undefined> {
   /**
    * The name of the cron job. If provided, the job will be added to the
    * `scheduledJobs` array, allowing it to be accessed by name.
@@ -64,12 +64,12 @@ interface CronOptions {
   /**
    * The date and time at which the job should start running.
    */
-  startAt?: string | Date | CronDate;
+  startAt?: string | Date | CronDate<T>;
 
   /**
    * The date and time at which the job should stop running.
    */
-  stopAt?: string | Date | CronDate;
+  stopAt?: string | Date | CronDate<T>;
 
   /**
    * The timezone for the cron job.
@@ -90,7 +90,7 @@ interface CronOptions {
   /**
    * An optional context object that will be passed to the job function.
    */
-  context?: unknown;
+  context?: T;
 }
 
 /**
@@ -100,7 +100,7 @@ interface CronOptions {
  * @returns The processed and validated cron options.
  * @throws {Error} If any of the options are invalid.
  */
-function CronOptionsHandler(options?: CronOptions): CronOptions {
+function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOptions<T> {
   if (options === void 0) {
     options = {};
   }

@@ -53,13 +53,14 @@ const maxDelay: number = 30 * 1000;
 /**
  * An array containing all named cron jobs.
  */
-const scheduledJobs: Cron[] = [];
+// deno-lint-ignore no-explicit-any
+const scheduledJobs: Cron<any>[] = [];
 
 /**
  * Encapsulate all internal states in the Cron instance.
  * Duplicate all options that can change to internal states, for example maxRuns and paused.
  */
-type CronState = {
+type CronState<T = undefined> = {
   kill: boolean;
   blocking: boolean;
   /**
@@ -68,15 +69,15 @@ type CronState = {
    * Stored to use as the actual previous run, even while a new trigger
    * is started. Used by the public funtion `.previousRun()`
    */
-  previousRun: CronDate | undefined;
+  previousRun: CronDate<T> | undefined;
   /**
    * Start time of current trigger, this is updated just before triggering
    *
    * This is used internally as "previous run", as we mostly want to know
    * when the previous run _started_
    */
-  currentRun: CronDate | undefined;
-  once: CronDate | undefined;
+  currentRun: CronDate<T> | undefined;
+  once: CronDate<T> | undefined;
   //@ts-ignore Cross Runtime
   currentTimeout: NodeJS.Timer | number | undefined;
   maxRuns: number | undefined;
@@ -92,9 +93,9 @@ type CronState = {
  *
  * @returns void or Promise<void> for async callbacks
  */
-export type CronCallback = (
-  self: InstanceType<typeof Cron>,
-  context: unknown,
+export type CronCallback<T = undefined> = (
+  self: InstanceType<typeof Cron<T>>,
+  context: T,
 ) => void | Promise<void>;
 
 /**
@@ -105,23 +106,24 @@ export type CronCallback = (
  * @param [fnOrOptions1] - Options or function to be run each iteration of pattern
  * @param [fnOrOptions2] - Options or function to be run each iteration of pattern
  */
-class Cron {
+class Cron<T = undefined> {
   name: string | undefined;
-  options: CronOptions;
-  private _states: CronState;
-  private fn?: CronCallback;
+  options: CronOptions<T>;
+  private _states: CronState<T>;
+  private fn?: CronCallback<T>;
   constructor(
     pattern: string | Date,
-    fnOrOptions1?: CronOptions | CronCallback,
-    fnOrOptions2?: CronOptions | CronCallback,
+    fnOrOptions1?: CronOptions<T> | CronCallback<T>,
+    fnOrOptions2?: CronOptions<T> | CronCallback<T>,
   ) {
     // Make options and func optional and interchangable
-    let options, func;
+    let options: CronOptions<T> | undefined;
+    let func: CronCallback<T> | undefined;
 
     if (isFunction(fnOrOptions1)) {
-      func = fnOrOptions1;
+      func = fnOrOptions1 as CronCallback<T>;
     } else if (typeof fnOrOptions1 === "object") {
-      options = fnOrOptions1;
+      options = fnOrOptions1 as CronOptions<T>;
     } else if (fnOrOptions1 !== void 0) {
       throw new Error(
         "Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).",
@@ -129,9 +131,9 @@ class Cron {
     }
 
     if (isFunction(fnOrOptions2)) {
-      func = fnOrOptions2;
+      func = fnOrOptions2 as CronCallback<T>;
     } else if (typeof fnOrOptions2 === "object") {
-      options = fnOrOptions2;
+      options = fnOrOptions2 as CronOptions<T>;
     } else if (fnOrOptions2 !== void 0) {
       throw new Error(
         "Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).",
@@ -139,7 +141,7 @@ class Cron {
     }
 
     this.name = options?.name;
-    this.options = CronOptionsHandler(options);
+    this.options = CronOptionsHandler<T>(options);
 
     this._states = {
       kill: false,
@@ -159,7 +161,7 @@ class Cron {
       pattern &&
       (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))
     ) {
-      this._states.once = new CronDate(pattern, this.options.timezone || this.options.utcOffset);
+      this._states.once = new CronDate<T>(pattern, this.options.timezone || this.options.utcOffset);
     } else {
       this._states.pattern = new CronPattern(pattern as string, this.options.timezone);
     }
@@ -172,7 +174,7 @@ class Cron {
           "Cron: Tried to initialize new named job '" + this.name + "', but name already taken.",
         );
       } else {
-        scheduledJobs.push(this);
+        scheduledJobs.push(this as Cron<unknown>);
       }
     }
 
@@ -191,7 +193,7 @@ class Cron {
    * @param prev - Optional. Date to start from. Can be a CronDate, Date object, or a string representing a date.
    * @returns The next run time as a Date object, or null if there is no next run.
    */
-  public nextRun(prev?: CronDate | Date | string | null): Date | null {
+  public nextRun(prev?: CronDate<T> | Date | string | null): Date | null {
     const next = this._next(prev);
     return next ? next.getDate(false) : null;
   }
@@ -208,7 +210,8 @@ class Cron {
       n = this._states.maxRuns;
     }
     const enumeration: Date[] = [];
-    let prev: CronDate | Date | string | undefined | null = previous || this._states.currentRun ||
+    let prev: CronDate<T> | Date | string | undefined | null = previous ||
+      this._states.currentRun ||
       undefined;
     while (n-- && (prev = this.nextRun(prev))) {
       enumeration.push(prev);
@@ -283,7 +286,7 @@ class Cron {
    *
    * @param prev Starting date, defaults to now - minimum interval
    */
-  public msToNext(prev?: CronDate | Date | string): number | null {
+  public msToNext(prev?: CronDate<T> | Date | string): number | null {
     // Get next run time
     const next = this._next(prev);
 
@@ -291,7 +294,7 @@ class Cron {
       if (prev instanceof CronDate || prev instanceof Date) {
         return (next.getTime() - prev.getTime());
       } else {
-        return (next.getTime() - new CronDate(prev).getTime());
+        return (next.getTime() - new CronDate<T>(prev).getTime());
       }
     } else {
       return null;
@@ -317,7 +320,7 @@ class Cron {
 
     // Remove job from the scheduledJobs array to free up the name, and allow the job to be
     // garbage collected
-    const jobIndex = scheduledJobs.indexOf(this);
+    const jobIndex = scheduledJobs.indexOf(this as Cron<unknown>);
     if (jobIndex >= 0) {
       scheduledJobs.splice(jobIndex, 1);
     }
@@ -350,7 +353,7 @@ class Cron {
    *
    * @param func - Function to be run each iteration of pattern
    */
-  public schedule(func?: CronCallback): Cron {
+  public schedule(func?: CronCallback<T>): Cron<T> {
     // If a function is already scheduled, bail out
     if (func && this.fn) {
       throw new Error(
@@ -395,7 +398,7 @@ class Cron {
   private async _trigger(initiationDate?: Date) {
     this._states.blocking = true;
 
-    this._states.currentRun = new CronDate(
+    this._states.currentRun = new CronDate<T>(
       void 0, // We should use initiationDate, but that does not play well with fake timers in third party tests. In real world there is not much difference though */
       this.options.timezone || this.options.utcOffset,
     );
@@ -403,7 +406,7 @@ class Cron {
     if (this.options.catch) {
       try {
         if (this.fn !== undefined) {
-          await this.fn(this, this.options.context);
+          await this.fn(this, this.options.context as T);
         }
       } catch (_e) {
         if (isFunction(this.options.catch)) {
@@ -413,11 +416,11 @@ class Cron {
     } else {
       // Trigger the function without catching
       if (this.fn !== undefined) {
-        await this.fn(this, this.options.context);
+        await this.fn(this, this.options.context as T);
       }
     }
 
-    this._states.previousRun = new CronDate(
+    this._states.previousRun = new CronDate<T>(
       initiationDate,
       this.options.timezone || this.options.utcOffset,
     );
@@ -470,7 +473,7 @@ class Cron {
   /**
    * Internal version of next. Cron needs millseconds internally, hence _next.
    */
-  private _next(previousRun?: CronDate | Date | string | null) {
+  private _next(previousRun?: CronDate<T> | Date | string | null) {
     let hasPreviousRun = (previousRun || this._states.currentRun) ? true : false;
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
@@ -481,19 +484,19 @@ class Cron {
     }
 
     // Ensure previous run is a CronDate
-    previousRun = new CronDate(previousRun, this.options.timezone || this.options.utcOffset);
+    previousRun = new CronDate<T>(previousRun, this.options.timezone || this.options.utcOffset);
 
     // Previous run should never be before startAt
     if (
       this.options.startAt && previousRun &&
-      previousRun.getTime() < (this.options.startAt as CronDate).getTime()
+      previousRun.getTime() < (this.options.startAt as CronDate<T>).getTime()
     ) {
       previousRun = this.options.startAt;
     }
 
     // Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
-    let nextRun: CronDate | null = this._states.once ||
-      new CronDate(previousRun, this.options.timezone || this.options.utcOffset);
+    let nextRun: CronDate<T> | null = this._states.once ||
+      new CronDate<T>(previousRun, this.options.timezone || this.options.utcOffset);
 
     // if the startAt is in the future and the interval is set, then the prev is already set to the startAt, so there is no need to increment it
     if (!startAtInFutureWithInterval && nextRun !== this._states.once) {
@@ -504,13 +507,15 @@ class Cron {
       );
     }
 
-    if (this._states.once && this._states.once.getTime() <= (previousRun as CronDate).getTime()) {
+    if (
+      this._states.once && this._states.once.getTime() <= (previousRun as CronDate<T>).getTime()
+    ) {
       return null;
     } else if (
       (nextRun === null) ||
       (this._states.maxRuns !== undefined && this._states.maxRuns <= 0) ||
       (this._states.kill) ||
-      (this.options.stopAt && nextRun.getTime() >= (this.options.stopAt as CronDate).getTime())
+      (this.options.stopAt && nextRun.getTime() >= (this.options.stopAt as CronDate<T>).getTime())
     ) {
       return null;
     } else {
@@ -524,21 +529,22 @@ class Cron {
    * Should only be called from the _next function.
    */
   private _calculatePreviousRun(
-    prev: CronDate | Date | string | undefined | null,
+    prev: CronDate<T> | Date | string | undefined | null,
     hasPreviousRun: boolean,
-  ): [CronDate | undefined, boolean] {
-    const now = new CronDate(undefined, this.options.timezone || this.options.utcOffset);
-    let newPrev: CronDate | undefined | null = prev as CronDate;
-    if ((this.options.startAt as CronDate).getTime() <= now.getTime()) {
-      newPrev = this.options.startAt as CronDate;
-      let prevTimePlusInterval = (newPrev as CronDate).getTime() + this.options.interval! * 1000;
+  ): [CronDate<T> | undefined, boolean] {
+    const now = new CronDate<T>(undefined, this.options.timezone || this.options.utcOffset);
+    let newPrev: CronDate<T> | undefined | null = prev as CronDate<T>;
+    if ((this.options.startAt as CronDate<T>).getTime() <= now.getTime()) {
+      newPrev = this.options.startAt as CronDate<T>;
+      let prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
       while (prevTimePlusInterval <= now.getTime()) {
-        newPrev = new CronDate(newPrev, this.options.timezone || this.options.utcOffset).increment(
-          this._states.pattern,
-          this.options,
-          true,
-        );
-        prevTimePlusInterval = (newPrev as CronDate).getTime() + this.options.interval! * 1000;
+        newPrev = new CronDate<T>(newPrev, this.options.timezone || this.options.utcOffset)
+          .increment(
+            this._states.pattern,
+            this.options,
+            true,
+          );
+        prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
       }
       hasPreviousRun = true;
     }
