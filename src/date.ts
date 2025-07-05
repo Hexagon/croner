@@ -118,6 +118,42 @@ class CronDate {
   }
 
   /**
+   * Calculates the nearest weekday (Mon-Fri) to a given day of the month.
+   * Handles month boundaries.
+   *
+   * @param year The target year.
+   * @param month The target month (0-11).
+   * @param day The target day (1-31).
+   * @returns The day of the month (1-31) that is the nearest weekday.
+   */
+  private getNearestWeekday(year: number, month: number, day: number): number {
+    const date = new Date(Date.UTC(year, month, day));
+    const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
+
+    if (weekday === 0) { // Sunday
+      // If it's the last day of the month, go back to Friday
+      const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      if (day === daysInMonth) {
+        return day - 2;
+      }
+      // Otherwise, go forward to Monday
+      return day + 1;
+    }
+
+    if (weekday === 6) { // Saturday
+      // If it's the 1st, go forward to Monday
+      if (day === 1) {
+        return day + 2;
+      }
+      // Otherwise, go back to Friday
+      return day - 1;
+    }
+
+    // It's already a weekday
+    return day;
+  }
+
+  /**
    * Check if the given date is the nth occurrence of a weekday in its month.
    *
    * @param year The year.
@@ -297,6 +333,27 @@ class CronDate {
     for (let i = this[target] + offset; i < pattern[target].length; i++) {
       // this applies to all "levels"
       let match: number = pattern[target][i];
+
+      // Special case for nearest weekday
+      // Special case for nearest weekday
+      if (
+        target === "day" && !match
+      ) {
+        // Iterate through all possible 'W' days in the pattern
+        for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
+          // Check if the pattern specifies the 'W' modifier for this day
+          if (pattern.nearestWeekdays[dayWithW]) {
+            // Calculate the actual execution day for this 'W' day
+            const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
+
+            // Check if the day currently being evaluated by the outer loop is that execution day
+            if (executionDay === (i - offset)) {
+              match = 1;
+              break; // Match found, no need to check other 'W' days
+            }
+          }
+        }
+      }
 
       // Special case for last day of month
       if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
