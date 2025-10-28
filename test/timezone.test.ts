@@ -197,3 +197,60 @@ test("0 30 2 * * * with 365 iterations should return 366 days from now in Europe
   //@ts-ignore
   assertEquals(Math.abs(nextRun?.getTime() - compareDay.getTime()) < 13 * 60 * 60 * 1000, true);
 });
+
+test("UTC timezone should not skip hours during local DST transitions (issue #284)", function () {
+  // This test specifically addresses the bug where using UTC timezone on a system
+  // with a local timezone that has DST transitions causes the next run calculation
+  // to skip an hour. For example, with Australia/Sydney as local timezone, a UTC
+  // cron job would skip from 02:00:00 GMT to 04:00:00 GMT on October 5, 2025
+  // (when Sydney has a DST transition at 2 AM).
+
+  const testjob = new Cron("0 0 * * * *", {
+    paused: true,
+    timezone: "UTC",
+  });
+
+  // Test the specific case from the bug report
+  let nextRunDate = testjob.nextRun("2025-10-05T02:00:00Z");
+  assertEquals(nextRunDate?.getTime(), 1759633200000); // Should be 03:00:00 GMT, not 04:00:00 GMT
+  assertEquals(nextRunDate?.toUTCString(), "Sun, 05 Oct 2025 03:00:00 GMT");
+
+  // Test multiple consecutive hours to ensure no hour is skipped
+  const iterations = [
+    {
+      from: "2025-10-05T00:00:00Z",
+      expected: 1759626000000,
+      expectedStr: "Sun, 05 Oct 2025 01:00:00 GMT",
+    },
+    {
+      from: "2025-10-05T01:00:00Z",
+      expected: 1759629600000,
+      expectedStr: "Sun, 05 Oct 2025 02:00:00 GMT",
+    },
+    {
+      from: "2025-10-05T02:00:00Z",
+      expected: 1759633200000,
+      expectedStr: "Sun, 05 Oct 2025 03:00:00 GMT",
+    },
+    {
+      from: "2025-10-05T03:00:00Z",
+      expected: 1759636800000,
+      expectedStr: "Sun, 05 Oct 2025 04:00:00 GMT",
+    },
+    {
+      from: "2025-10-05T04:00:00Z",
+      expected: 1759640400000,
+      expectedStr: "Sun, 05 Oct 2025 05:00:00 GMT",
+    },
+  ];
+
+  for (const iteration of iterations) {
+    const next = testjob.nextRun(iteration.from);
+    assertEquals(next?.getTime(), iteration.expected, `Failed for ${iteration.from}`);
+    assertEquals(
+      next?.toUTCString(),
+      iteration.expectedStr,
+      `Failed UTC string for ${iteration.from}`,
+    );
+  }
+});

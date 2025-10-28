@@ -180,17 +180,35 @@ minitz.fromTZ = function (tp: TimePoint, throwOnInvalid?: boolean) {
  * );
  */
 minitz.toTZ = function (d: Date, tzStr: string) {
-  // - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
-  const localDateString = d.toLocaleString("en-US", { timeZone: tzStr }).replace(/[\u202f]/, " ");
+  // Use Intl.DateTimeFormat.formatToParts to extract date components in the target timezone
+  // This avoids DST-related bugs that occur when parsing date strings in the local timezone
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: tzStr,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: false,
+  });
 
-  const td = new Date(localDateString);
+  const parts = formatter.formatToParts(d);
+  const dateComponents: { [key: string]: number } = {};
+
+  for (const part of parts) {
+    if (part.type !== "literal") {
+      dateComponents[part.type] = parseInt(part.value, 10);
+    }
+  }
+
   return {
-    y: td.getFullYear(),
-    m: td.getMonth() + 1,
-    d: td.getDate(),
-    h: td.getHours(),
-    i: td.getMinutes(),
-    s: td.getSeconds(),
+    y: dateComponents.year,
+    m: dateComponents.month,
+    d: dateComponents.day,
+    h: dateComponents.hour,
+    i: dateComponents.minute,
+    s: dateComponents.second,
     tz: tzStr,
   };
 };
