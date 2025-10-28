@@ -119,6 +119,21 @@ minitz.fromTZ = function (tp: TimePoint, throwOnInvalid?: boolean) {
   // If offset between guessed true date object and UTC matches initial calculation, the guess
   // was spot on
   if ((dateOffsGuess - offset) === 0) {
+    // Even if they match, we might be in a DST overlap situation (fall back)
+    // Check if there's another valid time 1 hour earlier
+    const altGuess = new Date(dateGuess.getTime() - 3600000); // 1 hour earlier
+    const altOffset = getTimezoneOffset(tp.tz, altGuess);
+    const altCheck = minitz.toTZ(altGuess, tp.tz);
+    
+    // Check if the alternative time also matches the target local time
+    // AND the offset is different (indicating we're in an overlap, not just an hour earlier)
+    if (altCheck.y === tp.y && altCheck.m === tp.m && altCheck.d === tp.d &&
+        altCheck.h === tp.h && altCheck.i === tp.i && altCheck.s === tp.s &&
+        altOffset !== dateOffsGuess) {
+      // We're in a DST overlap! Return the earlier time (first occurrence per OCPS 1.4)
+      return altGuess;
+    }
+    
     return dateGuess;
   } else {
     // Not quite there yet, make a second try on guessing the local time, adjust by the offset indicated by the previous guess
@@ -127,14 +142,33 @@ minitz.fromTZ = function (tp: TimePoint, throwOnInvalid?: boolean) {
     const dateGuess2 = new Date(inDate.getTime() - dateOffsGuess),
       dateOffsGuess2 = getTimezoneOffset(tp.tz, dateGuess2);
     if ((dateOffsGuess2 - dateOffsGuess) === 0) {
-      // All good, return local time
-      return dateGuess2;
-    } else if (!throwOnInvalid && (dateOffsGuess2 - dateOffsGuess) > 0) {
-      // We're most probably dealing with a DST transition where we should use the offset of the second guess
+      // Second guess confirms the time
       return dateGuess2;
     } else if (!throwOnInvalid) {
-      // We're most probably dealing with a DST transition where we should use the offset of the initial guess
-      return dateGuess;
+      // Offsets don't match between guesses - we're in a DST transition
+      // Check which guess produces the correct local time
+      const check1 = minitz.toTZ(dateGuess, tp.tz);
+      const check2 = minitz.toTZ(dateGuess2, tp.tz);
+      
+      const guess1Matches = check1.y === tp.y && check1.m === tp.m && check1.d === tp.d &&
+                            check1.h === tp.h && check1.i === tp.i && check1.s === tp.s;
+      const guess2Matches = check2.y === tp.y && check2.m === tp.m && check2.d === tp.d &&
+                            check2.h === tp.h && check2.i === tp.i && check2.s === tp.s;
+      
+      if (guess1Matches && guess2Matches) {
+        // Both match - DST overlap (fall back), return earlier time (OCPS 1.4)
+        return dateGuess.getTime() < dateGuess2.getTime() ? dateGuess : dateGuess2;
+      } else if (guess2Matches) {
+        // Only guess2 matches - this is the correct time
+        return dateGuess2;
+      } else if (guess1Matches) {
+        // Only guess1 matches - this is the correct time
+        return dateGuess;
+      } else {
+        // Neither matches exactly - DST gap (spring forward)
+        // Return the time after the gap (the later of the two)
+        return dateGuess.getTime() > dateGuess2.getTime() ? dateGuess : dateGuess2;
+      }
     } else {
       // Input time is invalid, and the library is instructed to throw, so let's do it
       throw new Error("Invalid date passed to fromTZ()");
