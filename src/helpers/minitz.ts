@@ -194,10 +194,23 @@ minitz.toTZ = function (d: Date, tzStr: string) {
   });
 
   const parts = formatter.formatToParts(d);
-  const dateComponents: { [key: string]: number } = {};
+  const dateComponents: Record<
+    "year" | "month" | "day" | "hour" | "minute" | "second",
+    number
+  > = {
+    year: 0,
+    month: 0,
+    day: 0,
+    hour: 0,
+    minute: 0,
+    second: 0,
+  };
 
   for (const part of parts) {
-    if (part.type !== "literal") {
+    if (
+      part.type === "year" || part.type === "month" || part.type === "day" ||
+      part.type === "hour" || part.type === "minute" || part.type === "second"
+    ) {
       dateComponents[part.type] = parseInt(part.value, 10);
     }
   }
