@@ -254,3 +254,70 @@ test("UTC timezone should not skip hours during local DST transitions (issue #28
     );
   }
 });
+
+test("OCPS 1.4 compliance: DST Gap (Spring Forward) - job should be skipped", function () {
+  // OCPS 1.4 Section 4.3.1: When a scheduled time falls into a DST gap,
+  // the job SHOULD be skipped (not run earlier or delayed after transition)
+
+  // America/New_York: March 9, 2025 at 2:00 AM EST -> 3:00 AM EDT
+  // Times 2:00-2:59 AM don't exist
+  const nyJob = new Cron("0 30 2 * * *", { paused: true, timezone: "America/New_York" });
+
+  // When asking for next run on March 9 (before DST transition)
+  const march9Next = nyJob.nextRun("2025-03-09T06:00:00Z"); // 1 AM EST on March 9
+
+  // Should skip to 3:30 AM EDT (not 2:30 AM which doesn't exist)
+  // 3:30 AM EDT on March 9 = 2025-03-09T07:30:00.000Z
+  assertEquals(march9Next?.toISOString(), "2025-03-09T07:30:00.000Z");
+
+  // Verify it's 3:30 AM in local time
+  const localHour = march9Next?.toLocaleString("en-US", {
+    timeZone: "America/New_York",
+    hour: "2-digit",
+    hour12: false,
+  });
+  assertEquals(localHour, "03");
+});
+
+test("OCPS 1.4 compliance: DST Overlap (Fall Back) - job should run once at first occurrence", function () {
+  // OCPS 1.4 Section 4.3.1: When a scheduled time occurs twice due to DST overlap,
+  // the job SHOULD run only once, at the first occurrence
+
+  // America/New_York: November 2, 2025 at 2:00 AM EDT -> 1:00 AM EST
+  // Times 1:00-1:59 AM occur twice (once in EDT, once in EST)
+  const nyJob = new Cron("0 30 1 * * *", { paused: true, timezone: "America/New_York" });
+
+  // First occurrence: 1:30 AM EDT = 2025-11-02T05:30:00.000Z
+  const nov2First = nyJob.nextRun("2025-11-02T04:00:00Z"); // Midnight EST on Nov 2
+  assertEquals(nov2First?.toISOString(), "2025-11-02T05:30:00.000Z");
+
+  // After first occurrence, should skip to next day (not run again at 1:30 AM EST)
+  const nov2After = nyJob.nextRun("2025-11-02T05:31:00Z"); // Just after first occurrence
+  assertEquals(nov2After?.toISOString(), "2025-11-03T06:30:00.000Z"); // Next day at 1:30 AM EST
+
+  // Verify it doesn't run at the second occurrence (1:30 AM EST on Nov 2)
+  // Second occurrence would be at 2025-11-02T06:30:00.000Z
+  const nov2Second = nyJob.nextRun("2025-11-02T06:00:00Z"); // During second occurrence window
+  assertEquals(nov2Second?.toISOString(), "2025-11-02T05:30:00.000Z"); // Still points to first
+});
+
+test("OCPS 1.4 compliance: Europe/London DST transitions", function () {
+  // Spring Forward: March 30, 2025 at 1:00 AM GMT -> 2:00 AM BST
+  const londonSpring = new Cron("0 30 1 * * *", { paused: true, timezone: "Europe/London" });
+  const march30 = londonSpring.nextRun("2025-03-30T00:00:00Z");
+
+  // Should skip to 2:30 AM BST (not 1:30 AM which doesn't exist)
+  // 2:30 AM BST on March 30 = 2025-03-30T01:30:00.000Z
+  assertEquals(march30?.toISOString(), "2025-03-30T01:30:00.000Z");
+
+  // Fall Back: October 26, 2025 at 2:00 AM BST -> 1:00 AM GMT
+  const londonFall = new Cron("0 30 1 * * *", { paused: true, timezone: "Europe/London" });
+  const oct26First = londonFall.nextRun("2025-10-26T00:00:00Z");
+
+  // Should run at first occurrence: 1:30 AM BST = 2025-10-26T00:30:00.000Z
+  assertEquals(oct26First?.toISOString(), "2025-10-26T00:30:00.000Z");
+
+  // After first occurrence, should skip to next day
+  const oct26After = londonFall.nextRun("2025-10-26T00:31:00Z");
+  assertEquals(oct26After?.toISOString(), "2025-10-27T01:30:00.000Z");
+});
