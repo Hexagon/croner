@@ -366,22 +366,27 @@ class CronDate {
     // OCPS 1.2: Check if current year matches the year pattern
     // Only check at the very start of recursion (doing === 0) and only when year constraint exists
     // Skip years until we find a matching one
-    if (doing === 0) {
-      // Check if we need to find a matching year
-      while (pattern.year && pattern.year[this.year] === 0 && this.year < 10000) {
-        // Current year doesn't match - increment year
-        this.year++;
-        this.month = 0;
-        this.day = 1;
-        this.hour = 0;
-        this.minute = 0;
-        this.second = 0;
-        this.apply();
-      }
+    if (doing === 0 && pattern.year) {
+      // Check if year pattern has any constraints (not all wildcards)
+      const hasYearConstraint = pattern.year.some((val) => val === 1);
 
-      // Check if we've gone out of bounds (OCPS 1.4 recommends 1-9999)
-      if (this.year >= 10000) {
-        return null;
+      if (hasYearConstraint) {
+        // Skip to next matching year
+        let attempts = 0;
+        while (
+          this.year < 10000 &&
+          this.year >= 0 &&
+          (pattern.year[this.year] === undefined || pattern.year[this.year] === 0) &&
+          attempts < 10000
+        ) {
+          this.year++;
+          attempts++;
+        }
+
+        // Check if we've gone out of bounds or exceeded max attempts
+        if (this.year >= 10000 || attempts >= 10000) {
+          return null;
+        }
       }
     }
 
