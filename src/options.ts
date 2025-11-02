@@ -1,4 +1,5 @@
 import { CronDate } from "./date.ts";
+import type { CronMode } from "./pattern.ts";
 import type { Cron } from "./croner.ts";
 
 type CatchCallbackFn = (e: unknown, job: Cron) => void;
@@ -97,7 +98,7 @@ interface CronOptions<T = undefined> {
    *
    * @default "auto"
    */
-  mode?: "auto" | "5-part" | "6-part" | "7-part";
+  mode?: CronMode;
 
   /**
    * An optional context object that will be passed to the job function.

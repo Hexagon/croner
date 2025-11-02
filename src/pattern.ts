@@ -12,6 +12,11 @@ type CronPatternPart =
   | "year";
 
 /**
+ * Cron pattern mode for controlling precision level
+ */
+type CronMode = "auto" | "5-part" | "6-part" | "7-part";
+
+/**
  * Offset, 0 or -1.
  *
  * 0 offset is used for seconds, minutes, and hours as they start on 1.
@@ -39,7 +44,7 @@ export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000]
 class CronPattern {
   pattern: string;
   timezone?: string;
-  mode: "auto" | "5-part" | "6-part" | "7-part";
+  mode: CronMode;
   second: number[];
   minute: number[];
   hour: number[];
@@ -57,7 +62,7 @@ class CronPattern {
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { mode?: "auto" | "5-part" | "6-part" | "7-part" },
+    options?: { mode?: CronMode },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
@@ -171,17 +176,23 @@ class CronPattern {
     }
 
     // Apply mode-specific overrides
-    if (this.mode === "5-part") {
-      // Traditional 5-field cron: minute-level precision
-      // Force seconds to 0 and years to wildcard
-      parts[0] = "0";
-      parts[6] = "*";
-    } else if (this.mode === "6-part") {
-      // Extended 6-field cron: second-level precision, but no year constraints
-      // Force years to wildcard
-      parts[6] = "*";
+    switch (this.mode) {
+      case "5-part":
+        // Traditional 5-field cron: minute-level precision
+        // Force seconds to 0 and years to wildcard
+        parts[0] = "0";
+        parts[6] = "*";
+        break;
+      case "6-part":
+        // Extended 6-field cron: second-level precision, but no year constraints
+        // Force years to wildcard
+        parts[6] = "*";
+        break;
+      case "7-part":
+      case "auto":
+        // Use pattern as-is
+        break;
     }
-    // For "7-part" and "auto" modes, use pattern as-is
 
     // Check part content
     this.throwAtIllegalCharacters(parts);
@@ -616,4 +627,4 @@ class CronPattern {
   }
 }
 
-export { CronPattern };
+export { type CronMode, CronPattern };
