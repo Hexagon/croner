@@ -88,18 +88,16 @@ interface CronOptions<T = undefined> {
   legacyMode?: boolean;
 
   /**
-   * If true, disables the seconds field, forcing it to 0 (traditional 5-field cron behavior).
-   * This provides minute-level precision, with jobs running at the top of each minute.
-   * Also forces disableYears to true, as years require seconds precision.
-   * @default false
+   * Specifies the cron pattern mode to use for parsing and execution.
+   *
+   * - "auto": Automatically detect pattern format (default behavior)
+   * - "5-part": Traditional 5-field cron (minute-level precision, seconds forced to 0, years wildcarded)
+   * - "6-part": Extended 6-field cron (second-level precision, years wildcarded)
+   * - "7-part": Full 7-field cron (second-level and year-specific precision)
+   *
+   * @default "auto"
    */
-  disableSeconds?: boolean;
-
-  /**
-   * If true, disables the years field, treating it as a wildcard (*).
-   * @default false
-   */
-  disableYears?: boolean;
+  mode?: "auto" | "5-part" | "6-part" | "7-part";
 
   /**
    * An optional context object that will be passed to the job function.
@@ -130,12 +128,13 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
   options.unref = options.unref === void 0 ? false : options.unref;
-  options.disableSeconds = options.disableSeconds === void 0 ? false : options.disableSeconds;
-  options.disableYears = options.disableYears === void 0 ? false : options.disableYears;
+  options.mode = options.mode === void 0 ? "auto" : options.mode;
 
-  // If seconds are disabled, years must also be disabled (as years need seconds precision)
-  if (options.disableSeconds) {
-    options.disableYears = true;
+  // Validate mode option
+  if (!["auto", "5-part", "6-part", "7-part"].includes(options.mode)) {
+    throw new Error(
+      "CronOptions: mode must be one of 'auto', '5-part', '6-part', or '7-part'.",
+    );
   }
 
   if (options.startAt) {

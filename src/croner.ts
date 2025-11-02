@@ -153,8 +153,7 @@ class Cron<T = undefined> {
       maxRuns: options ? options.maxRuns : void 0,
       paused: options ? options.paused : false,
       pattern: new CronPattern("* * * * *", undefined, {
-        disableSeconds: this.options.disableSeconds,
-        disableYears: this.options.disableYears,
+        mode: this.options.mode,
       }),
     };
 
@@ -167,8 +166,7 @@ class Cron<T = undefined> {
       this._states.once = new CronDate<T>(pattern, this.options.timezone || this.options.utcOffset);
     } else {
       this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
-        disableSeconds: this.options.disableSeconds,
-        disableYears: this.options.disableYears,
+        mode: this.options.mode,
       });
     }
 

@@ -34,13 +34,12 @@ export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000]
  * @constructor
  * @param {string} pattern - Input pattern
  * @param {string} timezone - Input timezone, used for '?'-substitution
- * @param {object} options - Cron options including disableSeconds and disableYears
+ * @param {object} options - Cron options including mode
  */
 class CronPattern {
   pattern: string;
   timezone?: string;
-  disableSeconds: boolean;
-  disableYears: boolean;
+  mode: "auto" | "5-part" | "6-part" | "7-part";
   second: number[];
   minute: number[];
   hour: number[];
@@ -58,17 +57,11 @@ class CronPattern {
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { disableSeconds?: boolean; disableYears?: boolean },
+    options?: { mode?: "auto" | "5-part" | "6-part" | "7-part" },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
-    this.disableSeconds = options?.disableSeconds ?? false;
-    this.disableYears = options?.disableYears ?? false;
-
-    // If seconds are disabled, years must also be disabled
-    if (this.disableSeconds) {
-      this.disableYears = true;
-    }
+    this.mode = options?.mode ?? "auto";
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -177,15 +170,18 @@ class CronPattern {
       if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
     }
 
-    // Apply disableSeconds and disableYears options
-    if (this.disableSeconds) {
-      // Force seconds to 0 for traditional 5-field behavior (minute-level precision)
-      // Jobs will run at the top of each minute rather than at specific seconds
+    // Apply mode-specific overrides
+    if (this.mode === "5-part") {
+      // Traditional 5-field cron: minute-level precision
+      // Force seconds to 0 and years to wildcard
       parts[0] = "0";
+      parts[6] = "*";
+    } else if (this.mode === "6-part") {
+      // Extended 6-field cron: second-level precision, but no year constraints
+      // Force years to wildcard
+      parts[6] = "*";
     }
-    if (this.disableYears) {
-      parts[6] = "*"; // Force years to wildcard
-    }
+    // For "7-part" and "auto" modes, use pattern as-is
 
     // Check part content
     this.throwAtIllegalCharacters(parts);
