@@ -419,7 +419,11 @@ class CronDate<T = undefined> {
    *
    * @private
    */
-  private recurse(pattern: CronPattern, options: CronOptions, doing: number): CronDate | null {
+  private recurse(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | null {
     // OCPS 1.2: Check if current year matches the year pattern
     // Only check at the very start of recursion (doing === 0) and only when year constraint exists
     if (doing === 0 && pattern.year) {

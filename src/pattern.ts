@@ -52,7 +52,6 @@ class CronPattern {
   starDOM: boolean;
   starDOW: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
-  nearestWeekdays: number[];
 
   constructor(pattern: string, timezone?: string) {
     this.pattern = pattern;
