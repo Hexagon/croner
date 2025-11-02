@@ -51,6 +51,7 @@ class CronPattern {
   nearestWeekdays: number[];
   starDOM: boolean;
   starDOW: boolean;
+  starYear: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
 
   constructor(pattern: string, timezone?: string) {
@@ -70,6 +71,7 @@ class CronPattern {
 
     this.starDOM = false; // Asterisk used for dayOfMonth
     this.starDOW = false; // Asterisk used for dayOfWeek
+    this.starYear = false; // Asterisk used for year
     this.useAndLogic = false; // OCPS 1.4: Default is OR logic
 
     this.parse();
@@ -122,6 +124,11 @@ class CronPattern {
     // Check for starDOM
     if (parts[3] == "*") {
       this.starDOM = true;
+    }
+
+    // Check for starYear
+    if (parts[6] == "*") {
+      this.starYear = true;
     }
 
     // Replace alpha representations

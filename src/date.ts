@@ -405,9 +405,9 @@ class CronDate<T = undefined> {
    * approach to handle the dependencies between different components. For example,
    * if the day changes, the hour, minute, and second need to be reset.
    *
-   * The recursion is currently limited to the year 3000 to prevent potential
-   * infinite loops or excessive stack depth. If you need to schedule beyond
-   * the year 3000, please open an issue on GitHub to discuss possible solutions.
+   * The recursion is limited to the year 10000 to prevent potential
+   * infinite loops or excessive stack depth, and to match the maximum supported
+   * year in OCPS 1.2 (years 1-9999).
    *
    * @param pattern The cron pattern used to determine the next run time.
    * @param options The cron options that influence the incrementing behavior.
@@ -415,7 +415,7 @@ class CronDate<T = undefined> {
    *              date component being processed. 0 represents "month", 1 represents "day", etc.
    *
    * @returns This `CronDate` instance for chaining, or null if incrementing
-   *          was not possible (e.g., reached year 3000 limit or no matching date).
+   *          was not possible (e.g., reached year 10000 limit or no matching date).
    *
    * @private
    */
@@ -424,17 +424,16 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     doing: number,
   ): CronDate<T> | null {
-    // OCPS 1.2: Check if current year matches the year pattern
-    // Only check at the very start of recursion (doing === 0) and only when year constraint exists
-    if (doing === 0 && pattern.year) {
-      // Check if current year matches, if not find next matching year
+    // OCPS 1.2: Check if current year matches the year pattern at the start
+    // Only check when year constraints exist and we're at month level
+    if (doing === 0 && !pattern.starYear) {
+      // If current year doesn't match, find the next matching year
       if (
         this.year >= 0 &&
         this.year < pattern.year.length &&
         pattern.year[this.year] === 0
       ) {
-        // Current year doesn't match - find next matching year
-        // For efficiency with sparse patterns, search directly in the array
+        // Find next matching year
         let foundYear = -1;
         for (let y = this.year + 1; y < pattern.year.length && y < 10000; y++) {
           if (pattern.year[y] === 1) {
@@ -444,11 +443,17 @@ class CronDate<T = undefined> {
         }
 
         if (foundYear === -1) {
-          // No valid year found
           return null;
         }
 
+        // Jump to the found year and reset to start of year
         this.year = foundYear;
+        this.month = 0;
+        this.day = 1;
+        this.hour = 0;
+        this.minute = 0;
+        this.second = 0;
+        this.ms = 0;
       }
 
       // Check if we've gone out of bounds
@@ -475,6 +480,24 @@ class CronDate<T = undefined> {
         this[RecursionSteps[doing][0]] = -RecursionSteps[doing][2];
         this.apply();
 
+        // OCPS 1.2: If we just incremented the year and have year constraints, check if it matches
+        if (doing === 0 && !pattern.starYear) {
+          // Keep incrementing year until we find a matching one
+          while (
+            this.year >= 0 &&
+            this.year < pattern.year.length &&
+            pattern.year[this.year] === 0 &&
+            this.year < 10000
+          ) {
+            this.year++;
+          }
+
+          // Check if we've gone out of bounds
+          if (this.year >= 10000 || this.year >= pattern.year.length) {
+            return null;
+          }
+        }
+
         // Restart
         return this.recurse(pattern, options, 0);
       } else if (this.apply()) {
@@ -490,7 +513,8 @@ class CronDate<T = undefined> {
       return this;
 
       // ... or out of bounds ?
-    } else if (this.year >= 3000) {
+      // Use a higher limit when year constraints exist, lower limit otherwise for performance
+    } else if (pattern.starYear ? this.year >= 3000 : this.year >= 10000) {
       return null;
 
       // ... oh, go to next part then

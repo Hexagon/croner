@@ -103,7 +103,10 @@ test("OCPS 1.0: Wildcard (*) should match all values", function () {
 
 test("OCPS 1.0: List separator (,) should specify multiple values", function () {
   const cron = new Cron("0,15,30,45 * * * *");
-  const runs = cron.nextRuns(4);
+  // Use a fixed starting time to ensure deterministic results
+  // Start at 10:59 so the next run will be at 11:00 (minute 0)
+  const startTime = new Date("2025-01-01T10:59:00Z");
+  const runs = cron.nextRuns(4, startTime);
   assertEquals(runs.length, 4, "Should return 4 runs");
   assertEquals(runs[0].getMinutes(), 0, "First should be at minute 0");
   assertEquals(runs[1].getMinutes(), 15, "Second should be at minute 15");
