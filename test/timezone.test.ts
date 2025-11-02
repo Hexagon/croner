@@ -321,3 +321,64 @@ test("OCPS 1.4 compliance: Europe/London DST transitions", function () {
   const oct26After = londonFall.nextRun("2025-10-26T00:31:00Z");
   assertEquals(oct26After?.toISOString(), "2025-10-27T01:30:00.000Z");
 });
+
+test("Issue #286: Starting from DST gap should not cause rapid-fire execution", function () {
+  // Issue #286: Croner was running every millisecond during DST fall back
+  // America/Los_Angeles: November 2, 2025 at 2:00 AM PDT -> 1:00 AM PST
+  
+  const laJob = new Cron("* * * * *", { paused: true, timezone: "America/Los_Angeles" });
+  
+  // Test starting from within the DST overlap period (during first 1:00 AM)
+  const start1 = "2025-11-02T08:00:00Z"; // 1:00 AM PDT (first occurrence)
+  const next1 = laJob.nextRun(start1);
+  const next2 = laJob.nextRun(new Date(next1!.getTime() + 1000).toISOString());
+  
+  // Runs should be 1 minute apart, not milliseconds apart
+  const diffMs = next2!.getTime() - next1!.getTime();
+  const diffMinutes = diffMs / (60 * 1000);
+  
+  // Check that the difference is approximately 1 minute (allowing small tolerance)
+  assertEquals(Math.abs(diffMinutes - 1) < 0.01, true, 
+    `Expected ~1 minute between runs, got ${diffMinutes.toFixed(3)} minutes`);
+  
+  // Test starting from the second occurrence (1:00 AM PST)
+  const start2 = "2025-11-02T09:00:00Z"; // 1:00 AM PST (second occurrence)
+  const next3 = laJob.nextRun(start2);
+  const next4 = laJob.nextRun(new Date(next3!.getTime() + 1000).toISOString());
+  
+  const diffMs2 = next4!.getTime() - next3!.getTime();
+  const diffMinutes2 = diffMs2 / (60 * 1000);
+  
+  assertEquals(Math.abs(diffMinutes2 - 1) < 0.01, true,
+    `Expected ~1 minute between runs, got ${diffMinutes2.toFixed(3)} minutes`);
+  
+  // Test spanning the DST transition
+  const start3 = "2025-11-02T08:58:00Z"; // 1:58 AM PDT, just before transition
+  const runs: Date[] = [];
+  let current = start3;
+  
+  for (let i = 0; i < 5; i++) {
+    const next = laJob.nextRun(current);
+    if (next) {
+      runs.push(next);
+      current = new Date(next.getTime() + 1000).toISOString();
+    }
+  }
+  
+  // Verify we got 5 runs
+  assertEquals(runs.length, 5, "Should get 5 runs");
+  
+  // First run should be 1:59 AM PDT (1 minute from start)
+  assertEquals(runs[0].toISOString(), "2025-11-02T08:59:00.000Z");
+  
+  // Second run should skip to 2:00 AM PST (after DST transition)
+  // This is 61 minutes from 1:59 AM PDT because the 1:00-1:59 AM hour is skipped
+  assertEquals(runs[1].toISOString(), "2025-11-02T10:00:00.000Z");
+  
+  // Subsequent runs should be 1 minute apart
+  for (let i = 2; i < runs.length; i++) {
+    const diff = (runs[i].getTime() - runs[i - 1].getTime()) / (60 * 1000);
+    assertEquals(Math.abs(diff - 1) < 0.01, true,
+      `Run ${i} should be ~1 minute after run ${i - 1}, got ${diff.toFixed(3)} minutes`);
+  }
+});
