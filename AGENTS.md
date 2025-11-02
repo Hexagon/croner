@@ -28,7 +28,7 @@ croner/
 
 ## Standards Compliance
 
-This project aims to follow the **OCPS (Open Cron Pattern Standard)** drafts available at [github.com/open-source-cron/ocps](https://github.com/open-source-cron/ocps).
+This project aims to follow the **OCPS (Open Cron Pattern Standard)** 1.0 final and subsequent drafts (1.1-1.4) available at [github.com/open-source-cron/ocps](https://github.com/open-source-cron/ocps).
 
 ## Development Environment
 
@@ -65,6 +65,18 @@ deno task test
 - `.github/workflows/node-ci.yml`
 - `.github/workflows/deno-ci.yml`
 - `.github/workflows/bun-ci.yml`
+
+### Bun testing equivalent to CI
+
+- prereq: `bun x jsr add  @cross/test @std/assert`
+- test: `bun test`
+
+### Node testing equivalent to CI
+
+package.json must be created with `"type": "module"`
+
+- prereq: `npx jsr add @cross/test @std/assert`
+- test: `npx --yes tsx --test test/*.test.ts`
 
 ### Full Build
 
