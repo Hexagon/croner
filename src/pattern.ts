@@ -63,7 +63,7 @@ class CronPattern {
     this.day = Array(31).fill(0); // 0-30 in array, 1-31 in config
     this.month = Array(12).fill(0); // 0-11 in array, 1-12 in config
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
-    this.year = Array(10000).fill(0); // OCPS 1.2: Year field (0-9999)
+    this.year = Array(10000).fill(0); // OCPS 1.2: Year field (1-9999, index 0 unused)
 
     this.lastDayOfMonth = false;
     this.nearestWeekdays = Array(31).fill(0); // 0-30 in array, 1-31 in config
