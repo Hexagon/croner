@@ -47,7 +47,7 @@ const RecursionSteps: RecursionStep[] = [
  * @param d Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
  * @param tz String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
  */
-class CronDate {
+class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
@@ -90,7 +90,7 @@ class CronDate {
    */
   year!: number;
 
-  constructor(d?: CronDate | Date | string | null, tz?: string | number) {
+  constructor(d?: CronDate<T> | Date | string | null, tz?: string | number) {
     /**
      * TimeZone
      * @type {string|number|undefined}
@@ -115,6 +115,42 @@ class CronDate {
         "CronDate: Invalid type (" + typeof d + ") passed to CronDate constructor",
       );
     }
+  }
+
+  /**
+   * Calculates the nearest weekday (Mon-Fri) to a given day of the month.
+   * Handles month boundaries.
+   *
+   * @param year The target year.
+   * @param month The target month (0-11).
+   * @param day The target day (1-31).
+   * @returns The day of the month (1-31) that is the nearest weekday.
+   */
+  private getNearestWeekday(year: number, month: number, day: number): number {
+    const date = new Date(Date.UTC(year, month, day));
+    const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
+
+    if (weekday === 0) { // Sunday
+      // If it's the last day of the month, go back to Friday
+      const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      if (day === daysInMonth) {
+        return day - 2;
+      }
+      // Otherwise, go forward to Monday
+      return day + 1;
+    }
+
+    if (weekday === 6) { // Saturday
+      // If it's the 1st, go forward to Monday
+      if (day === 1) {
+        return day + 2;
+      }
+      // Otherwise, go back to Friday
+      return day - 1;
+    }
+
+    // It's already a weekday
+    return day;
   }
 
   /**
@@ -205,7 +241,7 @@ class CronDate {
    *
    * @param {CronDate} d - Input date
    */
-  private fromCronDate(d: CronDate) {
+  private fromCronDate(d: CronDate<T>) {
     this.tz = d.tz;
     this.year = d.year;
     this.month = d.month;
@@ -267,7 +303,7 @@ class CronDate {
    * Find next match of current part
    */
   private findNext(
-    options: CronOptions,
+    options: CronOptions<T>,
     target: RecursionTarget,
     pattern: CronPattern,
     offset: number,
@@ -297,6 +333,27 @@ class CronDate {
     for (let i = this[target] + offset; i < pattern[target].length; i++) {
       // this applies to all "levels"
       let match: number = pattern[target][i];
+
+      // Special case for nearest weekday
+      // Special case for nearest weekday
+      if (
+        target === "day" && !match
+      ) {
+        // Iterate through all possible 'W' days in the pattern
+        for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
+          // Check if the pattern specifies the 'W' modifier for this day
+          if (pattern.nearestWeekdays[dayWithW]) {
+            // Calculate the actual execution day for this 'W' day
+            const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
+
+            // Check if the day currently being evaluated by the outer loop is that execution day
+            if (executionDay === (i - offset)) {
+              match = 1;
+              break; // Match found, no need to check other 'W' days
+            }
+          }
+        }
+      }
 
       // Special case for last day of month
       if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
@@ -448,9 +505,9 @@ class CronDate {
    */
   public increment(
     pattern: CronPattern,
-    options: CronOptions,
+    options: CronOptions<T>,
     hasPreviousRun: boolean,
-  ): CronDate | null {
+  ): CronDate<T> | null {
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)

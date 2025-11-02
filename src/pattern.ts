@@ -52,6 +52,7 @@ class CronPattern {
   starDOM: boolean;
   starDOW: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
+  nearestWeekdays: number[];
 
   constructor(pattern: string, timezone?: string) {
     this.pattern = pattern;
@@ -90,8 +91,9 @@ class CronPattern {
     // Handle @yearly, @monthly etc
     if (this.pattern.indexOf("@") >= 0) this.pattern = this.handleNicknames(this.pattern).trim();
 
-    // Split configuration on whitespace
-    const parts = this.pattern.replace(/\s+/g, " ").split(" ");
+    // Split pattern on any whitespace, which ensures correct handling of both
+    // space and tab delimiters common in the cron pattern format.
+    const parts = this.pattern.match(/\S+/g) || [""];
 
     // Validite number of configuration entries
     // OCPS 1.2: Support 5, 6, or 7 fields (5=no seconds, 6=with seconds, 7=with seconds and year)
@@ -218,7 +220,7 @@ class CronPattern {
     } else if (conf.indexOf("/") !== -1) {
       this.handleStepping(conf, type, valueIndexOffset, defaultValue);
 
-      // Anything left should be a number
+      // Anything left should be a number, potentially with a modifier
     } else if (conf !== "") {
       this.handleNumber(conf, type, valueIndexOffset, defaultValue);
     }
@@ -243,7 +245,7 @@ class CronPattern {
   }
 
   /**
-   * Nothing but a number left, handle that
+   * Nothing but a number, potentially with a modifier, left - handle that
    *
    * @param conf Current part, expected to be a number, as a string
    * @param type One of "seconds", "minutes" etc
@@ -346,6 +348,10 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in ranges with stepping.");
+    }
+
     const result = this.extractNth(conf, type);
 
     const matches = result[0].match(/^(\d+)-(\d+)\/(\d+)$/);
@@ -411,6 +417,10 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in a range.");
+    }
+
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("-");
@@ -450,6 +460,9 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in parts with stepping.");
+    }
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("/");

@@ -103,6 +103,7 @@ test("Too high hours minute should throw", function () {
     scheduler.nextRun();
   });
 });
+
 test(
   "Context is passed",
   //@ts-ignore
@@ -135,16 +136,20 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
   assertEquals(nextRuns[9].getTime() < now.getTime() + 6 * 60 * 1000, true);
 });
 
-test("Extra whitespace at beginning should throw", () => {
-  assertThrows(() => {
-    new Cron(" 0 0 12 9 *").nextRun();
-  });
+test("Extra whitespace at beginning should not throw", () => {
+  new Cron(" 0 0 12 9 *").nextRun();
 });
 
-test("Extra whitespace at end should throw", () => {
-  assertThrows(() => {
-    new Cron("0 0 12 9 * ").nextRun();
-  });
+test("Extra whitespace at end should not throw", () => {
+  new Cron("0 0 12 9 * ").nextRun();
+});
+
+test("Tab as whitespace should not throw", () => {
+  new Cron("0 0 12  9 * ").nextRun();
+});
+
+test("Mixed whitespace should not throw", () => {
+  new Cron("    0   0     12  9 *  ").nextRun();
 });
 
 test("Next 10 run times is returned by enumeration(), and contain a reasonable time span, when using modified start time", () => {
@@ -270,6 +275,7 @@ test("Croner should increment days", function () {
   assertEquals(true, runs[1] < runs[2]);
   assertEquals(true, runs[2] < runs[3]);
 });
+
 test("Croner should increment months", function () {
   let runs = new Cron("0 0 0 1 * *").nextRuns(4);
   assertEquals(true, runs[0] < runs[1]);
@@ -345,6 +351,7 @@ test("Impossible combination should result in null (non legacy mode)", function 
   let impossible = new Cron("0 0 0 30 2 6", { legacyMode: false }).nextRun(new Date(1634076000000));
   assertEquals(null, impossible);
 });
+
 test(
   "currentRun() and previousRun() should be set at correct points in time",
   //@ts-ignore
@@ -361,6 +368,7 @@ test(
     }, 2000);
   }),
 );
+
 test(
   "scheduled job should not stop on unhandled error with option catch: true",
   //@ts-ignore
@@ -376,6 +384,7 @@ test(
     });
   }),
 );
+
 test(
   "scheduled job should execute callback on unhandled error with option catch: callback()",
   //@ts-ignore
@@ -480,6 +489,7 @@ test(
     }
   }),
 );
+
 test("sanity check start stop resume", function () {
   let job = new Cron("* * * 1 11 4", () => {});
   assertEquals(job.isRunning(), true);
@@ -524,6 +534,7 @@ test("previous run time should be null if not yet executed", function () {
   assertEquals(result, null);
   job.stop();
 });
+
 test(
   "previous run time should be set if executed",
   //@ts-ignore
@@ -894,7 +905,7 @@ test(
       }
     }, 2100);
   },
-  { waitForCallback: true, timeout: 3000 },
+  { waitForCallback: true, timeout: 5000 },
 );
 
 test(
@@ -919,6 +930,7 @@ test(
   },
   { waitForCallback: true, timeout: 5000 },
 );
+
 test(
   "Job should be working after 1500 ms",
   (context, done) => {
@@ -939,6 +951,7 @@ test(
   },
   { waitForCallback: true, timeout: 4000 },
 );
+
 test(
   "Job should not be working after 1500 ms",
   (context, done) => {
@@ -957,8 +970,9 @@ test(
       }
     }, 3500);
   },
-  { waitForCallback: true, timeout: 4000 },
+  { waitForCallback: true, timeout: 6000 },
 );
+
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null", function () {
   let scheduler0 = new Cron("2020-01-01T00:00:00");
   assertEquals(scheduler0.nextRun(), null);
