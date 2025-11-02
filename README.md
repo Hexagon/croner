@@ -214,11 +214,11 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 
 | Nickname | Description |
 | -------- | ----------- |
-| \@yearly / \@annually | Run once a year, ie.  "0 0 1 1 *". |
-| \@monthly | Run once a month, ie. "0 0 1 * *". |
-| \@weekly | Run once a week, ie.  "0 0 * * 0". |
-| \@daily / \@midnight | Run once a day, ie.   "0 0 * * *". |
-| \@hourly | Run once an hour, ie. "0 * * * *". |
+| \@yearly / \@annually | Run once a year, i.e.  "0 0 1 1 *". |
+| \@monthly | Run once a month, i.e. "0 0 1 * *". |
+| \@weekly | Run once a week, i.e.  "0 0 * * 0". |
+| \@daily / \@midnight | Run once a day, i.e.   "0 0 * * *". |
+| \@hourly | Run once an hour, i.e. "0 * * * *". |
 
 ## Why another JavaScript cron implementation
 
