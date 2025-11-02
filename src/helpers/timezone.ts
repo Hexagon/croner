@@ -26,17 +26,85 @@ export interface TimePoint {
  * @returns Offset in ms between UTC and timeZone
  */
 function getTimezoneOffset(timeZone?: string, date = new Date()): number {
-  // Get timezone
-  const tz =
-    date.toLocaleString("en-US", { timeZone: timeZone, timeZoneName: "shortOffset" }).split(" ")
-      .slice(-1)[0];
+  // No explicit timezone: rely on system offset
+  if (!timeZone) return -date.getTimezoneOffset() * 60_000;
 
-  // Extract time in en-US format
-  // - replace narrow no break space with regular space to compensate for bug in Node.js 19.1
-  const dateString = date.toLocaleString("en-US").replace(/[\u202f]/, " ");
+  // Try parsing the short offset in a stable way
+  try {
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      timeZoneName: "shortOffset",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+    const parts = fmt.formatToParts(date);
+    const tzPart = parts.find((p) => p.type === "timeZoneName");
+    const label = (tzPart?.value || "").replace(/\s/g, "");
 
-  // Check ms offset between GMT and extracted timezone
-  return Date.parse(`${dateString} GMT`) - Date.parse(`${dateString} ${tz}`);
+    // Handle common patterns: GMT, UTC, GMT+H, GMT+HH, GMT+HH:MM (and UTC variants)
+    if (/^(GMT|UTC)$/i.test(label)) return 0;
+    const m = /^(?:GMT|UTC)([+-])(\d{1,2})(?::?(\d{2}))?$/.exec(label);
+    if (m) {
+      const sign = m[1] === "+" ? 1 : -1;
+      const hh = parseInt(m[2], 10);
+      const mm = m[3] ? parseInt(m[3], 10) : 0;
+      return sign * (hh * 60 + mm) * 60_000;
+    }
+  } catch {
+    // Fall through to calculation-based fallback
+  }
+
+  // Fallback: derive offset by comparing the same wall-clock time in the target tz to UTC
+  try {
+    const wall = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: false,
+    }).formatToParts(date);
+
+    const map: Record<string, number> = {
+      year: 0,
+      month: 0,
+      day: 0,
+      hour: 0,
+      minute: 0,
+      second: 0,
+    };
+    for (const p of wall) if (p.type in map) map[p.type] = parseInt(p.value, 10);
+
+    const utcMs = Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+      date.getUTCMilliseconds(),
+    );
+    const sameWallInUTC = Date.UTC(
+      map.year,
+      map.month - 1,
+      map.day,
+      map.hour,
+      map.minute,
+      map.second,
+      date.getUTCMilliseconds(),
+    );
+    return sameWallInUTC - utcMs;
+  } catch {
+    // Absolute last resort: assume UTC
+    return 0;
+  }
 }
 
 /**
