@@ -1,4 +1,4 @@
-import { minitz } from "./helpers/minitz.ts";
+import { createTimePoint, fromTZ, fromTZISO, toTZ } from "./helpers/timezone.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
 import {
@@ -163,7 +163,7 @@ class CronDate {
    */
   private fromDate(inDate: Date) {
     /* If this instance of CronDate has a target timezone set,
-	 * use minitz to convert input date object to target timezone
+	 * use timezone utilities to convert input date object to target timezone
 	 * before extracting hours, minutes, seconds etc.
 	 *
 	 * If not, extract all parts from inDate as-is.
@@ -180,7 +180,7 @@ class CronDate {
         // Minute could be out of bounds, apply
         this.apply();
       } else {
-        const d = minitz.toTZ(inDate, this.tz);
+        const d = toTZ(inDate, this.tz);
         this.ms = inDate.getMilliseconds();
         this.second = d.s;
         this.minute = d.i;
@@ -249,7 +249,7 @@ class CronDate {
   private fromString(str: string) {
     if (typeof this.tz === "number") {
       // Parse without timezone
-      const inDate = minitz.fromTZISO(str);
+      const inDate = fromTZISO(str);
       this.ms = inDate.getUTCMilliseconds();
       this.second = inDate.getUTCSeconds();
       this.minute = inDate.getUTCMinutes();
@@ -259,7 +259,7 @@ class CronDate {
       this.year = inDate.getUTCFullYear();
       this.apply();
     } else {
-      return this.fromDate(minitz.fromTZISO(str, this.tz));
+      return this.fromDate(fromTZISO(str, this.tz));
     }
   }
 
@@ -466,10 +466,10 @@ class CronDate {
         );
 
         // If .tz is something else (hopefully a string), it indicates the timezone of the "local time" of the internal date object
-        // Use minitz to create a normal Date object, and return that.
+        // Use timezone utilities to create a normal Date object, and return that.
       } else {
-        return minitz.fromTZ(
-          minitz.tp(
+        return fromTZ(
+          createTimePoint(
             this.year,
             this.month + 1,
             this.day,
