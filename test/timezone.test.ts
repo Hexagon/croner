@@ -89,8 +89,10 @@ test("getTime should return expected difference with different timezones (next 1
     timeNewYork = new Cron("0 0 12 1 11 *", { timezone: "America/New_York" }).nextRun()?.getTime(),
     diff = ((timeNewYork || 0) - (timeStockholm || 0)) / 1000 / 3600;
 
-  // The time when next sunday 1st november occur should be with 6 hours difference (seen from utc)
-  assertEquals(diff, 5);
+  // The time when next 1st november occurs should be with 6 hours difference (seen from utc)
+  // Stockholm is UTC+1 (CET - DST ended Oct 26), New York is UTC-5 (EST - DST ended Nov 1/2)
+  // 12:00 CET (11:00 UTC) vs 12:00 EST (17:00 UTC) = 6 hours
+  assertEquals(diff, 6);
 });
 
 test("0 0 0 * * * with 365 iterations should return 365 days from now in America/New_York", function () {
