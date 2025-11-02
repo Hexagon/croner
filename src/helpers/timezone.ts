@@ -82,6 +82,11 @@ function getTimezoneOffset(timeZone?: string, date = new Date()): number {
     };
     for (const p of wall) if (p.type in map) map[p.type] = parseInt(p.value, 10);
 
+    // Node.js may return hour 24 for midnight instead of 0, normalize it
+    if (map.hour === 24) {
+      map.hour = 0;
+    }
+
     const utcMs = Date.UTC(
       date.getUTCFullYear(),
       date.getUTCMonth(),
@@ -315,6 +320,11 @@ export function toTZ(d: Date, tzStr: string): TimePoint {
     ) {
       dateComponents[part.type] = parseInt(part.value, 10);
     }
+  }
+
+  // Node.js may return hour 24 for midnight instead of 0, normalize it
+  if (dateComponents.hour === 24) {
+    dateComponents.hour = 0;
   }
 
   return {

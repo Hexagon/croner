@@ -39,14 +39,31 @@ All three tests show approximately 23-24 hour differences, suggesting an off-by-
 - **Notable**: UTC was NOT included in the test matrix
 - **Current state**: Workflow uses `@cross-org/workflows` without explicit timezone configuration, defaulting to UTC in GitHub Actions
 
-### Investigation Focus
+### Root Cause Identified ✅
 
-The critical line in `src/helpers/timezone.ts:50`:
-```typescript
-if (/^(GMT|UTC)$/i.test(label)) return 0;
+The debug test output from GitHub Actions revealed the issue: **Node.js returns hour "24" for midnight instead of "0"**.
+
+From the debug output:
+```
+# [DEBUG] Formatted (shortOffset)
+# [DEBUG]   "10/05/2025, 24:00:00 GMT"
+...
+# [DEBUG] Parsed components
+# [DEBUG]   {
+#   "year": 2025,
+#   "month": 10,
+#   "day": 5,
+#   "hour": 24,    <-- BUG!
+#   "minute": 0,
+#   "second": 0
+# }
 ```
 
-This line checks if the timezone label returned by `Intl.DateTimeFormat` matches "GMT" or "UTC" (case-insensitive) and returns 0 offset.
+When `Intl.DateTimeFormat` with `hour12: false` formats midnight (00:00), Node.js returns "24" instead of "0". This is passed to `Date.UTC()` which interprets hour 24 as the next day at hour 0, causing the 23-hour offset.
+
+This occurs in two places:
+1. `getTimezoneOffset()` fallback calculation (line 83)
+2. `toTZ()` function (line 322)
 
 **In Deno**: `Intl.DateTimeFormat("en-US", {timeZone: "UTC", timeZoneName: "shortOffset"})` returns `"GMT"`
 - Regex matches ✓
@@ -96,16 +113,27 @@ The debug test will reveal:
 - Exact point where calculation goes wrong
 - Any differences in Intl implementation between Node.js and Deno
 
-## Next Steps
+## Solution Implemented ✅
 
-1. **Wait for GitHub Actions**: Let the debug test run in Node CI
-2. **Analyze Output**: Review the debug logs from the PR checks
-3. **Identify Root Cause**: Determine exactly what Node.js returns differently
-4. **Implement Fix**: Based on findings, either:
-   - Add additional regex patterns to catch Node.js format
-   - Fix the fallback calculation logic
-   - Add special handling for UTC timezone
-   - Restore timezone matrix (workaround)
+Added hour normalization in two locations in `src/helpers/timezone.ts`:
+
+### 1. In `getTimezoneOffset()` function (after line 83):
+```typescript
+// Node.js may return hour 24 for midnight instead of 0, normalize it
+if (map.hour === 24) {
+  map.hour = 0;
+}
+```
+
+### 2. In `toTZ()` function (after line 322):
+```typescript
+// Node.js may return hour 24 for midnight instead of 0, normalize it
+if (dateComponents.hour === 24) {
+  dateComponents.hour = 0;
+}
+```
+
+This normalizes hour 24 to hour 0 before passing to `Date.UTC()`, preventing the date from rolling over to the next day.
 
 ## Verification
 
