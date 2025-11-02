@@ -316,9 +316,12 @@ class CronDate {
           throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
         }
 
-        // If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
+        // OCPS 1.4: If + modifier is used (useAndLogic), always use AND logic
+        // Otherwise: If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
         // In all other cases use "AND"
-        if (options.legacyMode && !pattern.starDOM) {
+        if (pattern.useAndLogic) {
+          match = match && dowMatch;
+        } else if (options.legacyMode && !pattern.starDOM) {
           match = match || dowMatch;
         } else {
           match = match && dowMatch;
@@ -360,6 +363,28 @@ class CronDate {
    * @private
    */
   private recurse(pattern: CronPattern, options: CronOptions, doing: number): CronDate | null {
+    // OCPS 1.2: Check if current year matches the year pattern
+    // Only check at the very start of recursion (doing === 0) and only when year constraint exists
+    // Skip years until we find a matching one
+    if (doing === 0) {
+      // Check if we need to find a matching year
+      while (pattern.year && pattern.year[this.year] === 0 && this.year < 10000) {
+        // Current year doesn't match - increment year
+        this.year++;
+        this.month = 0;
+        this.day = 1;
+        this.hour = 0;
+        this.minute = 0;
+        this.second = 0;
+        this.apply();
+      }
+
+      // Check if we've gone out of bounds (OCPS 1.4 recommends 1-9999)
+      if (this.year >= 10000) {
+        return null;
+      }
+    }
+
     // Find next month (or whichever part we're at)
     const res = this.findNext(options, RecursionSteps[doing][0], pattern, RecursionSteps[doing][2]);
 
