@@ -179,7 +179,9 @@ class CronPattern {
 
     // Apply disableSeconds and disableYears options
     if (this.disableSeconds) {
-      parts[0] = "0"; // Force seconds to 0 (traditional 5-field behavior)
+      // Force seconds to 0 for traditional 5-field behavior (minute-level precision)
+      // Jobs will run at the top of each minute rather than at specific seconds
+      parts[0] = "0";
     }
     if (this.disableYears) {
       parts[6] = "*"; // Force years to wildcard

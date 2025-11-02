@@ -88,7 +88,8 @@ interface CronOptions<T = undefined> {
   legacyMode?: boolean;
 
   /**
-   * If true, disables the seconds field, treating it as a wildcard (*).
+   * If true, disables the seconds field, forcing it to 0 (traditional 5-field cron behavior).
+   * This provides minute-level precision, with jobs running at the top of each minute.
    * Also forces disableYears to true, as years require seconds precision.
    * @default false
    */
