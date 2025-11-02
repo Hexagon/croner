@@ -82,7 +82,8 @@ function getTimezoneOffset(timeZone?: string, date = new Date()): number {
     };
     for (const p of wall) if (p.type in map) map[p.type] = parseInt(p.value, 10);
 
-    // Node.js may return hour 24 for midnight instead of 0, normalize it
+    // Node.js may return hour 24 for midnight (24:00 = 00:00 of same day in this context)
+    // Normalize to hour 0 to prevent Date.UTC from rolling over to next day
     if (map.hour === 24) {
       map.hour = 0;
     }
@@ -322,7 +323,8 @@ export function toTZ(d: Date, tzStr: string): TimePoint {
     }
   }
 
-  // Node.js may return hour 24 for midnight instead of 0, normalize it
+  // Node.js may return hour 24 for midnight (24:00 = 00:00 of same day in this context)
+  // Normalize to hour 0 to match expected behavior
   if (dateComponents.hour === 24) {
     dateComponents.hour = 0;
   }
