@@ -122,24 +122,22 @@ test("OCPS 1.4: ? should work in day-of-week field", function () {
 test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
   // In America/New_York, DST begins on March 12, 2023 at 2:00 AM
   // Clock jumps from 2:00 AM to 3:00 AM
-  // A job scheduled for 2:30 AM should be skipped
+  // A job scheduled for 2:30 AM should be adjusted to 3:30 AM
   const cron = new Cron("0 30 2 12 3 *", { timezone: "America/New_York" });
 
   // Start from before the DST transition
   const startDate = new Date("2023-03-12T00:00:00Z");
   const run = cron.nextRun(startDate);
 
-  if (run !== null) {
-    // If we get a run, it should NOT be at 2:30 AM on March 12, 2023
-    const isTargetDate = run.getMonth() === 2 && run.getDate() === 12;
-    if (isTargetDate) {
-      // Should skip to next year's March 12 or similar
-      assert(
-        run.getFullYear() > 2023,
-        "Should skip the DST gap time",
-      );
-    }
-  }
+  assert(run !== null, "Should find a next run");
+  // The job should run on March 12, 2023
+  assertEquals(run.getFullYear(), 2023, "Should run in 2023");
+  assertEquals(run.getMonth(), 2, "Should run in March (month 2)");
+  assertEquals(run.getDate(), 12, "Should run on the 12th");
+
+  // The time 2:30 AM doesn't exist, so it should be adjusted to 3:30 AM EDT
+  // 3:30 AM EDT = 07:30 UTC
+  assertEquals(run.toISOString(), "2023-03-12T07:30:00.000Z", "Should be adjusted to 3:30 AM EDT");
 });
 
 test("OCPS 1.4: DST Overlap (Fall Back) - job should run once at first occurrence", function () {
@@ -211,7 +209,7 @@ test("OCPS 1.4: Pattern that never matches should return null", function () {
 
 test("OCPS 1.4: Year search should not infinite loop", function () {
   // Pattern that can only match in distant future
-  const cron = new Cron("0 0 1 1 * 9999");
+  const cron = new Cron("0 0 1 1 * * 9999");
   const start = Date.now();
   const run = cron.nextRun();
   const elapsed = Date.now() - start;
@@ -240,8 +238,8 @@ test("OCPS 1.4: Should combine + modifier with year field", function () {
   const currentYear = new Date().getFullYear();
   const targetYear = currentYear + 1;
 
-  // Pattern: 15th of month AND Friday, in specific year
-  const cron = new Cron(`0 12 15 * +FRI ${targetYear}`);
+  // Pattern: 15th of month AND Friday, in specific year at 12:00:00
+  const cron = new Cron(`0 0 12 15 * +FRI ${targetYear}`);
   const runs = cron.nextRuns(5);
 
   for (const run of runs) {

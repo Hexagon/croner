@@ -61,6 +61,11 @@ Run tests during development:
 deno task test
 ```
 
+**Note**: The project uses CI workflows from `@cross-org/workflows` for cross-runtime testing (Node.js, Deno, and Bun). These workflows are imported from:
+- `.github/workflows/node-ci.yml`
+- `.github/workflows/deno-ci.yml`
+- `.github/workflows/bun-ci.yml`
+
 ### Full Build
 
 Before submitting a PR, run the full build to ensure all checks pass:
