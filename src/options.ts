@@ -88,6 +88,19 @@ interface CronOptions<T = undefined> {
   legacyMode?: boolean;
 
   /**
+   * If true, disables the seconds field, treating it as a wildcard (*).
+   * Also forces disableYears to true, as years require seconds precision.
+   * @default false
+   */
+  disableSeconds?: boolean;
+
+  /**
+   * If true, disables the years field, treating it as a wildcard (*).
+   * @default false
+   */
+  disableYears?: boolean;
+
+  /**
    * An optional context object that will be passed to the job function.
    */
   context?: T;
@@ -116,6 +129,13 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
   options.unref = options.unref === void 0 ? false : options.unref;
+  options.disableSeconds = options.disableSeconds === void 0 ? false : options.disableSeconds;
+  options.disableYears = options.disableYears === void 0 ? false : options.disableYears;
+
+  // If seconds are disabled, years must also be disabled (as years need seconds precision)
+  if (options.disableSeconds) {
+    options.disableYears = true;
+  }
 
   if (options.startAt) {
     options.startAt = new CronDate(options.startAt, options.timezone);

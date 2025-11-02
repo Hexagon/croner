@@ -34,10 +34,13 @@ export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000]
  * @constructor
  * @param {string} pattern - Input pattern
  * @param {string} timezone - Input timezone, used for '?'-substitution
+ * @param {object} options - Cron options including disableSeconds and disableYears
  */
 class CronPattern {
   pattern: string;
   timezone?: string;
+  disableSeconds: boolean;
+  disableYears: boolean;
   second: number[];
   minute: number[];
   hour: number[];
@@ -52,9 +55,20 @@ class CronPattern {
   starYear: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
 
-  constructor(pattern: string, timezone?: string) {
+  constructor(
+    pattern: string,
+    timezone?: string,
+    options?: { disableSeconds?: boolean; disableYears?: boolean },
+  ) {
     this.pattern = pattern;
     this.timezone = timezone;
+    this.disableSeconds = options?.disableSeconds ?? false;
+    this.disableYears = options?.disableYears ?? false;
+
+    // If seconds are disabled, years must also be disabled
+    if (this.disableSeconds) {
+      this.disableYears = true;
+    }
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -161,6 +175,14 @@ class CronPattern {
       parts[4] = parts[4].replace(/\?/g, "*");
       parts[5] = parts[5].replace(/\?/g, "*");
       if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
+    }
+
+    // Apply disableSeconds and disableYears options
+    if (this.disableSeconds) {
+      parts[0] = "0"; // Force seconds to 0 (traditional 5-field behavior)
+    }
+    if (this.disableYears) {
+      parts[6] = "*"; // Force years to wildcard
     }
 
     // Check part content

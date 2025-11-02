@@ -152,7 +152,10 @@ class Cron<T = undefined> {
       currentTimeout: void 0,
       maxRuns: options ? options.maxRuns : void 0,
       paused: options ? options.paused : false,
-      pattern: new CronPattern("* * * * *"),
+      pattern: new CronPattern("* * * * *", undefined, {
+        disableSeconds: this.options.disableSeconds,
+        disableYears: this.options.disableYears,
+      }),
     };
 
     // Check if we got a date, or a pattern supplied as first argument
@@ -163,7 +166,10 @@ class Cron<T = undefined> {
     ) {
       this._states.once = new CronDate<T>(pattern, this.options.timezone || this.options.utcOffset);
     } else {
-      this._states.pattern = new CronPattern(pattern as string, this.options.timezone);
+      this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
+        disableSeconds: this.options.disableSeconds,
+        disableYears: this.options.disableYears,
+      });
     }
 
     // Only store the job in scheduledJobs if a name is specified in the options.
