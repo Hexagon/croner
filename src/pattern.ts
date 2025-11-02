@@ -105,6 +105,7 @@ class CronPattern {
     // Split pattern on any whitespace, which ensures correct handling of both
     // space and tab delimiters common in the cron pattern format.
     const parts = this.pattern.match(/\S+/g) || [""];
+    const originalPartCount = parts.length;
 
     // Validite number of configuration entries
     // OCPS 1.2: Support 5, 6, or 7 fields (5=no seconds, 6=with seconds, 7=with seconds and year)
@@ -113,6 +114,16 @@ class CronPattern {
         "CronPattern: invalid configuration format ('" + this.pattern +
           "'), exactly five, six, or seven space separated parts are required.",
       );
+    }
+
+    // Enforce mode-specific pattern length validation
+    if (this.mode !== "auto") {
+      const expectedParts = this.mode === "5-part" ? 5 : this.mode === "6-part" ? 6 : 7;
+      if (originalPartCount !== expectedParts) {
+        throw new TypeError(
+          `CronPattern: mode '${this.mode}' requires exactly ${expectedParts} parts, but pattern '${this.pattern}' has ${originalPartCount} parts.`,
+        );
+      }
     }
 
     // If seconds is omitted, insert 0 for seconds

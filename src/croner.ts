@@ -152,8 +152,9 @@ class Cron<T = undefined> {
       currentTimeout: void 0,
       maxRuns: options ? options.maxRuns : void 0,
       paused: options ? options.paused : false,
+      // Default pattern uses "auto" mode to avoid validation issues
       pattern: new CronPattern("* * * * *", undefined, {
-        mode: this.options.mode,
+        mode: "auto",
       }),
     };
 
