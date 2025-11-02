@@ -12,7 +12,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
-*   Uses Vixie-cron [pattern](usage/pattern.md), with additional features such as `L` for last day and weekday of month and `#` for nth weekday of month.
+*   **OCPS 1.0-1.4 compliant**: Fully supports the [Open Cron Pattern Specification](https://github.com/open-source-cron/ocps) including advanced features like seconds/year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic).
 *   Works in Node.js >=18.0 (both require and import), Deno >=1.16 and Bun >=1.0.0.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](usage/examples.md#time-zone).
@@ -85,8 +85,12 @@ The table below provides a brief overview of each library's features.
 | Controls (stop/resume)    |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | Range (0-13)              |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
 | Stepping (*/5)            |          ✓          |          ✓          |     ✓     |           ✓               |          ✓          |
+| Seconds field (OCPS 1.2)  |          ✓          |                     |           |                           |                     |
+| Year field (OCPS 1.2)     |          ✓          |                     |           |                           |                     |
 | Last day of month (L)     |          ✓          |          ✓          |           |                           |                     |
-| Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
+| Nth weekday of month (#)  |          ✓          |          ✓          |           |                           |                     |
+| Nearest weekday (W)       |          ✓          |                     |           |                           |                     |
+| AND logic modifier (+)    |          ✓          |                     |           |                           |                     |
 
 > **DOM and DOW?**<br>
 > DOM stands for Day of Month, and DOW stands for Day of Week.

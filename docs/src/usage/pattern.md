@@ -8,7 +8,7 @@ nav_order: 2
 
 ---
 
-The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:
+Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](https://github.com/open-source-cron/ocps) versions 1.0 through 1.4. The expressions are based on Vixie Cron with powerful extensions:
 
 ```ts
 // ┌──────────────── (optional) second (0 - 59)
@@ -22,40 +22,49 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 // * * * * * *
 ```
 
-*   Croner expressions have the following additional modifiers:
-	-   *?*: The question mark is substituted with the time of initialization. For example, ? ? * * * * would be substituted with 25 8 * * * * if the time is <any hour>:08:25 at the time of new Cron('? ? * * * *', <...>). The question mark can be used in any field.
-	-   *L*: The letter 'L' can be used in the day of the month field to indicate the last day of the month. When used in the day of the week field in conjunction with the # character, it denotes the last specific weekday of the month. For example, `5#L` represents the last Friday of the month.
-	-	*W*: The letter `W` can be used in the day-of-month field to select the weekday (Monday-Friday) nearest to a given day. For example, `10W` will trigger on the weekday closest to the 10th of the month. If the 10th is a Saturday, the job will run on Friday the 9th. If the 10th is a Sunday, it will run on Monday the 11th. The `W` modifier cannot be used with a range or stepping (e.g., `10-12W` is invalid).
-	-	*#*: The # character specifies the "nth" occurrence of a particular day within a month. For example, supplying 
-	`5#2` in the day of week field signifies the second Friday of the month. This can be combined with ranges and supports day names. For instance, MON-FRI#2 would match the Monday through Friday of the second week of the month.
+*   **OCPS 1.2**: Optional second and year fields for enhanced precision:
+	-   6-field format: `SECOND MINUTE HOUR DAY-OF-MONTH MONTH DAY-OF-WEEK`
+	-   7-field format: `SECOND MINUTE HOUR DAY-OF-MONTH MONTH DAY-OF-WEEK YEAR`
+	-   Supported year range: 1-9999
+
+*   **OCPS 1.3**: Advanced calendar modifiers:
+	-   *L*: Last day of month or last occurrence of a weekday. `L` in day-of-month = last day of month; `5#L` or `FRI#L` = last Friday of the month.
+	-	*W*: Nearest weekday. `15W` triggers on the weekday closest to the 15th (moves to Friday if 15th is Saturday, Monday if 15th is Sunday). Won't cross month boundaries.
+	-	*#*: Nth occurrence of a weekday. `5#2` = second Friday; `MON#1` = first Monday of the month.
+
+*   **OCPS 1.4**: Enhanced logical control:
+	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
+	-   *?*: Wildcard alias (behaves like `*`), mainly for compatibility. Use in day-of-month or day-of-week fields only.
+	-   Proper DST handling: Jobs scheduled during DST gaps are skipped; jobs in DST overlaps run once at first occurrence.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
-*   Croner also allows you to change how the day-of-week and day-of-month conditions are combined. By default, Croner (and Vixie cron) will trigger when either the day-of-month OR the day-of-week conditions match. For example, `0 20 1 * MON` will trigger on the first of the month as well as each Monday. If you want to use AND (so that it only triggers on Mondays that are also the first of the month), you can pass `{ legacyMode: false }`. For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
+*   By default, Croner uses OR logic for day-of-month and day-of-week (OCPS 1.0 compliant). Example: `0 20 1 * MON` triggers on the 1st of the month OR on Mondays. Use the `+` modifier (`0 20 1 * +MON`) or `{ legacyMode: false }` option for AND logic. For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
 
 | Field        | Required | Allowed values | Allowed special characters | Remarks                               |
 |--------------|----------|----------------|----------------------------|---------------------------------------|
-| Seconds      | Optional | 0-59           | * , - / ?                  |                                       |
+| Seconds      | Optional | 0-59           | * , - / ?                  | OCPS 1.2: Optional, defaults to 0    |
 | Minutes      | Yes      | 0-59           | * , - / ?                  |                                       |
 | Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
-| Day of Month | Yes      | 1-31           | * , - / ? L W                |                                       |
+| Day of Month | Yes      | 1-31           | * , - / ? L W              | L = last day, W = nearest weekday     |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L #               | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0<br># is used to specify nth occurrence of a weekday            |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L # +            | 0 and 7 = Sunday<br># = nth occurrence (e.g. MON#2)<br>+ = AND logic modifier (OCPS 1.4) |
+| Year         | Optional | 1-9999         | * , - /                    | OCPS 1.2: Optional, defaults to *    |
 
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
-> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `5-6#L` means the last Friday and Saturday in the month."
-> The `#` character can be used to specify the "nth" weekday of the month. For example, `5#2` represents the second Friday of the month.
-> The `W` character operates within the current month. If the 1st is a saturday `1W` would match monday the 3rd as opposed to friday the month before.
+> When using `L` in the Day of Week field with a range, it affects all specified weekdays. For example, `5-6#L` means the last Friday and Saturday in the month.
+> The `#` character specifies the "nth" weekday of the month. For example, `5#2` = second Friday, `MON#1` = first Monday.
+> The `W` character operates within the current month and won't cross month boundaries. If the 1st is a Saturday, `1W` matches Monday the 3rd.
+> The `+` modifier (OCPS 1.4) enforces AND logic: `0 12 1 * +MON` only runs when the 1st is also a Monday.
 
 { .note }
 
-It is also possible to use the following "nicknames" as pattern.
+**OCPS 1.1**: Predefined schedule nicknames are supported:
 
 | Nickname | Description |
 | -------- | ----------- |
-| \@yearly | Run once a year, ie.  "0 0 1 1 *". |
-| \@annually | Run once a year, ie.  "0 0 1 1 *". |
-| \@monthly | Run once a month, ie. "0 0 1 * *". |
-| \@weekly | Run once a week, ie.  "0 0 * * 0". |
-| \@daily | Run once a day, ie.   "0 0 * * *". |
-| \@hourly | Run once an hour, ie. "0 * * * *". |
+| \@yearly / \@annually | Run once a year, i.e.  "0 0 1 1 *". |
+| \@monthly | Run once a month, i.e. "0 0 1 * *". |
+| \@weekly | Run once a week, i.e.  "0 0 * * 0". |
+| \@daily / \@midnight | Run once a day, i.e.   "0 0 * * *". |
+| \@hourly | Run once an hour, i.e. "0 * * * *". |
