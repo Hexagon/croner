@@ -10,7 +10,8 @@ type CronPatternPart =
   | "day"
   | "month"
   | "dayOfWeek"
-  | "nearestWeekdays";
+  | "nearestWeekdays"
+  | "year";
 
 /**
  * Offset, 0 or -1.
@@ -45,10 +46,12 @@ class CronPattern {
   day: number[];
   month: number[];
   dayOfWeek: number[];
+  year: number[];
   lastDayOfMonth: boolean;
+  nearestWeekdays: number[];
   starDOM: boolean;
   starDOW: boolean;
-  nearestWeekdays: number[];
+  useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
 
   constructor(pattern: string, timezone?: string) {
     this.pattern = pattern;
@@ -60,12 +63,14 @@ class CronPattern {
     this.day = Array(31).fill(0); // 0-30 in array, 1-31 in config
     this.month = Array(12).fill(0); // 0-11 in array, 1-12 in config
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
+    this.year = Array(10000).fill(0); // OCPS 1.2: Year field (1-9999, index 0 unused)
 
     this.lastDayOfMonth = false;
     this.nearestWeekdays = Array(31).fill(0); // 0-30 in array, 1-31 in config
 
     this.starDOM = false; // Asterisk used for dayOfMonth
     this.starDOW = false; // Asterisk used for dayOfWeek
+    this.useAndLogic = false; // OCPS 1.4: Default is OR logic
 
     this.parse();
   }
@@ -89,17 +94,23 @@ class CronPattern {
     // space and tab delimiters common in the cron pattern format.
     const parts = this.pattern.match(/\S+/g) || [""];
 
-    // Validite number of entries in pattern
-    if (parts.length < 5 || parts.length > 6) {
+    // Validite number of configuration entries
+    // OCPS 1.2: Support 5, 6, or 7 fields (5=no seconds, 6=with seconds, 7=with seconds and year)
+    if (parts.length < 5 || parts.length > 7) {
       throw new TypeError(
-        "CronPattern: invalid format ('" + this.pattern +
-          "'), exactly five or six space separated parts are required.",
+        "CronPattern: invalid configuration format ('" + this.pattern +
+          "'), exactly five, six, or seven space separated parts are required.",
       );
     }
 
     // If seconds is omitted, insert 0 for seconds
     if (parts.length === 5) {
       parts.unshift("0");
+    }
+
+    // If year is omitted, append * for year (matches all years)
+    if (parts.length === 6) {
+      parts.push("*");
     }
 
     // Convert 'L' to lastDayOfMonth flag in day-of-month field
@@ -117,6 +128,19 @@ class CronPattern {
     if (parts[4].length >= 3) parts[4] = this.replaceAlphaMonths(parts[4]);
     if (parts[5].length >= 3) parts[5] = this.replaceAlphaDays(parts[5]);
 
+    // OCPS 1.4: Check for + modifier in day-of-week field for explicit AND logic
+    if (parts[5].startsWith("+")) {
+      this.useAndLogic = true;
+      parts[5] = parts[5].substring(1); // Remove the + prefix
+
+      // After removing +, check if the field is empty
+      if (parts[5] === "") {
+        throw new TypeError(
+          "CronPattern: Day-of-week field cannot be empty after '+' modifier.",
+        );
+      }
+    }
+
     // Check for starDOW
     if (parts[5] == "*") {
       this.starDOW = true;
@@ -131,6 +155,7 @@ class CronPattern {
       if (!this.starDOM) parts[3] = parts[3].replace("?", initDate.getDate().toString());
       parts[4] = parts[4].replace("?", (initDate.getMonth() + 1).toString()); // getMonth is zero indexed while pattern starts from 1
       if (!this.starDOW) parts[5] = parts[5].replace("?", initDate.getDay().toString());
+      if (parts[6]) parts[6] = parts[6].replace("?", initDate.getFullYear().toString());
     }
 
     // Check part content
@@ -143,6 +168,8 @@ class CronPattern {
     this.partToArray("day", parts[3], -1, 1);
     this.partToArray("month", parts[4], -1, 1);
     this.partToArray("dayOfWeek", parts[5], 0, ANY_OCCURRENCE);
+    // OCPS 1.2: Parse year field (no offset needed as years are absolute)
+    this.partToArray("year", parts[6], 0, 1);
 
     // 0 = Sunday, 7 = Sunday
     if (this.dayOfWeek[7]) {
@@ -205,8 +232,8 @@ class CronPattern {
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
       const reValidCron = (i === 3)
-        ? /[^/*0-9,-WL]+/
-        : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/);
+        ? /[^/*0-9,-WL]+/ // Day-of-month: allow W and L modifiers
+        : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/); // Day-of-week: allow # and L modifiers
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
@@ -293,6 +320,13 @@ class CronPattern {
     } else if (part === "month") {
       if (index < 0 || index >= 12) {
         throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
+      }
+    } else if (part === "year") {
+      // OCPS 1.2/1.4: Year field with recommended range 1-9999
+      if (index < 1 || index >= 10000) {
+        throw new RangeError(
+          "CronPattern: Invalid value for " + part + ": " + index + " (supported range: 1-9999)",
+        );
       }
     }
 
@@ -519,10 +553,17 @@ class CronPattern {
       return "0 0 1 * *";
     } else if (cleanPattern === "@weekly") {
       return "0 0 * * 0";
-    } else if (cleanPattern === "@daily") {
+    } else if (cleanPattern === "@daily" || cleanPattern === "@midnight") {
       return "0 0 * * *";
     } else if (cleanPattern === "@hourly") {
       return "0 * * * *";
+    } else if (cleanPattern === "@reboot") {
+      // OCPS 1.1: @reboot is event-based, not time-based
+      // It should be parsed successfully but handled specially at runtime
+      throw new TypeError(
+        "CronPattern: @reboot is not supported in this environment. " +
+          "This is an event-based trigger that requires system startup detection.",
+      );
     } else {
       return pattern;
     }
