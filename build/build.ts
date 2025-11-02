@@ -84,7 +84,7 @@ if (Deno.args[1] === "clean") {
             declaration: true,
             emitDeclarationOnly: true,
             allowImportingTsExtensions: true,
-            lib: ["es6", "dom"],
+            lib: ["es2017", "dom"],
           },
         },
       })],
