@@ -1,5 +1,3 @@
-import { CronDate } from "./date.ts";
-
 /**
  * Name for each part of the cron pattern
  */
@@ -153,16 +151,16 @@ class CronPattern {
       this.starDOW = true;
     }
 
-    // Implement '?' in the simplest possible way - replace ? with current value, before further processing
+    // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
+    // Note: ? is non-portable and should behave as an alias for * (wildcard)
     if (this.pattern.indexOf("?") >= 0) {
-      const initDate = new CronDate(new Date(), this.timezone).getDate(true);
-      parts[0] = parts[0].replace("?", initDate.getSeconds().toString());
-      parts[1] = parts[1].replace("?", initDate.getMinutes().toString());
-      parts[2] = parts[2].replace("?", initDate.getHours().toString());
-      if (!this.starDOM) parts[3] = parts[3].replace("?", initDate.getDate().toString());
-      parts[4] = parts[4].replace("?", (initDate.getMonth() + 1).toString()); // getMonth is zero indexed while pattern starts from 1
-      if (!this.starDOW) parts[5] = parts[5].replace("?", initDate.getDay().toString());
-      if (parts[6]) parts[6] = parts[6].replace("?", initDate.getFullYear().toString());
+      parts[0] = parts[0].replace(/\?/g, "*");
+      parts[1] = parts[1].replace(/\?/g, "*");
+      parts[2] = parts[2].replace(/\?/g, "*");
+      parts[3] = parts[3].replace(/\?/g, "*");
+      parts[4] = parts[4].replace(/\?/g, "*");
+      parts[5] = parts[5].replace(/\?/g, "*");
+      if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
     }
 
     // Check part content
