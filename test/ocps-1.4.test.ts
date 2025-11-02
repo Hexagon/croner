@@ -134,7 +134,7 @@ test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
   assertEquals(run.getFullYear(), 2023, "Should run in 2023");
   assertEquals(run.getMonth(), 2, "Should run in March (month 2)");
   assertEquals(run.getDate(), 12, "Should run on the 12th");
-  
+
   // The time 2:30 AM doesn't exist, so it should be adjusted to 3:30 AM EDT
   // 3:30 AM EDT = 07:30 UTC
   assertEquals(run.toISOString(), "2023-03-12T07:30:00.000Z", "Should be adjusted to 3:30 AM EDT");
