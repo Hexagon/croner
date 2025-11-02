@@ -17,7 +17,10 @@ croner/
 ├── test/                # Test files
 │   ├── croner.test.ts
 │   ├── pattern.test.ts
-│   └── ...
+│   ├── options.test.ts
+│   ├── range.test.ts
+│   ├── stepping.test.ts
+│   └── timezone.test.ts
 ├── build/               # Build scripts
 ├── docs/                # Documentation
 └── deno.json            # Deno configuration and tasks
