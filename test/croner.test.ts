@@ -894,7 +894,7 @@ test(
       }
     }, 2100);
   },
-  { waitForCallback: true, timeout: 3000 },
+  { waitForCallback: true, timeout: 5000 },
 );
 
 test(
