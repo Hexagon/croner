@@ -143,10 +143,12 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
     const altGuess = new Date(dateGuess.getTime() - 3600000); // 1 hour earlier
     const altCheck = toTZ(altGuess, tp.tz!);
 
-    // If the earlier time also produces the same local time, we're in a DST overlap
+    // If the earlier time also produces the same local time, AND the UTC times differ,
+    // we're in a DST overlap (indicating different offsets)
     if (
       altCheck.y === tp.y && altCheck.m === tp.m && altCheck.d === tp.d &&
-      altCheck.h === tp.h && altCheck.i === tp.i && altCheck.s === tp.s
+      altCheck.h === tp.h && altCheck.i === tp.i && altCheck.s === tp.s &&
+      altGuess.getTime() !== dateGuess.getTime()
     ) {
       // Return the earlier time (first occurrence per OCPS 1.4)
       return altGuess;
