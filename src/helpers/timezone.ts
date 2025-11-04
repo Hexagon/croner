@@ -19,6 +19,16 @@ export interface TimePoint {
 }
 
 /**
+ * Helper function to convert TimePoint components to UTC milliseconds
+ *
+ * @param tp - TimePoint to convert
+ * @returns Milliseconds since epoch (UTC)
+ */
+function timePointToMs(tp: TimePoint): number {
+  return Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
+}
+
+/**
  * Helper function that takes an ISO8601 local date time string and creates a TimePoint.
  * Throws on failure. Throws on invalid date or time.
  *
@@ -109,14 +119,14 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  */
 export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   // Construct a Date object with UTC components matching the target local time
-  const inDate = new Date(Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s));
+  const inDate = new Date(timePointToMs(tp));
 
   // See what this UTC time looks like when formatted in the target timezone
   const check0 = toTZ(inDate, tp.tz!);
 
   // Calculate the difference between target and actual local time components
-  const targetMs = Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
-  const actualMs = Date.UTC(check0.y, check0.m - 1, check0.d, check0.h, check0.i, check0.s);
+  const targetMs = timePointToMs(tp);
+  const actualMs = timePointToMs(check0);
   const diffMs = targetMs - actualMs;
 
   // First guess: adjust by the calculated difference
@@ -146,9 +156,7 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   }
 
   // First guess didn't match, refine with a second iteration
-  const targetMs2 = Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
-  const actualMs2 = Date.UTC(check1.y, check1.m - 1, check1.d, check1.h, check1.i, check1.s);
-  const diffMs2 = targetMs2 - actualMs2;
+  const diffMs2 = timePointToMs(tp) - timePointToMs(check1);
 
   const dateGuess2 = new Date(dateGuess.getTime() + diffMs2);
   const check2 = toTZ(dateGuess2, tp.tz!);
@@ -162,21 +170,9 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   }
 
   if (!throwOnInvalid) {
-    // Neither guess matches exactly - we're in a DST transition
-    if (guess1Matches && guess2Matches) {
-      // Both match - DST overlap (fall back), return earlier time (OCPS 1.4)
-      return dateGuess.getTime() < dateGuess2.getTime() ? dateGuess : dateGuess2;
-    } else if (guess2Matches) {
-      // Only guess2 matches
-      return dateGuess2;
-    } else if (guess1Matches) {
-      // Only guess1 matches
-      return dateGuess;
-    } else {
-      // Neither matches exactly - DST gap (spring forward)
-      // Return the time after the gap (the later of the two)
-      return dateGuess.getTime() > dateGuess2.getTime() ? dateGuess : dateGuess2;
-    }
+    // Neither guess matches exactly - we're in a DST gap (spring forward)
+    // Return the time after the gap (the later of the two)
+    return dateGuess.getTime() > dateGuess2.getTime() ? dateGuess : dateGuess2;
   } else {
     // Input time is invalid, and the library is instructed to throw
     throw new Error("Invalid date passed to fromTZ()");
