@@ -15,6 +15,7 @@ export async function build(
     console.log("All builds completed successfully.");
   } catch (error) {
     console.error("Build failed:", error);
+    throw error;
   }
 }
 async function readJson<T>(filePath: string): Promise<T> {
@@ -78,13 +79,14 @@ if (Deno.args[1] === "clean") {
       platform: "neutral",
       format: "esm",
       plugins: [dtsPlugin({
-        experimentalBundling: true,
         tsconfig: {
           compilerOptions: {
+            target: "ES2017",
+            lib: ["ES2017", "DOM"],
             declaration: true,
             emitDeclarationOnly: true,
             allowImportingTsExtensions: true,
-            lib: ["es2017", "dom"],
+            skipLibCheck: true,
           },
         },
       })],
