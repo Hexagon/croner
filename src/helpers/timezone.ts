@@ -29,6 +29,18 @@ function timePointToMs(tp: TimePoint): number {
 }
 
 /**
+ * Helper function to check if two TimePoints represent the same local time
+ *
+ * @param tp1 - First TimePoint
+ * @param tp2 - Second TimePoint
+ * @returns True if both represent the same local time components
+ */
+function timePointsMatch(tp1: TimePoint, tp2: TimePoint): boolean {
+  return tp1.y === tp2.y && tp1.m === tp2.m && tp1.d === tp2.d &&
+    tp1.h === tp2.h && tp1.i === tp2.i && tp1.s === tp2.s;
+}
+
+/**
  * Helper function that takes an ISO8601 local date time string and creates a TimePoint.
  * Throws on failure. Throws on invalid date or time.
  *
@@ -134,22 +146,14 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   const check1 = toTZ(dateGuess, tp.tz!);
 
   // Check if the first guess produces the target local time
-  const guess1Matches = check1.y === tp.y && check1.m === tp.m && check1.d === tp.d &&
-    check1.h === tp.h && check1.i === tp.i && check1.s === tp.s;
-
-  if (guess1Matches) {
+  if (timePointsMatch(check1, tp)) {
     // Even if it matches, we might be in a DST overlap (fall back)
     // Check if there's another valid time 1 hour earlier
     const altGuess = new Date(dateGuess.getTime() - 3600000); // 1 hour earlier
     const altCheck = toTZ(altGuess, tp.tz!);
 
-    // If the earlier time also produces the same local time, AND the UTC times differ,
-    // we're in a DST overlap (indicating different offsets)
-    if (
-      altCheck.y === tp.y && altCheck.m === tp.m && altCheck.d === tp.d &&
-      altCheck.h === tp.h && altCheck.i === tp.i && altCheck.s === tp.s &&
-      altGuess.getTime() !== dateGuess.getTime()
-    ) {
+    // If the earlier time also produces the same local time, we're in a DST overlap
+    if (timePointsMatch(altCheck, tp)) {
       // Return the earlier time (first occurrence per OCPS 1.4)
       return altGuess;
     }
@@ -158,15 +162,10 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   }
 
   // First guess didn't match, refine with a second iteration
-  const diffMs2 = timePointToMs(tp) - timePointToMs(check1);
-
-  const dateGuess2 = new Date(dateGuess.getTime() + diffMs2);
+  const dateGuess2 = new Date(dateGuess.getTime() + timePointToMs(tp) - timePointToMs(check1));
   const check2 = toTZ(dateGuess2, tp.tz!);
 
-  const guess2Matches = check2.y === tp.y && check2.m === tp.m && check2.d === tp.d &&
-    check2.h === tp.h && check2.i === tp.i && check2.s === tp.s;
-
-  if (guess2Matches) {
+  if (timePointsMatch(check2, tp)) {
     // Second guess matches
     return dateGuess2;
   }
