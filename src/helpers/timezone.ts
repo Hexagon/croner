@@ -19,101 +19,6 @@ export interface TimePoint {
 }
 
 /**
- * Helper function that returns the current UTC offset (in ms) for a specific timezone at a specific point in time
- *
- * @param timeZone - Target time zone in IANA database format 'Europe/Stockholm'
- * @param date - Point in time to use as base for offset calculation
- * @returns Offset in ms between UTC and timeZone
- */
-function getTimezoneOffset(timeZone?: string, date = new Date()): number {
-  // No explicit timezone: rely on system offset
-  if (!timeZone) return -date.getTimezoneOffset() * 60_000;
-
-  // Try parsing the short offset in a stable way
-  try {
-    const fmt = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      timeZoneName: "shortOffset",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-    const parts = fmt.formatToParts(date);
-    const tzPart = parts.find((p) => p.type === "timeZoneName");
-    const label = (tzPart?.value || "").replace(/\s/g, "");
-
-    // Handle common patterns: GMT, UTC, GMT+H, GMT+HH, GMT+HH:MM (and UTC variants)
-    if (/^(GMT|UTC)$/i.test(label)) return 0;
-    const m = /^(?:GMT|UTC)([+-])(\d{1,2})(?::?(\d{2}))?$/.exec(label);
-    if (m) {
-      const sign = m[1] === "+" ? 1 : -1;
-      const hh = parseInt(m[2], 10);
-      const mm = m[3] ? parseInt(m[3], 10) : 0;
-      return sign * (hh * 60 + mm) * 60_000;
-    }
-  } catch {
-    // Fall through to calculation-based fallback
-  }
-
-  // Fallback: derive offset by comparing the same wall-clock time in the target tz to UTC
-  try {
-    const wall = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: false,
-    }).formatToParts(date);
-
-    const map: Record<string, number> = {
-      year: 0,
-      month: 0,
-      day: 0,
-      hour: 0,
-      minute: 0,
-      second: 0,
-    };
-    for (const p of wall) if (p.type in map) map[p.type] = parseInt(p.value, 10);
-
-    // Node.js may return hour 24 for midnight (24:00 = 00:00 of same day in this context)
-    // Normalize to hour 0 to prevent Date.UTC from rolling over to next day
-    if (map.hour === 24) {
-      map.hour = 0;
-    }
-
-    const utcMs = Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      date.getUTCHours(),
-      date.getUTCMinutes(),
-      date.getUTCSeconds(),
-      date.getUTCMilliseconds(),
-    );
-    const sameWallInUTC = Date.UTC(
-      map.year,
-      map.month - 1,
-      map.day,
-      map.hour,
-      map.minute,
-      map.second,
-      date.getUTCMilliseconds(),
-    );
-    return sameWallInUTC - utcMs;
-  } catch {
-    // Absolute last resort: assume UTC
-    return 0;
-  }
-}
-
-/**
  * Helper function that takes an ISO8601 local date time string and creates a TimePoint.
  * Throws on failure. Throws on invalid date or time.
  *
@@ -203,80 +108,78 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  * @returns Normal date object
  */
 export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
-  const // Construct a fake Date object with UTC date/time set to local date/time in source timezone
-  inDate = new Date(Date.UTC(
-    tp.y,
-    tp.m - 1,
-    tp.d,
-    tp.h,
-    tp.i,
-    tp.s,
-  )),
-    // Get offset between UTC and source timezone
-    offset = getTimezoneOffset(tp.tz, inDate),
-    // Remove offset from inDate to hopefully get a true date object
-    dateGuess = new Date(inDate.getTime() - offset),
-    // Get offset between UTC and guessed time in target timezone
-    dateOffsGuess = getTimezoneOffset(tp.tz, dateGuess);
+  // Construct a Date object with UTC components matching the target local time
+  const inDate = new Date(Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s));
 
-  // If offset between guessed true date object and UTC matches initial calculation, the guess
-  // was spot on
-  if ((dateOffsGuess - offset) === 0) {
-    // Even if they match, we might be in a DST overlap situation (fall back)
+  // See what this UTC time looks like when formatted in the target timezone
+  const check0 = toTZ(inDate, tp.tz!);
+
+  // Calculate the difference between target and actual local time components
+  const targetMs = Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
+  const actualMs = Date.UTC(check0.y, check0.m - 1, check0.d, check0.h, check0.i, check0.s);
+  const diffMs = targetMs - actualMs;
+
+  // First guess: adjust by the calculated difference
+  const dateGuess = new Date(inDate.getTime() + diffMs);
+  const check1 = toTZ(dateGuess, tp.tz!);
+
+  // Check if the first guess produces the target local time
+  const guess1Matches = check1.y === tp.y && check1.m === tp.m && check1.d === tp.d &&
+    check1.h === tp.h && check1.i === tp.i && check1.s === tp.s;
+
+  if (guess1Matches) {
+    // Even if it matches, we might be in a DST overlap (fall back)
     // Check if there's another valid time 1 hour earlier
     const altGuess = new Date(dateGuess.getTime() - 3600000); // 1 hour earlier
-    const altOffset = getTimezoneOffset(tp.tz, altGuess);
     const altCheck = toTZ(altGuess, tp.tz!);
 
-    // Check if the alternative time also matches the target local time
-    // AND the offset is different (indicating we're in an overlap, not just an hour earlier)
+    // If the earlier time also produces the same local time, we're in a DST overlap
     if (
       altCheck.y === tp.y && altCheck.m === tp.m && altCheck.d === tp.d &&
-      altCheck.h === tp.h && altCheck.i === tp.i && altCheck.s === tp.s &&
-      altOffset !== dateOffsGuess
+      altCheck.h === tp.h && altCheck.i === tp.i && altCheck.s === tp.s
     ) {
-      // We're in a DST overlap! Return the earlier time (first occurrence per OCPS 1.4)
+      // Return the earlier time (first occurrence per OCPS 1.4)
       return altGuess;
     }
 
     return dateGuess;
-  } else {
-    // Not quite there yet, make a second try on guessing the local time
-    const dateGuess2 = new Date(inDate.getTime() - dateOffsGuess),
-      dateOffsGuess2 = getTimezoneOffset(tp.tz, dateGuess2);
+  }
 
-    if ((dateOffsGuess2 - dateOffsGuess) === 0) {
-      // Second guess confirms the time
+  // First guess didn't match, refine with a second iteration
+  const targetMs2 = Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
+  const actualMs2 = Date.UTC(check1.y, check1.m - 1, check1.d, check1.h, check1.i, check1.s);
+  const diffMs2 = targetMs2 - actualMs2;
+
+  const dateGuess2 = new Date(dateGuess.getTime() + diffMs2);
+  const check2 = toTZ(dateGuess2, tp.tz!);
+
+  const guess2Matches = check2.y === tp.y && check2.m === tp.m && check2.d === tp.d &&
+    check2.h === tp.h && check2.i === tp.i && check2.s === tp.s;
+
+  if (guess2Matches) {
+    // Second guess matches
+    return dateGuess2;
+  }
+
+  if (!throwOnInvalid) {
+    // Neither guess matches exactly - we're in a DST transition
+    if (guess1Matches && guess2Matches) {
+      // Both match - DST overlap (fall back), return earlier time (OCPS 1.4)
+      return dateGuess.getTime() < dateGuess2.getTime() ? dateGuess : dateGuess2;
+    } else if (guess2Matches) {
+      // Only guess2 matches
       return dateGuess2;
-    } else if (!throwOnInvalid) {
-      // Offsets don't match between guesses - we're in a DST transition
-      // Check which guess produces the correct local time
-      const check1 = toTZ(dateGuess, tp.tz!);
-      const check2 = toTZ(dateGuess2, tp.tz!);
-
-      const guess1Matches = check1.y === tp.y && check1.m === tp.m && check1.d === tp.d &&
-        check1.h === tp.h && check1.i === tp.i && check1.s === tp.s;
-      const guess2Matches = check2.y === tp.y && check2.m === tp.m && check2.d === tp.d &&
-        check2.h === tp.h && check2.i === tp.i && check2.s === tp.s;
-
-      if (guess1Matches && guess2Matches) {
-        // Both match - DST overlap (fall back), return earlier time (OCPS 1.4)
-        return dateGuess.getTime() < dateGuess2.getTime() ? dateGuess : dateGuess2;
-      } else if (guess2Matches) {
-        // Only guess2 matches - this is the correct time
-        return dateGuess2;
-      } else if (guess1Matches) {
-        // Only guess1 matches - this is the correct time
-        return dateGuess;
-      } else {
-        // Neither matches exactly - DST gap (spring forward)
-        // Return the time after the gap (the later of the two)
-        return dateGuess.getTime() > dateGuess2.getTime() ? dateGuess : dateGuess2;
-      }
+    } else if (guess1Matches) {
+      // Only guess1 matches
+      return dateGuess;
     } else {
-      // Input time is invalid, and the library is instructed to throw, so let's do it
-      throw new Error("Invalid date passed to fromTZ()");
+      // Neither matches exactly - DST gap (spring forward)
+      // Return the time after the gap (the later of the two)
+      return dateGuess.getTime() > dateGuess2.getTime() ? dateGuess : dateGuess2;
     }
+  } else {
+    // Input time is invalid, and the library is instructed to throw
+    throw new Error("Invalid date passed to fromTZ()");
   }
 }
 
