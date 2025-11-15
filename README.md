@@ -171,8 +171,9 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 // │ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
 // │ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
 // │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
-// │ │ │ │ │ │
-// * * * * * *
+// │ │ │ │ │ │ ┌──── (optional) year (1 - 9999)
+// │ │ │ │ │ │ │
+// * * * * * * *
 ```
 
 *   **OCPS 1.2**: Optional second and year fields for enhanced precision:
@@ -249,7 +250,7 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Year field (OCPS 1.2)  |          ✓          |                     |              |                            |                    |
 | Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
 | Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
-| Nearest weekday (W)  |          ✓          |                     |              |                            |                    |
+| Nearest weekday (W)  |          ✓          |          ✓          |              |                            |                    |
 | AND logic modifier (+)  |          ✓          |                     |              |                            |                    |
 
 <details>
