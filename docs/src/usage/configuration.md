@@ -24,6 +24,7 @@ nav_order: 3
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
+| alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 

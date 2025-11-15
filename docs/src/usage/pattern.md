@@ -48,7 +48,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 | Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
 | Day of Month | Yes      | 1-31           | * , - / ? L W              | L = last day, W = nearest weekday     |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L # +            | 0 and 7 = Sunday<br># = nth occurrence (e.g. MON#2)<br>+ = AND logic modifier (OCPS 1.4) |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L # +            | 0 and 7 = Sunday (standard mode)<br>1-7 = Sunday-Saturday (Quartz mode with `alternativeWeekdays: true`)<br># = nth occurrence (e.g. MON#2)<br>+ = AND logic modifier (OCPS 1.4) |
 | Year         | Optional | 1-9999         | * , - /                    | OCPS 1.2: Optional, defaults to *    |
 
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
@@ -56,6 +56,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 > The `#` character specifies the "nth" weekday of the month. For example, `5#2` = second Friday, `MON#1` = first Monday.
 > The `W` character operates within the current month and won't cross month boundaries. If the 1st is a Saturday, `1W` matches Monday the 3rd.
 > The `+` modifier (OCPS 1.4) enforces AND logic: `0 12 1 * +MON` only runs when the 1st is also a Monday.
+> **Quartz mode**: Enable `alternativeWeekdays: true` to use Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday) instead of the standard format (0=Sunday, 1=Monday, ..., 6=Saturday). This is useful for compatibility with Quartz cron expressions.
 
 { .note }
 

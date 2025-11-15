@@ -45,6 +45,7 @@ class CronPattern {
   pattern: string;
   timezone?: string;
   mode: CronMode;
+  alternativeWeekdays: boolean;
   second: number[];
   minute: number[];
   hour: number[];
@@ -62,11 +63,12 @@ class CronPattern {
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { mode?: CronMode },
+    options?: { mode?: CronMode; alternativeWeekdays?: boolean },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
     this.mode = options?.mode ?? "auto";
+    this.alternativeWeekdays = options?.alternativeWeekdays ?? false;
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -182,7 +184,11 @@ class CronPattern {
 
     // Replace alpha representations
     if (parts[4].length >= 3) parts[4] = this.replaceAlphaMonths(parts[4]);
-    if (parts[5].length >= 3) parts[5] = this.replaceAlphaDays(parts[5]);
+    if (parts[5].length >= 3) {
+      parts[5] = this.alternativeWeekdays
+        ? this.replaceAlphaDaysQuartz(parts[5])
+        : this.replaceAlphaDays(parts[5]);
+    }
 
     // OCPS 1.4: Check for + modifier in day-of-week field for explicit AND logic
     if (parts[5].startsWith("+")) {
@@ -251,12 +257,20 @@ class CronPattern {
     this.partToArray("hour", parts[2], 0, 1);
     this.partToArray("day", parts[3], -1, 1);
     this.partToArray("month", parts[4], -1, 1);
-    this.partToArray("dayOfWeek", parts[5], 0, ANY_OCCURRENCE);
+
+    // For Quartz mode, we need to adjust the offset
+    // In Quartz mode: 1=Sunday, 2=Monday, ..., 7=Saturday
+    // Internally we use: 0=Sunday, 1=Monday, ..., 6=Saturday
+    // So we need an offset of -1 for Quartz mode
+    const dayOfWeekOffset = this.alternativeWeekdays ? -1 : 0;
+    this.partToArray("dayOfWeek", parts[5], dayOfWeekOffset, ANY_OCCURRENCE);
+
     // OCPS 1.2: Parse year field (no offset needed as years are absolute)
     this.partToArray("year", parts[6], 0, 1);
 
-    // 0 = Sunday, 7 = Sunday
-    if (this.dayOfWeek[7]) {
+    // 0 = Sunday, 7 = Sunday (only in standard mode)
+    // In Quartz mode, this mapping is not needed
+    if (!this.alternativeWeekdays && this.dayOfWeek[7]) {
       this.dayOfWeek[0] = this.dayOfWeek[7];
     }
   }
@@ -605,6 +619,25 @@ class CronPattern {
       .replace(/thu/gi, "4")
       .replace(/fri/gi, "5")
       .replace(/sat/gi, "6");
+  }
+
+  /**
+   * Replace day name with day numbers (Quartz mode)
+   * In Quartz mode: Sunday=1, Monday=2, ..., Saturday=7
+   *
+   * @param conf Current part, expected to be a string that might contain sun,mon etc.
+   *
+   * @returns Conf with Quartz-style numbering
+   */
+  private replaceAlphaDaysQuartz(conf: string): string {
+    return conf
+      .replace(/sun/gi, "1")
+      .replace(/mon/gi, "2")
+      .replace(/tue/gi, "3")
+      .replace(/wed/gi, "4")
+      .replace(/thu/gi, "5")
+      .replace(/fri/gi, "6")
+      .replace(/sat/gi, "7");
   }
 
   /**
