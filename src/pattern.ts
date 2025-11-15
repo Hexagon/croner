@@ -14,7 +14,7 @@ type CronPatternPart =
 /**
  * Cron pattern mode for controlling precision level
  */
-type CronMode = "auto" | "5-part" | "6-part" | "7-part";
+type CronMode = "auto" | "5-part" | "6-part" | "7-part" | "5-or-6-parts" | "6-or-7-parts";
 
 /**
  * Offset, 0 or -1.
@@ -118,10 +118,38 @@ class CronPattern {
 
     // Enforce mode-specific pattern length validation
     if (this.mode !== "auto") {
-      const expectedParts = this.mode === "5-part" ? 5 : this.mode === "6-part" ? 6 : 7;
-      if (originalPartCount !== expectedParts) {
+      let expectedParts: number | number[];
+
+      switch (this.mode) {
+        case "5-part":
+          expectedParts = 5;
+          break;
+        case "6-part":
+          expectedParts = 6;
+          break;
+        case "7-part":
+          expectedParts = 7;
+          break;
+        case "5-or-6-parts":
+          expectedParts = [5, 6];
+          break;
+        case "6-or-7-parts":
+          expectedParts = [6, 7];
+          break;
+        default:
+          expectedParts = 0; // Should not reach here
+      }
+
+      const isValid = Array.isArray(expectedParts)
+        ? expectedParts.includes(originalPartCount)
+        : originalPartCount === expectedParts;
+
+      if (!isValid) {
+        const expectedStr = Array.isArray(expectedParts)
+          ? expectedParts.join(" or ")
+          : expectedParts.toString();
         throw new TypeError(
-          `CronPattern: mode '${this.mode}' requires exactly ${expectedParts} parts, but pattern '${this.pattern}' has ${originalPartCount} parts.`,
+          `CronPattern: mode '${this.mode}' requires exactly ${expectedStr} parts, but pattern '${this.pattern}' has ${originalPartCount} parts.`,
         );
       }
     }
@@ -198,6 +226,15 @@ class CronPattern {
         // Extended 6-field cron: second-level precision, but no year constraints
         // Force years to wildcard
         parts[6] = "*";
+        break;
+      case "5-or-6-parts":
+        // Accept 5 or 6 parts: force years to wildcard
+        // If original was 5 parts, seconds will be 0 (added by normalization)
+        parts[6] = "*";
+        break;
+      case "6-or-7-parts":
+        // Accept 6 or 7 parts: no additional overrides needed
+        // Pattern is used as-is
         break;
       case "7-part":
       case "auto":

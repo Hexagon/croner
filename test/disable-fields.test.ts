@@ -304,3 +304,101 @@ test("auto mode should accept 7-part pattern", function () {
   const nextRun = scheduler.nextRun("2024-01-01T00:00:00");
   assertEquals(nextRun !== null, true);
 });
+
+// Tests for 5-or-6-parts mode
+test("5-or-6-parts mode should accept 5-part pattern", function () {
+  const scheduler = new Cron("0 * * * *", { mode: "5-or-6-parts" });
+  const nextRuns = scheduler.nextRuns(2, "2024-01-01T00:00:00");
+
+  // Should work with 5-part pattern, seconds forced to 0, years wildcarded
+  assertEquals(nextRuns[0].getSeconds(), 0);
+  assertEquals(nextRuns[1].getSeconds(), 0);
+  assertEquals(nextRuns[0] !== null, true);
+});
+
+test("5-or-6-parts mode should accept 6-part pattern", function () {
+  const scheduler = new Cron("30 0 * * * *", { mode: "5-or-6-parts" });
+  const nextRuns = scheduler.nextRuns(2, "2024-01-01T00:00:00");
+
+  // Should work with 6-part pattern, seconds preserved, years wildcarded
+  assertEquals(nextRuns[0].getSeconds(), 30);
+  assertEquals(nextRuns[1].getSeconds(), 30);
+  assertEquals(nextRuns[0] !== null, true);
+});
+
+test("5-or-6-parts mode should reject 7-part pattern", function () {
+  assertThrows(
+    () => {
+      new Cron("0 0 0 * * * 2025", { mode: "5-or-6-parts" });
+    },
+    TypeError,
+    "mode '5-or-6-parts' requires exactly 5 or 6 parts",
+  );
+});
+
+test("5-or-6-parts mode should wildcard years for both 5 and 6 part patterns", function () {
+  const scheduler5 = new Cron("0 * * * *", { mode: "5-or-6-parts" });
+  const scheduler6 = new Cron("0 0 * * * *", { mode: "5-or-6-parts" });
+
+  // Both should work across years
+  const runs5 = scheduler5.nextRuns(2, "2025-12-31T23:59:00");
+  const runs6 = scheduler6.nextRuns(2, "2025-12-31T23:59:00");
+
+  assertEquals(runs5[0].getFullYear(), 2026);
+  assertEquals(runs6[0].getFullYear(), 2026);
+});
+
+// Tests for 6-or-7-parts mode
+test("6-or-7-parts mode should accept 6-part pattern", function () {
+  const scheduler = new Cron("30 0 * * * *", { mode: "6-or-7-parts" });
+  const nextRuns = scheduler.nextRuns(2, "2024-01-01T00:00:00");
+
+  // Should work with 6-part pattern
+  assertEquals(nextRuns[0].getSeconds(), 30);
+  assertEquals(nextRuns[1].getSeconds(), 30);
+  assertEquals(nextRuns[0] !== null, true);
+});
+
+test("6-or-7-parts mode should accept 7-part pattern", function () {
+  const scheduler = new Cron("30 0 0 * * * 2025", { mode: "6-or-7-parts" });
+  const nextRuns = scheduler.nextRuns(2, "2024-01-01T00:00:00");
+
+  // Should work with 7-part pattern
+  assertEquals(nextRuns[0].getSeconds(), 30);
+  assertEquals(nextRuns[0].getFullYear(), 2025);
+  assertEquals(nextRuns[1].getFullYear(), 2025);
+});
+
+test("6-or-7-parts mode should reject 5-part pattern", function () {
+  assertThrows(
+    () => {
+      new Cron("0 * * * *", { mode: "6-or-7-parts" });
+    },
+    TypeError,
+    "mode '6-or-7-parts' requires exactly 6 or 7 parts",
+  );
+});
+
+test("6-or-7-parts mode with 6-part should wildcard years", function () {
+  const scheduler = new Cron("0 0 * * * *", { mode: "6-or-7-parts" });
+
+  // 6-part pattern in 6-or-7-parts mode should work across years
+  const runs = scheduler.nextRuns(2, "2025-12-31T23:59:00");
+
+  assertEquals(runs[0].getFullYear(), 2026);
+  assertEquals(runs[1].getFullYear(), 2026);
+});
+
+test("6-or-7-parts mode with 7-part should respect years", function () {
+  const scheduler = new Cron("0 0 0 * * * 2025", { mode: "6-or-7-parts" });
+
+  // 7-part pattern in 6-or-7-parts mode should respect years
+  const runs = scheduler.nextRuns(2, "2024-01-01T00:00:00");
+
+  assertEquals(runs[0].getFullYear(), 2025);
+  assertEquals(runs[1].getFullYear(), 2025);
+
+  // Should not return runs after 2025
+  const noRuns = scheduler.nextRun("2026-01-01T00:00:00");
+  assertEquals(noRuns, null);
+});
