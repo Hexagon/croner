@@ -471,8 +471,8 @@ class CronPattern {
   }
 
   /*
-   * Break out nth weekday (#) if exists
-   * - only allow if type os dayOfWeek
+   * Break out nth weekday (#) or last occurrence (L) if exists
+   * - only allow if type is dayOfWeek
    */
   private extractNth(conf: string, type: string): [string, string | undefined] {
     let rest = conf;
@@ -483,6 +483,15 @@ class CronPattern {
       }
       nth = rest.split("#")[1];
       rest = rest.split("#")[0];
+    } else if (rest.toUpperCase().endsWith("L")) {
+      // Handle "L" suffix without "#" (e.g., "5L" or "FRIL")
+      if (type !== "dayOfWeek") {
+        throw new Error(
+          "CronPattern: L modifier only allowed in day-of-week field (use L alone for day-of-month)",
+        );
+      }
+      nth = "L";
+      rest = rest.slice(0, -1); // Remove the "L" suffix
     }
     return [rest, nth];
   }
