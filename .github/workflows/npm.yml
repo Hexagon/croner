@@ -8,7 +8,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: master
+          # Build the exact code referenced by the release tag
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
