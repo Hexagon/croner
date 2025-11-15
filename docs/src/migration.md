@@ -15,7 +15,7 @@ This section covers upgrading to Croner from previous versions. Croner follows t
 
 ### Upgrading from 4.x to 5.x
 
-If upgrading from version `4.x` to `5.x`, the most significant change is the way day-of-month and day-of-week are combined. You can read more about this in issue #53. The option was originally called `legacyMode` which has been deprecated in favor of `domAndDow`. The default behavior remains unchanged (OR logic). Set `{ domAndDow: false }` for OR logic (default, legacy behavior) or `{ domAndDow: true }` for AND logic.
+If upgrading from version `4.x` to `5.x`, the most significant change is the way day-of-month and day-of-week are combined. You can read more about this in issue #53. The new mode is called `legacyMode` and can be disabled using the options.
 
 ### Upgrading from 5.x to 6.x
 
@@ -53,6 +53,16 @@ Version 9.x brings several changes to Croner to fix existing issues and ensure c
 * Typings are moved from `/types` to `/dist`.
 
 * Only the `/src` directory is exposed in the JSR module.
+
+### Upgrading from 9.x to 10.x
+
+Version `10.x` introduces a new, more descriptive option name for controlling day-of-month and day-of-week combination logic:
+
+* The `legacyMode` option has been deprecated in favor of `domAndDow` (Day of Month AND Day of Week).
+* `domAndDow: false` (default) uses OR logic - the pattern matches if either the day of month OR day of week matches (OCPS 1.0 compliant, legacy behavior).
+* `domAndDow: true` uses AND logic - the pattern matches only when both the day of month AND day of week match (OCPS 1.4 compliant).
+* The `legacyMode` option still works for backward compatibility but is deprecated. Note that `legacyMode: true` is equivalent to `domAndDow: false`.
+* **No breaking change**: The default behavior remains OR logic (same as `legacyMode: true`), so existing code continues to work without modification.
 
 ## Switching from Cron
 
