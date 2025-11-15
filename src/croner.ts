@@ -200,7 +200,17 @@ class Cron<T = undefined> {
    */
   public nextRun(prev?: CronDate<T> | Date | string | null): Date | null {
     const next = this._next(prev);
-    return next ? next.getDate(false) : null;
+    if (!next) return null;
+
+    // Apply dayOffset if specified
+    if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+      // Get the date, apply offset in milliseconds (days * 24 hours * 60 minutes * 60 seconds * 1000 ms)
+      const baseDate = next.getDate(false);
+      const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+      return new Date(baseDate.getTime() + offsetMs);
+    }
+
+    return next.getDate(false);
   }
 
   /**
@@ -218,8 +228,19 @@ class Cron<T = undefined> {
     let prev: CronDate<T> | Date | string | undefined | null = previous ||
       this._states.currentRun ||
       undefined;
-    while (n-- && (prev = this.nextRun(prev))) {
-      enumeration.push(prev);
+
+    // When dayOffset is used, we need to track the pattern match dates separately
+    // from the offset dates we return
+    while (n-- && (prev = this._next(prev))) {
+      // Apply dayOffset to the result we add to enumeration
+      if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+        const baseDate = prev.getDate(false);
+        const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+        enumeration.push(new Date(baseDate.getTime() + offsetMs));
+      } else {
+        enumeration.push(prev.getDate(false));
+      }
+      // But continue with the non-offset date for finding the next match
     }
 
     return enumeration;
