@@ -224,3 +224,73 @@ test("Valid interval starting in the future should give correct start date", fun
   assertEquals(nextRun?.getMinutes(), tomorrow.getMinutes());
   assertEquals(nextRun?.getSeconds(), tomorrow.getSeconds());
 });
+
+// Backward compatibility tests for legacyMode -> dayAndDow migration
+test("dayAndDow: false should use AND logic (default)", function () {
+  const cron = new Cron("0 12 1 * MON");
+  const runs = cron.nextRuns(5);
+
+  // All runs should be both 1st AND Monday
+  for (const run of runs) {
+    assertEquals(run.getDate(), 1, "Should be 1st of month");
+    assertEquals(run.getDay(), 1, "Should be Monday");
+  }
+});
+
+test("dayAndDow: true should use OR logic", function () {
+  const cron = new Cron("0 12 1 * MON", { dayAndDow: true });
+  const runs = cron.nextRuns(10);
+
+  let has1stNotMonday = false;
+  let hasMondayNot1st = false;
+
+  for (const run of runs) {
+    const is1st = run.getDate() === 1;
+    const isMonday = run.getDay() === 1;
+
+    if (is1st && !isMonday) has1stNotMonday = true;
+    if (isMonday && !is1st) hasMondayNot1st = true;
+  }
+
+  assertEquals(has1stNotMonday || hasMondayNot1st, true, "Should match 1st OR Monday");
+});
+
+test("legacyMode: true should still work (backward compatibility)", function () {
+  const cron = new Cron("0 12 1 * MON", { legacyMode: true });
+  const runs = cron.nextRuns(10);
+
+  let has1stNotMonday = false;
+  let hasMondayNot1st = false;
+
+  for (const run of runs) {
+    const is1st = run.getDate() === 1;
+    const isMonday = run.getDay() === 1;
+
+    if (is1st && !isMonday) has1stNotMonday = true;
+    if (isMonday && !is1st) hasMondayNot1st = true;
+  }
+
+  assertEquals(has1stNotMonday || hasMondayNot1st, true, "Should match 1st OR Monday");
+});
+
+test("legacyMode: false should still work (backward compatibility)", function () {
+  const cron = new Cron("0 12 1 * MON", { legacyMode: false });
+  const runs = cron.nextRuns(5);
+
+  // All runs should be both 1st AND Monday
+  for (const run of runs) {
+    assertEquals(run.getDate(), 1, "Should be 1st of month");
+    assertEquals(run.getDay(), 1, "Should be Monday");
+  }
+});
+
+test("dayAndDow should take precedence over legacyMode when both are provided", function () {
+  const cron = new Cron("0 12 1 * MON", { legacyMode: true, dayAndDow: false });
+  const runs = cron.nextRuns(5);
+
+  // dayAndDow: false should win, using AND logic
+  for (const run of runs) {
+    assertEquals(run.getDate(), 1, "Should be 1st of month");
+    assertEquals(run.getDay(), 1, "Should be Monday");
+  }
+});
