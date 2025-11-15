@@ -348,7 +348,7 @@ test("Croner should give correct last day of months when combined with other dat
 });
 
 test("Impossible combination should result in null (non legacy mode)", function () {
-  let impossible = new Cron("0 0 0 30 2 6", { dayAndDow: false }).nextRun(new Date(1634076000000));
+  let impossible = new Cron("0 0 0 30 2 6", { domAndDow: true }).nextRun(new Date(1634076000000));
   assertEquals(null, impossible);
 });
 
@@ -621,20 +621,20 @@ test("Test milliseconds to 23:59:59 XXXX-01-01 (most often next year), 1000s ste
 
 test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (croner mode)", function () {
   assertEquals(
-    new Cron("0 0 0 1 11 4", { dayAndDow: false }).nextRun(new Date(1634076000000))?.getFullYear(),
+    new Cron("0 0 0 1 11 4", { domAndDow: true }).nextRun(new Date(1634076000000))?.getFullYear(),
     2029,
   );
 });
 
 test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (legacy/OR mode)", function () {
   assertEquals(
-    new Cron("0 0 0 1 11 4", { dayAndDow: true }).nextRun(new Date(1634076000000))?.getFullYear(),
+    new Cron("0 0 0 1 11 4", { domAndDow: false }).nextRun(new Date(1634076000000))?.getFullYear(),
     2021,
   );
 });
 
 test("Next saturday at 29th of february should occur 2048. Also test weekday an month names and case insensitivity (croner mode)", function () {
-  let nextSaturday29feb = new Cron("0 0 0 29 feb SAT", { dayAndDow: false }).nextRun(
+  let nextSaturday29feb = new Cron("0 0 0 29 feb SAT", { domAndDow: true }).nextRun(
     new Date(1634076000000),
   );
   assertEquals(nextSaturday29feb?.getFullYear(), 2048);
@@ -695,7 +695,7 @@ test("0 * * * * * with 40 iterations should return 45 minutes from now", functio
 });
 
 test("0 * * * * * with 40 iterations should return 45 minutes from now (legacy mode)", function () {
-  let scheduler = new Cron("0 * * * * *", { dayAndDow: true }),
+  let scheduler = new Cron("0 * * * * *", { domAndDow: false }),
     prevRun: Date | null = new Date(),
     nextRun,
     iterations = 45,
@@ -754,7 +754,7 @@ test("Weekday pattern should return correct weekdays (legacy mode)", function ()
 });
 
 test("Weekday pattern should return correct combined with day of month (croner mode)", function () {
-  let nextRuns = new Cron("59 59 23 2 * 6", { dayAndDow: false }).nextRuns(
+  let nextRuns = new Cron("59 59 23 2 * 6", { domAndDow: true }).nextRuns(
     2,
     "2022-02-17T00:00:00",
   );
@@ -780,7 +780,7 @@ test("Weekday pattern should return correct weekdays (legacy mode)", function ()
 });
 
 test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
-  const nextRuns = new Cron("59 59 23 2 * 6", { dayAndDow: true }).nextRuns(
+  const nextRuns = new Cron("59 59 23 2 * 6", { domAndDow: false }).nextRuns(
     6,
     "2022-01-31T00:00:00",
   );
@@ -800,7 +800,7 @@ test("Weekday pattern should return correct combined with day of month (legacy m
 });
 
 test("Weekday pattern should return correct alone (legacy mode)", function () {
-  const nextRuns = new Cron("15 9 * * mon", { dayAndDow: true }).nextRuns(
+  const nextRuns = new Cron("15 9 * * mon", { domAndDow: false }).nextRuns(
     3,
     "2022-02-28T23:59:00",
   );
@@ -821,13 +821,13 @@ test("Weekday pattern should return correct alone (legacy mode)", function () {
 
 test("Invalid date should throw", function () {
   assertThrows(() => {
-    new Cron("15 9 * * mon", { dayAndDow: true }).nextRun(new Date("pizza"));
+    new Cron("15 9 * * mon", { domAndDow: false }).nextRun(new Date("pizza"));
   });
 });
 
 test("Specific date should not create infinite loop (legacy mode)", function () {
   const cron = new Cron("0 * * * mon,tue,wed,fri,sat,sun", {
-      dayAndDow: true,
+      domAndDow: false,
     }),
     next = cron.nextRun(new Date("2022-03-31T11:40:34"));
   assertEquals(next?.getFullYear(), 2022);
@@ -842,7 +842,7 @@ test(
   timeout(4000, (resolve, reject) => {
     let run = 1;
     const cron = new Cron("* * * * * *", {
-      dayAndDow: true,
+      domAndDow: false,
     }, () => {
       const now = new Date(),
         nextParsed = new Date(cron.nextRun()!),
@@ -982,7 +982,7 @@ test("Fire-once should be supported by ISO 8601 string, past and .nextRun() shou
 });
 
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null (legacy mode)", function () {
-  let scheduler0 = new Cron("2020-01-01T00:00:00", { dayAndDow: true });
+  let scheduler0 = new Cron("2020-01-01T00:00:00", { domAndDow: false });
   assertEquals(scheduler0.nextRun(), null);
 });
 

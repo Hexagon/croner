@@ -382,11 +382,11 @@ class CronDate<T = undefined> {
         }
 
         // OCPS 1.4: If + modifier is used (useAndLogic), always use AND logic
-        // Otherwise: If we use dayAndDow (legacy mode), and dayOfMonth is specified - use "OR" to combine day of week with day of month
+        // Otherwise: If domAndDow is false (legacy OR mode), and dayOfMonth is specified - use "OR" to combine day of week with day of month
         // In all other cases use "AND"
         if (pattern.useAndLogic) {
           match = match && dowMatch;
-        } else if (options.dayAndDow && !pattern.starDOM) {
+        } else if (!options.domAndDow && !pattern.starDOM) {
           match = match || dowMatch;
         } else {
           match = match && dowMatch;

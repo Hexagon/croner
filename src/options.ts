@@ -83,15 +83,15 @@ interface CronOptions<T = undefined> {
   utcOffset?: number;
 
   /**
-   * If true, uses OR logic when combining day-of-month and day-of-week (legacy behavior).
-   * If false, uses AND logic for combining day-of-month and day-of-week.
-   * @default false
+   * If true, uses AND logic when combining day-of-month and day-of-week.
+   * If false, uses OR logic for combining day-of-month and day-of-week (legacy behavior).
+   * @default true
    */
-  dayAndDow?: boolean;
+  domAndDow?: boolean;
 
   /**
-   * @deprecated Use dayAndDow instead. This option will be removed in a future version.
-   * If true, enables legacy mode for compatibility with older cron implementations.
+   * @deprecated Use domAndDow instead. This option will be removed in a future version.
+   * If true, enables legacy mode (OR logic) for compatibility with older cron implementations.
    * @default true
    */
   legacyMode?: boolean;
@@ -130,18 +130,19 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
 
   delete options.name;
 
-  // Handle backward compatibility: legacyMode is deprecated in favor of dayAndDow
-  // dayAndDow: true means OR logic (legacy behavior), false means AND logic
+  // Handle backward compatibility: legacyMode is deprecated in favor of domAndDow
+  // domAndDow: true means AND logic, false means OR logic (legacy behavior)
   // legacyMode: true means OR logic, false means AND logic
-  if (options.legacyMode !== void 0 && options.dayAndDow === void 0) {
-    // If only legacyMode is provided, use its value for dayAndDow
-    options.dayAndDow = options.legacyMode;
-  } else if (options.dayAndDow === void 0) {
-    // If neither is provided, default to false (AND logic)
-    options.dayAndDow = false;
+  // Therefore: domAndDow = !legacyMode
+  if (options.legacyMode !== void 0 && options.domAndDow === void 0) {
+    // If only legacyMode is provided, invert it for domAndDow
+    options.domAndDow = !options.legacyMode;
+  } else if (options.domAndDow === void 0) {
+    // If neither is provided, default to true (AND logic)
+    options.domAndDow = true;
   }
-  // Keep legacyMode in sync with dayAndDow for backward compatibility
-  options.legacyMode = options.dayAndDow;
+  // Keep legacyMode in sync with domAndDow for backward compatibility (inverted)
+  options.legacyMode = !options.domAndDow;
 
   options.paused = options.paused === void 0 ? false : options.paused;
   options.maxRuns = options.maxRuns === void 0 ? Infinity : options.maxRuns;
