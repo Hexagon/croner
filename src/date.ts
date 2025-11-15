@@ -199,7 +199,7 @@ class CronDate<T = undefined> {
    */
   private fromDate(inDate: Date) {
     /* If this instance of CronDate has a target timezone set,
-	 * use minitz to convert input date object to target timezone
+	 * use timezone utilities to convert input date object to target timezone
 	 * before extracting hours, minutes, seconds etc.
 	 *
 	 * If not, extract all parts from inDate as-is.
@@ -587,7 +587,7 @@ class CronDate<T = undefined> {
         );
 
         // If .tz is something else (hopefully a string), it indicates the timezone of the "local time" of the internal date object
-        // Use minitz to create a normal Date object, and return that.
+        // Use timezone utilities to create a normal Date object, and return that.
       } else {
         return fromTZ(
           createTimePoint(

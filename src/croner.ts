@@ -79,7 +79,7 @@ type CronState<T = undefined> = {
   currentRun: CronDate<T> | undefined;
   once: CronDate<T> | undefined;
   //@ts-ignore Cross Runtime
-  currentTimeout: NodeJS.Timer | number | undefined;
+  currentTimeout: NodeJS.Timeout | number | undefined;
   maxRuns: number | undefined;
   paused: boolean | undefined;
   pattern: CronPattern;
