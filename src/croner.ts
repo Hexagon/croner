@@ -168,6 +168,7 @@ class Cron<T = undefined> {
     } else {
       this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
         mode: this.options.mode,
+        alternativeWeekdays: this.options.alternativeWeekdays,
       });
     }
 

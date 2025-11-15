@@ -123,6 +123,14 @@ interface CronOptions<T = undefined> {
    * An optional context object that will be passed to the job function.
    */
   context?: T;
+
+  /**
+   * If true, enables alternative weekday numbering (Quartz mode).
+   * In standard mode (false): Sunday=0, Monday=1, ..., Saturday=6
+   * In Quartz mode (true): Sunday=1, Monday=2, ..., Saturday=7
+   * @default false
+   */
+  alternativeWeekdays?: boolean;
 }
 
 /**
@@ -163,6 +171,9 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   options.dayOffset = options.dayOffset === void 0 ? 0 : parseInt(options.dayOffset.toString(), 10);
   options.unref = options.unref === void 0 ? false : options.unref;
   options.mode = options.mode === void 0 ? "auto" : options.mode;
+  options.alternativeWeekdays = options.alternativeWeekdays === void 0
+    ? false
+    : options.alternativeWeekdays;
 
   // Validate mode option
   if (
