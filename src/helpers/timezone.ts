@@ -190,18 +190,29 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
 export function toTZ(d: Date, tzStr: string): TimePoint {
   // Use Intl.DateTimeFormat.formatToParts to extract date components in the target timezone
   // This avoids DST-related bugs that occur when parsing date strings in the local timezone
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: tzStr,
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: false,
-  });
+  let formatter: Intl.DateTimeFormat;
+  let parts: Intl.DateTimeFormatPart[];
 
-  const parts = formatter.formatToParts(d);
+  try {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: tzStr,
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: false,
+    });
+    parts = formatter.formatToParts(d);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    throw new RangeError(
+      `toTZ: Invalid timezone '${tzStr}' or date. ` +
+        `Please provide a valid IANA timezone (e.g., 'America/New_York', 'Europe/Stockholm'). ` +
+        `Original error: ${errorMessage}`,
+    );
+  }
   const dateComponents: Record<
     "year" | "month" | "day" | "hour" | "minute" | "second",
     number
@@ -221,6 +232,18 @@ export function toTZ(d: Date, tzStr: string): TimePoint {
     ) {
       dateComponents[part.type] = parseInt(part.value, 10);
     }
+  }
+
+  // Validate that we got all required components
+  if (
+    isNaN(dateComponents.year) || isNaN(dateComponents.month) || isNaN(dateComponents.day) ||
+    isNaN(dateComponents.hour) || isNaN(dateComponents.minute) || isNaN(dateComponents.second)
+  ) {
+    throw new Error(
+      `toTZ: Failed to parse all date components from timezone '${tzStr}'. ` +
+        `This may indicate an invalid date or timezone configuration. ` +
+        `Parsed components: ${JSON.stringify(dateComponents)}`,
+    );
   }
 
   // Node.js may return hour 24 for midnight (24:00 = 00:00 of same day in this context)
