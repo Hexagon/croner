@@ -56,12 +56,15 @@ Version 9.x brings several changes to Croner to fix existing issues and ensure c
 
 ### Upgrading from 9.x to 10.x
 
-Version `10.x` introduces full OCPS 1.0-1.4 compliance with enhanced pattern parsing capabilities, plus new configuration options.
+Version `10.x` introduces new pattern syntax features and configuration options.
 
-**Pattern syntax enhancements (OCPS 1.0-1.4):**
-* **OCPS 1.2**: Optional seconds (6-field) and year (7-field) support. Example: `30 0 12 * * *` runs at 12:00:30.
-* **OCPS 1.3**: Advanced modifiers - `L` (last day/occurrence), `W` (nearest weekday), `#` (nth occurrence). Example: `0 12 * * FRI#2` runs second Friday of each month.
-* **OCPS 1.4**: `+` modifier for explicit AND logic and `?` as wildcard alias. Example: `0 12 15 * +FRI` runs only when 15th is also Friday.
+**New pattern syntax:**
+* **Year field**: 7-field patterns now supported. Example: `0 12 * * * * 2025` runs only in 2025.
+* **W modifier**: Nearest weekday to a date. Example: `0 12 15W * *` runs on weekday closest to the 15th.
+* **+ modifier**: Explicit AND logic for day matching. Example: `0 12 15 * +FRI` runs only when 15th is Friday.
+
+**Changed pattern behavior:**
+* **? character**: Now acts as wildcard alias (same as `*`). Previously replaced with current time values.
 
 **Option renamed (backward compatible):**
 * `legacyMode` is deprecated but still works. Use `domAndDow` instead.
