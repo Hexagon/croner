@@ -216,14 +216,22 @@ class CronDate<T = undefined> {
         // Minute could be out of bounds, apply
         this.apply();
       } else {
-        const d = toTZ(inDate, this.tz);
-        this.ms = inDate.getMilliseconds();
-        this.second = d.s;
-        this.minute = d.i;
-        this.hour = d.h;
-        this.day = d.d;
-        this.month = d.m - 1;
-        this.year = d.y;
+        try {
+          const d = toTZ(inDate, this.tz);
+          this.ms = inDate.getMilliseconds();
+          this.second = d.s;
+          this.minute = d.i;
+          this.hour = d.h;
+          this.day = d.d;
+          this.month = d.m - 1;
+          this.year = d.y;
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          throw new TypeError(
+            `CronDate: Failed to convert date to timezone '${this.tz}'. ` +
+              `This may happen with invalid timezone names or dates. Original error: ${errorMessage}`,
+          );
+        }
       }
     } else {
       this.ms = inDate.getMilliseconds();
