@@ -154,6 +154,7 @@ job.name 			// Optional job name, populated if a name were passed to options
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
+| alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
@@ -201,7 +202,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 | Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
 | Day of Month | Yes      | 1-31           | * , - / ? L W              | L = last day, W = nearest weekday     |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L # +            | 0 and 7 = Sunday<br># = nth occurrence (e.g. MON#2)<br>+ = AND logic modifier (OCPS 1.4) |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L # +            | 0 and 7 = Sunday (standard mode)<br>1-7 = Sunday-Saturday (Quartz mode with `alternativeWeekdays: true`)<br># = nth occurrence (e.g. MON#2)<br>+ = AND logic modifier (OCPS 1.4) |
 | Year         | Optional | 1-9999         | * , - /                    | OCPS 1.2: Optional, defaults to *    |
 
 > **Note**
@@ -210,6 +211,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 > The `#` character specifies the "nth" weekday of the month. For example, `5#2` = second Friday, `MON#1` = first Monday.
 > The `W` character operates within the current month and won't cross month boundaries. If the 1st is a Saturday, `1W` matches Monday the 3rd.
 > The `+` modifier (OCPS 1.4) enforces AND logic: `0 12 1 * +MON` only runs when the 1st is also a Monday.
+> **Quartz mode**: Enable `alternativeWeekdays: true` to use Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday) instead of the standard format (0=Sunday, 1=Monday, ..., 6=Saturday). This is useful for compatibility with Quartz cron expressions.
 
 **OCPS 1.1**: Predefined schedule nicknames are supported:
 

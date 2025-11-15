@@ -75,6 +75,7 @@ Version `10.x` introduces new pattern syntax features and configuration options.
 **New options:**
 * `dayOffset` - Offset scheduled dates by a number of days. Positive shifts forward, negative shifts backward. Example: `dayOffset: -1` schedules one day before the pattern match.
 * `mode` - Specify the cron pattern mode: `"auto"` (default), `"5-part"`, `"6-part"`, `"7-part"`, `"5-or-6-parts"`, or `"6-or-7-parts"`. Controls how many fields are expected and how seconds/years are handled.
+* `alternativeWeekdays` - Enable Quartz-style weekday numbering where Sunday=1, Monday=2, ..., Saturday=7. When `false` (default), uses standard cron format where Sunday=0, Monday=1, ..., Saturday=6. Example: `new Cron("0 0 0 * * 1", { alternativeWeekdays: true })` runs on Sunday in Quartz mode.
 
 ## Switching from Cron
 
