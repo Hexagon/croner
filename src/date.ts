@@ -47,7 +47,7 @@ const RecursionSteps: RecursionStep[] = [
  * @param d Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
  * @param tz String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
  */
-class CronDate {
+class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
@@ -90,7 +90,7 @@ class CronDate {
    */
   year!: number;
 
-  constructor(d?: CronDate | Date | string | null, tz?: string | number) {
+  constructor(d?: CronDate<T> | Date | string | null, tz?: string | number) {
     /**
      * TimeZone
      * @type {string|number|undefined}
@@ -115,6 +115,42 @@ class CronDate {
         "CronDate: Invalid type (" + typeof d + ") passed to CronDate constructor",
       );
     }
+  }
+
+  /**
+   * Calculates the nearest weekday (Mon-Fri) to a given day of the month.
+   * Handles month boundaries.
+   *
+   * @param year The target year.
+   * @param month The target month (0-11).
+   * @param day The target day (1-31).
+   * @returns The day of the month (1-31) that is the nearest weekday.
+   */
+  private getNearestWeekday(year: number, month: number, day: number): number {
+    const date = new Date(Date.UTC(year, month, day));
+    const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
+
+    if (weekday === 0) { // Sunday
+      // If it's the last day of the month, go back to Friday
+      const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      if (day === daysInMonth) {
+        return day - 2;
+      }
+      // Otherwise, go forward to Monday
+      return day + 1;
+    }
+
+    if (weekday === 6) { // Saturday
+      // If it's the 1st, go forward to Monday
+      if (day === 1) {
+        return day + 2;
+      }
+      // Otherwise, go back to Friday
+      return day - 1;
+    }
+
+    // It's already a weekday
+    return day;
   }
 
   /**
@@ -205,7 +241,7 @@ class CronDate {
    *
    * @param {CronDate} d - Input date
    */
-  private fromCronDate(d: CronDate) {
+  private fromCronDate(d: CronDate<T>) {
     this.tz = d.tz;
     this.year = d.year;
     this.month = d.month;
@@ -267,7 +303,7 @@ class CronDate {
    * Find next match of current part
    */
   private findNext(
-    options: CronOptions,
+    options: CronOptions<T>,
     target: RecursionTarget,
     pattern: CronPattern,
     offset: number,
@@ -298,6 +334,27 @@ class CronDate {
       // this applies to all "levels"
       let match: number = pattern[target][i];
 
+      // Special case for nearest weekday
+      // Special case for nearest weekday
+      if (
+        target === "day" && !match
+      ) {
+        // Iterate through all possible 'W' days in the pattern
+        for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
+          // Check if the pattern specifies the 'W' modifier for this day
+          if (pattern.nearestWeekdays[dayWithW]) {
+            // Calculate the actual execution day for this 'W' day
+            const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
+
+            // Check if the day currently being evaluated by the outer loop is that execution day
+            if (executionDay === (i - offset)) {
+              match = 1;
+              break; // Match found, no need to check other 'W' days
+            }
+          }
+        }
+      }
+
       // Special case for last day of month
       if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
         match = 1;
@@ -316,9 +373,12 @@ class CronDate {
           throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
         }
 
-        // If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
+        // OCPS 1.4: If + modifier is used (useAndLogic), always use AND logic
+        // Otherwise: If we use legacyMode, and dayOfMonth is specified - use "OR" to combine day of week with day of month
         // In all other cases use "AND"
-        if (options.legacyMode && !pattern.starDOM) {
+        if (pattern.useAndLogic) {
+          match = match && dowMatch;
+        } else if (options.legacyMode && !pattern.starDOM) {
           match = match || dowMatch;
         } else {
           match = match && dowMatch;
@@ -345,9 +405,9 @@ class CronDate {
    * approach to handle the dependencies between different components. For example,
    * if the day changes, the hour, minute, and second need to be reset.
    *
-   * The recursion is currently limited to the year 3000 to prevent potential
-   * infinite loops or excessive stack depth. If you need to schedule beyond
-   * the year 3000, please open an issue on GitHub to discuss possible solutions.
+   * The recursion is limited to the year 10000 to prevent potential
+   * infinite loops or excessive stack depth, and to match the maximum supported
+   * year in OCPS 1.2 (years 1-9999).
    *
    * @param pattern The cron pattern used to determine the next run time.
    * @param options The cron options that influence the incrementing behavior.
@@ -355,11 +415,53 @@ class CronDate {
    *              date component being processed. 0 represents "month", 1 represents "day", etc.
    *
    * @returns This `CronDate` instance for chaining, or null if incrementing
-   *          was not possible (e.g., reached year 3000 limit or no matching date).
+   *          was not possible (e.g., reached year 10000 limit or no matching date).
    *
    * @private
    */
-  private recurse(pattern: CronPattern, options: CronOptions, doing: number): CronDate | null {
+  private recurse(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | null {
+    // OCPS 1.2: Check if current year matches the year pattern at the start
+    // Only check when year constraints exist and we're at month level
+    if (doing === 0 && !pattern.starYear) {
+      // If current year doesn't match, find the next matching year
+      if (
+        this.year >= 0 &&
+        this.year < pattern.year.length &&
+        pattern.year[this.year] === 0
+      ) {
+        // Find next matching year
+        let foundYear = -1;
+        for (let y = this.year + 1; y < pattern.year.length && y < 10000; y++) {
+          if (pattern.year[y] === 1) {
+            foundYear = y;
+            break;
+          }
+        }
+
+        if (foundYear === -1) {
+          return null;
+        }
+
+        // Jump to the found year and reset to start of year
+        this.year = foundYear;
+        this.month = 0;
+        this.day = 1;
+        this.hour = 0;
+        this.minute = 0;
+        this.second = 0;
+        this.ms = 0;
+      }
+
+      // Check if we've gone out of bounds
+      if (this.year >= 10000) {
+        return null;
+      }
+    }
+
     // Find next month (or whichever part we're at)
     const res = this.findNext(options, RecursionSteps[doing][0], pattern, RecursionSteps[doing][2]);
 
@@ -378,6 +480,24 @@ class CronDate {
         this[RecursionSteps[doing][0]] = -RecursionSteps[doing][2];
         this.apply();
 
+        // OCPS 1.2: If we just incremented the year and have year constraints, check if it matches
+        if (doing === 0 && !pattern.starYear) {
+          // Keep incrementing year until we find a matching one
+          while (
+            this.year >= 0 &&
+            this.year < pattern.year.length &&
+            pattern.year[this.year] === 0 &&
+            this.year < 10000
+          ) {
+            this.year++;
+          }
+
+          // Check if we've gone out of bounds
+          if (this.year >= 10000 || this.year >= pattern.year.length) {
+            return null;
+          }
+        }
+
         // Restart
         return this.recurse(pattern, options, 0);
       } else if (this.apply()) {
@@ -393,7 +513,8 @@ class CronDate {
       return this;
 
       // ... or out of bounds ?
-    } else if (this.year >= 3000) {
+      // Use a higher limit when year constraints exist, lower limit otherwise for performance
+    } else if (pattern.starYear ? this.year >= 3000 : this.year >= 10000) {
       return null;
 
       // ... oh, go to next part then
@@ -412,9 +533,9 @@ class CronDate {
    */
   public increment(
     pattern: CronPattern,
-    options: CronOptions,
+    options: CronOptions<T>,
     hasPreviousRun: boolean,
-  ): CronDate | null {
+  ): CronDate<T> | null {
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
