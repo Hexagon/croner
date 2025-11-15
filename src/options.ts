@@ -92,6 +92,15 @@ interface CronOptions<T = undefined> {
   /**
    * @deprecated Use domAndDow instead. This option will be removed in a future version.
    * If true, enables legacy mode (OR logic) for compatibility with older cron implementations.
+   * Offset the scheduled date by a number of days.
+   * Positive values shift the date forward, negative values shift it backward.
+   * For example, dayOffset: -1 schedules the job one day before the pattern match.
+   * @default 0
+   */
+  dayOffset?: number;
+
+  /**
+   * If true, enables legacy mode for compatibility with older cron implementations.
    * @default true
    */
   legacyMode?: boolean;
@@ -151,6 +160,7 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   options.utcOffset = options.utcOffset === void 0
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
+  options.dayOffset = options.dayOffset === void 0 ? 0 : parseInt(options.dayOffset.toString(), 10);
   options.unref = options.unref === void 0 ? false : options.unref;
   options.mode = options.mode === void 0 ? "auto" : options.mode;
 
@@ -194,6 +204,14 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
 
   if (options.unref !== true && options.unref !== false) {
     throw new Error("CronOptions: Unref should be either true, false or undefined(false).");
+  }
+
+  if (options.dayOffset !== void 0 && options.dayOffset !== 0) {
+    if (isNaN(options.dayOffset)) {
+      throw new Error(
+        "CronOptions: Invalid value passed for dayOffset, should be a number representing days to offset.",
+      );
+    }
   }
 
   return options;
