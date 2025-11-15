@@ -56,7 +56,12 @@ Version 9.x brings several changes to Croner to fix existing issues and ensure c
 
 ### Upgrading from 9.x to 10.x
 
-Version `10.x` introduces a more descriptive option name for day-of-month and day-of-week combination logic, plus two new options:
+Version `10.x` introduces full OCPS 1.0-1.4 compliance with enhanced pattern parsing capabilities, plus new configuration options.
+
+**Pattern syntax enhancements (OCPS 1.0-1.4):**
+* **OCPS 1.2**: Optional seconds (6-field) and year (7-field) support. Example: `30 0 12 * * *` runs at 12:00:30.
+* **OCPS 1.3**: Advanced modifiers - `L` (last day/occurrence), `W` (nearest weekday), `#` (nth occurrence). Example: `0 12 * * FRI#2` runs second Friday of each month.
+* **OCPS 1.4**: `+` modifier for explicit AND logic and `?` as wildcard alias. Example: `0 12 15 * +FRI` runs only when 15th is also Friday.
 
 **Option renamed (backward compatible):**
 * `legacyMode` is deprecated but still works. Use `domAndDow` instead.
