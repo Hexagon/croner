@@ -1,6 +1,6 @@
 {
   "name": "@hexagon/croner",
-  "version": "10.0.0-dev.2",
+  "version": "10.0.0-dev.3",
   "exports": "./src/croner.ts",
   "lint": {
     "include": ["src", "build"]
