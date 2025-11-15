@@ -56,12 +56,17 @@ Version 9.x brings several changes to Croner to fix existing issues and ensure c
 
 ### Upgrading from 9.x to 10.x
 
-Version `10.x` introduces a more descriptive option name for day-of-month and day-of-week combination logic:
+Version `10.x` introduces a more descriptive option name for day-of-month and day-of-week combination logic, plus two new options:
 
+**Option renamed (backward compatible):**
 * `legacyMode` is deprecated but still works. Use `domAndDow` instead.
 * `domAndDow: false` (default) uses OR logic - matches if day of month OR day of week matches.
 * `domAndDow: true` uses AND logic - matches only when both day of month AND day of week match.
 * Note: `legacyMode: true` equals `domAndDow: false`.
+
+**New options:**
+* `dayOffset` - Offset scheduled dates by a number of days. Positive shifts forward, negative shifts backward. Example: `dayOffset: -1` schedules one day before the pattern match.
+* `mode` - Specify the cron pattern mode: `"auto"` (default), `"5-part"`, `"6-part"`, `"7-part"`, `"5-or-6-parts"`, or `"6-or-7-parts"`. Controls how many fields are expected and how seconds/years are handled.
 
 ## Switching from Cron
 
