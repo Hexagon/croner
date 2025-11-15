@@ -4,10 +4,8 @@ name: "Copilot Setup Steps"
 # allow manual testing through the repository's "Actions" tab
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/copilot-setup-steps.yml
   pull_request:
+    branches: [main, dev]
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
