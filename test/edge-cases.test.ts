@@ -194,17 +194,17 @@ test("Single L modifier should work correctly", function () {
 
   // In January 2025, there are 5 Fridays: 3, 10, 17, 24, 31
   // Only the last one (31st) should match with FRIL
-  
+
   // This test documents the current (buggy) behavior
   // Current: matches ALL Fridays in January (5 occurrences)
   // Expected: should match ONLY the last Friday (31st)
-  
+
   const januaryRuns = runs.filter((r) => r.getMonth() === 0);
   console.log(`FRIL in January matched ${januaryRuns.length} Fridays (should be 1)`);
-  
+
   // Bug: Currently matches all 5 Fridays instead of just the last one
   assertEquals(januaryRuns.length, 5); // Documents buggy behavior
-  
+
   // TODO: Fix and change to:
   // assertEquals(januaryRuns.length, 1); // Should match only last Friday
   // assertEquals(januaryRuns[0].getDate(), 31); // Should be the 31st
@@ -227,7 +227,7 @@ test("L modifier in range should be rejected or handled correctly", function () 
     // If we get here, the pattern was accepted (current buggy behavior)
     const runs = cron.nextRuns(3, new Date("2025-01-01"));
     console.log(`MON-FRIL parsed and matched ${runs.length} days`);
-    
+
     // This documents that it shouldn't have been accepted
     // TODO: Make this pattern throw an error
     // assertThrows(() => new Cron("0 0 * * MON-FRIL"), TypeError);
