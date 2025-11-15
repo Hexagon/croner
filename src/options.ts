@@ -85,7 +85,7 @@ interface CronOptions<T = undefined> {
   /**
    * If true, uses AND logic when combining day-of-month and day-of-week.
    * If false, uses OR logic for combining day-of-month and day-of-week (legacy behavior).
-   * @default true
+   * @default false
    */
   domAndDow?: boolean;
 
@@ -138,8 +138,8 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     // If only legacyMode is provided, invert it for domAndDow
     options.domAndDow = !options.legacyMode;
   } else if (options.domAndDow === void 0) {
-    // If neither is provided, default to true (AND logic)
-    options.domAndDow = true;
+    // If neither is provided, default to false (OR logic, legacy behavior)
+    options.domAndDow = false;
   }
   // Keep legacyMode in sync with domAndDow for backward compatibility (inverted)
   options.legacyMode = !options.domAndDow;

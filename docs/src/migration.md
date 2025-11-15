@@ -15,7 +15,7 @@ This section covers upgrading to Croner from previous versions. Croner follows t
 
 ### Upgrading from 4.x to 5.x
 
-If upgrading from version `4.x` to `5.x`, the most significant change is the way day-of-month and day-of-week are combined. You can read more about this in issue #53. The option was originally called `legacyMode` which has been deprecated in favor of `domAndDow`. Set `{ domAndDow: false }` to use OR logic (legacy behavior) or `{ domAndDow: true }` for AND logic.
+If upgrading from version `4.x` to `5.x`, the most significant change is the way day-of-month and day-of-week are combined. You can read more about this in issue #53. The option was originally called `legacyMode` which has been deprecated in favor of `domAndDow`. The default behavior remains unchanged (OR logic). Set `{ domAndDow: false }` for OR logic (default, legacy behavior) or `{ domAndDow: true }` for AND logic.
 
 ### Upgrading from 5.x to 6.x
 

@@ -19,7 +19,7 @@ nav_order: 3
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
-| domAndDow    | true           | boolean        | Combine day-of-month and day-of-week using true = AND, false = OR |
+| domAndDow    | false          | boolean        | Combine day-of-month and day-of-week using true = AND, false = OR (default) |
 | legacyMode   | (deprecated)   | boolean        | **Deprecated:** Use `domAndDow` instead. Inverse of `domAndDow` (legacyMode: true = domAndDow: false). |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
