@@ -1,4 +1,5 @@
 import { CronDate } from "./date.ts";
+import type { CronMode } from "./pattern.ts";
 import type { Cron } from "./croner.ts";
 
 type CatchCallbackFn = (e: unknown, job: Cron) => void;
@@ -88,6 +89,20 @@ interface CronOptions<T = undefined> {
   legacyMode?: boolean;
 
   /**
+   * Specifies the cron pattern mode to use for parsing and execution.
+   *
+   * - "auto": Automatically detect pattern format (default behavior)
+   * - "5-part": Traditional 5-field cron (minute-level precision, seconds forced to 0, years wildcarded)
+   * - "6-part": Extended 6-field cron (second-level precision, years wildcarded)
+   * - "7-part": Full 7-field cron (second-level and year-specific precision)
+   * - "5-or-6-parts": Accept 5 or 6 field patterns (years wildcarded)
+   * - "6-or-7-parts": Accept 6 or 7 field patterns (no additional constraints)
+   *
+   * @default "auto"
+   */
+  mode?: CronMode;
+
+  /**
    * An optional context object that will be passed to the job function.
    */
   context?: T;
@@ -116,6 +131,16 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
   options.unref = options.unref === void 0 ? false : options.unref;
+  options.mode = options.mode === void 0 ? "auto" : options.mode;
+
+  // Validate mode option
+  if (
+    !["auto", "5-part", "6-part", "7-part", "5-or-6-parts", "6-or-7-parts"].includes(options.mode)
+  ) {
+    throw new Error(
+      "CronOptions: mode must be one of 'auto', '5-part', '6-part', '7-part', '5-or-6-parts', or '6-or-7-parts'.",
+    );
+  }
 
   if (options.startAt) {
     options.startAt = new CronDate(options.startAt, options.timezone);

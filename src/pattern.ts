@@ -12,6 +12,11 @@ type CronPatternPart =
   | "year";
 
 /**
+ * Cron pattern mode for controlling precision level
+ */
+type CronMode = "auto" | "5-part" | "6-part" | "7-part" | "5-or-6-parts" | "6-or-7-parts";
+
+/**
  * Offset, 0 or -1.
  *
  * 0 offset is used for seconds, minutes, and hours as they start on 1.
@@ -34,10 +39,12 @@ export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000]
  * @constructor
  * @param {string} pattern - Input pattern
  * @param {string} timezone - Input timezone, used for '?'-substitution
+ * @param {object} options - Cron options including mode
  */
 class CronPattern {
   pattern: string;
   timezone?: string;
+  mode: CronMode;
   second: number[];
   minute: number[];
   hour: number[];
@@ -52,9 +59,14 @@ class CronPattern {
   starYear: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
 
-  constructor(pattern: string, timezone?: string) {
+  constructor(
+    pattern: string,
+    timezone?: string,
+    options?: { mode?: CronMode },
+  ) {
     this.pattern = pattern;
     this.timezone = timezone;
+    this.mode = options?.mode ?? "auto";
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -93,6 +105,7 @@ class CronPattern {
     // Split pattern on any whitespace, which ensures correct handling of both
     // space and tab delimiters common in the cron pattern format.
     const parts = this.pattern.match(/\S+/g) || [""];
+    const originalPartCount = parts.length;
 
     // Validite number of configuration entries
     // OCPS 1.2: Support 5, 6, or 7 fields (5=no seconds, 6=with seconds, 7=with seconds and year)
@@ -101,6 +114,44 @@ class CronPattern {
         "CronPattern: invalid configuration format ('" + this.pattern +
           "'), exactly five, six, or seven space separated parts are required.",
       );
+    }
+
+    // Enforce mode-specific pattern length validation
+    if (this.mode !== "auto") {
+      let expectedParts: number | number[];
+
+      switch (this.mode) {
+        case "5-part":
+          expectedParts = 5;
+          break;
+        case "6-part":
+          expectedParts = 6;
+          break;
+        case "7-part":
+          expectedParts = 7;
+          break;
+        case "5-or-6-parts":
+          expectedParts = [5, 6];
+          break;
+        case "6-or-7-parts":
+          expectedParts = [6, 7];
+          break;
+        default:
+          expectedParts = 0; // Should not reach here
+      }
+
+      const isValid = Array.isArray(expectedParts)
+        ? expectedParts.includes(originalPartCount)
+        : originalPartCount === expectedParts;
+
+      if (!isValid) {
+        const expectedStr = Array.isArray(expectedParts)
+          ? expectedParts.join(" or ")
+          : expectedParts.toString();
+        throw new TypeError(
+          `CronPattern: mode '${this.mode}' requires exactly ${expectedStr} parts, but pattern '${this.pattern}' has ${originalPartCount} parts.`,
+        );
+      }
     }
 
     // If seconds is omitted, insert 0 for seconds
@@ -161,6 +212,34 @@ class CronPattern {
       parts[4] = parts[4].replace(/\?/g, "*");
       parts[5] = parts[5].replace(/\?/g, "*");
       if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
+    }
+
+    // Apply mode-specific overrides
+    switch (this.mode) {
+      case "5-part":
+        // Traditional 5-field cron: minute-level precision
+        // Force seconds to 0 and years to wildcard
+        parts[0] = "0";
+        parts[6] = "*";
+        break;
+      case "6-part":
+        // Extended 6-field cron: second-level precision, but no year constraints
+        // Force years to wildcard
+        parts[6] = "*";
+        break;
+      case "5-or-6-parts":
+        // Accept 5 or 6 parts: force years to wildcard
+        // If original was 5 parts, seconds will be 0 (added by normalization)
+        parts[6] = "*";
+        break;
+      case "6-or-7-parts":
+        // Accept 6 or 7 parts: no additional overrides needed
+        // Pattern is used as-is
+        break;
+      case "7-part":
+      case "auto":
+        // Use pattern as-is
+        break;
     }
 
     // Check part content
@@ -596,4 +675,4 @@ class CronPattern {
   }
 }
 
-export { CronPattern };
+export { type CronMode, CronPattern };
