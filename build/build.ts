@@ -82,7 +82,7 @@ if (Deno.args[1] === "clean") {
         tsconfig: {
           compilerOptions: {
             target: "ES2017",
-            lib: ["ES2017", "ES2018.Intl", "DOM"],
+            lib: ["ES2017", "ES2017.Intl", "ES2018.Intl", "DOM"],
             declaration: true,
             emitDeclarationOnly: true,
             allowImportingTsExtensions: true,
