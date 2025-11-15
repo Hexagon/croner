@@ -14,7 +14,7 @@ import { Cron } from "../src/croner.ts";
 // Section 4.1: Logical Combination of Date Fields
 test("OCPS 1.4: Default OR logic for day-of-month and day-of-week", function () {
   // Pattern: 1st of month OR Monday
-  const cron = new Cron("0 12 1 * MON", { legacyMode: true });
+  const cron = new Cron("0 12 1 * MON", { domAndDow: false });
   const runs = cron.nextRuns(10);
 
   let has1stNotMonday = false;
@@ -250,8 +250,8 @@ test("OCPS 1.4: Should combine + modifier with year field", function () {
 });
 
 test("OCPS 1.4: Non-legacy mode should use AND logic without + modifier", function () {
-  // Pattern: 1st of month AND Monday (without + modifier, but legacyMode: false)
-  const cron = new Cron("0 12 1 * MON", { legacyMode: false });
+  // Pattern: 1st of month AND Monday (without + modifier, but domAndDow: true)
+  const cron = new Cron("0 12 1 * MON", { domAndDow: true });
   const runs = cron.nextRuns(5);
 
   for (const run of runs) {

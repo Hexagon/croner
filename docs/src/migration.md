@@ -54,6 +54,15 @@ Version 9.x brings several changes to Croner to fix existing issues and ensure c
 
 * Only the `/src` directory is exposed in the JSR module.
 
+### Upgrading from 9.x to 10.x
+
+Version `10.x` introduces a more descriptive option name for day-of-month and day-of-week combination logic:
+
+* `legacyMode` is deprecated but still works. Use `domAndDow` instead.
+* `domAndDow: false` (default) uses OR logic - matches if day of month OR day of week matches.
+* `domAndDow: true` uses AND logic - matches only when both day of month AND day of week match.
+* Note: `legacyMode: true` equals `domAndDow: false`.
+
 ## Switching from Cron
 
 If you're currently using the cron package and want to migrate to Croner, the following steps can guide you:

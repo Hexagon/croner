@@ -25,7 +25,7 @@ test("Pattern with year in the past should return null with clear reason", funct
 test("Pattern with conflicting day specifications should return null", function () {
   // 14W (nearest weekday to 14th) combined with FRI#L (last Friday) in 2026
   // This is a highly constrained pattern that may never match
-  const cron = new Cron("0 0 0 14W * FRI#L 2026", { legacyMode: false });
+  const cron = new Cron("0 0 0 14W * FRI#L 2026", { domAndDow: true });
   const next = cron.nextRun();
 
   // Should return null when no match is found

@@ -193,7 +193,7 @@ test("OCPS 1.3: W should not be used with ranges", function () {
 // Combining modifiers
 test("OCPS 1.3: Should support L in both day-of-month and day-of-week in same pattern", function () {
   // Last day of February OR last Friday
-  const cron = new Cron("0 0 L 2 FRI#L", { legacyMode: true });
+  const cron = new Cron("0 0 L 2 FRI#L", { domAndDow: false });
   const runs = cron.nextRuns(5);
 
   for (const run of runs) {

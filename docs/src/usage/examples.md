@@ -16,8 +16,8 @@ nav_order: 3
 // Find next month
 const nextMonth = new Cron("@monthly").nextRun(),
 	nextSunday = new Cron("@weekly").nextRun(),
-	nextSat29feb = new Cron("0 0 0 29 2 6", { legacyMode: false }).nextRun(),
-	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { legacyMode: false }).nextRun(),
+	nextSat29feb = new Cron("0 0 0 29 2 6", { domAndDow: true }).nextRun(),
+	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { domAndDow: true }).nextRun(),
     nextLastSundayOfMonth = new Cron("0 0 0 * * L7").nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());

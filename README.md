@@ -149,7 +149,8 @@ job.name 			// Optional job name, populated if a name were passed to options
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
-| legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
+| domAndDow    | false          | boolean        | Combine day-of-month and day-of-week using true = AND, false = OR (default) |
+| legacyMode   | (deprecated)   | boolean        | **Deprecated:** Use `domAndDow` instead. Inverse of `domAndDow` (legacyMode: true = domAndDow: false). |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
@@ -191,7 +192,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
-*   By default, Croner uses OR logic for day-of-month and day-of-week (OCPS 1.0 compliant). Example: `0 20 1 * MON` triggers on the 1st of the month OR on Mondays. Use the `+` modifier (`0 20 1 * +MON`) or `{ legacyMode: false }` option for AND logic. For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
+*   By default, Croner uses OR logic for day-of-month and day-of-week (OCPS 1.0 compliant). Example: `0 20 1 * MON` triggers on the 1st of the month OR on Mondays. Use the `+` modifier (`0 20 1 * +MON`) or `{ domAndDow: true }` for AND logic (OCPS 1.4 compliant). For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
 
 | Field        | Required | Allowed values | Allowed special characters | Remarks                               |
 |--------------|----------|----------------|----------------------------|---------------------------------------|
