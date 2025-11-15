@@ -83,6 +83,14 @@ interface CronOptions<T = undefined> {
   utcOffset?: number;
 
   /**
+   * If true, uses OR logic when combining day-of-month and day-of-week (legacy behavior).
+   * If false, uses AND logic for combining day-of-month and day-of-week.
+   * @default false
+   */
+  dayAndDow?: boolean;
+
+  /**
+   * @deprecated Use dayAndDow instead. This option will be removed in a future version.
    * If true, enables legacy mode for compatibility with older cron implementations.
    * @default true
    */
@@ -122,7 +130,19 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
 
   delete options.name;
 
-  options.legacyMode = options.legacyMode === void 0 ? true : options.legacyMode;
+  // Handle backward compatibility: legacyMode is deprecated in favor of dayAndDow
+  // dayAndDow: true means OR logic (legacy behavior), false means AND logic
+  // legacyMode: true means OR logic, false means AND logic
+  if (options.legacyMode !== void 0 && options.dayAndDow === void 0) {
+    // If only legacyMode is provided, use its value for dayAndDow
+    options.dayAndDow = options.legacyMode;
+  } else if (options.dayAndDow === void 0) {
+    // If neither is provided, default to false (AND logic)
+    options.dayAndDow = false;
+  }
+  // Keep legacyMode in sync with dayAndDow for backward compatibility
+  options.legacyMode = options.dayAndDow;
+
   options.paused = options.paused === void 0 ? false : options.paused;
   options.maxRuns = options.maxRuns === void 0 ? Infinity : options.maxRuns;
   options.catch = options.catch === void 0 ? false : options.catch;

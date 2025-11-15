@@ -143,7 +143,7 @@ test("OCPS 1.0: Should combine range and step", function () {
 // Section 6.1: Logical Combination of Day of Month and Day of Week (OR by default)
 test("OCPS 1.0: Day of month and day of week should use OR logic by default (legacy mode)", function () {
   // Pattern: noon on the 1st of the month OR noon on Monday
-  const cron = new Cron("0 12 1 * MON", { legacyMode: true });
+  const cron = new Cron("0 12 1 * MON", { dayAndDow: true });
   const runs = cron.nextRuns(10);
 
   // Should include both:

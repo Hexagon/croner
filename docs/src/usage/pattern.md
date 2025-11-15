@@ -39,7 +39,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
-*   By default, Croner uses OR logic for day-of-month and day-of-week (OCPS 1.0 compliant). Example: `0 20 1 * MON` triggers on the 1st of the month OR on Mondays. Use the `+` modifier (`0 20 1 * +MON`) or `{ legacyMode: false }` option for AND logic. For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
+*   By default, Croner uses AND logic for day-of-month and day-of-week (OCPS 1.4 compliant). Example: `0 20 1 * MON` triggers on the 1st of the month AND Monday (only when 1st is a Monday). Use the `+` modifier (`0 20 1 * +MON`) to explicitly enforce AND logic, or use `{ dayAndDow: true }` for OR logic (OCPS 1.0 compliant). For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
 
 | Field        | Required | Allowed values | Allowed special characters | Remarks                               |
 |--------------|----------|----------------|----------------------------|---------------------------------------|
