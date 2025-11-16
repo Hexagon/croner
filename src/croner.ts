@@ -260,12 +260,12 @@ class Cron<T = undefined> {
   public previousRuns(n: number, reference?: Date | string): Date[] {
     // Handle edge case
     if (n <= 0) return [];
-    
+
     // Handle one-off schedules
     if (this._states.once) {
       const refTime = reference ? new Date(reference).getTime() : Date.now();
       const onceTime = this._states.once.getTime();
-      
+
       if (onceTime < refTime) {
         // Apply dayOffset if specified
         if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
@@ -277,17 +277,17 @@ class Cron<T = undefined> {
       }
       return [];
     }
-    
+
     // For recurring patterns, use an adaptive lookback strategy
     const refDate = reference ? new Date(reference) : new Date();
     let lookbackMs = 7 * 24 * 60 * 60 * 1000; // Start with 1 week
     const maxLookbackMs = 365 * 24 * 60 * 60 * 1000; // Max 1 year
-    
+
     while (lookbackMs <= maxLookbackMs) {
       // Calculate start point for forward search
       const startTime = refDate.getTime() - lookbackMs;
       let searchStart = new Date(startTime);
-      
+
       // Respect startAt if it's after our calculated start
       if (this.options.startAt) {
         const startAtTime = (this.options.startAt as CronDate<T>).getTime();
@@ -295,51 +295,54 @@ class Cron<T = undefined> {
           searchStart = new Date(startAtTime);
         }
       }
-      
+
       // Iteratively get more matches until we have enough before the reference
       let allMatches: Date[] = [];
-      let batchSize = Math.max(n * 10, 100);
+      const batchSize = Math.max(n * 10, 100);
       let lastMatch: Date | undefined = searchStart;
       const maxBatches = 100;
       let batchCount = 0;
-      
+
       while (batchCount++ < maxBatches) {
         // Get a batch of matches
         const batch = this.nextRuns(batchSize, lastMatch);
         if (batch.length === 0) break;
-        
+
         // Add matches that are before the reference
-        const beforeRef = batch.filter(d => d.getTime() < refDate.getTime());
+        const beforeRef = batch.filter((d) => d.getTime() < refDate.getTime());
         allMatches = allMatches.concat(beforeRef);
-        
+
         // If we have enough matches before the reference, we're done
         if (allMatches.length >= n) {
           return allMatches.slice(-n).reverse();
         }
-        
+
         // If the last match in the batch is after or equal to reference, we're done
         if (batch[batch.length - 1].getTime() >= refDate.getTime()) {
           break;
         }
-        
+
         // Continue from the last match
         lastMatch = batch[batch.length - 1];
       }
-      
+
       // If we have some matches, return them (might be less than n)
       if (allMatches.length > 0) {
         return allMatches.slice(-Math.min(n, allMatches.length)).reverse();
       }
-      
+
       // If we've hit startAt and still don't have enough, return what we have
-      if (this.options.startAt && searchStart.getTime() <= (this.options.startAt as CronDate<T>).getTime()) {
+      if (
+        this.options.startAt &&
+        searchStart.getTime() <= (this.options.startAt as CronDate<T>).getTime()
+      ) {
         return allMatches.slice(-Math.min(n, allMatches.length)).reverse();
       }
-      
+
       // Otherwise, expand the lookback period and try again
       lookbackMs *= 4;
     }
-    
+
     // Return empty if we couldn't find any
     return [];
   }

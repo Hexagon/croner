@@ -671,7 +671,7 @@ class CronDate<T = undefined> {
       if (res === 3) {
         // Decrement parent
         this[RecursionSteps[doing][1]]--;
-        
+
         // Apply to normalize the date (e.g., month -1 becomes December of previous year)
         this.apply();
 
@@ -680,7 +680,7 @@ class CronDate<T = undefined> {
         const offset = RecursionSteps[doing][2];
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
         this[target] = maxValue;
-        
+
         // Apply again to ensure the day is valid for the month
         this.apply();
 
@@ -766,7 +766,7 @@ class CronDate<T = undefined> {
         return i - offset;
       }
     }
-    
+
     // Fallback: return the pattern length minus offset
     // This ensures we at least try searching from a reasonable upper bound
     return pattern[target].length - 1 - offset;
