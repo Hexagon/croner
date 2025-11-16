@@ -228,7 +228,7 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 
 Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.
 
-For example, popular packages like `cron` and `node-schedule` include the large Luxon library as a dependency, which significantly increases bundle size. Croner has zero dependencies and a much smaller footprint, making it ideal for applications where bundle size matters.
+For example, some popular alternatives include large datetime libraries as dependencies, which significantly increases bundle size. Croner has zero dependencies and a much smaller footprint, making it ideal for applications where bundle size matters.
 
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
