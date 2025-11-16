@@ -268,7 +268,8 @@ class CronDate<T = undefined> {
   private apply() {
     // If any value could be out of bounds, apply
     if (
-      this.month > 11 || this.month < 0 || this.day > DaysOfMonth[this.month] || this.hour > 59 ||
+      this.month > 11 || this.month < 0 || this.day > DaysOfMonth[this.month] || this.day < 1 ||
+      this.hour > 59 ||
       this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
     ) {
@@ -613,7 +614,7 @@ class CronDate<T = undefined> {
     }
 
     // DEBUG: Uncomment for debugging
-    // console.log(`[recurseBackward] doing=${doing}, y=${this.year}, m=${this.month}, d=${this.day}, h=${this.hour}, min=${this.minute}, s=${this.second}`);
+    // console.log(`[recurseBackward] depth=${depth}, doing=${doing}, y=${this.year}, m=${this.month}, d=${this.day}, h=${this.hour}, min=${this.minute}, s=${this.second}`);
 
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
@@ -823,8 +824,17 @@ class CronDate<T = undefined> {
       ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay()
       : undefined;
 
-    // Search backwards from current value
-    for (let i = this[target] + offset; i >= 0; i--) {
+    // For day patterns, we need to check the entire month since we might be looking
+    // for a day later in the month (e.g., searching for day 31 when currently at day 30)
+    const searchStart = (target === "day")
+      ? Math.min(
+        this[target] + offset,
+        new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate() + offset,
+      )
+      : this[target] + offset;
+
+    // Search backwards from current value (or from end of month for days)
+    for (let i = searchStart; i >= 0; i--) {
       let match: number = pattern[target][i];
 
       // Special case for nearest weekday
