@@ -90,8 +90,6 @@ interface CronOptions<T = undefined> {
   domAndDow?: boolean;
 
   /**
-   * @deprecated Use domAndDow instead. This option will be removed in a future version.
-   * If true, enables legacy mode (OR logic) for compatibility with older cron implementations.
    * Offset the scheduled date by a number of days.
    * Positive values shift the date forward, negative values shift it backward.
    * For example, dayOffset: -1 schedules the job one day before the pattern match.

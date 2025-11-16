@@ -42,6 +42,11 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 // This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
 new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
+// Offset scheduled dates: Run one day before the first Saturday of each month at 8 AM
+new Cron('0 8 * * 6#1', { dayOffset: -1 }, () => { 
+	console.log('This runs on the Friday before the first Saturday');
+});
+
 ```
 
 More [examples](https://croner.56k.guru/usage/examples/)...
@@ -150,6 +155,7 @@ job.name 			// Optional job name, populated if a name were passed to options
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
 | domAndDow    | false          | boolean        | Combine day-of-month and day-of-week using true = AND, false = OR (default) |
+| dayOffset    | 0              | number         | Offset scheduled dates by a number of days. Positive values shift the date forward, negative values shift it backward. Example: `dayOffset: -1` schedules one day before the pattern match. |
 | legacyMode   | (deprecated)   | boolean        | **Deprecated:** Use `domAndDow` instead. Inverse of `domAndDow` (legacyMode: true = domAndDow: false). |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
