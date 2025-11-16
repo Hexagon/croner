@@ -250,95 +250,29 @@ class Cron<T = undefined> {
   /**
    * Find previous n runs, based on supplied date. Strips milliseconds.
    *
-   * This implementation works by finding matches going forward from an earlier point in time,
-   * then filtering and reversing to get the previous runs. This leverages the proven nextRuns logic.
-   *
    * @param n - Number of runs to enumerate
    * @param reference - Date to start from (defaults to now)
    * @returns - Previous n run times in reverse chronological order (most recent first)
    */
   public previousRuns(n: number, reference?: Date | string): Date[] {
-    // Handle edge case
-    if (n <= 0) return [];
+    const enumeration: Date[] = [];
+    let ref: CronDate<T> | Date | string | undefined | null = reference || undefined;
 
-    // Handle one-off schedules
-    if (this._states.once) {
-      const refTime = reference ? new Date(reference).getTime() : Date.now();
-      const onceTime = this._states.once.getTime();
-
-      if (onceTime < refTime) {
-        // Apply dayOffset if specified
-        if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-          const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
-          return [new Date(onceTime + offsetMs)];
-        } else {
-          return [this._states.once.getDate(false)];
-        }
+    // When dayOffset is used, we need to track the pattern match dates separately
+    // from the offset dates we return
+    while (n-- && (ref = this._previous(ref))) {
+      // Apply dayOffset to the result we add to enumeration
+      if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+        const baseDate = ref.getDate(false);
+        const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+        enumeration.push(new Date(baseDate.getTime() + offsetMs));
+      } else {
+        enumeration.push(ref.getDate(false));
       }
-      return [];
+      // But continue with the non-offset date for finding the previous match
     }
 
-    // For recurring patterns, use an adaptive lookback strategy
-    const refDate = reference ? new Date(reference) : new Date();
-    let lookbackMs = 7 * 24 * 60 * 60 * 1000; // Start with 1 week
-    const maxLookbackMs = 5 * 365 * 24 * 60 * 60 * 1000; // Max 5 years
-
-    while (lookbackMs <= maxLookbackMs) {
-      // Calculate start point for forward search
-      const startTime = refDate.getTime() - lookbackMs;
-      const searchStart = new Date(startTime);
-
-      // Iteratively get more matches until we have enough before the reference
-      let allMatches: Date[] = [];
-      // Calculate a better batch size based on the time span we need to cover
-      // For minute-level patterns over 7 days, we need ~10,000 matches
-      // Start with a reasonable estimate and let the loop handle it
-      const estimatedMatchesNeeded = Math.max(
-        n * 100, // At least 100x what we need
-        Math.min(50000, lookbackMs / 60000), // Rough estimate: 1 match per minute, capped at 50k
-      );
-      const batchSize = Math.ceil(estimatedMatchesNeeded / 10); // Get it in ~10 batches
-      let lastMatch: Date | undefined = searchStart;
-      const maxBatches = 100;
-      let batchCount = 0;
-
-      while (batchCount++ < maxBatches) {
-        // Get a batch of matches
-        const batch = this.nextRuns(batchSize, lastMatch);
-        if (batch.length === 0) break;
-
-        // Add matches that are before the reference
-        const beforeRef = batch.filter((d) => d.getTime() < refDate.getTime());
-        allMatches = allMatches.concat(beforeRef);
-
-        // If the last match in the batch is after or equal to reference, we're done collecting
-        // But we need to make sure we collected enough matches
-        if (batch[batch.length - 1].getTime() >= refDate.getTime()) {
-          // We've reached or passed the reference date
-          if (allMatches.length >= n) {
-            return allMatches.slice(-n).reverse();
-          }
-          // Not enough matches found in this lookback period, break to expand
-          break;
-        }
-
-        // Continue from the last match
-        lastMatch = batch[batch.length - 1];
-      }
-
-      // If we have some matches but not enough, try expanding lookback
-      // Don't return yet - let the outer loop expand the lookback period
-      if (allMatches.length >= n) {
-        // We have enough, return them
-        return allMatches.slice(-n).reverse();
-      }
-
-      // Otherwise, expand the lookback period and try again
-      lookbackMs *= 4;
-    }
-
-    // Return whatever we found after exhausting all attempts
-    return [];
+    return enumeration;
   }
 
   /**

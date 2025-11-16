@@ -268,7 +268,8 @@ class CronDate<T = undefined> {
   private apply() {
     // If any value could be out of bounds, apply
     if (
-      this.month > 11 || this.day > DaysOfMonth[this.month] || this.hour > 59 || this.minute > 59 ||
+      this.month > 11 || this.month < 0 || this.day > DaysOfMonth[this.month] || this.hour > 59 ||
+      this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
     ) {
       const d = new Date(
@@ -581,7 +582,7 @@ class CronDate<T = undefined> {
     this.apply();
 
     // Recursively change each part (y, m, d ...) until previous match is found, return null on failure
-    return this.recurseBackward(pattern, options, 0);
+    return this.recurseBackward(pattern, options, 0, 0);
   }
 
   /**
@@ -604,7 +605,16 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
     doing: number,
+    depth: number = 0,
   ): CronDate<T> | null {
+    // Safety: prevent infinite recursion
+    if (depth > 10000) {
+      return null;
+    }
+
+    // DEBUG: Uncomment for debugging
+    // console.log(`[recurseBackward] doing=${doing}, y=${this.year}, m=${this.month}, d=${this.day}, h=${this.hour}, min=${this.minute}, s=${this.second}`);
+
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -672,6 +682,12 @@ class CronDate<T = undefined> {
         // Decrement parent
         this[RecursionSteps[doing][1]]--;
 
+        // Special handling: if we just decremented month and day is 0 or negative,
+        // set day to 1 temporarily so apply() doesn't misinterpret it
+        if (doing === 1 && this.day <= 0) {
+          this.day = 1;
+        }
+
         // Apply to normalize the date (e.g., month -1 becomes December of previous year)
         this.apply();
 
@@ -702,9 +718,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurseBackward(pattern, options, 0);
+        return this.recurseBackward(pattern, options, 0, depth + 1);
       } else if (this.apply()) {
-        return this.recurseBackward(pattern, options, doing - 1);
+        return this.recurseBackward(pattern, options, doing - 1, depth + 1);
       }
     }
 
@@ -721,7 +737,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurseBackward(pattern, options, doing);
+      return this.recurseBackward(pattern, options, doing, depth + 1);
     }
   }
 
