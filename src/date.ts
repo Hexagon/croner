@@ -619,6 +619,101 @@ class CronDate<T = undefined> {
   public getTime(): number {
     return this.getDate(false).getTime();
   }
+
+  /**
+   * Check if the current CronDate matches a cron pattern
+   *
+   * @param pattern The cron pattern to match against
+   * @param options The cron options that influence matching
+   * @returns true if the date matches the pattern, false otherwise
+   */
+  public match(pattern: CronPattern, options: CronOptions<T>): boolean {
+    // Check year if year constraints exist
+    if (!pattern.starYear) {
+      if (
+        this.year < 0 ||
+        this.year >= pattern.year.length ||
+        pattern.year[this.year] === 0
+      ) {
+        return false;
+      }
+    }
+
+    // Check each component using the existing findNext logic
+    // by checking if each component at its current value matches
+    for (let doing = 0; doing < RecursionSteps.length; doing++) {
+      const target = RecursionSteps[doing][0];
+      const offset = RecursionSteps[doing][2];
+      const targetValue = this[target];
+
+      // Check if the current value is within bounds
+      if (targetValue + offset < 0 || targetValue + offset >= pattern[target].length) {
+        return false;
+      }
+
+      let match: number = pattern[target][targetValue + offset];
+
+      // Apply the same special cases as in findNext
+      if (target === "day") {
+        // Special case for nearest weekday (W modifier)
+        if (!match) {
+          for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
+            if (pattern.nearestWeekdays[dayWithW]) {
+              const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
+              if (executionDay === targetValue) {
+                match = 1;
+                break;
+              }
+            }
+          }
+        }
+
+        // Special case for last day of month (L modifier)
+        if (pattern.lastDayOfMonth) {
+          let lastDayOfMonth;
+          if (this.month !== 1) {
+            lastDayOfMonth = DaysOfMonth[this.month];
+          } else {
+            lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0, 0, 0, 0, 0))
+              .getUTCDate();
+          }
+          if (targetValue === lastDayOfMonth) {
+            match = 1;
+          }
+        }
+
+        // Special case for day of week
+        if (!pattern.starDOW) {
+          const fDomWeekDay = new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay();
+          let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (targetValue - 1)) % 7];
+
+          // Extra check for nth weekday of month
+          if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
+            dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, targetValue, dowMatch)
+              ? 1
+              : 0;
+          }
+
+          // Apply same logic as in findNext for combining day of month and day of week
+          if (pattern.useAndLogic) {
+            match = match && dowMatch;
+          } else if (!options.domAndDow && !pattern.starDOM) {
+            match = match || dowMatch;
+          } else {
+            match = match && dowMatch;
+          }
+        }
+      }
+
+      // If this component doesn't match, the date doesn't match the pattern
+      if (!match) {
+        return false;
+      }
+    }
+
+    // All components matched
+    return true;
+  }
 }
 
 export { CronDate };
