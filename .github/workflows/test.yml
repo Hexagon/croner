@@ -42,17 +42,17 @@ jobs:
       - name: Run tests
         run: npx --yes tsx --test test/*.test.ts
 
-  deno_1_17_compatibility:
-    name: Deno 1.17 Compatibility Test
+  deno_1_20_compatibility:
+    name: Deno 1.20 Compatibility Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Deno 1.17
+      - name: Setup Deno 1.20
         uses: denoland/setup-deno@v2
         with:
-          deno-version: "1.17.x"
+          deno-version: "1.20.x"
 
       - name: Run tests
         run: deno test --allow-read
