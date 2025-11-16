@@ -248,6 +248,34 @@ class Cron<T = undefined> {
   }
 
   /**
+   * Find previous n runs, based on supplied date. Strips milliseconds.
+   *
+   * @param n - Number of runs to enumerate
+   * @param reference - Date to start from (defaults to now)
+   * @returns - Previous n run times in reverse chronological order (most recent first)
+   */
+  public previousRuns(n: number, reference?: Date | string): Date[] {
+    const enumeration: Date[] = [];
+    let ref: CronDate<T> | Date | string | undefined | null = reference || undefined;
+
+    // When dayOffset is used, we need to track the pattern match dates separately
+    // from the offset dates we return
+    while (n-- && (ref = this._previous(ref))) {
+      // Apply dayOffset to the result we add to enumeration
+      if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+        const baseDate = ref.getDate(false);
+        const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+        enumeration.push(new Date(baseDate.getTime() + offsetMs));
+      } else {
+        enumeration.push(ref.getDate(false));
+      }
+      // But continue with the non-offset date for finding the previous match
+    }
+
+    return enumeration;
+  }
+
+  /**
    * Return the original pattern, if there was one
    *
    * @returns Original pattern
@@ -548,6 +576,56 @@ class Cron<T = undefined> {
     } else {
       // All seem good, return next run
       return nextRun;
+    }
+  }
+
+  /**
+   * Internal version of previous. Finds the previous scheduled run time.
+   *
+   * @param referenceDate - Optional reference date to search backwards from (defaults to now)
+   * @returns Previous scheduled run time, or null if no previous run exists
+   */
+  private _previous(referenceDate?: CronDate<T> | Date | string | null): CronDate<T> | null {
+    // Ensure reference date is a CronDate
+    let reference = new CronDate<T>(referenceDate, this.options.timezone || this.options.utcOffset);
+
+    // Don't return runs that would be after stopAt
+    if (
+      this.options.stopAt && reference.getTime() > (this.options.stopAt as CronDate<T>).getTime()
+    ) {
+      reference = this.options.stopAt as CronDate<T>;
+    }
+
+    // Calculate previous run according to pattern
+    let previousRun: CronDate<T> | null = new CronDate<T>(
+      reference,
+      this.options.timezone || this.options.utcOffset,
+    );
+
+    // For one-off schedules, check if the scheduled time is before the reference
+    if (this._states.once) {
+      if (this._states.once.getTime() < reference.getTime()) {
+        return this._states.once;
+      } else {
+        return null;
+      }
+    }
+
+    // Use decrement to find previous match
+    previousRun = previousRun.decrement(
+      this._states.pattern,
+      this.options,
+    );
+
+    // Check if previous run is valid
+    if (
+      (previousRun === null) ||
+      (this.options.startAt &&
+        previousRun.getTime() < (this.options.startAt as CronDate<T>).getTime())
+    ) {
+      return null;
+    } else {
+      return previousRun;
     }
   }
   /**
