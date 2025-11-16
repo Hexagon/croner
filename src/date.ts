@@ -696,9 +696,16 @@ class CronDate<T = undefined> {
         const target = RecursionSteps[doing][0];
         const offset = RecursionSteps[doing][2];
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
-        this[target] = maxValue;
+        
+        // For day patterns, cap at the actual last day of the current month
+        if (target === "day") {
+          const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
+          this[target] = Math.min(maxValue, lastDayOfMonth);
+        } else {
+          this[target] = maxValue;
+        }
 
-        // Apply again to ensure the day is valid for the month
+        // Apply again to ensure the date is valid
         this.apply();
 
         // OCPS 1.2: If we just decremented the year and have year constraints, check if it matches
@@ -824,17 +831,8 @@ class CronDate<T = undefined> {
       ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay()
       : undefined;
 
-    // For day patterns, we need to check the entire month since we might be looking
-    // for a day later in the month (e.g., searching for day 31 when currently at day 30)
-    const searchStart = (target === "day")
-      ? Math.min(
-        this[target] + offset,
-        new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate() + offset,
-      )
-      : this[target] + offset;
-
-    // Search backwards from current value (or from end of month for days)
-    for (let i = searchStart; i >= 0; i--) {
+    // Search backwards from current value
+    for (let i = this[target] + offset; i >= 0; i--) {
       let match: number = pattern[target][i];
 
       // Special case for nearest weekday
