@@ -250,29 +250,98 @@ class Cron<T = undefined> {
   /**
    * Find previous n runs, based on supplied date. Strips milliseconds.
    *
+   * This implementation works by finding matches going forward from an earlier point in time,
+   * then filtering and reversing to get the previous runs. This leverages the proven nextRuns logic.
+   *
    * @param n - Number of runs to enumerate
    * @param reference - Date to start from (defaults to now)
    * @returns - Previous n run times in reverse chronological order (most recent first)
    */
   public previousRuns(n: number, reference?: Date | string): Date[] {
-    const enumeration: Date[] = [];
-    let ref: CronDate<T> | Date | string | undefined | null = reference || undefined;
-
-    // When dayOffset is used, we need to track the pattern match dates separately
-    // from the offset dates we return
-    while (n-- && (ref = this._previous(ref))) {
-      // Apply dayOffset to the result we add to enumeration
-      if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-        const baseDate = ref.getDate(false);
-        const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
-        enumeration.push(new Date(baseDate.getTime() + offsetMs));
-      } else {
-        enumeration.push(ref.getDate(false));
+    // Handle edge case
+    if (n <= 0) return [];
+    
+    // Handle one-off schedules
+    if (this._states.once) {
+      const refTime = reference ? new Date(reference).getTime() : Date.now();
+      const onceTime = this._states.once.getTime();
+      
+      if (onceTime < refTime) {
+        // Apply dayOffset if specified
+        if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+          const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+          return [new Date(onceTime + offsetMs)];
+        } else {
+          return [this._states.once.getDate(false)];
+        }
       }
-      // But continue with the non-offset date for finding the previous match
+      return [];
     }
-
-    return enumeration;
+    
+    // For recurring patterns, use an adaptive lookback strategy
+    const refDate = reference ? new Date(reference) : new Date();
+    let lookbackMs = 7 * 24 * 60 * 60 * 1000; // Start with 1 week
+    const maxLookbackMs = 365 * 24 * 60 * 60 * 1000; // Max 1 year
+    
+    while (lookbackMs <= maxLookbackMs) {
+      // Calculate start point for forward search
+      const startTime = refDate.getTime() - lookbackMs;
+      let searchStart = new Date(startTime);
+      
+      // Respect startAt if it's after our calculated start
+      if (this.options.startAt) {
+        const startAtTime = (this.options.startAt as CronDate<T>).getTime();
+        if (startAtTime > startTime) {
+          searchStart = new Date(startAtTime);
+        }
+      }
+      
+      // Iteratively get more matches until we have enough before the reference
+      let allMatches: Date[] = [];
+      let batchSize = Math.max(n * 10, 100);
+      let lastMatch: Date | undefined = searchStart;
+      const maxBatches = 100;
+      let batchCount = 0;
+      
+      while (batchCount++ < maxBatches) {
+        // Get a batch of matches
+        const batch = this.nextRuns(batchSize, lastMatch);
+        if (batch.length === 0) break;
+        
+        // Add matches that are before the reference
+        const beforeRef = batch.filter(d => d.getTime() < refDate.getTime());
+        allMatches = allMatches.concat(beforeRef);
+        
+        // If we have enough matches before the reference, we're done
+        if (allMatches.length >= n) {
+          return allMatches.slice(-n).reverse();
+        }
+        
+        // If the last match in the batch is after or equal to reference, we're done
+        if (batch[batch.length - 1].getTime() >= refDate.getTime()) {
+          break;
+        }
+        
+        // Continue from the last match
+        lastMatch = batch[batch.length - 1];
+      }
+      
+      // If we have some matches, return them (might be less than n)
+      if (allMatches.length > 0) {
+        return allMatches.slice(-Math.min(n, allMatches.length)).reverse();
+      }
+      
+      // If we've hit startAt and still don't have enough, return what we have
+      if (this.options.startAt && searchStart.getTime() <= (this.options.startAt as CronDate<T>).getTime()) {
+        return allMatches.slice(-Math.min(n, allMatches.length)).reverse();
+      }
+      
+      // Otherwise, expand the lookback period and try again
+      lookbackMs *= 4;
+    }
+    
+    // Return empty if we couldn't find any
+    return [];
   }
 
   /**
