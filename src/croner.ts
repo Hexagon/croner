@@ -281,24 +281,23 @@ class Cron<T = undefined> {
     // For recurring patterns, use an adaptive lookback strategy
     const refDate = reference ? new Date(reference) : new Date();
     let lookbackMs = 7 * 24 * 60 * 60 * 1000; // Start with 1 week
-    const maxLookbackMs = 365 * 24 * 60 * 60 * 1000; // Max 1 year
+    const maxLookbackMs = 5 * 365 * 24 * 60 * 60 * 1000; // Max 5 years
 
     while (lookbackMs <= maxLookbackMs) {
       // Calculate start point for forward search
       const startTime = refDate.getTime() - lookbackMs;
-      let searchStart = new Date(startTime);
-
-      // Respect startAt if it's after our calculated start
-      if (this.options.startAt) {
-        const startAtTime = (this.options.startAt as CronDate<T>).getTime();
-        if (startAtTime > startTime) {
-          searchStart = new Date(startAtTime);
-        }
-      }
+      const searchStart = new Date(startTime);
 
       // Iteratively get more matches until we have enough before the reference
       let allMatches: Date[] = [];
-      const batchSize = Math.max(n * 10, 100);
+      // Calculate a better batch size based on the time span we need to cover
+      // For minute-level patterns over 7 days, we need ~10,000 matches
+      // Start with a reasonable estimate and let the loop handle it
+      const estimatedMatchesNeeded = Math.max(
+        n * 100, // At least 100x what we need
+        Math.min(50000, lookbackMs / 60000), // Rough estimate: 1 match per minute, capped at 50k
+      );
+      const batchSize = Math.ceil(estimatedMatchesNeeded / 10); // Get it in ~10 batches
       let lastMatch: Date | undefined = searchStart;
       const maxBatches = 100;
       let batchCount = 0;
@@ -312,13 +311,14 @@ class Cron<T = undefined> {
         const beforeRef = batch.filter((d) => d.getTime() < refDate.getTime());
         allMatches = allMatches.concat(beforeRef);
 
-        // If we have enough matches before the reference, we're done
-        if (allMatches.length >= n) {
-          return allMatches.slice(-n).reverse();
-        }
-
-        // If the last match in the batch is after or equal to reference, we're done
+        // If the last match in the batch is after or equal to reference, we're done collecting
+        // But we need to make sure we collected enough matches
         if (batch[batch.length - 1].getTime() >= refDate.getTime()) {
+          // We've reached or passed the reference date
+          if (allMatches.length >= n) {
+            return allMatches.slice(-n).reverse();
+          }
+          // Not enough matches found in this lookback period, break to expand
           break;
         }
 
@@ -326,24 +326,18 @@ class Cron<T = undefined> {
         lastMatch = batch[batch.length - 1];
       }
 
-      // If we have some matches, return them (might be less than n)
-      if (allMatches.length > 0) {
-        return allMatches.slice(-Math.min(n, allMatches.length)).reverse();
-      }
-
-      // If we've hit startAt and still don't have enough, return what we have
-      if (
-        this.options.startAt &&
-        searchStart.getTime() <= (this.options.startAt as CronDate<T>).getTime()
-      ) {
-        return allMatches.slice(-Math.min(n, allMatches.length)).reverse();
+      // If we have some matches but not enough, try expanding lookback
+      // Don't return yet - let the outer loop expand the lookback period
+      if (allMatches.length >= n) {
+        // We have enough, return them
+        return allMatches.slice(-n).reverse();
       }
 
       // Otherwise, expand the lookback period and try again
       lookbackMs *= 4;
     }
 
-    // Return empty if we couldn't find any
+    // Return whatever we found after exhausting all attempts
     return [];
   }
 
