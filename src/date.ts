@@ -614,7 +614,9 @@ class CronDate<T = undefined> {
     }
 
     // DEBUG: Uncomment for debugging
-    // console.log(`[recurseBackward] depth=${depth}, doing=${doing}, y=${this.year}, m=${this.month}, d=${this.day}, h=${this.hour}, min=${this.minute}, s=${this.second}`);
+    if (depth < 20) {
+      console.log(`[recurseBackward] depth=${depth}, doing=${doing}, y=${this.year}, m=${this.month}, d=${this.day}, h=${this.hour}, min=${this.minute}, s=${this.second}`);
+    }
 
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
@@ -662,6 +664,10 @@ class CronDate<T = undefined> {
       RecursionSteps[doing][2],
     );
 
+    if (depth < 20) {
+      console.log(`  [findPrevious] returned ${res} for ${RecursionSteps[doing][0]}, now at y=${this.year}, m=${this.month}, d=${this.day}`);
+    }
+
     // Component changed
     if (res > 1) {
       // Flag following levels for reset to their maximum values
@@ -675,6 +681,10 @@ class CronDate<T = undefined> {
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
         this[target] = maxValue;
 
+        if (depth < 20) {
+          console.log(`    [reset] ${target} = ${maxValue} (offset=${offset})`);
+        }
+
         resetLevel++;
       }
 
@@ -683,10 +693,35 @@ class CronDate<T = undefined> {
         // Decrement parent
         this[RecursionSteps[doing][1]]--;
 
-        // Special handling: if we just decremented month and day is 0 or negative,
-        // set day to 1 temporarily so apply() doesn't misinterpret it
-        if (doing === 1 && this.day <= 0) {
-          this.day = 1;
+        // Special handling: if we just decremented month, we need to handle day overflow
+        if (doing === 1) {
+          // If day is 0 or negative, set to 1 temporarily so apply() doesn't misinterpret it
+          if (this.day <= 0) {
+            this.day = 1;
+          } else {
+            // If day is too large for the new month, cap it to avoid overflow during apply()
+            // We need to check what the new month will be after normalization
+            let tempYear = this.year;
+            let tempMonth = this.month;
+            
+            // Normalize month if it's out of bounds
+            while (tempMonth < 0) {
+              tempMonth += 12;
+              tempYear--;
+            }
+            while (tempMonth > 11) {
+              tempMonth -= 12;
+              tempYear++;
+            }
+            
+            // Get the last day of the normalized month
+            const lastDayOfMonth = new Date(Date.UTC(tempYear, tempMonth + 1, 0)).getUTCDate();
+            
+            // If current day exceeds the last day of the new month, cap it
+            if (this.day > lastDayOfMonth) {
+              this.day = lastDayOfMonth;
+            }
+          }
         }
 
         // Apply to normalize the date (e.g., month -1 becomes December of previous year)

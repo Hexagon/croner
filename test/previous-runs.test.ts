@@ -212,16 +212,15 @@ test("previousRuns() should work with dayOffset option", () => {
   assertEquals(runs[2].toISOString(), "2024-01-02T00:00:00.000Z");
 });
 
-// TODO: Fix infinite recursion issue with specific day+month patterns
-// test("previousRuns() should handle patterns spanning year boundaries", () => {
-//   const job = new Cron("0 0 31 12 *"); // December 31st
-//   const referenceDate = new Date("2024-01-15T12:00:00Z");
-//   const runs = job.previousRuns(3, referenceDate);
-//   assertEquals(runs.length, 3);
-//   assertEquals(runs[0].toISOString(), "2023-12-31T00:00:00.000Z");
-//   assertEquals(runs[1].toISOString(), "2022-12-31T00:00:00.000Z");
-//   assertEquals(runs[2].toISOString(), "2021-12-31T00:00:00.000Z");
-// });
+test("previousRuns() should handle patterns spanning year boundaries", () => {
+  const job = new Cron("0 0 31 12 *"); // December 31st
+  const referenceDate = new Date("2024-01-15T12:00:00Z");
+  const runs = job.previousRuns(3, referenceDate);
+  assertEquals(runs.length, 3);
+  assertEquals(runs[0].toISOString(), "2023-12-31T00:00:00.000Z");
+  assertEquals(runs[1].toISOString(), "2022-12-31T00:00:00.000Z");
+  assertEquals(runs[2].toISOString(), "2021-12-31T00:00:00.000Z");
+});
 
 test("previousRuns() works independently of job execution", () => {
   // Create a paused job that never executes
