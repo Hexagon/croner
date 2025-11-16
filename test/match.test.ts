@@ -1,7 +1,8 @@
 import { assert, assertEquals } from "@std/assert";
+import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
-Deno.test("match() - Basic pattern matching", () => {
+test("match() - Basic pattern matching", function () {
   const job = new Cron("0 0 12 * * *"); // Every day at 12:00:00
 
   // Should match
@@ -19,7 +20,7 @@ Deno.test("match() - Basic pattern matching", () => {
   assert(!job.match(new Date("2024-01-15T12:00:01")));
 });
 
-Deno.test("match() - Pattern with specific days", () => {
+test("match() - Pattern with specific days", function () {
   const job = new Cron("0 0 0 15 * *"); // 15th of each month at midnight
 
   // Should match
@@ -32,7 +33,7 @@ Deno.test("match() - Pattern with specific days", () => {
   assert(!job.match(new Date("2024-01-16T00:00:00")));
 });
 
-Deno.test("match() - Pattern with specific weekday", () => {
+test("match() - Pattern with specific weekday", function () {
   const job = new Cron("0 0 0 * * MON"); // Every Monday at midnight
 
   // Should match (these are Mondays)
@@ -45,7 +46,7 @@ Deno.test("match() - Pattern with specific weekday", () => {
   assert(!job.match(new Date("2024-01-07T00:00:00"))); // Sunday
 });
 
-Deno.test("match() - Pattern with ranges", () => {
+test("match() - Pattern with ranges", function () {
   const job = new Cron("0 0 9-17 * * *"); // Every hour from 9 AM to 5 PM
 
   // Should match
@@ -59,7 +60,7 @@ Deno.test("match() - Pattern with ranges", () => {
   assert(!job.match(new Date("2024-01-15T23:00:00")));
 });
 
-Deno.test("match() - Pattern with step values", () => {
+test("match() - Pattern with step values", function () {
   const job = new Cron("0 */15 * * * *"); // Every 15 minutes
 
   // Should match
@@ -74,7 +75,7 @@ Deno.test("match() - Pattern with step values", () => {
   assert(!job.match(new Date("2024-01-15T12:20:00")));
 });
 
-Deno.test("match() - Pattern with seconds (6-part)", () => {
+test("match() - Pattern with seconds (6-part)", function () {
   const job = new Cron("30 0 12 * * *"); // Every day at 12:00:30
 
   // Should match
@@ -86,7 +87,7 @@ Deno.test("match() - Pattern with seconds (6-part)", () => {
   assert(!job.match(new Date("2024-01-15T12:00:29")));
 });
 
-Deno.test("match() - Pattern with wildcard seconds", () => {
+test("match() - Pattern with wildcard seconds", function () {
   const job = new Cron("* 30 12 * * *"); // Every second at 12:30:XX
 
   // Should match any second at 12:30
@@ -100,7 +101,7 @@ Deno.test("match() - Pattern with wildcard seconds", () => {
   assert(!job.match(new Date("2024-01-15T12:31:30")));
 });
 
-Deno.test("match() - Pattern with comma-separated values", () => {
+test("match() - Pattern with comma-separated values", function () {
   const job = new Cron("0 0 8,12,18 * * *"); // At 8 AM, 12 PM, and 6 PM
 
   // Should match
@@ -114,7 +115,7 @@ Deno.test("match() - Pattern with comma-separated values", () => {
   assert(!job.match(new Date("2024-01-15T17:00:00")));
 });
 
-Deno.test("match() - Pattern with months", () => {
+test("match() - Pattern with months", function () {
   const job = new Cron("0 0 0 1 1,6,12 *"); // First day of January, June, and December
 
   // Should match
@@ -127,7 +128,7 @@ Deno.test("match() - Pattern with months", () => {
   assert(!job.match(new Date("2024-01-02T00:00:00")));
 });
 
-Deno.test("match() - Last day of month (L modifier)", () => {
+test("match() - Last day of month (L modifier)", function () {
   const job = new Cron("0 0 0 L * *"); // Last day of every month
 
   // Should match
@@ -142,7 +143,7 @@ Deno.test("match() - Last day of month (L modifier)", () => {
   assert(!job.match(new Date("2024-04-29T00:00:00")));
 });
 
-Deno.test("match() - Weekday modifier (W)", () => {
+test("match() - Weekday modifier (W)", function () {
   const job = new Cron("0 0 0 15W * *"); // Nearest weekday to the 15th
 
   // 15th is a Monday in Jan 2024, should match exactly
@@ -157,7 +158,7 @@ Deno.test("match() - Weekday modifier (W)", () => {
   assert(!job.match(new Date("2024-09-15T00:00:00")));
 });
 
-Deno.test("match() - Nth weekday of month (# modifier)", () => {
+test("match() - Nth weekday of month (# modifier)", function () {
   const job = new Cron("0 0 0 * * MON#2"); // Second Monday of every month
 
   // Should match (second Mondays)
@@ -173,7 +174,7 @@ Deno.test("match() - Nth weekday of month (# modifier)", () => {
   assert(!job.match(new Date("2024-02-19T00:00:00")));
 });
 
-Deno.test("match() - Last occurrence of weekday (L modifier with weekday)", () => {
+test("match() - Last occurrence of weekday (L modifier with weekday)", function () {
   const job = new Cron("0 0 0 * * FRI#L"); // Last Friday of every month
 
   // Should match (last Fridays)
@@ -185,7 +186,7 @@ Deno.test("match() - Last occurrence of weekday (L modifier with weekday)", () =
   assert(!job.match(new Date("2024-02-16T00:00:00"))); // 3rd Friday
 });
 
-Deno.test("match() - Year field (7-part pattern)", () => {
+test("match() - Year field (7-part pattern)", function () {
   const job = new Cron("0 0 0 1 1 * 2024"); // January 1st, 2024 at midnight
 
   // Should match
@@ -200,7 +201,7 @@ Deno.test("match() - Year field (7-part pattern)", () => {
   assert(!job.match(new Date("2024-02-01T00:00:00")));
 });
 
-Deno.test("match() - Year field with range", () => {
+test("match() - Year field with range", function () {
   const job = new Cron("0 0 0 1 1 * 2024-2026"); // January 1st, 2024-2026
 
   // Should match
@@ -213,7 +214,7 @@ Deno.test("match() - Year field with range", () => {
   assert(!job.match(new Date("2027-01-01T00:00:00")));
 });
 
-Deno.test("match() - One-off job with specific date", () => {
+test("match() - One-off job with specific date", function () {
   const job = new Cron(new Date("2024-06-15T14:30:00"));
 
   // Should match
@@ -226,7 +227,7 @@ Deno.test("match() - One-off job with specific date", () => {
   assert(!job.match(new Date("2024-06-16T14:30:00")));
 });
 
-Deno.test("match() - One-off job with ISO 8601 string", () => {
+test("match() - One-off job with ISO 8601 string", function () {
   const job = new Cron("2024-12-25T09:00:00");
 
   // Should match
@@ -239,7 +240,7 @@ Deno.test("match() - One-off job with ISO 8601 string", () => {
   assert(!job.match(new Date("2024-12-26T09:00:00")));
 });
 
-Deno.test("match() - Complex pattern with multiple features", () => {
+test("match() - Complex pattern with multiple features", function () {
   const job = new Cron("30 15,45 9-17 * * MON-FRI"); // Every 15 and 45 minutes past the hour, 9 AM - 5 PM, Monday - Friday
 
   // Should match
@@ -258,7 +259,7 @@ Deno.test("match() - Complex pattern with multiple features", () => {
   assert(!job.match(new Date("2024-01-15T09:15:00"))); // Wrong second
 });
 
-Deno.test("match() - Timezone handling", () => {
+test("match() - Timezone handling", function () {
   const job = new Cron("0 0 12 * * *", { timezone: "America/New_York" });
 
   // Create a date that is noon in New York time
@@ -273,7 +274,7 @@ Deno.test("match() - Timezone handling", () => {
   assert(!job.match(new Date("2024-01-15T18:00:00Z")));
 });
 
-Deno.test("match() - Question mark wildcard (?)", () => {
+test("match() - Question mark wildcard (?)", function () {
   const job = new Cron("0 0 12 ? * *"); // Every day at noon (? is wildcard for day)
 
   // Should match any day at noon
@@ -285,7 +286,7 @@ Deno.test("match() - Question mark wildcard (?)", () => {
   assert(!job.match(new Date("2024-01-01T11:00:00")));
 });
 
-Deno.test("match() - AND logic with + modifier (OCPS 1.4)", () => {
+test("match() - AND logic with + modifier (OCPS 1.4)", function () {
   // This pattern uses + to enforce AND logic: must be 15th AND a Monday
   const job = new Cron("0 0 0 15 * +MON");
 
@@ -302,7 +303,7 @@ Deno.test("match() - AND logic with + modifier (OCPS 1.4)", () => {
   assert(!job.match(new Date("2024-01-08T00:00:00")));
 });
 
-Deno.test("match() - Milliseconds are automatically stripped", () => {
+test("match() - Milliseconds are automatically stripped", function () {
   const job = new Cron("0 0 12 * * *");
 
   // Dates with milliseconds should match after automatic stripping
@@ -319,7 +320,7 @@ Deno.test("match() - Milliseconds are automatically stripped", () => {
   assert(!job.match(differentSecond));
 });
 
-Deno.test("match() - Edge case: February 29 in leap year", () => {
+test("match() - Edge case: February 29 in leap year", function () {
   const job = new Cron("0 0 0 29 2 *"); // Feb 29
 
   // Should match in leap year
@@ -330,7 +331,7 @@ Deno.test("match() - Edge case: February 29 in leap year", () => {
   assert(!job.match(new Date("2023-02-28T00:00:00")));
 });
 
-Deno.test("match() - Consistent with nextRun()", () => {
+test("match() - Consistent with nextRun()", function () {
   const job = new Cron("0 30 14 * * MON");
 
   // Get the next run
