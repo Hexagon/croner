@@ -104,7 +104,7 @@ class CronDate<T = undefined> {
       } else {
         throw new TypeError("CronDate: Invalid date passed to CronDate constructor");
       }
-    } else if (d === void 0) {
+    } else if (d === void 0 || d === null) {
       this.fromDate(new Date());
     } else if (d && typeof d === "string") {
       this.fromString(d);
