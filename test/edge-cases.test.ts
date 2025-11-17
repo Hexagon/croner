@@ -61,7 +61,7 @@ test("W modifier with day 31 in 30-day month (April) skips that month", function
   if (run && run.getMonth() === 3) { // April
     assert(false, "31W should not match in April which only has 30 days");
   }
-  
+
   // Should skip to next year or return null since April never has 31 days
   assertEquals(run, null);
 });
@@ -234,7 +234,7 @@ test("LW modifier should match last weekday of each month", function () {
   for (let i = 0; i < expected.length; i++) {
     assertEquals(runs[i].getMonth(), expected[i].month);
     assertEquals(runs[i].getDate(), expected[i].day);
-    
+
     // Verify it's actually a weekday
     const dow = runs[i].getDay();
     assert(dow >= 1 && dow <= 5, `Day ${runs[i].getDate()} should be a weekday, got ${dow}`);
@@ -244,13 +244,13 @@ test("LW modifier should match last weekday of each month", function () {
 test("LW modifier should work across leap years", function () {
   // Test Feb LW in leap year
   const cron = new Cron("0 0 LW 2 *");
-  
+
   // 2024 is a leap year, Feb 29 is Thu
   const run2024 = cron.nextRun(new Date("2024-02-01"));
   assertEquals(run2024?.getFullYear(), 2024);
   assertEquals(run2024?.getMonth(), 1);
   assertEquals(run2024?.getDate(), 29); // Feb 29 is Thu (weekday)
-  
+
   // 2025 is not a leap year, Feb 28 is Fri
   const run2025 = cron.nextRun(new Date("2025-02-01"));
   assertEquals(run2025?.getFullYear(), 2025);
@@ -262,7 +262,7 @@ test("LW modifier should handle months ending on Saturday", function () {
   // May 2025: last day is May 31 (Sat), so LW should be May 30 (Fri)
   const cron = new Cron("0 0 LW 5 *");
   const run = cron.nextRun(new Date("2025-05-01"));
-  
+
   assertEquals(run?.getFullYear(), 2025);
   assertEquals(run?.getMonth(), 4); // May
   assertEquals(run?.getDate(), 30); // Friday
@@ -273,7 +273,7 @@ test("LW modifier should handle months ending on Sunday", function () {
   // August 2025: last day is Aug 31 (Sun), so LW should be Aug 29 (Fri)
   const cron = new Cron("0 0 LW 8 *");
   const run = cron.nextRun(new Date("2025-08-01"));
-  
+
   assertEquals(run?.getFullYear(), 2025);
   assertEquals(run?.getMonth(), 7); // August
   assertEquals(run?.getDate(), 29); // Friday
