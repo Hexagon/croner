@@ -318,6 +318,30 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     offset: number,
   ): number {
+    return this._findMatch(options, target, pattern, offset, 1);
+  }
+
+  /**
+   * Internal unified method to find a matching time component in either direction.
+   * This method searches through the pattern to find the next or previous valid value
+   * for the specified target component (second, minute, hour, day, or month).
+   *
+   * @param options Cron options
+   * @param target Target property (second, minute, hour, day, month)
+   * @param pattern Pattern to use
+   * @param offset Offset to use
+   * @param direction 1 for forward (next), -1 for backward (previous)
+   * @returns Status code: 1 = same value matches, 2 = value changed, 3 = no match found
+   *
+   * @private
+   */
+  private _findMatch(
+    options: CronOptions<T>,
+    target: RecursionTarget,
+    pattern: CronPattern,
+    offset: number,
+    direction: 1 | -1,
+  ): number {
     const originalTarget = this[target];
 
     // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster
@@ -340,15 +364,18 @@ class CronDate<T = undefined> {
       ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay()
       : undefined;
 
-    for (let i = this[target] + offset; i < pattern[target].length; i++) {
+    // Determine loop bounds based on direction
+    const startIdx = this[target] + offset;
+    const endCondition = direction === 1
+      ? (i: number) => i < pattern[target].length
+      : (i: number) => i >= 0;
+
+    for (let i = startIdx; endCondition(i); i += direction) {
       // this applies to all "levels"
       let match: number = pattern[target][i];
 
       // Special case for nearest weekday
-      // Special case for nearest weekday
-      if (
-        target === "day" && !match
-      ) {
+      if (target === "day" && !match) {
         // Iterate through all possible 'W' days in the pattern
         for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
           // Check if the pattern specifies the 'W' modifier for this day
@@ -865,75 +892,7 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     offset: number,
   ): number {
-    const originalTarget = this[target];
-
-    // Pre-calculate last day of month if needed
-    let lastDayOfMonth;
-    if (pattern.lastDayOfMonth) {
-      if (this.month !== 1) {
-        lastDayOfMonth = DaysOfMonth[this.month];
-      } else {
-        lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0, 0, 0, 0, 0)).getUTCDate();
-      }
-    }
-
-    // Pre-calculate weekday if needed
-    const fDomWeekDay = (!pattern.starDOW && target == "day")
-      ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay()
-      : undefined;
-
-    // Search backwards from current value
-    for (let i = this[target] + offset; i >= 0; i--) {
-      let match: number = pattern[target][i];
-
-      // Special case for nearest weekday
-      if (target === "day" && !match) {
-        for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
-          if (pattern.nearestWeekdays[dayWithW]) {
-            const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
-            if (executionDay === (i - offset)) {
-              match = 1;
-              break;
-            }
-          }
-        }
-      }
-
-      // Special case for last day of month
-      if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
-        match = 1;
-      }
-
-      // Special case for day of week
-      if (target === "day" && !pattern.starDOW) {
-        let dowMatch = pattern.dayOfWeek[(fDomWeekDay! + ((i - offset) - 1)) % 7];
-
-        // Extra check for nth weekday of month
-        if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
-          dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, i - offset, dowMatch) ? 1 : 0;
-        } else if (dowMatch) {
-          throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
-        }
-
-        // Apply logic based on pattern settings
-        if (pattern.useAndLogic) {
-          match = match && dowMatch;
-        } else if (!options.domAndDow && !pattern.starDOM) {
-          match = match || dowMatch;
-        } else {
-          match = match && dowMatch;
-        }
-      }
-
-      if (match) {
-        this[target] = i - offset;
-        // Return 2 if changed, 1 if unchanged
-        return (originalTarget !== this[target]) ? 2 : 1;
-      }
-    }
-
-    // Return 3 if part was not matched
-    return 3;
+    return this._findMatch(options, target, pattern, offset, -1);
   }
 
   /**
