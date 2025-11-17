@@ -270,8 +270,8 @@ For example, some popular alternatives include large datetime libraries as depen
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
 | **Size**                                                                                                                        |
-| Minified size (KB)        | 17.0                | 14.9            | 15.2      | 85.4 :warning:                      | 100.5 :warning:                |
-| Bundlephobia  minzip (KB) | 5.0                 | 5.1                 | 5.7       |                   25.8 | 29.2 :warning:             |
+| Minified size (KB)        | 22.7                | 14.9            | 20.1      | 93.7 :warning:                      | 107.8 :warning:                |
+| Bundlephobia  minzip (KB) | 6.8                 | 5.1                 | 6.1       |                   28.2 | 31.2 :warning:             |
 | Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 :warning: |
 | **Popularity**                                                                                                                        |
 | Downloads/week [^1]        | 2019K                | 31K                 | 447K      | 1366K                     | 1046K                |
