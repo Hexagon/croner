@@ -54,6 +54,7 @@ class CronPattern {
   dayOfWeek: number[];
   year: number[];
   lastDayOfMonth: boolean;
+  lastWeekday: boolean;
   nearestWeekdays: number[];
   starDOM: boolean;
   starDOW: boolean;
@@ -79,6 +80,7 @@ class CronPattern {
     this.year = Array(10000).fill(0); // OCPS 1.2: Year field (1-9999, index 0 unused)
 
     this.lastDayOfMonth = false;
+    this.lastWeekday = false;
     this.nearestWeekdays = Array(31).fill(0); // 0-30 in array, 1-31 in config
 
     this.starDOM = false; // Asterisk used for dayOfMonth
@@ -167,7 +169,11 @@ class CronPattern {
     }
 
     // Convert 'L' to lastDayOfMonth flag in day-of-month field
-    if (parts[3].indexOf("L") >= 0) {
+    // Check for 'LW' combination first (last weekday of month)
+    if (parts[3].toUpperCase() === "LW") {
+      this.lastWeekday = true;
+      parts[3] = "";
+    } else if (parts[3].indexOf("L") >= 0) {
       parts[3] = parts[3].replace("L", "");
       this.lastDayOfMonth = true;
     }
@@ -288,7 +294,8 @@ class CronPattern {
 
     // Error on empty part
     const lastDayOfMonth = type === "day" && this.lastDayOfMonth;
-    if (conf === "" && !lastDayOfMonth) {
+    const lastWeekday = type === "day" && this.lastWeekday;
+    if (conf === "" && !lastDayOfMonth && !lastWeekday) {
       throw new TypeError(
         "CronPattern: configuration entry " + type + " (" + conf +
           ") is empty, check for trailing spaces.",
