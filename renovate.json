@@ -10,14 +10,14 @@
       "matchManagers": ["deno"],
       "matchDepTypes": ["jsr"],
       "groupName": "JSR dependencies",
-      "schedule": ["before 3am on Monday"]
+      "schedule": ["* 0-2 * * 1"]
     },
     {
       "description": "NPM build dependencies in deno.json",
       "matchManagers": ["deno"],
       "matchDepTypes": ["npm"],
       "groupName": "NPM build dependencies",
-      "schedule": ["before 3am on Monday"]
+      "schedule": ["* 0-2 * * 1"]
     }
   ],
   "deno": {
