@@ -255,23 +255,28 @@ class Cron<T = undefined> {
     direction: "next" | "previous",
   ): Date[] {
     const enumeration: Date[] = [];
-    let currentDate: CronDate<T> | Date | string | undefined | null = startDate;
+    // Normalize startDate to CronDate or null so type is narrowed before loop
+    let currentCron: CronDate<T> | null = startDate
+      ? new CronDate<T>(startDate, this.options.timezone || this.options.utcOffset)
+      : null;
 
-    // Select the appropriate method based on direction
     const findMethod = direction === "next" ? this._next : this._previous;
 
-    // When dayOffset is used, we need to track the pattern match dates separately
-    // from the offset dates we return
-    while (n-- && (currentDate = findMethod.call(this, currentDate))) {
-      // Apply dayOffset to the result we add to enumeration
+    while (n--) {
+      const nextCron = findMethod.call(this, currentCron);
+      if (!nextCron) break;
+
+      // Apply dayOffset if needed when pushing to result array
+      const baseDate = nextCron.getDate(false);
       if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-        const baseDate = currentDate.getDate(false);
         const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
         enumeration.push(new Date(baseDate.getTime() + offsetMs));
       } else {
-        enumeration.push(currentDate.getDate(false));
+        enumeration.push(baseDate);
       }
-      // But continue with the non-offset date for finding the next match
+
+      // Continue enumeration from the unmodified CronDate
+      currentCron = nextCron;
     }
 
     return enumeration;
