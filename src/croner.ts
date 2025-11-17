@@ -111,6 +111,33 @@ class Cron<T = undefined> {
   options: CronOptions<T>;
   private _states: CronState<T>;
   private fn?: CronCallback<T>;
+  /**
+   * Internal helper to get the timezone or UTC offset for date operations.
+   * Reduces duplication of `this.options.timezone || this.options.utcOffset` throughout the codebase.
+   *
+   * @returns The timezone string or UTC offset number
+   * @private
+   */
+  private getTz(): string | number | undefined {
+    return this.options.timezone || this.options.utcOffset;
+  }
+
+  /**
+   * Internal helper to apply dayOffset to a date if configured.
+   * Reduces duplication of dayOffset calculation logic.
+   *
+   * @param date - The base date to apply offset to
+   * @returns The date with dayOffset applied, or the original date if no offset is configured
+   * @private
+   */
+  private applyDayOffset(date: Date): Date {
+    if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+      const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+      return new Date(date.getTime() + offsetMs);
+    }
+    return date;
+  }
+
   constructor(
     pattern: string | Date,
     fnOrOptions1?: CronOptions<T> | CronCallback<T>,
@@ -164,7 +191,7 @@ class Cron<T = undefined> {
       pattern &&
       (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))
     ) {
-      this._states.once = new CronDate<T>(pattern, this.options.timezone || this.options.utcOffset);
+      this._states.once = new CronDate<T>(pattern, this.getTz());
     } else {
       this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
         mode: this.options.mode,
@@ -203,15 +230,7 @@ class Cron<T = undefined> {
     const next = this._next(prev);
     if (!next) return null;
 
-    // Apply dayOffset if specified
-    if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-      // Get the date, apply offset in milliseconds (days * 24 hours * 60 minutes * 60 seconds * 1000 ms)
-      const baseDate = next.getDate(false);
-      const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
-      return new Date(baseDate.getTime() + offsetMs);
-    }
-
-    return next.getDate(false);
+    return this.applyDayOffset(next.getDate(false));
   }
 
   /**
@@ -257,7 +276,7 @@ class Cron<T = undefined> {
     const enumeration: Date[] = [];
     // Normalize startDate to CronDate or null so type is narrowed before loop
     let currentCron: CronDate<T> | null = startDate
-      ? new CronDate<T>(startDate, this.options.timezone || this.options.utcOffset)
+      ? new CronDate<T>(startDate, this.getTz())
       : null;
 
     const findMethod = direction === "next" ? this._next : this._previous;
@@ -268,12 +287,7 @@ class Cron<T = undefined> {
 
       // Apply dayOffset if needed when pushing to result array
       const baseDate = nextCron.getDate(false);
-      if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-        const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
-        enumeration.push(new Date(baseDate.getTime() + offsetMs));
-      } else {
-        enumeration.push(baseDate);
-      }
+      enumeration.push(this.applyDayOffset(baseDate));
 
       // Continue enumeration from the unmodified CronDate
       currentCron = nextCron;
@@ -291,19 +305,19 @@ class Cron<T = undefined> {
   public match(date: Date | string): boolean {
     // Handle one-off jobs (created with a specific date/time)
     if (this._states.once) {
-      const checkDate = new CronDate<T>(date, this.options.timezone || this.options.utcOffset);
+      const checkDate = new CronDate<T>(date, this.getTz());
       // Strip milliseconds for comparison
       checkDate.ms = 0;
       const onceDate = new CronDate<T>(
         this._states.once,
-        this.options.timezone || this.options.utcOffset,
+        this.getTz(),
       );
       onceDate.ms = 0;
       return checkDate.getTime() === onceDate.getTime();
     }
 
     // For pattern-based jobs, check if the date matches the pattern
-    const cronDate = new CronDate<T>(date, this.options.timezone || this.options.utcOffset);
+    const cronDate = new CronDate<T>(date, this.getTz());
 
     // Strip milliseconds (Croner operates on second precision)
     cronDate.ms = 0;
@@ -491,7 +505,7 @@ class Cron<T = undefined> {
 
     this._states.currentRun = new CronDate<T>(
       void 0, // We should use initiationDate, but that does not play well with fake timers in third party tests. In real world there is not much difference though */
-      this.options.timezone || this.options.utcOffset,
+      this.getTz(),
     );
 
     if (this.options.catch) {
@@ -513,7 +527,7 @@ class Cron<T = undefined> {
 
     this._states.previousRun = new CronDate<T>(
       initiationDate,
-      this.options.timezone || this.options.utcOffset,
+      this.getTz(),
     );
 
     this._states.blocking = false;
@@ -575,7 +589,7 @@ class Cron<T = undefined> {
     }
 
     // Ensure previous run is a CronDate
-    previousRun = new CronDate<T>(previousRun, this.options.timezone || this.options.utcOffset);
+    previousRun = new CronDate<T>(previousRun, this.getTz());
 
     // Previous run should never be before startAt
     if (
@@ -587,7 +601,7 @@ class Cron<T = undefined> {
 
     // Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
     let nextRun: CronDate<T> | null = this._states.once ||
-      new CronDate<T>(previousRun, this.options.timezone || this.options.utcOffset);
+      new CronDate<T>(previousRun, this.getTz());
 
     // if the startAt is in the future and the interval is set, then the prev is already set to the startAt, so there is no need to increment it
     if (!startAtInFutureWithInterval && nextRun !== this._states.once) {
@@ -623,7 +637,7 @@ class Cron<T = undefined> {
    */
   private _previous(referenceDate?: CronDate<T> | Date | string | null): CronDate<T> | null {
     // Ensure reference date is a CronDate
-    let reference = new CronDate<T>(referenceDate, this.options.timezone || this.options.utcOffset);
+    let reference = new CronDate<T>(referenceDate, this.getTz());
 
     // Don't return runs that would be after stopAt
     if (
@@ -635,7 +649,7 @@ class Cron<T = undefined> {
     // Calculate previous run according to pattern
     let previousRun: CronDate<T> | null = new CronDate<T>(
       reference,
-      this.options.timezone || this.options.utcOffset,
+      this.getTz(),
     );
 
     // For one-off schedules, check if the scheduled time is before the reference
@@ -673,13 +687,13 @@ class Cron<T = undefined> {
     prev: CronDate<T> | Date | string | undefined | null,
     hasPreviousRun: boolean,
   ): [CronDate<T> | undefined, boolean] {
-    const now = new CronDate<T>(undefined, this.options.timezone || this.options.utcOffset);
+    const now = new CronDate<T>(undefined, this.getTz());
     let newPrev: CronDate<T> | undefined | null = prev as CronDate<T>;
     if ((this.options.startAt as CronDate<T>).getTime() <= now.getTime()) {
       newPrev = this.options.startAt as CronDate<T>;
       let prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
       while (prevTimePlusInterval <= now.getTime()) {
-        newPrev = new CronDate<T>(newPrev, this.options.timezone || this.options.utcOffset)
+        newPrev = new CronDate<T>(newPrev, this.getTz())
           .increment(
             this._states.pattern,
             this.options,

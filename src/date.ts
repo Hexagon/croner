@@ -104,7 +104,7 @@ class CronDate<T = undefined> {
       } else {
         throw new TypeError("CronDate: Invalid date passed to CronDate constructor");
       }
-    } else if (d === void 0) {
+    } else if (d === void 0 || d === null) {
       this.fromDate(new Date());
     } else if (d && typeof d === "string") {
       this.fromString(d);
@@ -114,6 +114,24 @@ class CronDate<T = undefined> {
       throw new TypeError(
         "CronDate: Invalid type (" + typeof d + ") passed to CronDate constructor",
       );
+    }
+  }
+
+  /**
+   * Calculates the last day of a given month.
+   * Uses a performance optimization for months other than February.
+   *
+   * @param year The year
+   * @param month The month (0-11)
+   * @returns The last day of the month (1-31)
+   * @private
+   */
+  private getLastDayOfMonth(year: number, month: number): number {
+    // This is an optimization for every month except february
+    if (month !== 1) {
+      return DaysOfMonth[month];
+    } else {
+      return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     }
   }
 
@@ -132,7 +150,7 @@ class CronDate<T = undefined> {
 
     if (weekday === 0) { // Sunday
       // If it's the last day of the month, go back to Friday
-      const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      const daysInMonth = this.getLastDayOfMonth(year, month);
       if (day === daysInMonth) {
         return day - 2;
       }
@@ -182,7 +200,7 @@ class CronDate<T = undefined> {
 
     // Check for last occurrence
     if (nth & LAST_OCCURRENCE) {
-      const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      const daysInMonth = this.getLastDayOfMonth(year, month);
       for (let d = day + 1; d <= daysInMonth; d++) {
         if (new Date(Date.UTC(year, month, d)).getUTCDay() === weekday) {
           return false; // There's another occurrence of the same weekday later in the month
@@ -350,12 +368,7 @@ class CronDate<T = undefined> {
     // Pre-calculate last day of month if needed
     let lastDayOfMonth;
     if (pattern.lastDayOfMonth) {
-      // This is an optimization for every month except february, which has different number of days different years
-      if (this.month !== 1) {
-        lastDayOfMonth = DaysOfMonth[this.month]; // About 20% performance increase when using L
-      } else {
-        lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0, 0, 0, 0, 0)).getUTCDate();
-      }
+      lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
     }
 
     // Pre-calculate weekday if needed
@@ -710,7 +723,7 @@ class CronDate<T = undefined> {
         // Special handling: if we just decremented year, we need to handle day overflow in the current month
         if (doing === 0) {
           // Get the last day of the current month (after year decrement)
-          const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
+          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
 
           // If current day exceeds the last day of the month, cap it
           if (this.day > lastDayOfMonth) {
@@ -740,7 +753,9 @@ class CronDate<T = undefined> {
             }
 
             // Get the last day of the normalized month
-            const lastDayOfMonth = new Date(Date.UTC(tempYear, tempMonth + 1, 0)).getUTCDate();
+            const lastDayOfMonth = tempMonth !== 1
+              ? DaysOfMonth[tempMonth]
+              : new Date(Date.UTC(tempYear, tempMonth + 1, 0)).getUTCDate();
 
             // If current day exceeds the last day of the new month, cap it
             if (this.day > lastDayOfMonth) {
@@ -759,7 +774,7 @@ class CronDate<T = undefined> {
 
         // For day patterns, cap at the actual last day of the current month
         if (target === "day") {
-          const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
+          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
           this[target] = Math.min(maxValue, lastDayOfMonth);
         } else {
           this[target] = maxValue;
@@ -775,7 +790,7 @@ class CronDate<T = undefined> {
           // We just reset month - check if day needs to be reset based on the new month
           const dayOffset = RecursionSteps[1][2]; // offset for day
           const dayMaxValue = this.getMaxPatternValue("day", pattern, dayOffset);
-          const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
+          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
           const newDay = Math.min(dayMaxValue, lastDayOfMonth);
           if (newDay !== this.day) {
             this.day = newDay;
@@ -846,19 +861,13 @@ class CronDate<T = undefined> {
     // Special handling for day when lastDayOfMonth is set
     if (target === "day" && pattern.lastDayOfMonth) {
       // Return the actual last day of the current month
-      let lastDay;
-      if (this.month !== 1) {
-        lastDay = DaysOfMonth[this.month];
-      } else {
-        lastDay = new Date(Date.UTC(this.year, this.month + 1, 0, 0, 0, 0, 0)).getUTCDate();
-      }
-      return lastDay;
+      return this.getLastDayOfMonth(this.year, this.month);
     }
 
     // Special handling for day with day-of-week patterns
     if (target === "day" && !pattern.starDOW) {
       // Get the actual last day of the current month as we need to check all days
-      const lastDay = new Date(Date.UTC(this.year, this.month + 1, 0, 0, 0, 0, 0)).getUTCDate();
+      const lastDay = this.getLastDayOfMonth(this.year, this.month);
       return lastDay;
     }
 
@@ -1005,13 +1014,7 @@ class CronDate<T = undefined> {
 
         // Special case for last day of month (L modifier)
         if (pattern.lastDayOfMonth) {
-          let lastDayOfMonth;
-          if (this.month !== 1) {
-            lastDayOfMonth = DaysOfMonth[this.month];
-          } else {
-            lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0, 0, 0, 0, 0))
-              .getUTCDate();
-          }
+          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
           if (targetValue === lastDayOfMonth) {
             match = 1;
           }

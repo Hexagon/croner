@@ -433,6 +433,56 @@ class CronPattern {
   }
 
   /**
+   * Validates that a parsed number is not NaN.
+   * Throws a TypeError with a descriptive message if the value is NaN.
+   *
+   * @param value - The value to validate
+   * @param errorMessage - The error message to throw if validation fails
+   * @throws {TypeError} If the value is NaN
+   * @private
+   */
+  private validateNotNaN(value: number, errorMessage: string): void {
+    if (isNaN(value)) {
+      throw new TypeError(errorMessage);
+    }
+  }
+
+  /**
+   * Validates that a range is valid (lower <= upper) and that steps are valid (> 0 and <= array length).
+   *
+   * @param lower - Lower bound of range
+   * @param upper - Upper bound of range
+   * @param steps - Optional step value to validate
+   * @param type - The type of pattern part being validated
+   * @param conf - The original configuration string for error messages
+   * @throws {TypeError} If validation fails
+   * @private
+   */
+  private validateRange(
+    lower: number,
+    upper: number,
+    steps: number | undefined,
+    type: CronPatternPart,
+    conf: string,
+  ): void {
+    if (lower > upper) {
+      throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
+    }
+
+    if (steps !== undefined) {
+      if (steps === 0) {
+        throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
+      }
+      if (steps > this[type].length) {
+        throw new TypeError(
+          "CronPattern: Syntax error, steps cannot be greater than maximum value of part (" +
+            this[type].length + ")",
+        );
+      }
+    }
+  }
+
+  /**
    * Take care of ranges with stepping (e.g. 3-23/5)
    *
    * @param conf Current part, expected to be a string like 3-23/5
@@ -463,21 +513,11 @@ class CronPattern {
     const upper = parseInt(upperMatch, 10) + valueIndexOffset;
     const steps = parseInt(stepMatch, 10);
 
-    if (isNaN(lower)) throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
-    if (isNaN(upper)) throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
-    if (isNaN(steps)) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
+    this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
+    this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
+    this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
 
-    if (steps === 0) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
-    if (steps > this[type].length) {
-      throw new TypeError(
-        "CronPattern: Syntax error, steps cannot be greater than maximum value of part (" +
-          this[type].length + ")",
-      );
-    }
-
-    if (lower > upper) {
-      throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
-    }
+    this.validateRange(lower, upper, steps, type, conf);
 
     for (let i = lower; i <= upper; i += steps) {
       this.setPart(type, i, result[1] || defaultValue);
@@ -538,16 +578,10 @@ class CronPattern {
     const lower = parseInt(split[0], 10) + valueIndexOffset,
       upper = parseInt(split[1], 10) + valueIndexOffset;
 
-    if (isNaN(lower)) {
-      throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
-    } else if (isNaN(upper)) {
-      throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
-    }
+    this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
+    this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
 
-    //
-    if (lower > upper) {
-      throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
-    }
+    this.validateRange(lower, upper, undefined, type, conf);
 
     for (let i = lower; i <= upper; i++) {
       this.setPart(type, i, result[1] || defaultValue);
@@ -589,13 +623,8 @@ class CronPattern {
 
     const steps = parseInt(split[1], 10);
 
-    if (isNaN(steps)) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
-    if (steps === 0) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
-    if (steps > this[type].length) {
-      throw new TypeError(
-        "CronPattern: Syntax error, max steps for part is (" + this[type].length + ")",
-      );
-    }
+    this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
+    this.validateRange(0, this[type].length - 1, steps, type, conf);
 
     for (let i = start; i < this[type].length; i += steps) {
       this.setPart(type, i, result[1] || defaultValue);
