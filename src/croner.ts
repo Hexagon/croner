@@ -225,26 +225,8 @@ class Cron<T = undefined> {
     if (this._states.maxRuns !== undefined && n > this._states.maxRuns) {
       n = this._states.maxRuns;
     }
-    const enumeration: Date[] = [];
-    let prev: CronDate<T> | Date | string | undefined | null = previous ||
-      this._states.currentRun ||
-      undefined;
-
-    // When dayOffset is used, we need to track the pattern match dates separately
-    // from the offset dates we return
-    while (n-- && (prev = this._next(prev))) {
-      // Apply dayOffset to the result we add to enumeration
-      if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-        const baseDate = prev.getDate(false);
-        const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
-        enumeration.push(new Date(baseDate.getTime() + offsetMs));
-      } else {
-        enumeration.push(prev.getDate(false));
-      }
-      // But continue with the non-offset date for finding the next match
-    }
-
-    return enumeration;
+    const startingDate = previous || this._states.currentRun || undefined;
+    return this._enumerateRuns(n, startingDate, "next");
   }
 
   /**
@@ -255,21 +237,41 @@ class Cron<T = undefined> {
    * @returns - Previous n run times in reverse chronological order (most recent first)
    */
   public previousRuns(n: number, reference?: Date | string): Date[] {
+    return this._enumerateRuns(n, reference || undefined, "previous");
+  }
+
+  /**
+   * Internal helper to enumerate runs in either direction.
+   *
+   * @param n - Number of runs to enumerate
+   * @param startDate - Date to start from
+   * @param direction - Direction to enumerate ("next" or "previous")
+   * @returns Array of run times with dayOffset applied
+   * @private
+   */
+  private _enumerateRuns(
+    n: number,
+    startDate: CronDate<T> | Date | string | undefined | null,
+    direction: "next" | "previous",
+  ): Date[] {
     const enumeration: Date[] = [];
-    let ref: CronDate<T> | Date | string | undefined | null = reference || undefined;
+    let currentDate: CronDate<T> | Date | string | undefined | null = startDate;
+
+    // Select the appropriate method based on direction
+    const findMethod = direction === "next" ? this._next : this._previous;
 
     // When dayOffset is used, we need to track the pattern match dates separately
     // from the offset dates we return
-    while (n-- && (ref = this._previous(ref))) {
+    while (n-- && (currentDate = findMethod.call(this, currentDate))) {
       // Apply dayOffset to the result we add to enumeration
       if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-        const baseDate = ref.getDate(false);
+        const baseDate = currentDate.getDate(false);
         const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
         enumeration.push(new Date(baseDate.getTime() + offsetMs));
       } else {
-        enumeration.push(ref.getDate(false));
+        enumeration.push(currentDate.getDate(false));
       }
-      // But continue with the non-offset date for finding the previous match
+      // But continue with the non-offset date for finding the next match
     }
 
     return enumeration;
