@@ -35,12 +35,7 @@ test("Short pattern should throw", function () {
   });
 });
 
-test("7-field pattern should be supported (OCPS 1.2)", function () {
-  // 7-field pattern with year field should work
-  let scheduler = new Cron("* * * * * * *");
-  const next = scheduler.nextRun();
-  assert(next !== null, "7-field pattern should return valid next run");
-});
+// 7-field pattern tests are now covered by OCPS 1.2 tests
 
 test("Letter in pattern should throw", function () {
   assertThrows(() => {
@@ -71,20 +66,7 @@ test("Invalid data type of pattern should throw", function () {
   });
 });
 
-test("Weekday 0 (sunday) and weekday 7 (sunday) should both be valid patterns", function () {
-  let scheduler0 = new Cron("0 0 0 * * 0");
-  scheduler0.nextRun();
-  let scheduler7 = new Cron("0 0 0 * * 7");
-  scheduler7.nextRun();
-});
-
-test("Weekday 0 (sunday) and weekday 7 (sunday) should give the same run time", function () {
-  let scheduler0 = new Cron("0 0 0 * * 0"),
-    scheduler7 = new Cron("0 0 0 * * 7"),
-    nextRun0 = scheduler0.nextRun(),
-    nextRun7 = scheduler7.nextRun();
-  assertEquals(nextRun0?.getTime(), nextRun7?.getTime());
-});
+// Sunday as 0 or 7 tests are now covered by OCPS 1.0 tests
 
 test("0 0 0 * * * should return tomorrow, at 00:00:00", function () {
   let scheduler = new Cron("0 0 0 * * *"),

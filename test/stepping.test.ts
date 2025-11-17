@@ -2,6 +2,45 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
+// Basic slash/stepping syntax tests
+test("Slash in pattern should not throw", function () {
+  let scheduler = new Cron("* */5 * * * *");
+  scheduler.nextRun();
+});
+
+test("Slash in pattern with number first should throw", function () {
+  assertThrows(() => {
+    let scheduler = new Cron("* 5/* * * * *");
+    scheduler.nextRun();
+  });
+});
+
+test("Slash in pattern without following number should throw", function () {
+  assertThrows(() => {
+    let scheduler = new Cron("* */ * * * *");
+    scheduler.nextRun();
+  });
+});
+
+test("Slash in pattern with preceding number should not throw", function () {
+  let scheduler = new Cron("* 5/5 * * * *");
+  scheduler.nextRun();
+});
+
+test("Slash in pattern with preceding letter should throw", function () {
+  assertThrows(() => {
+    let scheduler = new Cron("* a/5 * * * *");
+    scheduler.nextRun();
+  });
+});
+
+test("Slash in pattern with letter after should throw should throw", function () {
+  assertThrows(() => {
+    let scheduler = new Cron("* */a * * * *");
+    scheduler.nextRun();
+  });
+});
+
 test("Slash in pattern with wildcards both pre and post should throw", function () {
   assertThrows(() => {
     let scheduler = new Cron("* */* * * * *");
@@ -42,13 +81,6 @@ test("Range with stepping with illegal range should throw", function () {
   });
 });
 
-test("Slash in pattern with letter after should throw should throw", function () {
-  assertThrows(() => {
-    let scheduler = new Cron("* */a * * * *");
-    scheduler.nextRun();
-  });
-});
-
 test("Slash in pattern with too high stepping should throw", function () {
   assertThrows(() => {
     let scheduler = new Cron("* */61 * * * *");
@@ -63,6 +95,17 @@ test("Multiple stepping should throw", function () {
   });
 });
 
+test("Slash in pattern with preceding comma separated entries should not throw", function () {
+  let scheduler = new Cron("* 1,2/5 * * * *");
+  scheduler.nextRun();
+});
+
+test("Slash in pattern with preceding range separated by comma should not throw", function () {
+  let scheduler = new Cron("* 1-15/5,6 * * * *");
+  scheduler.nextRun();
+});
+
+// Stepping value tests
 test("Steps for hours should yield correct hours", function () {
   let nextRuns = new Cron("1 1 */3 * * *").nextRuns(10, "2020-01-01T00:00:00");
   assertEquals(nextRuns[0].getHours(), 0);

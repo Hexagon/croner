@@ -94,29 +94,7 @@ test("OCPS 1.4: + without following value should throw", function () {
 });
 
 // Section 4.2: ? Character Definition
-test("OCPS 1.4: ? character should work as wildcard alias", function () {
-  // ? should behave like *
-  const cron1 = new Cron("? ? ? ? ? ?");
-  const cron2 = new Cron("* * * * * *");
-
-  const run1 = cron1.nextRun();
-  const run2 = cron2.nextRun();
-
-  assert(run1 !== null && run2 !== null, "Both patterns should work");
-  // They should produce similar (though not necessarily identical due to timing) results
-});
-
-test("OCPS 1.4: ? should work in day-of-month field", function () {
-  const cron = new Cron("0 0 ? * *");
-  const run = cron.nextRun();
-  assert(run !== null, "? in day-of-month should work");
-});
-
-test("OCPS 1.4: ? should work in day-of-week field", function () {
-  const cron = new Cron("0 0 * * ?");
-  const run = cron.nextRun();
-  assert(run !== null, "? in day-of-week should work");
-});
+// Note: Comprehensive ? character tests are in question-mark.test.ts
 
 // Section 4.3.1: DST Transitions
 test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
