@@ -613,11 +613,6 @@ class CronDate<T = undefined> {
       return null;
     }
 
-    // DEBUG: Uncomment for debugging
-    if (depth < 20) {
-      console.log(`[recurseBackward] depth=${depth}, doing=${doing}, y=${this.year}, m=${this.month}, d=${this.day}, h=${this.hour}, min=${this.minute}, s=${this.second}`);
-    }
-
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -664,10 +659,6 @@ class CronDate<T = undefined> {
       RecursionSteps[doing][2],
     );
 
-    if (depth < 20) {
-      console.log(`  [findPrevious] returned ${res} for ${RecursionSteps[doing][0]}, now at y=${this.year}, m=${this.month}, d=${this.day}`);
-    }
-
     // Component changed
     if (res > 1) {
       // Flag following levels for reset to their maximum values
@@ -681,10 +672,6 @@ class CronDate<T = undefined> {
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
         this[target] = maxValue;
 
-        if (depth < 20) {
-          console.log(`    [reset] ${target} = ${maxValue} (offset=${offset})`);
-        }
-
         resetLevel++;
       }
 
@@ -692,6 +679,17 @@ class CronDate<T = undefined> {
       if (res === 3) {
         // Decrement parent
         this[RecursionSteps[doing][1]]--;
+
+        // Special handling: if we just decremented year, we need to handle day overflow in the current month
+        if (doing === 0) {
+          // Get the last day of the current month (after year decrement)
+          const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
+
+          // If current day exceeds the last day of the month, cap it
+          if (this.day > lastDayOfMonth) {
+            this.day = lastDayOfMonth;
+          }
+        }
 
         // Special handling: if we just decremented month, we need to handle day overflow
         if (doing === 1) {
@@ -703,7 +701,7 @@ class CronDate<T = undefined> {
             // We need to check what the new month will be after normalization
             let tempYear = this.year;
             let tempMonth = this.month;
-            
+
             // Normalize month if it's out of bounds
             while (tempMonth < 0) {
               tempMonth += 12;
@@ -713,10 +711,10 @@ class CronDate<T = undefined> {
               tempMonth -= 12;
               tempYear++;
             }
-            
+
             // Get the last day of the normalized month
             const lastDayOfMonth = new Date(Date.UTC(tempYear, tempMonth + 1, 0)).getUTCDate();
-            
+
             // If current day exceeds the last day of the new month, cap it
             if (this.day > lastDayOfMonth) {
               this.day = lastDayOfMonth;
@@ -731,7 +729,7 @@ class CronDate<T = undefined> {
         const target = RecursionSteps[doing][0];
         const offset = RecursionSteps[doing][2];
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
-        
+
         // For day patterns, cap at the actual last day of the current month
         if (target === "day") {
           const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
@@ -742,6 +740,24 @@ class CronDate<T = undefined> {
 
         // Apply again to ensure the date is valid
         this.apply();
+
+        // After resetting the current level and normalizing, we may need to reset child levels again
+        // This happens when, for example, we cap day to 30 for November, then normalize back to December
+        // In that case, day should be reset to 31 for December
+        if (doing === 0) {
+          // We just reset month - check if day needs to be reset based on the new month
+          const dayOffset = RecursionSteps[1][2]; // offset for day
+          const dayMaxValue = this.getMaxPatternValue("day", pattern, dayOffset);
+          const lastDayOfMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
+          const newDay = Math.min(dayMaxValue, lastDayOfMonth);
+          if (newDay !== this.day) {
+            this.day = newDay;
+            // Reset hour/minute/second as well since day changed
+            this.hour = this.getMaxPatternValue("hour", pattern, RecursionSteps[2][2]);
+            this.minute = this.getMaxPatternValue("minute", pattern, RecursionSteps[3][2]);
+            this.second = this.getMaxPatternValue("second", pattern, RecursionSteps[4][2]);
+          }
+        }
 
         // OCPS 1.2: If we just decremented the year and have year constraints, check if it matches
         if (doing === 0 && !pattern.starYear) {
