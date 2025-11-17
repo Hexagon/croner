@@ -22,6 +22,26 @@ jobs:
       test_target: "test/*.test.ts"
       jsr_dependencies: "@cross/test @std/assert"
 
+  node_24_compatibility:
+    name: Node.js 24 Compatibility Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+
+      - name: Install dependencies
+        run: |
+          echo '{ "type": "module" }' > package.json
+          npx jsr add @cross/test @std/assert
+
+      - name: Run tests
+        run: npx --yes tsx --test test/*.test.ts
+
   prerelease_build_check:
     name: Esbuild + DTS check (GA parity)
     runs-on: ubuntu-latest

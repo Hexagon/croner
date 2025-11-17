@@ -39,7 +39,7 @@ We recommend using VS Code with eslint extensions, which will automatically chec
   -   Once Desktop is set up, you can use it to [fork the repo](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/cloning-and-forking-repositories-from-github-desktop)!
 -   Using the command line:
   -   [Fork the repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo#fork-an-example-repository) so that you can make your changes without affecting the original project until you're ready to merge them.
-2.  Install or update to **Node.js v16**. 
+2.  Install or update to **Node.js v18** or later. 
 3.  Base your work on the `dev` branch.
 4.  Create a working branch `feature/my-cool-feature` or `bugfix/issue-14` and start with your changes!
 
