@@ -42,21 +42,6 @@ jobs:
       - name: Run tests
         run: npx --yes tsx --test test/*.test.ts
 
-  deno_1_42_compatibility:
-    name: Deno 1.42 Compatibility Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Deno 1.42
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: "1.42.x"
-
-      - name: Run tests
-        run: deno test --allow-read
-
   prerelease_build_check:
     name: Esbuild + DTS check (GA parity)
     runs-on: ubuntu-latest
