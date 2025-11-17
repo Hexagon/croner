@@ -136,21 +136,7 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
   assertEquals(nextRuns[9].getTime() < now.getTime() + 6 * 60 * 1000, true);
 });
 
-test("Extra whitespace at beginning should not throw", () => {
-  new Cron(" 0 0 12 9 *").nextRun();
-});
-
-test("Extra whitespace at end should not throw", () => {
-  new Cron("0 0 12 9 * ").nextRun();
-});
-
-test("Tab as whitespace should not throw", () => {
-  new Cron("0 0 12  9 * ").nextRun();
-});
-
-test("Mixed whitespace should not throw", () => {
-  new Cron("    0   0     12  9 *  ").nextRun();
-});
+// Whitespace tests are now covered by OCPS 1.0 tests
 
 test("Next 10 run times is returned by enumeration(), and contain a reasonable time span, when using modified start time", () => {
   // 20 minutes before now
@@ -169,83 +155,12 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
   assertEquals(nextRuns[9].getTime() < now.getTime() + 11 * 60 * 1000, true);
 });
 
-test("@yearly should be replaced", function () {
-  let nextRuns = new Cron("@yearly").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2023);
-  assertEquals(nextRuns[0].getMonth(), 0);
-  assertEquals(nextRuns[0].getDate(), 1);
-  assertEquals(nextRuns[1].getFullYear(), 2024);
-  assertEquals(nextRuns[2].getFullYear(), 2025);
-});
-
-test("@annually should be replaced", function () {
-  let nextRuns = new Cron("@annually").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2023);
-  assertEquals(nextRuns[0].getMonth(), 0);
-  assertEquals(nextRuns[0].getDate(), 1);
-});
-
-test("@monthly should be replaced", function () {
-  let nextRuns = new Cron("@monthly").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 2);
-  assertEquals(nextRuns[0].getDate(), 1);
-  assertEquals(nextRuns[1].getMonth(), 3);
-  assertEquals(nextRuns[1].getDate(), 1);
-  assertEquals(nextRuns[2].getMonth(), 4);
-  assertEquals(nextRuns[2].getDate(), 1);
-});
-
-test("@weekly should be replaced", function () {
-  let nextRuns = new Cron("@weekly").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 20);
-  assertEquals(nextRuns[1].getMonth(), 1);
-  assertEquals(nextRuns[1].getDate(), 27);
-  assertEquals(nextRuns[2].getMonth(), 2);
-  assertEquals(nextRuns[2].getDate(), 6);
-});
-
-test("@weekly should be replaced", function () {
-  let nextRuns = new Cron("@daily").nextRuns(3, "2022-02-17T12:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 18);
-  assertEquals(nextRuns[1].getMonth(), 1);
-  assertEquals(nextRuns[1].getDate(), 19);
-  assertEquals(nextRuns[2].getMonth(), 1);
-  assertEquals(nextRuns[2].getDate(), 20);
-});
-
+// Predefined schedule (nickname) tests are now covered by OCPS 1.1 tests
+// Invalid nickname test kept here as it tests error handling, not OCPS compliance
 test("@wekly should throw", function () {
   assertThrows(() => {
     new Cron("@wekly").nextRuns(3, "2022-02-17T12:00:00");
   });
-});
-
-test("@hourly should be replaced (UTC)", function () {
-  let nextRuns = new Cron("@hourly").nextRuns(3, "2022-02-16T23:59:00Z");
-  assertEquals(nextRuns[0].getUTCFullYear(), 2022);
-  assertEquals(nextRuns[0].getUTCMonth(), 1);
-  assertEquals(nextRuns[0].getUTCDate(), 17);
-  assertEquals(nextRuns[0].getUTCHours(), 0);
-  assertEquals(nextRuns[1].getUTCMonth(), 1);
-  assertEquals(nextRuns[1].getUTCDate(), 17);
-  assertEquals(nextRuns[1].getUTCHours(), 1);
-  assertEquals(nextRuns[2].getUTCHours(), 2);
-});
-
-test("@hourly should be replaced (Local)", function () {
-  let nextRuns = new Cron("@hourly").nextRuns(3, "2022-02-16T23:59:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 17);
-  assertEquals(nextRuns[0].getHours(), 0);
-  assertEquals(nextRuns[1].getMonth(), 1);
-  assertEquals(nextRuns[1].getDate(), 17);
-  assertEquals(nextRuns[1].getHours(), 1);
-  assertEquals(nextRuns[2].getHours(), 2);
 });
 
 test("Croner should increment seconds", function () {

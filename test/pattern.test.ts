@@ -35,12 +35,7 @@ test("Short pattern should throw", function () {
   });
 });
 
-test("7-field pattern should be supported (OCPS 1.2)", function () {
-  // 7-field pattern with year field should work
-  let scheduler = new Cron("* * * * * * *");
-  const next = scheduler.nextRun();
-  assert(next !== null, "7-field pattern should return valid next run");
-});
+// 7-field pattern tests are now covered by OCPS 1.2 tests
 
 test("Letter in pattern should throw", function () {
   assertThrows(() => {
