@@ -136,21 +136,49 @@ class CronDate<T = undefined> {
   }
 
   /**
+   * Calculates the last weekday (Mon-Fri) of a given month.
+   *
+   * @param year The target year.
+   * @param month The target month (0-11).
+   * @returns The day of the month (1-31) that is the last weekday.
+   * @private
+   */
+  private getLastWeekday(year: number, month: number): number {
+    const lastDay = this.getLastDayOfMonth(year, month);
+    const lastDate = new Date(Date.UTC(year, month, lastDay));
+    const weekday = lastDate.getUTCDay(); // 0=Sun, 6=Sat
+
+    if (weekday === 0) { // Sunday
+      return lastDay - 2; // Go back to Friday
+    } else if (weekday === 6) { // Saturday
+      return lastDay - 1; // Go back to Friday
+    }
+
+    // It's already a weekday
+    return lastDay;
+  }
+
+  /**
    * Calculates the nearest weekday (Mon-Fri) to a given day of the month.
    * Handles month boundaries.
    *
    * @param year The target year.
    * @param month The target month (0-11).
    * @param day The target day (1-31).
-   * @returns The day of the month (1-31) that is the nearest weekday.
+   * @returns The day of the month (1-31) that is the nearest weekday, or -1 if the day doesn't exist in the month.
    */
   private getNearestWeekday(year: number, month: number, day: number): number {
+    // Check if the requested day exists in the month
+    const daysInMonth = this.getLastDayOfMonth(year, month);
+    if (day > daysInMonth) {
+      return -1; // Day doesn't exist in this month
+    }
+
     const date = new Date(Date.UTC(year, month, day));
     const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
 
     if (weekday === 0) { // Sunday
       // If it's the last day of the month, go back to Friday
-      const daysInMonth = this.getLastDayOfMonth(year, month);
       if (day === daysInMonth) {
         return day - 2;
       }
@@ -396,12 +424,25 @@ class CronDate<T = undefined> {
             // Calculate the actual execution day for this 'W' day
             const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
 
+            // Skip if the day doesn't exist in this month (executionDay === -1)
+            if (executionDay === -1) {
+              continue;
+            }
+
             // Check if the day currently being evaluated by the outer loop is that execution day
             if (executionDay === (i - offset)) {
               match = 1;
               break; // Match found, no need to check other 'W' days
             }
           }
+        }
+      }
+
+      // Special case for last weekday of month
+      if (target === "day" && pattern.lastWeekday) {
+        const lastWeekday = this.getLastWeekday(this.year, this.month);
+        if (i - offset === lastWeekday) {
+          match = 1;
         }
       }
 
@@ -1004,11 +1045,20 @@ class CronDate<T = undefined> {
           for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
             if (pattern.nearestWeekdays[dayWithW]) {
               const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
-              if (executionDay === targetValue) {
+              // Skip if the day doesn't exist in this month
+              if (executionDay !== -1 && executionDay === targetValue) {
                 match = 1;
                 break;
               }
             }
+          }
+        }
+
+        // Special case for last weekday of month (LW modifier)
+        if (pattern.lastWeekday) {
+          const lastWeekday = this.getLastWeekday(this.year, this.month);
+          if (targetValue === lastWeekday) {
+            match = 1;
           }
         }
 

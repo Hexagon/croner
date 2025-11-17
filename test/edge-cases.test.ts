@@ -10,76 +10,60 @@ import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
 /**
- * Issue: W modifier with non-existent days uses JavaScript Date overflow
+ * W modifier with non-existent days now correctly skips months where the day doesn't exist
  *
  * The OCPS 1.3 spec doesn't explicitly define behavior when W is used with a day
  * that doesn't exist in a month (e.g., 29W in non-leap February, 31W in April).
  *
- * Two interpretations are possible:
- * 1. Skip months where the day doesn't exist
- * 2. Apply W to the last valid day of that month (e.g., 31W in April → 30W)
+ * The implementation now follows option #1: Skip months where the day doesn't exist.
+ * This is the most predictable and consistent behavior.
  *
- * The current implementation attempts #2, but uses JavaScript's Date constructor
- * which overflows to the next month, causing unpredictable weekday calculations.
- *
- * For example, new Date(2025, 1, 29) becomes March 1, 2025, and the W logic
- * uses March 1's weekday to calculate, returning Feb 28 incorrectly.
- *
- * This test documents the current behavior caused by Date overflow.
+ * For example, 29W in February will only match in leap years when Feb 29 exists.
+ * Similarly, 31W will skip months with only 30 days (Apr, Jun, Sep, Nov) and February.
  */
-test("W modifier with non-existent day causes Date overflow behavior", function () {
+test("W modifier with non-existent day skips months correctly", function () {
   // February 2025 has only 28 days (not a leap year)
   const cron = new Cron("0 0 29W 2 *");
 
   const run = cron.nextRun(new Date("2025-02-01"));
 
-  // Current behavior: Date(2025, 1, 29) overflows to March 1 (Saturday)
-  // W logic sees Saturday, goes back to Friday → returns Feb 28
-  // This happens because getNearestWeekday doesn't check if day 29 exists
-  assertEquals(run?.getFullYear(), 2025);
+  // Should skip to next leap year (2028) where Feb 29 exists
+  assertEquals(run?.getFullYear(), 2028);
   assertEquals(run?.getMonth(), 1); // February
-  assertEquals(run?.getDate(), 28);
-
-  // Possible fixes:
-  // Option 1: Skip to next leap year (Feb 29, 2028)
-  // Option 2: Treat 29W in Feb as "last valid day W" (28W in non-leap years)
-  // Option 3: Check day validity in getNearestWeekday() before Date construction
+  assertEquals(run?.getDate(), 29);
 });
 
-test("W modifier with day 30 in February - Date overflow behavior", function () {
+test("W modifier with day 30 in February skips all years", function () {
   // February never has 30 days
   const cron = new Cron("0 0 30W 2 *");
 
   const run = cron.nextRun(new Date("2025-02-01"));
 
-  // Due to Date overflow: Date(2025, 1, 30) → March 2
-  // The W logic will look far ahead for when this would be a weekday match
+  // Should skip February entirely and look for other months
+  // Since the pattern specifies month 2 (February), and Feb never has 30 days,
+  // it will keep looking for a February with 30 days (which doesn't exist)
+  // This should either return null or find a very distant match
   if (run) {
-    console.log(`30W in February matched: ${run.toISOString()}`);
+    // If a run is found, it should not be in February
+    assert(run.getMonth() !== 1, "Should not match in February");
   }
-
-  // Since Feb 30 never exists, the Date overflow behavior is unpredictable
-  // Implementation could either skip February entirely or define consistent behavior
 });
 
-test("W modifier with day 31 in 30-day month (April) - interpretation question", function () {
+test("W modifier with day 31 in 30-day month (April) skips that month", function () {
   // April has only 30 days
-  // Two interpretations: (1) skip April, or (2) treat as 30W
   const cron = new Cron("0 0 31W 4 *");
 
   const run = cron.nextRun(new Date("2025-04-01"));
 
-  // Current behavior: Date(2025, 3, 31) overflows to May 1
-  // The W logic then operates on May 1's weekday, but constrained to April
-  // Result: matches April 30 (which could be considered "31W" = "last day W")
+  // Should skip April entirely since day 31 doesn't exist
+  // The pattern specifies month 4 (April) with day 31, which doesn't exist in April
+  // So it should not match in April
   if (run && run.getMonth() === 3) { // April
-    assertEquals(run.getDate(), 30);
-    console.log(`31W in April matched day ${run.getDate()}`);
+    assert(false, "31W should not match in April which only has 30 days");
   }
-
-  // This behavior could be intentional: "31W" = "nearest weekday to 31st",
-  // which in a 30-day month means "nearest weekday to day 30"
-  // However, Date overflow makes this logic inconsistent and unpredictable
+  
+  // Should skip to next year or return null since April never has 31 days
+  assertEquals(run, null);
 });
 
 test("W modifier on valid day in month should work correctly", function () {
@@ -219,4 +203,137 @@ test("L modifier in range has defined behavior after fix", function () {
     const day = run.getDay();
     assert(day >= 1 && day <= 5, `Day ${day} should be Mon-Fri`);
   }
+});
+
+/**
+ * LW modifier tests (Last Weekday of the month)
+ *
+ * LW in the day-of-month field means "last weekday (Mon-Fri) of the month"
+ * If the last day of the month falls on a weekend, it moves back to Friday.
+ */
+test("LW modifier should match last weekday of each month", function () {
+  const cron = new Cron("0 0 LW * *");
+  const runs = cron.nextRuns(12, new Date("2025-01-01"));
+
+  // Expected last weekdays for 2025
+  const expected = [
+    { month: 0, day: 31 }, // Jan 31 (Fri)
+    { month: 1, day: 28 }, // Feb 28 (Fri)
+    { month: 2, day: 31 }, // Mar 31 (Mon)
+    { month: 3, day: 30 }, // Apr 30 (Wed)
+    { month: 4, day: 30 }, // May 30 (Fri) - May 31 is Sat
+    { month: 5, day: 30 }, // Jun 30 (Mon)
+    { month: 6, day: 31 }, // Jul 31 (Thu)
+    { month: 7, day: 29 }, // Aug 29 (Fri) - Aug 31 is Sun
+    { month: 8, day: 30 }, // Sep 30 (Tue)
+    { month: 9, day: 31 }, // Oct 31 (Fri)
+    { month: 10, day: 28 }, // Nov 28 (Fri) - Nov 30 is Sun
+    { month: 11, day: 31 }, // Dec 31 (Wed)
+  ];
+
+  for (let i = 0; i < expected.length; i++) {
+    assertEquals(runs[i].getMonth(), expected[i].month);
+    assertEquals(runs[i].getDate(), expected[i].day);
+    
+    // Verify it's actually a weekday
+    const dow = runs[i].getDay();
+    assert(dow >= 1 && dow <= 5, `Day ${runs[i].getDate()} should be a weekday, got ${dow}`);
+  }
+});
+
+test("LW modifier should work across leap years", function () {
+  // Test Feb LW in leap year
+  const cron = new Cron("0 0 LW 2 *");
+  
+  // 2024 is a leap year, Feb 29 is Thu
+  const run2024 = cron.nextRun(new Date("2024-02-01"));
+  assertEquals(run2024?.getFullYear(), 2024);
+  assertEquals(run2024?.getMonth(), 1);
+  assertEquals(run2024?.getDate(), 29); // Feb 29 is Thu (weekday)
+  
+  // 2025 is not a leap year, Feb 28 is Fri
+  const run2025 = cron.nextRun(new Date("2025-02-01"));
+  assertEquals(run2025?.getFullYear(), 2025);
+  assertEquals(run2025?.getMonth(), 1);
+  assertEquals(run2025?.getDate(), 28); // Feb 28 is Fri (weekday)
+});
+
+test("LW modifier should handle months ending on Saturday", function () {
+  // May 2025: last day is May 31 (Sat), so LW should be May 30 (Fri)
+  const cron = new Cron("0 0 LW 5 *");
+  const run = cron.nextRun(new Date("2025-05-01"));
+  
+  assertEquals(run?.getFullYear(), 2025);
+  assertEquals(run?.getMonth(), 4); // May
+  assertEquals(run?.getDate(), 30); // Friday
+  assertEquals(run?.getDay(), 5); // Friday
+});
+
+test("LW modifier should handle months ending on Sunday", function () {
+  // August 2025: last day is Aug 31 (Sun), so LW should be Aug 29 (Fri)
+  const cron = new Cron("0 0 LW 8 *");
+  const run = cron.nextRun(new Date("2025-08-01"));
+  
+  assertEquals(run?.getFullYear(), 2025);
+  assertEquals(run?.getMonth(), 7); // August
+  assertEquals(run?.getDate(), 29); // Friday
+  assertEquals(run?.getDay(), 5); // Friday
+});
+
+/**
+ * Test that 31W properly skips months without 31 days
+ */
+test("31W should skip months without 31 days", function () {
+  const cron = new Cron("0 0 31W * *");
+  const runs = cron.nextRuns(24, new Date("2025-01-01"));
+
+  // Months with 31 days: Jan(0), Mar(2), May(4), Jul(6), Aug(7), Oct(9), Dec(11)
+  const monthsWith31Days = [0, 2, 4, 6, 7, 9, 11];
+
+  for (const run of runs) {
+    const month = run.getMonth();
+    assert(
+      monthsWith31Days.includes(month),
+      `31W should only match in months with 31 days, got month ${month}`,
+    );
+
+    // Also verify the matched day is a weekday
+    const dow = run.getDay();
+    assert(dow >= 1 && dow <= 5, `Matched day should be a weekday, got ${dow}`);
+  }
+});
+
+test("31W in a specific 30-day month should not match", function () {
+  // April only has 30 days
+  const cron = new Cron("0 0 31W 4 *");
+  const run = cron.nextRun(new Date("2025-04-01"));
+
+  // Should not match in April since it doesn't have 31 days
+  assertEquals(run, null);
+});
+
+test("31W in a specific 31-day month should match", function () {
+  // January has 31 days
+  const cron = new Cron("0 0 31W 1 *");
+  const run = cron.nextRun(new Date("2025-01-01"));
+
+  assertEquals(run?.getMonth(), 0); // January
+  // Jan 31, 2025 is Friday, so 31W matches Jan 31
+  assertEquals(run?.getDate(), 31);
+});
+
+test("29W in February should only match leap years", function () {
+  const cron = new Cron("0 0 29W 2 *");
+
+  // 2025 is not a leap year, should skip to 2028
+  const run1 = cron.nextRun(new Date("2025-02-01"));
+  assertEquals(run1?.getFullYear(), 2028);
+  assertEquals(run1?.getMonth(), 1); // February
+  assertEquals(run1?.getDate(), 29);
+
+  // 2024 is a leap year, should match 2024
+  const run2 = cron.nextRun(new Date("2024-02-01"));
+  assertEquals(run2?.getFullYear(), 2024);
+  assertEquals(run2?.getMonth(), 1); // February
+  assertEquals(run2?.getDate(), 29);
 });
