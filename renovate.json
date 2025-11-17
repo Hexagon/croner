@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "baseBranches": ["dev"],
+  "packageRules": [
+    {
+      "description": "JSR dependencies in deno.json",
+      "matchManagers": ["deno"],
+      "matchDepTypes": ["jsr"],
+      "groupName": "JSR dependencies",
+      "schedule": ["* 0-2 * * 1"]
+    },
+    {
+      "description": "NPM build dependencies in deno.json",
+      "matchManagers": ["deno"],
+      "matchDepTypes": ["npm"],
+      "groupName": "NPM build dependencies",
+      "schedule": ["* 0-2 * * 1"]
+    }
+  ],
+  "deno": {
+    "enabled": true
+  },
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 0,
+  "semanticCommits": "disabled",
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "assignees": [],
+  "reviewers": []
+}
