@@ -273,6 +273,32 @@ class Cron<T = undefined> {
     }
 
     return enumeration;
+   * Check if a given date matches the cron pattern
+   *
+   * @param date - Date to check. Can be a Date object or a string representing a date.
+   * @returns true if the date matches the pattern, false otherwise
+   */
+  public match(date: Date | string): boolean {
+    // Handle one-off jobs (created with a specific date/time)
+    if (this._states.once) {
+      const checkDate = new CronDate<T>(date, this.options.timezone || this.options.utcOffset);
+      // Strip milliseconds for comparison
+      checkDate.ms = 0;
+      const onceDate = new CronDate<T>(
+        this._states.once,
+        this.options.timezone || this.options.utcOffset,
+      );
+      onceDate.ms = 0;
+      return checkDate.getTime() === onceDate.getTime();
+    }
+
+    // For pattern-based jobs, check if the date matches the pattern
+    const cronDate = new CronDate<T>(date, this.options.timezone || this.options.utcOffset);
+
+    // Strip milliseconds (Croner operates on second precision)
+    cronDate.ms = 0;
+
+    return cronDate.match(this._states.pattern, this.options);
   }
 
   /**

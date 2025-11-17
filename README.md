@@ -42,6 +42,11 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 // This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
 new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
+// Check if a date matches a cron pattern
+const mondayCheck = new Cron('0 0 0 * * MON');
+console.log(mondayCheck.match('2024-01-01T00:00:00')); // true  (Monday)
+console.log(mondayCheck.match('2024-01-02T00:00:00')); // false (Tuesday)
+
 ```
 
 More [examples](https://croner.56k.guru/usage/examples/)...
@@ -112,6 +117,8 @@ job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, contain
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
 job.previousRun( ); 		// Get a Date object showing when the previous job was started.
+
+job.match( date ); 		// Check if a Date object or date string matches the cron pattern (true or false).
 
 job.isRunning(); 	// Indicates if the job is scheduled and not paused or killed (true or false).
 job.isStopped(); 	// Indicates if the job is permanently stopped using `stop()` (true or false).
@@ -227,6 +234,8 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 ## Why another JavaScript cron implementation
 
 Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.
+
+For example, some popular alternatives include large datetime libraries as dependencies, which significantly increases bundle size. Croner has zero dependencies and a much smaller footprint, making it ideal for applications where bundle size matters.
 
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
