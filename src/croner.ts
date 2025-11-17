@@ -273,6 +273,9 @@ class Cron<T = undefined> {
     }
 
     return enumeration;
+  }
+
+  /**
    * Check if a given date matches the cron pattern
    *
    * @param date - Date to check. Can be a Date object or a string representing a date.
