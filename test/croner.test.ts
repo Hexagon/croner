@@ -15,10 +15,7 @@ test("Array passed as next date should throw", function () {
   });
 });
 
-test("31st february should not be found", function () {
-  let scheduler = new Cron("* * * 31 2 *");
-  assertEquals(scheduler.nextRun(), null);
-});
+// Impossible date tests (Feb 31, etc.) are now in impossible-patterns.test.ts
 
 test("Too high days should throw", function () {
   assertThrows(() => {
