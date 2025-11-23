@@ -174,14 +174,14 @@ test("Strict range parsing: error message should be informative", function () {
 
 // Tests for sloppyRanges option
 test("sloppyRanges: /10 should be allowed when sloppyRanges is true", function () {
-  // Pattern "* /10 * * * *" means every second, in minutes 0, 10, 20, etc.
+  // Pattern "* /10 * * * *": every second (*), but only in minutes matching /10 (0, 10, 20, etc.)
   let scheduler = new Cron("* /10 * * * *", { sloppyRanges: true });
   let nextRuns = scheduler.nextRuns(3, "2020-01-01T00:00:00");
-  // Since it runs every second in minute 0, the first runs are at 00:00:01, 00:00:02, 00:00:03
+  // Runs every second, but only during minutes 0, 10, 20, 30, 40, 50
   assertEquals(nextRuns[0].getMinutes(), 0);
   assertEquals(nextRuns[1].getMinutes(), 0);
   assertEquals(nextRuns[2].getMinutes(), 0);
-  // But after minute 0, next runs should be in minute 10
+  // After minute 0, next runs should be in minute 10
   let laterRuns = scheduler.nextRuns(3, "2020-01-01T00:01:00");
   assertEquals(laterRuns[0].getMinutes(), 10);
 });
