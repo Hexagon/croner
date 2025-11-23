@@ -131,6 +131,14 @@ interface CronOptions<T = undefined> {
    * @default false
    */
   alternativeWeekdays?: boolean;
+
+  /**
+   * If true, allows non-standard stepping formats for backward compatibility.
+   * When false (default), only wildcard (*\/step) or range (min-max\/step) formats are allowed.
+   * When true, allows numeric prefix formats like /10, 5/5, 30/30.
+   * @default false
+   */
+  sloppyRanges?: boolean;
 }
 
 /**
@@ -174,6 +182,7 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   options.alternativeWeekdays = options.alternativeWeekdays === void 0
     ? false
     : options.alternativeWeekdays;
+  options.sloppyRanges = options.sloppyRanges === void 0 ? false : options.sloppyRanges;
 
   // Validate mode option
   if (
