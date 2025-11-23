@@ -34,6 +34,16 @@ test("Strict range parsing: 30-50/10 should be allowed", function () {
   assertEquals(nextRuns[2].getSeconds(), 50);
 });
 
+test("Strict range parsing: /10 (missing prefix) should be disallowed", function () {
+  assertThrows(
+    () => {
+      new Cron("* /10 * * * *");
+    },
+    TypeError,
+    "missing prefix",
+  );
+});
+
 test("Strict range parsing: 0/10 should be disallowed", function () {
   assertThrows(
     () => {
@@ -160,4 +170,54 @@ test("Strict range parsing: error message should be informative", function () {
       "CronPattern: Syntax error, stepping with numeric prefix ('15/5') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
     );
   }
+});
+
+// Tests for sloppyRanges option
+test("sloppyRanges: /10 should be allowed when sloppyRanges is true", function () {
+  // Pattern "* /10 * * * *" means every second, in minutes 0, 10, 20, etc.
+  let scheduler = new Cron("* /10 * * * *", { sloppyRanges: true });
+  let nextRuns = scheduler.nextRuns(3, "2020-01-01T00:00:00");
+  // Since it runs every second in minute 0, the first runs are at 00:00:01, 00:00:02, 00:00:03
+  assertEquals(nextRuns[0].getMinutes(), 0);
+  assertEquals(nextRuns[1].getMinutes(), 0);
+  assertEquals(nextRuns[2].getMinutes(), 0);
+  // But after minute 0, next runs should be in minute 10
+  let laterRuns = scheduler.nextRuns(3, "2020-01-01T00:01:00");
+  assertEquals(laterRuns[0].getMinutes(), 10);
+});
+
+test("sloppyRanges: 5/5 should be allowed when sloppyRanges is true", function () {
+  let scheduler = new Cron("5/5 * * * * *", { sloppyRanges: true });
+  let nextRuns = scheduler.nextRuns(3, "2020-01-01T00:00:00");
+  assertEquals(nextRuns[0].getSeconds(), 5);
+  assertEquals(nextRuns[1].getSeconds(), 10);
+  assertEquals(nextRuns[2].getSeconds(), 15);
+});
+
+test("sloppyRanges: 0/10 should be allowed when sloppyRanges is true", function () {
+  let scheduler = new Cron("0/10 * * * * *", { sloppyRanges: true });
+  let nextRuns = scheduler.nextRuns(3, "2020-01-01T00:00:00");
+  assertEquals(nextRuns[0].getSeconds(), 10);
+  assertEquals(nextRuns[1].getSeconds(), 20);
+  assertEquals(nextRuns[2].getSeconds(), 30);
+});
+
+test("sloppyRanges: 30/30 should be allowed when sloppyRanges is true", function () {
+  // 30/30 means start at 30, step by 30. So: 30, 60 (out of range)
+  // Since 60 is out of range for seconds, it only hits second 30
+  let scheduler = new Cron("30/30 * * * * *", { sloppyRanges: true });
+  let nextRuns = scheduler.nextRuns(3, "2020-01-01T00:00:00");
+  assertEquals(nextRuns[0].getSeconds(), 30);
+  assertEquals(nextRuns[1].getSeconds(), 30);
+  assertEquals(nextRuns[2].getSeconds(), 30);
+});
+
+test("sloppyRanges: default is false (strict mode)", function () {
+  assertThrows(
+    () => {
+      new Cron("5/5 * * * * *");
+    },
+    TypeError,
+    "stepping with numeric prefix",
+  );
 });

@@ -2,8 +2,8 @@ import { assert, assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
-test("Stepping without asterisk should not throw", function () {
-  let scheduler = new Cron("/3 * * * * *");
+test("Stepping without asterisk should not throw with sloppyRanges option", function () {
+  let scheduler = new Cron("/3 * * * * *", { sloppyRanges: true });
   scheduler.nextRun();
 });
 

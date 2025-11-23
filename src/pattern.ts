@@ -46,6 +46,7 @@ class CronPattern {
   timezone?: string;
   mode: CronMode;
   alternativeWeekdays: boolean;
+  sloppyRanges: boolean;
   second: number[];
   minute: number[];
   hour: number[];
@@ -64,12 +65,13 @@ class CronPattern {
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { mode?: CronMode; alternativeWeekdays?: boolean },
+    options?: { mode?: CronMode; alternativeWeekdays?: boolean; sloppyRanges?: boolean },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
     this.mode = options?.mode ?? "auto";
     this.alternativeWeekdays = options?.alternativeWeekdays ?? false;
+    this.sloppyRanges = options?.sloppyRanges ?? false;
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -618,24 +620,35 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
     }
 
-    // Inject missing asterisk (/3 insted of */3)
-    if (split[0] === "") {
-      split[0] = "*";
+    // OCPS: Strict range parsing - disallow numeric/step format (e.g., 0/10, 30/30) and empty prefix (/10)
+    // Only allow wildcard (*/10) or range (0-59/10) formats unless sloppyRanges is enabled
+    if (!this.sloppyRanges) {
+      // Reject patterns with empty prefix like /10
+      if (split[0] === "") {
+        throw new TypeError(
+          "CronPattern: Syntax error, stepping with missing prefix ('" + conf +
+            "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+        );
+      }
+      // Reject patterns with numeric prefix like 0/10, 30/30
+      if (split[0] !== "*") {
+        throw new TypeError(
+          "CronPattern: Syntax error, stepping with numeric prefix ('" + conf +
+            "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+        );
+      }
+    } else {
+      // In sloppy mode, inject missing asterisk (/3 instead of */3) for backward compatibility
+      if (split[0] === "") {
+        split[0] = "*";
+      }
     }
 
-    // OCPS: Strict range parsing - disallow numeric/step format (e.g., 0/10, 30/30)
-    // Only allow wildcard (*/10) or range (0-59/10) formats
-    // TODO: Consider adding an option (e.g., `sloppyRanges: boolean`) to allow
-    // non-standard formats like `/10`, `10/10`, `30/30` for backward compatibility
-    // or compatibility with non-standard cron implementations
+    let start = 0;
     if (split[0] !== "*") {
-      throw new TypeError(
-        "CronPattern: Syntax error, stepping with numeric prefix ('" + conf +
-          "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
-      );
+      start = parseInt(split[0], 10) + _valueIndexOffset;
     }
 
-    const start = 0;
     const steps = parseInt(split[1], 10);
 
     this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");

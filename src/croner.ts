@@ -196,6 +196,7 @@ class Cron<T = undefined> {
       this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
         mode: this.options.mode,
         alternativeWeekdays: this.options.alternativeWeekdays,
+        sloppyRanges: this.options.sloppyRanges,
       });
     }
 
