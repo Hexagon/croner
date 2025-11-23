@@ -604,7 +604,7 @@ class CronPattern {
   private handleStepping(
     conf: string,
     type: CronPatternPart,
-    valueIndexOffset: number,
+    _valueIndexOffset: number,
     defaultValue: number,
   ) {
     if (conf.toUpperCase().includes("W")) {
@@ -623,11 +623,19 @@ class CronPattern {
       split[0] = "*";
     }
 
-    let start = 0;
+    // OCPS: Strict range parsing - disallow numeric/step format (e.g., 0/10, 30/30)
+    // Only allow wildcard (*/10) or range (0-59/10) formats
+    // TODO: Consider adding an option (e.g., `sloppyRanges: boolean`) to allow
+    // non-standard formats like `/10`, `10/10`, `30/30` for backward compatibility
+    // or compatibility with non-standard cron implementations
     if (split[0] !== "*") {
-      start = parseInt(split[0], 10) + valueIndexOffset;
+      throw new TypeError(
+        "CronPattern: Syntax error, stepping with numeric prefix ('" + conf +
+          "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+      );
     }
 
+    const start = 0;
     const steps = parseInt(split[1], 10);
 
     this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
