@@ -175,8 +175,8 @@ class CronPattern {
     if (parts[3].toUpperCase() === "LW") {
       this.lastWeekday = true;
       parts[3] = "";
-    } else if (parts[3].indexOf("L") >= 0) {
-      parts[3] = parts[3].replace("L", "");
+    } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
+      parts[3] = parts[3].replace(/L/gi, "");
       this.lastDayOfMonth = true;
     }
 
@@ -339,8 +339,8 @@ class CronPattern {
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
       const reValidCron = (i === 3)
-        ? /[^/*0-9,-WL]+/ // Day-of-month: allow W and L modifiers
-        : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/); // Day-of-week: allow # and L modifiers
+        ? /[^/*0-9,-WwLl]+/ // Day-of-month: allow W and L modifiers (case-insensitive)
+        : (i === 5 ? /[^/*0-9,\-#Ll]+/ : /[^/*0-9,-]+/); // Day-of-week: allow # and L modifiers (case-insensitive)
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
@@ -759,7 +759,7 @@ class CronPattern {
    * @param nthWeekday bitmask, 2 (0x00010) for 2nd friday, 31 (ANY_OCCURRENCE, 0b100000) for any day
    */
   private setNthWeekdayOfMonth(index: number, nthWeekday: number | string) {
-    if (typeof nthWeekday !== "number" && nthWeekday === "L") {
+    if (typeof nthWeekday !== "number" && nthWeekday.toUpperCase() === "L") {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
     } else if (nthWeekday === ANY_OCCURRENCE) {
       this["dayOfWeek"][index] = ANY_OCCURRENCE;
