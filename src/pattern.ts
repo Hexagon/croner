@@ -339,8 +339,8 @@ class CronPattern {
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
       const reValidCron = (i === 3)
-        ? /[^/*0-9,-WwLl]+/ // Day-of-month: allow W and L modifiers (case-insensitive)
-        : (i === 5 ? /[^/*0-9,\-#Ll]+/ : /[^/*0-9,-]+/); // Day-of-week: allow # and L modifiers (case-insensitive)
+        ? /[^/*0-9,\-WwLl]+/ // Day-of-month: allow W and L modifiers (case-insensitive)
+        : (i === 5 ? /[^/*0-9,\-#Ll]+/ : /[^/*0-9,\-]+/); // Day-of-week: allow # and L modifiers (case-insensitive)
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
