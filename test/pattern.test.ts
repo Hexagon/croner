@@ -449,3 +449,116 @@ test("W Modifier: Should throw when used with a range", function () {
     "W is not allowed in a range",
   );
 });
+
+// Case-insensitivity tests for modifiers and aliases
+test("L modifier in day-of-week field should be case-insensitive (fril)", function () {
+  const scheduler = new Cron("0 0 * * fril");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDay(), 5); // Friday
+});
+
+test("L modifier in day-of-week field should be case-insensitive (fri#l)", function () {
+  const scheduler = new Cron("0 0 * * fri#l");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDay(), 5); // Friday
+});
+
+test("L modifier in day-of-week field should be case-insensitive (5l)", function () {
+  const scheduler = new Cron("0 0 * * 5l");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDay(), 5); // Friday
+});
+
+test("L modifier in day-of-week should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 * * FRI#L");
+  const lowerScheduler = new Cron("0 0 * * fri#l");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const upperRuns = upperScheduler.nextRuns(5, startDate);
+  const lowerRuns = lowerScheduler.nextRuns(5, startDate);
+
+  assertEquals(upperRuns.length, lowerRuns.length);
+  for (let i = 0; i < upperRuns.length; i++) {
+    assertEquals(upperRuns[i].getTime(), lowerRuns[i].getTime());
+  }
+});
+
+test("L modifier in day-of-month field should be case-insensitive (l)", function () {
+  const scheduler = new Cron("0 0 l * *");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDate(), 31); // Last day of January
+});
+
+test("L modifier in day-of-month should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 L * *");
+  const lowerScheduler = new Cron("0 0 l * *");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const upperRuns = upperScheduler.nextRuns(5, startDate);
+  const lowerRuns = lowerScheduler.nextRuns(5, startDate);
+
+  assertEquals(upperRuns.length, lowerRuns.length);
+  for (let i = 0; i < upperRuns.length; i++) {
+    assertEquals(upperRuns[i].getTime(), lowerRuns[i].getTime());
+  }
+});
+
+test("W modifier in day-of-month field should be case-insensitive (15w)", function () {
+  // July 15, 2025 is a Tuesday
+  const scheduler = new Cron("0 0 0 15w 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDate(), 15);
+});
+
+test("W modifier in day-of-month should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 0 15W 7 *", { timezone: "Etc/UTC" });
+  const lowerScheduler = new Cron("0 0 0 15w 7 *", { timezone: "Etc/UTC" });
+  const startDate = "2025-07-01T00:00:00Z";
+
+  const upperRun = upperScheduler.nextRun(startDate);
+  const lowerRun = lowerScheduler.nextRun(startDate);
+
+  assert(upperRun !== null);
+  assert(lowerRun !== null);
+  assertEquals(upperRun.getTime(), lowerRun.getTime());
+});
+
+test("LW modifier in day-of-month field should be case-insensitive (lw)", function () {
+  const scheduler = new Cron("0 0 lw * *");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  // January 31, 2024 is a Wednesday, so last weekday is the 31st
+  assertEquals(nextRun.getUTCDate(), 31);
+});
+
+test("LW modifier in day-of-month should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 LW * *");
+  const lowerScheduler = new Cron("0 0 lw * *");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const upperRuns = upperScheduler.nextRuns(5, startDate);
+  const lowerRuns = lowerScheduler.nextRuns(5, startDate);
+
+  assertEquals(upperRuns.length, lowerRuns.length);
+  for (let i = 0; i < upperRuns.length; i++) {
+    assertEquals(upperRuns[i].getTime(), lowerRuns[i].getTime());
+  }
+});
+
+test("Mixed case modifiers should work (Lw, lW)", function () {
+  const lw = new Cron("0 0 Lw * *");
+  const Lw = new Cron("0 0 lW * *");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const lwRun = lw.nextRun(startDate);
+  const LwRun = Lw.nextRun(startDate);
+
+  assert(lwRun !== null);
+  assert(LwRun !== null);
+  assertEquals(lwRun.getTime(), LwRun.getTime());
+});
