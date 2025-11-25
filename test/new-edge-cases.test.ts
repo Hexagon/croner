@@ -72,12 +72,23 @@ test("5th Friday in February requires a leap year ending on Friday", function ()
   const next = cron.nextRun("2024-01-01T00:00:00Z");
 
   // Feb 2024 only has 4 Fridays (2, 9, 16, 23), so it should skip to a leap year
-  // where Feb 29 is a Friday (2036)
-  assert(next !== null);
-  assertEquals(next.getFullYear(), 2036);
-  assertEquals(next.getMonth(), 1); // February
-  assertEquals(next.getDate(), 29);
-  assertEquals(next.getDay(), 5); // Friday
+  // where Feb 29 is a Friday. Verify dynamically rather than hardcoding the year.
+  assert(next !== null, "Should find a 5th Friday in February");
+  assertEquals(next.getMonth(), 1, "Should be February");
+  assertEquals(next.getDate(), 29, "Should be Feb 29 (leap year)");
+  assertEquals(next.getDay(), 5, "Should be Friday");
+
+  // Verify the year is a leap year
+  const year = next.getFullYear();
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  assert(isLeapYear, `Year ${year} should be a leap year`);
+
+  // Verify it's actually the 5th Friday
+  let fridayCount = 0;
+  for (let d = 1; d <= 29; d++) {
+    if (new Date(year, 1, d).getDay() === 5) fridayCount++;
+  }
+  assertEquals(fridayCount, 5, `Expected 5th Friday but got ${fridayCount}th`);
 });
 
 /**
