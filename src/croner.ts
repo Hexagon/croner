@@ -336,6 +336,15 @@ class Cron<T = undefined> {
   }
 
   /**
+   * Return the original run-once date, if there was one
+   *
+   * @returns Original run-once date, or null if not a run-once job
+   */
+  public getOnce(): Date | null {
+    return this._states.once ? this._states.once.getDate() : null;
+  }
+
+  /**
    * Indicates whether or not the cron job is scheduled and running, e.g. awaiting next trigger
    *
    * @returns Running or not
