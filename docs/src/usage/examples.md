@@ -37,14 +37,14 @@ const previousRuns = job.previousRuns(5, referenceDate);
 
 console.log("Previous 5 scheduled runs:");
 previousRuns.forEach((run, i) => {
-    console.log(`  ${i + 1}. ${run.toLocaleDateString()}`);
+    console.log(`  ${i + 1}. ${run.toISOString()}`);
 });
 // Output:
-//   1. 2024-01-15
-//   2. 2024-01-14
-//   3. 2024-01-13
-//   4. 2024-01-12
-//   5. 2024-01-11
+//   1. 2024-01-15T00:00:00.000Z
+//   2. 2024-01-14T00:00:00.000Z
+//   3. 2024-01-13T00:00:00.000Z
+//   4. 2024-01-12T00:00:00.000Z
+//   5. 2024-01-11T00:00:00.000Z
 ```
 
 ### Get run-once date
