@@ -956,3 +956,36 @@ test("Number of milliseconds to next run should be < 1s when interval is paired 
   });
   assertEquals(cron.msToNext()! < 1000, true);
 });
+
+test("getOnce() should return null for pattern-based jobs", function () {
+  let scheduler = new Cron("* * * * * *");
+  assertEquals(scheduler.getOnce(), null);
+});
+
+test("getOnce() should return the original date when created with ISO 8601 string", function () {
+  let scheduler = new Cron("2200-01-01T00:00:00");
+  let onceDate = scheduler.getOnce();
+  assertEquals(onceDate?.getFullYear(), 2200);
+  assertEquals(onceDate?.getMonth(), 0);
+  assertEquals(onceDate?.getDate(), 1);
+  assertEquals(onceDate?.getHours(), 0);
+});
+
+test("getOnce() should return the original date when created with a Date object", function () {
+  let refTime = new Date(),
+    twoSecsFromNow = new Date(refTime.getTime() + 2000),
+    scheduler = new Cron(twoSecsFromNow),
+    onceDate = scheduler.getOnce();
+  assertEquals(onceDate !== null, true);
+  // Allow for minor time differences due to CronDate processing
+  assertEquals(Math.abs(onceDate!.getTime() - twoSecsFromNow.getTime()) < 1000, true);
+});
+
+test("getOnce() should return the original date when created with ISO 8601 UTC string", function () {
+  let scheduler = new Cron("2200-01-01T00:00:00Z");
+  let onceDate = scheduler.getOnce();
+  assertEquals(onceDate?.getUTCFullYear(), 2200);
+  assertEquals(onceDate?.getUTCMonth(), 0);
+  assertEquals(onceDate?.getUTCDate(), 1);
+  assertEquals(onceDate?.getUTCHours(), 0);
+});
