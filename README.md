@@ -114,6 +114,7 @@ The job will be sceduled to run at next matching time unless you supply option `
 ```javascript
 job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
+job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
 job.previousRun( ); 		// Get a Date object showing when the previous job was started.
@@ -125,6 +126,7 @@ job.isStopped(); 	// Indicates if the job is permanently stopped using `stop()` 
 job.isBusy(); 		// Indicates if the job is currently busy doing work (true or false).
 
 job.getPattern(); 	// Returns the original pattern string
+job.getOnce(); 		// Returns the original run-once date (Date or null)
 ```
 
 #### Control functions
