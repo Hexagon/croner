@@ -44,7 +44,7 @@ job.isRunning();     // Indicates if the job is scheduled and not paused or kill
 job.isStopped();     // Indicates if the job is permanently stopped using `stop()` (true or false).
 job.isBusy();         // Indicates if the job is currently busy doing work (true or false).
 
-job.getPattern();     // Returns the original pattern string
+job.getPattern();     // Returns the original cron pattern string, or undefined for date-based jobs
 ```
 
 ## Control Functions
