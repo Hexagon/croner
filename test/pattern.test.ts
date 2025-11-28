@@ -22,6 +22,21 @@ test("Pattern should be returned by .getPattern() (0 0 0 * * *)", function () {
   assertEquals(job.getPattern(), "0 0 0 * * *");
 });
 
+test("getPattern() should return undefined when using ISO 8601 date string", function () {
+  let job = new Cron("2025-11-28T10:35:00.000Z");
+  assertEquals(job.getPattern(), undefined);
+});
+
+test("getPattern() should return undefined when using Date object", function () {
+  let job = new Cron(new Date("2025-11-28T10:35:00.000Z"));
+  assertEquals(job.getPattern(), undefined);
+});
+
+test("getPattern() should return pattern for regular cron pattern", function () {
+  let job = new Cron("*/5 * * * *");
+  assertEquals(job.getPattern(), "*/5 * * * *");
+});
+
 test("String object pattern should not throw", function () {
   //@ts-ignore
   let scheduler = new Cron(new String("* * * * * *"));

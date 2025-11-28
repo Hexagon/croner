@@ -327,11 +327,16 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Return the original pattern, if there was one
+   * Return the original pattern, if there was one.
+   * Returns undefined when the job was created with a Date or ISO 8601 string instead of a cron pattern.
    *
-   * @returns Original pattern
+   * @returns Original cron pattern, or undefined for date-based jobs
    */
   public getPattern(): string | undefined {
+    // If this is a one-off job (created with a date), there is no pattern
+    if (this._states.once) {
+      return void 0;
+    }
     return this._states.pattern ? this._states.pattern.pattern : void 0;
   }
 
