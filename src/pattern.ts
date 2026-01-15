@@ -1,9 +1,20 @@
-import { CronDate } from "./date.ts";
-
 /**
  * Name for each part of the cron pattern
  */
-type CronPatternPart = "second" | "minute" | "hour" | "day" | "month" | "dayOfWeek";
+type CronPatternPart =
+  | "second"
+  | "minute"
+  | "hour"
+  | "day"
+  | "month"
+  | "dayOfWeek"
+  | "nearestWeekdays"
+  | "year";
+
+/**
+ * Cron pattern mode for controlling precision level
+ */
+type CronMode = "auto" | "5-part" | "6-part" | "7-part" | "5-or-6-parts" | "6-or-7-parts";
 
 /**
  * Offset, 0 or -1.
@@ -28,23 +39,39 @@ export const OCCURRENCE_BITMASKS = [0b00001, 0b00010, 0b00100, 0b01000, 0b10000]
  * @constructor
  * @param {string} pattern - Input pattern
  * @param {string} timezone - Input timezone, used for '?'-substitution
+ * @param {object} options - Cron options including mode
  */
 class CronPattern {
   pattern: string;
   timezone?: string;
+  mode: CronMode;
+  alternativeWeekdays: boolean;
+  sloppyRanges: boolean;
   second: number[];
   minute: number[];
   hour: number[];
   day: number[];
   month: number[];
   dayOfWeek: number[];
+  year: number[];
   lastDayOfMonth: boolean;
+  lastWeekday: boolean;
+  nearestWeekdays: number[];
   starDOM: boolean;
   starDOW: boolean;
+  starYear: boolean;
+  useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
 
-  constructor(pattern: string, timezone?: string) {
+  constructor(
+    pattern: string,
+    timezone?: string,
+    options?: { mode?: CronMode; alternativeWeekdays?: boolean; sloppyRanges?: boolean },
+  ) {
     this.pattern = pattern;
     this.timezone = timezone;
+    this.mode = options?.mode ?? "auto";
+    this.alternativeWeekdays = options?.alternativeWeekdays ?? false;
+    this.sloppyRanges = options?.sloppyRanges ?? false;
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -52,11 +79,16 @@ class CronPattern {
     this.day = Array(31).fill(0); // 0-30 in array, 1-31 in config
     this.month = Array(12).fill(0); // 0-11 in array, 1-12 in config
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
+    this.year = Array(10000).fill(0); // OCPS 1.2: Year field (1-9999, index 0 unused)
 
     this.lastDayOfMonth = false;
+    this.lastWeekday = false;
+    this.nearestWeekdays = Array(31).fill(0); // 0-30 in array, 1-31 in config
 
     this.starDOM = false; // Asterisk used for dayOfMonth
     this.starDOW = false; // Asterisk used for dayOfWeek
+    this.starYear = false; // Asterisk used for year
+    this.useAndLogic = false; // OCPS 1.4: Default is OR logic
 
     this.parse();
   }
@@ -76,15 +108,56 @@ class CronPattern {
     // Handle @yearly, @monthly etc
     if (this.pattern.indexOf("@") >= 0) this.pattern = this.handleNicknames(this.pattern).trim();
 
-    // Split configuration on whitespace
-    const parts = this.pattern.replace(/\s+/g, " ").split(" ");
+    // Split pattern on any whitespace, which ensures correct handling of both
+    // space and tab delimiters common in the cron pattern format.
+    const parts = this.pattern.match(/\S+/g) || [""];
+    const originalPartCount = parts.length;
 
     // Validite number of configuration entries
-    if (parts.length < 5 || parts.length > 6) {
+    // OCPS 1.2: Support 5, 6, or 7 fields (5=no seconds, 6=with seconds, 7=with seconds and year)
+    if (parts.length < 5 || parts.length > 7) {
       throw new TypeError(
         "CronPattern: invalid configuration format ('" + this.pattern +
-          "'), exactly five or six space separated parts are required.",
+          "'), exactly five, six, or seven space separated parts are required.",
       );
+    }
+
+    // Enforce mode-specific pattern length validation
+    if (this.mode !== "auto") {
+      let expectedParts: number | number[];
+
+      switch (this.mode) {
+        case "5-part":
+          expectedParts = 5;
+          break;
+        case "6-part":
+          expectedParts = 6;
+          break;
+        case "7-part":
+          expectedParts = 7;
+          break;
+        case "5-or-6-parts":
+          expectedParts = [5, 6];
+          break;
+        case "6-or-7-parts":
+          expectedParts = [6, 7];
+          break;
+        default:
+          expectedParts = 0; // Should not reach here
+      }
+
+      const isValid = Array.isArray(expectedParts)
+        ? expectedParts.includes(originalPartCount)
+        : originalPartCount === expectedParts;
+
+      if (!isValid) {
+        const expectedStr = Array.isArray(expectedParts)
+          ? expectedParts.join(" or ")
+          : expectedParts.toString();
+        throw new TypeError(
+          `CronPattern: mode '${this.mode}' requires exactly ${expectedStr} parts, but pattern '${this.pattern}' has ${originalPartCount} parts.`,
+        );
+      }
     }
 
     // If seconds is omitted, insert 0 for seconds
@@ -92,9 +165,18 @@ class CronPattern {
       parts.unshift("0");
     }
 
+    // If year is omitted, append * for year (matches all years)
+    if (parts.length === 6) {
+      parts.push("*");
+    }
+
     // Convert 'L' to lastDayOfMonth flag in day-of-month field
-    if (parts[3].indexOf("L") >= 0) {
-      parts[3] = parts[3].replace("L", "");
+    // Check for 'LW' combination first (last weekday of month)
+    if (parts[3].toUpperCase() === "LW") {
+      this.lastWeekday = true;
+      parts[3] = "";
+    } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
+      parts[3] = parts[3].replace(/L/gi, "");
       this.lastDayOfMonth = true;
     }
 
@@ -103,24 +185,75 @@ class CronPattern {
       this.starDOM = true;
     }
 
+    // Check for starYear
+    if (parts[6] == "*") {
+      this.starYear = true;
+    }
+
     // Replace alpha representations
     if (parts[4].length >= 3) parts[4] = this.replaceAlphaMonths(parts[4]);
-    if (parts[5].length >= 3) parts[5] = this.replaceAlphaDays(parts[5]);
+    if (parts[5].length >= 3) {
+      parts[5] = this.alternativeWeekdays
+        ? this.replaceAlphaDaysQuartz(parts[5])
+        : this.replaceAlphaDays(parts[5]);
+    }
+
+    // OCPS 1.4: Check for + modifier in day-of-week field for explicit AND logic
+    if (parts[5].startsWith("+")) {
+      this.useAndLogic = true;
+      parts[5] = parts[5].substring(1); // Remove the + prefix
+
+      // After removing +, check if the field is empty
+      if (parts[5] === "") {
+        throw new TypeError(
+          "CronPattern: Day-of-week field cannot be empty after '+' modifier.",
+        );
+      }
+    }
 
     // Check for starDOW
     if (parts[5] == "*") {
       this.starDOW = true;
     }
 
-    // Implement '?' in the simplest possible way - replace ? with current value, before further processing
+    // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
+    // Note: ? is non-portable and should behave as an alias for * (wildcard)
     if (this.pattern.indexOf("?") >= 0) {
-      const initDate = new CronDate(new Date(), this.timezone).getDate(true);
-      parts[0] = parts[0].replace("?", initDate.getSeconds().toString());
-      parts[1] = parts[1].replace("?", initDate.getMinutes().toString());
-      parts[2] = parts[2].replace("?", initDate.getHours().toString());
-      if (!this.starDOM) parts[3] = parts[3].replace("?", initDate.getDate().toString());
-      parts[4] = parts[4].replace("?", (initDate.getMonth() + 1).toString()); // getMonth is zero indexed while pattern starts from 1
-      if (!this.starDOW) parts[5] = parts[5].replace("?", initDate.getDay().toString());
+      parts[0] = parts[0].replace(/\?/g, "*");
+      parts[1] = parts[1].replace(/\?/g, "*");
+      parts[2] = parts[2].replace(/\?/g, "*");
+      parts[3] = parts[3].replace(/\?/g, "*");
+      parts[4] = parts[4].replace(/\?/g, "*");
+      parts[5] = parts[5].replace(/\?/g, "*");
+      if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
+    }
+
+    // Apply mode-specific overrides
+    switch (this.mode) {
+      case "5-part":
+        // Traditional 5-field cron: minute-level precision
+        // Force seconds to 0 and years to wildcard
+        parts[0] = "0";
+        parts[6] = "*";
+        break;
+      case "6-part":
+        // Extended 6-field cron: second-level precision, but no year constraints
+        // Force years to wildcard
+        parts[6] = "*";
+        break;
+      case "5-or-6-parts":
+        // Accept 5 or 6 parts: force years to wildcard
+        // If original was 5 parts, seconds will be 0 (added by normalization)
+        parts[6] = "*";
+        break;
+      case "6-or-7-parts":
+        // Accept 6 or 7 parts: no additional overrides needed
+        // Pattern is used as-is
+        break;
+      case "7-part":
+      case "auto":
+        // Use pattern as-is
+        break;
     }
 
     // Check part content
@@ -132,10 +265,20 @@ class CronPattern {
     this.partToArray("hour", parts[2], 0, 1);
     this.partToArray("day", parts[3], -1, 1);
     this.partToArray("month", parts[4], -1, 1);
-    this.partToArray("dayOfWeek", parts[5], 0, ANY_OCCURRENCE);
 
-    // 0 = Sunday, 7 = Sunday
-    if (this.dayOfWeek[7]) {
+    // For Quartz mode, we need to adjust the offset
+    // In Quartz mode: 1=Sunday, 2=Monday, ..., 7=Saturday
+    // Internally we use: 0=Sunday, 1=Monday, ..., 6=Saturday
+    // So we need an offset of -1 for Quartz mode
+    const dayOfWeekOffset = this.alternativeWeekdays ? -1 : 0;
+    this.partToArray("dayOfWeek", parts[5], dayOfWeekOffset, ANY_OCCURRENCE);
+
+    // OCPS 1.2: Parse year field (no offset needed as years are absolute)
+    this.partToArray("year", parts[6], 0, 1);
+
+    // 0 = Sunday, 7 = Sunday (only in standard mode)
+    // In Quartz mode, this mapping is not needed
+    if (!this.alternativeWeekdays && this.dayOfWeek[7]) {
       this.dayOfWeek[0] = this.dayOfWeek[7];
     }
   }
@@ -153,7 +296,8 @@ class CronPattern {
 
     // Error on empty part
     const lastDayOfMonth = type === "day" && this.lastDayOfMonth;
-    if (conf === "" && !lastDayOfMonth) {
+    const lastWeekday = type === "day" && this.lastWeekday;
+    if (conf === "" && !lastDayOfMonth && !lastWeekday) {
       throw new TypeError(
         "CronPattern: configuration entry " + type + " (" + conf +
           ") is empty, check for trailing spaces.",
@@ -182,7 +326,7 @@ class CronPattern {
     } else if (conf.indexOf("/") !== -1) {
       this.handleStepping(conf, type, valueIndexOffset, defaultValue);
 
-      // Anything left should be a number
+      // Anything left should be a number, potentially with a modifier
     } else if (conf !== "") {
       this.handleNumber(conf, type, valueIndexOffset, defaultValue);
     }
@@ -194,7 +338,9 @@ class CronPattern {
    */
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
-      const reValidCron = i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/;
+      const reValidCron = (i === 3)
+        ? /[^/*0-9,\-WwLl]+/ // Day-of-month: allow W and L modifiers (case-insensitive)
+        : (i === 5 ? /[^/*0-9,\-#Ll]+/ : /[^/*0-9,\-]+/); // Day-of-week: allow # and L modifiers (case-insensitive)
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
@@ -205,7 +351,7 @@ class CronPattern {
   }
 
   /**
-   * Nothing but a number left, handle that
+   * Nothing but a number, potentially with a modifier, left - handle that
    *
    * @param conf Current part, expected to be a number, as a string
    * @param type One of "seconds", "minutes" etc
@@ -217,7 +363,20 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    // Check for existance of a nth-modifier
     const result = this.extractNth(conf, type);
+
+    // Check for existance of a nearest weekday modifier
+    const nearestWeekdayModifier = conf.toUpperCase().includes("W");
+    if (type !== "day" && nearestWeekdayModifier) {
+      throw new TypeError(
+        "CronPattern: Nearest weekday modifier (W) only allowed in day-of-month.",
+      );
+    }
+    // - actually change type to nearestWeekdays if the W modifier exists
+    if (nearestWeekdayModifier) {
+      type = "nearestWeekdays";
+    }
 
     const i = parseInt(result[0], 10) + valueIndexOffset;
 
@@ -261,7 +420,7 @@ class CronPattern {
       if (index < 0 || index >= 24) {
         throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
       }
-    } else if (part === "day") {
+    } else if (part === "day" || part === "nearestWeekdays") {
       if (index < 0 || index >= 31) {
         throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
       }
@@ -269,10 +428,67 @@ class CronPattern {
       if (index < 0 || index >= 12) {
         throw new RangeError("CronPattern: Invalid value for " + part + ": " + index);
       }
+    } else if (part === "year") {
+      // OCPS 1.2/1.4: Year field with recommended range 1-9999
+      if (index < 1 || index >= 10000) {
+        throw new RangeError(
+          "CronPattern: Invalid value for " + part + ": " + index + " (supported range: 1-9999)",
+        );
+      }
     }
 
     // Set the value for the specific part and index.
     this[part][index] = value as number;
+  }
+
+  /**
+   * Validates that a parsed number is not NaN.
+   * Throws a TypeError with a descriptive message if the value is NaN.
+   *
+   * @param value - The value to validate
+   * @param errorMessage - The error message to throw if validation fails
+   * @throws {TypeError} If the value is NaN
+   * @private
+   */
+  private validateNotNaN(value: number, errorMessage: string): void {
+    if (isNaN(value)) {
+      throw new TypeError(errorMessage);
+    }
+  }
+
+  /**
+   * Validates that a range is valid (lower <= upper) and that steps are valid (> 0 and <= array length).
+   *
+   * @param lower - Lower bound of range
+   * @param upper - Upper bound of range
+   * @param steps - Optional step value to validate
+   * @param type - The type of pattern part being validated
+   * @param conf - The original configuration string for error messages
+   * @throws {TypeError} If validation fails
+   * @private
+   */
+  private validateRange(
+    lower: number,
+    upper: number,
+    steps: number | undefined,
+    type: CronPatternPart,
+    conf: string,
+  ): void {
+    if (lower > upper) {
+      throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
+    }
+
+    if (steps !== undefined) {
+      if (steps === 0) {
+        throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
+      }
+      if (steps > this[type].length) {
+        throw new TypeError(
+          "CronPattern: Syntax error, steps cannot be greater than maximum value of part (" +
+            this[type].length + ")",
+        );
+      }
+    }
   }
 
   /**
@@ -288,6 +504,10 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in ranges with stepping.");
+    }
+
     const result = this.extractNth(conf, type);
 
     const matches = result[0].match(/^(\d+)-(\d+)\/(\d+)$/);
@@ -302,21 +522,11 @@ class CronPattern {
     const upper = parseInt(upperMatch, 10) + valueIndexOffset;
     const steps = parseInt(stepMatch, 10);
 
-    if (isNaN(lower)) throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
-    if (isNaN(upper)) throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
-    if (isNaN(steps)) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
+    this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
+    this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
+    this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
 
-    if (steps === 0) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
-    if (steps > this[type].length) {
-      throw new TypeError(
-        "CronPattern: Syntax error, steps cannot be greater than maximum value of part (" +
-          this[type].length + ")",
-      );
-    }
-
-    if (lower > upper) {
-      throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
-    }
+    this.validateRange(lower, upper, steps, type, conf);
 
     for (let i = lower; i <= upper; i += steps) {
       this.setPart(type, i, result[1] || defaultValue);
@@ -324,8 +534,8 @@ class CronPattern {
   }
 
   /*
-   * Break out nth weekday (#) if exists
-   * - only allow if type os dayOfWeek
+   * Break out nth weekday (#) or last occurrence (L) if exists
+   * - only allow if type is dayOfWeek
    */
   private extractNth(conf: string, type: string): [string, string | undefined] {
     let rest = conf;
@@ -336,6 +546,15 @@ class CronPattern {
       }
       nth = rest.split("#")[1];
       rest = rest.split("#")[0];
+    } else if (rest.toUpperCase().endsWith("L")) {
+      // Handle "L" suffix without "#" (e.g., "5L" or "FRIL")
+      if (type !== "dayOfWeek") {
+        throw new Error(
+          "CronPattern: L modifier only allowed in day-of-week field (use L alone for day-of-month)",
+        );
+      }
+      nth = "L";
+      rest = rest.slice(0, -1); // Remove the "L" suffix
     }
     return [rest, nth];
   }
@@ -353,6 +572,10 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in a range.");
+    }
+
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("-");
@@ -364,16 +587,10 @@ class CronPattern {
     const lower = parseInt(split[0], 10) + valueIndexOffset,
       upper = parseInt(split[1], 10) + valueIndexOffset;
 
-    if (isNaN(lower)) {
-      throw new TypeError("CronPattern: Syntax error, illegal lower range (NaN)");
-    } else if (isNaN(upper)) {
-      throw new TypeError("CronPattern: Syntax error, illegal upper range (NaN)");
-    }
+    this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
+    this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
 
-    //
-    if (lower > upper) {
-      throw new TypeError("CronPattern: From value is larger than to value: '" + conf + "'");
-    }
+    this.validateRange(lower, upper, undefined, type, conf);
 
     for (let i = lower; i <= upper; i++) {
       this.setPart(type, i, result[1] || defaultValue);
@@ -389,9 +606,12 @@ class CronPattern {
   private handleStepping(
     conf: string,
     type: CronPatternPart,
-    valueIndexOffset: number,
+    _valueIndexOffset: number,
     defaultValue: number,
   ) {
+    if (conf.toUpperCase().includes("W")) {
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in parts with stepping.");
+    }
     const result = this.extractNth(conf, type);
 
     const split = result[0].split("/");
@@ -400,25 +620,39 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
     }
 
-    // Inject missing asterisk (/3 insted of */3)
-    if (split[0] === "") {
-      split[0] = "*";
+    // OCPS: Strict range parsing - disallow numeric/step format (e.g., 0/10, 30/30) and empty prefix (/10)
+    // Only allow wildcard (*/10) or range (0-59/10) formats unless sloppyRanges is enabled
+    if (!this.sloppyRanges) {
+      // Reject patterns with empty prefix like /10
+      if (split[0] === "") {
+        throw new TypeError(
+          "CronPattern: Syntax error, stepping with missing prefix ('" + conf +
+            "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+        );
+      }
+      // Reject patterns with numeric prefix like 0/10, 30/30
+      if (split[0] !== "*") {
+        throw new TypeError(
+          "CronPattern: Syntax error, stepping with numeric prefix ('" + conf +
+            "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+        );
+      }
+    } else {
+      // In sloppy mode, inject missing asterisk (/3 instead of */3) for backward compatibility
+      if (split[0] === "") {
+        split[0] = "*";
+      }
     }
 
     let start = 0;
     if (split[0] !== "*") {
-      start = parseInt(split[0], 10) + valueIndexOffset;
+      start = parseInt(split[0], 10) + _valueIndexOffset;
     }
 
     const steps = parseInt(split[1], 10);
 
-    if (isNaN(steps)) throw new TypeError("CronPattern: Syntax error, illegal stepping: (NaN)");
-    if (steps === 0) throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
-    if (steps > this[type].length) {
-      throw new TypeError(
-        "CronPattern: Syntax error, max steps for part is (" + this[type].length + ")",
-      );
-    }
+    this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
+    this.validateRange(0, this[type].length - 1, steps, type, conf);
 
     for (let i = start; i < this[type].length; i += steps) {
       this.setPart(type, i, result[1] || defaultValue);
@@ -442,6 +676,25 @@ class CronPattern {
       .replace(/thu/gi, "4")
       .replace(/fri/gi, "5")
       .replace(/sat/gi, "6");
+  }
+
+  /**
+   * Replace day name with day numbers (Quartz mode)
+   * In Quartz mode: Sunday=1, Monday=2, ..., Saturday=7
+   *
+   * @param conf Current part, expected to be a string that might contain sun,mon etc.
+   *
+   * @returns Conf with Quartz-style numbering
+   */
+  private replaceAlphaDaysQuartz(conf: string): string {
+    return conf
+      .replace(/sun/gi, "1")
+      .replace(/mon/gi, "2")
+      .replace(/tue/gi, "3")
+      .replace(/wed/gi, "4")
+      .replace(/thu/gi, "5")
+      .replace(/fri/gi, "6")
+      .replace(/sat/gi, "7");
   }
 
   /**
@@ -483,10 +736,17 @@ class CronPattern {
       return "0 0 1 * *";
     } else if (cleanPattern === "@weekly") {
       return "0 0 * * 0";
-    } else if (cleanPattern === "@daily") {
+    } else if (cleanPattern === "@daily" || cleanPattern === "@midnight") {
       return "0 0 * * *";
     } else if (cleanPattern === "@hourly") {
       return "0 * * * *";
+    } else if (cleanPattern === "@reboot") {
+      // OCPS 1.1: @reboot is event-based, not time-based
+      // It should be parsed successfully but handled specially at runtime
+      throw new TypeError(
+        "CronPattern: @reboot is not supported in this environment. " +
+          "This is an event-based trigger that requires system startup detection.",
+      );
     } else {
       return pattern;
     }
@@ -499,7 +759,7 @@ class CronPattern {
    * @param nthWeekday bitmask, 2 (0x00010) for 2nd friday, 31 (ANY_OCCURRENCE, 0b100000) for any day
    */
   private setNthWeekdayOfMonth(index: number, nthWeekday: number | string) {
-    if (typeof nthWeekday !== "number" && nthWeekday === "L") {
+    if (typeof nthWeekday !== "number" && nthWeekday.toUpperCase() === "L") {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
     } else if (nthWeekday === ANY_OCCURRENCE) {
       this["dayOfWeek"][index] = ANY_OCCURRENCE;
@@ -514,4 +774,4 @@ class CronPattern {
   }
 }
 
-export { CronPattern };
+export { type CronMode, CronPattern };

@@ -1,9 +1,9 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
-test("Stepping without asterisk should not throw", function () {
-  let scheduler = new Cron("/3 * * * * *");
+test("Stepping without asterisk should not throw with sloppyRanges option", function () {
+  let scheduler = new Cron("/3 * * * * *", { sloppyRanges: true });
   scheduler.nextRun();
 });
 
@@ -22,6 +22,21 @@ test("Pattern should be returned by .getPattern() (0 0 0 * * *)", function () {
   assertEquals(job.getPattern(), "0 0 0 * * *");
 });
 
+test("getPattern() should return undefined when using ISO 8601 date string", function () {
+  let job = new Cron("2025-11-28T10:35:00.000Z");
+  assertEquals(job.getPattern(), undefined);
+});
+
+test("getPattern() should return undefined when using Date object", function () {
+  let job = new Cron(new Date("2025-11-28T10:35:00.000Z"));
+  assertEquals(job.getPattern(), undefined);
+});
+
+test("getPattern() should return pattern for regular cron pattern", function () {
+  let job = new Cron("*/5 * * * *");
+  assertEquals(job.getPattern(), "*/5 * * * *");
+});
+
 test("String object pattern should not throw", function () {
   //@ts-ignore
   let scheduler = new Cron(new String("* * * * * *"));
@@ -35,12 +50,7 @@ test("Short pattern should throw", function () {
   });
 });
 
-test("Long pattern should throw", function () {
-  assertThrows(() => {
-    let scheduler = new Cron("* * * * * * *");
-    scheduler.nextRun();
-  });
-});
+// 7-field pattern tests are now covered by OCPS 1.2 tests
 
 test("Letter in pattern should throw", function () {
   assertThrows(() => {
@@ -71,20 +81,7 @@ test("Invalid data type of pattern should throw", function () {
   });
 });
 
-test("Weekday 0 (sunday) and weekday 7 (sunday) should both be valid patterns", function () {
-  let scheduler0 = new Cron("0 0 0 * * 0");
-  scheduler0.nextRun();
-  let scheduler7 = new Cron("0 0 0 * * 7");
-  scheduler7.nextRun();
-});
-
-test("Weekday 0 (sunday) and weekday 7 (sunday) should give the same run time", function () {
-  let scheduler0 = new Cron("0 0 0 * * 0"),
-    scheduler7 = new Cron("0 0 0 * * 7"),
-    nextRun0 = scheduler0.nextRun(),
-    nextRun7 = scheduler7.nextRun();
-  assertEquals(nextRun0?.getTime(), nextRun7?.getTime());
-});
+// Sunday as 0 or 7 tests are now covered by OCPS 1.0 tests
 
 test("0 0 0 * * * should return tomorrow, at 00:00:00", function () {
   let scheduler = new Cron("0 0 0 * * *"),
@@ -399,4 +396,184 @@ test("0 0 0 * * SUN-MON#3,MON-TUE#1 should work", function () {
   assertEquals(nextRun[3].getDate(), 5);
   assertEquals(nextRun[3].getMonth(), 8);
   assertEquals(nextRun[3].getFullYear(), 2023);
+});
+
+test("W Modifier: '15W' on a weekday should run on the 15th", function () {
+  // July 15, 2025 is a Tuesday
+  const scheduler = new Cron("0 0 0 15W 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 15);
+});
+
+test("W Modifier: '19W' on a Saturday should run on Friday the 18th", function () {
+  // July 19, 2025 is a Saturday
+  const scheduler = new Cron("0 0 0 19W 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 18);
+});
+
+test("W Modifier: '20W' on a Sunday should run on Monday the 21st", function () {
+  // July 20, 2025 is a Sunday
+  const scheduler = new Cron("0 0 0 20W 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 21);
+});
+
+test("W Modifier: '1W' on a Saturday should run on Monday the 3rd", function () {
+  // August 2, 2025 is a Saturday, but we test for the 1st.
+  // June 1, 2025 is a Sunday. The nearest weekday is Monday, June 2nd.
+  const scheduler = new Cron("0 0 0 1W 6 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-05-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 2);
+  assertEquals(nextRun?.getUTCMonth(), 5); // June
+});
+
+test("W Modifier: '31W' on a Sunday should run on Friday the 29th", function () {
+  // August 31, 2025 is a Sunday. The nearest weekday is Friday, August 29th.
+  const scheduler = new Cron("0 0 0 31W 8 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-08-01T00:00:00Z");
+  assertEquals(nextRun?.getUTCDate(), 29);
+});
+
+test("W Modifier: Should throw when used in the minute field", function () {
+  assertThrows(
+    () => {
+      new Cron("0 15W * * * *");
+    },
+    TypeError,
+    "contains illegal characters",
+  );
+});
+
+test("W Modifier: Should throw when used in the day-of-week field", function () {
+  assertThrows(
+    () => {
+      new Cron("0 0 * * * 2W");
+    },
+    TypeError,
+    "contains illegal characters",
+  );
+});
+
+test("W Modifier: Should throw when used with a range", function () {
+  assertThrows(
+    () => {
+      new Cron("0 0 0 15W-20 * *");
+    },
+    TypeError,
+    "W is not allowed in a range",
+  );
+});
+
+// Case-insensitivity tests for modifiers and aliases
+test("L modifier in day-of-week field should be case-insensitive (fril)", function () {
+  const scheduler = new Cron("0 0 * * fril");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDay(), 5); // Friday
+});
+
+test("L modifier in day-of-week field should be case-insensitive (fri#l)", function () {
+  const scheduler = new Cron("0 0 * * fri#l");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDay(), 5); // Friday
+});
+
+test("L modifier in day-of-week field should be case-insensitive (5l)", function () {
+  const scheduler = new Cron("0 0 * * 5l");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDay(), 5); // Friday
+});
+
+test("L modifier in day-of-week should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 * * FRI#L");
+  const lowerScheduler = new Cron("0 0 * * fri#l");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const upperRuns = upperScheduler.nextRuns(5, startDate);
+  const lowerRuns = lowerScheduler.nextRuns(5, startDate);
+
+  assertEquals(upperRuns.length, lowerRuns.length);
+  for (let i = 0; i < upperRuns.length; i++) {
+    assertEquals(upperRuns[i].getTime(), lowerRuns[i].getTime());
+  }
+});
+
+test("L modifier in day-of-month field should be case-insensitive (l)", function () {
+  const scheduler = new Cron("0 0 l * *");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDate(), 31); // Last day of January
+});
+
+test("L modifier in day-of-month should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 L * *");
+  const lowerScheduler = new Cron("0 0 l * *");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const upperRuns = upperScheduler.nextRuns(5, startDate);
+  const lowerRuns = lowerScheduler.nextRuns(5, startDate);
+
+  assertEquals(upperRuns.length, lowerRuns.length);
+  for (let i = 0; i < upperRuns.length; i++) {
+    assertEquals(upperRuns[i].getTime(), lowerRuns[i].getTime());
+  }
+});
+
+test("W modifier in day-of-month field should be case-insensitive (15w)", function () {
+  // July 15, 2025 is a Tuesday
+  const scheduler = new Cron("0 0 0 15w 7 *", { timezone: "Etc/UTC" });
+  const nextRun = scheduler.nextRun("2025-07-01T00:00:00Z");
+  assert(nextRun !== null);
+  assertEquals(nextRun.getUTCDate(), 15);
+});
+
+test("W modifier in day-of-month should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 0 15W 7 *", { timezone: "Etc/UTC" });
+  const lowerScheduler = new Cron("0 0 0 15w 7 *", { timezone: "Etc/UTC" });
+  const startDate = "2025-07-01T00:00:00Z";
+
+  const upperRun = upperScheduler.nextRun(startDate);
+  const lowerRun = lowerScheduler.nextRun(startDate);
+
+  assert(upperRun !== null);
+  assert(lowerRun !== null);
+  assertEquals(upperRun.getTime(), lowerRun.getTime());
+});
+
+test("LW modifier in day-of-month field should be case-insensitive (lw)", function () {
+  const scheduler = new Cron("0 0 lw * *");
+  const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
+  assert(nextRun !== null);
+  // January 31, 2024 is a Wednesday, so last weekday is the 31st
+  assertEquals(nextRun.getUTCDate(), 31);
+});
+
+test("LW modifier in day-of-month should produce same results for upper and lower case", function () {
+  const upperScheduler = new Cron("0 0 LW * *");
+  const lowerScheduler = new Cron("0 0 lw * *");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const upperRuns = upperScheduler.nextRuns(5, startDate);
+  const lowerRuns = lowerScheduler.nextRuns(5, startDate);
+
+  assertEquals(upperRuns.length, lowerRuns.length);
+  for (let i = 0; i < upperRuns.length; i++) {
+    assertEquals(upperRuns[i].getTime(), lowerRuns[i].getTime());
+  }
+});
+
+test("Mixed case modifiers should work (Lw, lW)", function () {
+  const lw = new Cron("0 0 Lw * *");
+  const Lw = new Cron("0 0 lW * *");
+  const startDate = new Date("2024-01-01T00:00:00Z");
+
+  const lwRun = lw.nextRun(startDate);
+  const LwRun = Lw.nextRun(startDate);
+
+  assert(lwRun !== null);
+  assert(LwRun !== null);
+  assertEquals(lwRun.getTime(), LwRun.getTime());
 });

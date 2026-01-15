@@ -2,51 +2,7 @@ import { assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
-test("Slash in pattern should not throw", function () {
-  let scheduler = new Cron("* */5 * * * *");
-  scheduler.nextRun();
-});
-
-test("Slash in pattern with number first should throw", function () {
-  assertThrows(() => {
-    let scheduler = new Cron("* 5/* * * * *");
-    scheduler.nextRun();
-  });
-});
-
-test("Slash in pattern without following number should throw", function () {
-  assertThrows(() => {
-    let scheduler = new Cron("* */ * * * *");
-    scheduler.nextRun();
-  });
-});
-
-test("Slash in pattern with preceding number should not throw", function () {
-  let scheduler = new Cron("* 5/5 * * * *");
-  scheduler.nextRun();
-});
-
-test("Slash in pattern with preceding letter should throw", function () {
-  assertThrows(() => {
-    let scheduler = new Cron("* a/5 * * * *");
-    scheduler.nextRun();
-  });
-});
-
-test("Slash in pattern with preceding comma separated entries should not throw", function () {
-  let scheduler = new Cron("* 1,2/5 * * * *");
-  scheduler.nextRun();
-});
-
-test("Slash in pattern with preceding range should not throw", function () {
-  let scheduler = new Cron("* 1-15/5 * * * *");
-  scheduler.nextRun();
-});
-
-test("Slash in pattern with preceding range separated by comma should not throw", function () {
-  let scheduler = new Cron("* 1-15/5,6 * * * *");
-  scheduler.nextRun();
-});
+// Note: Slash/stepping tests have been moved to stepping.test.ts
 
 test("Range separated by comma should not throw", function () {
   let scheduler = new Cron("* 1-15,17 * * * *");

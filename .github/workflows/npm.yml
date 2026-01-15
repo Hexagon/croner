@@ -6,16 +6,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
-          ref: master
+          # Build the exact code referenced by the release tag
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: "2.x"
           
-      - uses: actions/setup-node@v3.5.1
+      - uses: actions/setup-node@v4
         with:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'

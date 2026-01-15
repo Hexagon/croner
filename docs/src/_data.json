@@ -6,12 +6,12 @@
       "description": "Cron for JavaScript and TypeScript"
     },
     "substitute": {
-      "$CRONER_VERSION": "9.1.0"
+      "$CRONER_VERSION": "10.0.0"
     },
     "top_links": [
       {
         "icon": "fab fa-github",
-        "title": "GitHub Repsitory",
+        "title": "GitHub Repository",
         "url": "https://github.com/hexagon/croner"
       },
       {
@@ -27,7 +27,7 @@
     ],
     "nav_links": [
       {
-        "title": "GitHub Repsitory",
+        "title": "GitHub Repository",
         "url": "https://github.com/hexagon/croner"
       },
       {

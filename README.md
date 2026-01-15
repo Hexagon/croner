@@ -10,8 +10,8 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
-*   Uses Vixie-cron [pattern](#pattern), with additional features such as `L` for last day and weekday of month and `#` for nth weekday of month.
-*   Works in Node.js >=18 (both require and import), Deno >=1.16 and Bun >=1.0.0.
+*   **OCPS 1.0-1.4 compliant**: Fully supports the [Open Cron Pattern Specification](https://github.com/open-source-cron/ocps) including advanced features like seconds/year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic).
+*   Works in Node.js >=18.0 (both require and import), Deno >=2.0 and Bun >=1.0.0.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](https://croner.56k.guru/usage/examples/#time-zone).
 *   Built-in [overrun protection](https://croner.56k.guru/usage/examples/#overrun-protection)
@@ -42,6 +42,11 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 // This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
 new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
+// Check if a date matches a cron pattern
+const mondayCheck = new Cron('0 0 0 * * MON');
+console.log(mondayCheck.match('2024-01-01T00:00:00')); // true  (Monday)
+console.log(mondayCheck.match('2024-01-02T00:00:00')); // false (Tuesday)
+
 ```
 
 More [examples](https://croner.56k.guru/usage/examples/)...
@@ -69,16 +74,16 @@ Using Deno
 
 ```typescript
 // From deno.land/x
-import { Cron } from "https://deno.land/x/croner@9.1.0/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@10.0.0/dist/croner.js";
 
 // ... or jsr.io
-import { Cron } from "jsr:@hexagon/croner@9.1.0";
+import { Cron } from "jsr:@hexagon/croner@10.0.0";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@9/dist/croner.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@10/dist/croner.umd.min.js"></script>
 ```
 
 ## Documentation
@@ -109,15 +114,19 @@ The job will be sceduled to run at next matching time unless you supply option `
 ```javascript
 job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
+job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
 job.previousRun( ); 		// Get a Date object showing when the previous job was started.
+
+job.match( date ); 		// Check if a Date object or date string matches the cron pattern (true or false).
 
 job.isRunning(); 	// Indicates if the job is scheduled and not paused or killed (true or false).
 job.isStopped(); 	// Indicates if the job is permanently stopped using `stop()` (true or false).
 job.isBusy(); 		// Indicates if the job is currently busy doing work (true or false).
 
 job.getPattern(); 	// Returns the original pattern string
+job.getOnce(); 		// Returns the original run-once date (Date or null)
 ```
 
 #### Control functions
@@ -149,10 +158,12 @@ job.name 			// Optional job name, populated if a name were passed to options
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
-| legacyMode   | true           | boolean        | Combine day-of-month and day-of-week using true = OR, false = AND |
+| domAndDow    | false          | boolean        | Combine day-of-month and day-of-week using true = AND, false = OR (default) |
+| legacyMode   | (deprecated)   | boolean        | **Deprecated:** Use `domAndDow` instead. Inverse of `domAndDow` (legacyMode: true = domAndDow: false). |
 | unref        | false          | boolean        | Setting this to true unrefs the internal timer, which allows the process to exit even if a cron job is running. |
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
+| alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
@@ -160,7 +171,7 @@ job.name 			// Optional job name, populated if a name were passed to options
 
 #### Pattern
 
-The expressions used by Croner are very similar to those of Vixie Cron, but with a few additions and changes as outlined below:
+Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](https://github.com/open-source-cron/ocps) versions 1.0 through 1.4. The expressions are based on Vixie Cron with powerful extensions:
 
 ```javascript
 // ┌──────────────── (optional) second (0 - 59)
@@ -170,48 +181,63 @@ The expressions used by Croner are very similar to those of Vixie Cron, but with
 // │ │ │ │ ┌──────── month (1 - 12, JAN-DEC)
 // │ │ │ │ │ ┌────── day of week (0 - 6, SUN-Mon) 
 // │ │ │ │ │ │       (0 to 6 are Sunday to Saturday; 7 is Sunday, the same as 0)
-// │ │ │ │ │ │
-// * * * * * *
+// │ │ │ │ │ │ ┌──── (optional) year (1 - 9999)
+// │ │ │ │ │ │ │
+// * * * * * * *
 ```
 
-*   Croner expressions have the following additional modifiers:
-	-   *?*: The question mark is substituted with the time of initialization. For example, ? ? * * * * would be substituted with 25 8 * * * * if the time is <any hour>:08:25 at the time of new Cron('? ? * * * *', <...>). The question mark can be used in any field.
-	-   *L*: The letter 'L' can be used in the day of the month field to indicate the last day of the month. When used in the day of the week field in conjunction with the # character, it denotes the last specific weekday of the month. For example, `5#L` represents the last Friday of the month.
-	-	*#*: The # character specifies the "nth" occurrence of a particular day within a month. For example, supplying 
-	`5#2` in the day of week field signifies the second Friday of the month. This can be combined with ranges and supports day names. For instance, MON-FRI#2 would match the Monday through Friday of the second week of the month.
+*   **OCPS 1.2**: Optional second and year fields for enhanced precision:
+	-   6-field format: `SECOND MINUTE HOUR DAY-OF-MONTH MONTH DAY-OF-WEEK`
+	-   7-field format: `SECOND MINUTE HOUR DAY-OF-MONTH MONTH DAY-OF-WEEK YEAR`
+	-   Supported year range: 1-9999
+
+*   **OCPS 1.3**: Advanced calendar modifiers:
+	-   *L*: Last day of month or last occurrence of a weekday. `L` in day-of-month = last day of month; `5#L` or `FRI#L` = last Friday of the month.
+	-	*W*: Nearest weekday. `15W` triggers on the weekday closest to the 15th (moves to Friday if 15th is Saturday, Monday if 15th is Sunday). Won't cross month boundaries.
+	-	*#*: Nth occurrence of a weekday. `5#2` = second Friday; `MON#1` = first Monday of the month.
+
+*   **OCPS 1.4**: Enhanced logical control:
+	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
+	-   *?*: Wildcard alias (behaves identically to `*`). **Non-portable**: Its use is discouraged in patterns intended for cross-system use. Supported in all fields for compatibility, but primarily meaningful in day-of-month and day-of-week fields.
+	-   Proper DST handling: Jobs scheduled during DST gaps are skipped; jobs in DST overlaps run once at first occurrence.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
-*   Croner also allows you to change how the day-of-week and day-of-month conditions are combined. By default, Croner (and Vixie cron) will trigger when either the day-of-month OR the day-of-week conditions match. For example, `0 20 1 * MON` will trigger on the first of the month as well as each Monday. If you want to use AND (so that it only triggers on Mondays that are also the first of the month), you can pass `{ legacyMode: false }`. For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
+*   By default, Croner uses OR logic for day-of-month and day-of-week (OCPS 1.0 compliant). Example: `0 20 1 * MON` triggers on the 1st of the month OR on Mondays. Use the `+` modifier (`0 20 1 * +MON`) or `{ domAndDow: true }` for AND logic (OCPS 1.4 compliant). For more information, see issue [#53](https://github.com/Hexagon/croner/issues/53).
 
 | Field        | Required | Allowed values | Allowed special characters | Remarks                               |
 |--------------|----------|----------------|----------------------------|---------------------------------------|
-| Seconds      | Optional | 0-59           | * , - / ?                  |                                       |
+| Seconds      | Optional | 0-59           | * , - / ?                  | OCPS 1.2: Optional, defaults to 0    |
 | Minutes      | Yes      | 0-59           | * , - / ?                  |                                       |
 | Hours        | Yes      | 0-23           | * , - / ?                  |                                       |
-| Day of Month | Yes      | 1-31           | * , - / ? L                |                                       |
+| Day of Month | Yes      | 1-31           | * , - / ? L W              | L = last day, W = nearest weekday     |
 | Month        | Yes      | 1-12 or JAN-DEC| * , - / ?                  |                                       |
-| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L #               | 0 to 6 are Sunday to Saturday<br>7 is Sunday, the same as 0<br># is used to specify nth occurrence of a weekday            |
+| Day of Week  | Yes      | 0-7 or SUN-MON | * , - / ? L # +            | 0 and 7 = Sunday (standard mode)<br>1-7 = Sunday-Saturday (Quartz mode with `alternativeWeekdays: true`)<br># = nth occurrence (e.g. MON#2)<br>+ = AND logic modifier (OCPS 1.4) |
+| Year         | Optional | 1-9999         | * , - /                    | OCPS 1.2: Optional, defaults to *    |
 
 > **Note**
 > Weekday and month names are case-insensitive. Both `MON` and `mon` work.
-> When using `L` in the Day of Week field, it affects all specified weekdays. For example, `5-6#L` means the last Friday and Saturday in the month."
-> The # character can be used to specify the "nth" weekday of the month. For example, 5#2 represents the second Friday of the month.
+> When using `L` in the Day of Week field with a range, it affects all specified weekdays. For example, `5-6#L` means the last Friday and Saturday in the month.
+> The `#` character specifies the "nth" weekday of the month. For example, `5#2` = second Friday, `MON#1` = first Monday.
+> The `W` character operates within the current month and won't cross month boundaries. If the 1st is a Saturday, `1W` matches Monday the 3rd.
+> The `+` modifier (OCPS 1.4) enforces AND logic: `0 12 1 * +MON` only runs when the 1st is also a Monday.
+> **Quartz mode**: Enable `alternativeWeekdays: true` to use Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday) instead of the standard format (0=Sunday, 1=Monday, ..., 6=Saturday). This is useful for compatibility with Quartz cron expressions.
 
-It is also possible to use the following "nicknames" as pattern.
+**OCPS 1.1**: Predefined schedule nicknames are supported:
 
 | Nickname | Description |
 | -------- | ----------- |
-| \@yearly | Run once a year, ie.  "0 0 1 1 *". |
-| \@annually | Run once a year, ie.  "0 0 1 1 *". |
-| \@monthly | Run once a month, ie. "0 0 1 * *". |
-| \@weekly | Run once a week, ie.  "0 0 * * 0". |
-| \@daily | Run once a day, ie.   "0 0 * * *". |
-| \@hourly | Run once an hour, ie. "0 * * * *". |
+| \@yearly / \@annually | Run once a year, i.e.  "0 0 1 1 *". |
+| \@monthly | Run once a month, i.e. "0 0 1 * *". |
+| \@weekly | Run once a week, i.e.  "0 0 * * 0". |
+| \@daily / \@midnight | Run once a day, i.e.   "0 0 * * *". |
+| \@hourly | Run once an hour, i.e. "0 * * * *". |
 
 ## Why another JavaScript cron implementation
 
 Because the existing ones are not good enough. They have serious bugs, use bloated dependencies, do not work in all environments, and/or simply do not work as expected.
+
+For example, some popular alternatives include large datetime libraries as dependencies, which significantly increases bundle size. Croner has zero dependencies and a much smaller footprint, making it ideal for applications where bundle size matters.
 
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
@@ -233,8 +259,12 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 | Controls (stop/resume)    |          ✓          |           ✓         |     ✓        |        ✓                   |         ✓           |   
 | Range (0-13)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
 | Stepping (*/5)   |          ✓          |          ✓          |     ✓        |        ✓                   |         ✓           |
+| Seconds field (OCPS 1.2)  |          ✓          |                     |              |                            |                    |
+| Year field (OCPS 1.2)  |          ✓          |                     |              |                            |                    |
 | Last day of month (L)  |          ✓          |          ✓          |              |                            |                    |
 | Nth weekday of month (#)     |          ✓          |           ✓          |           |                           |                     |
+| Nearest weekday (W)  |          ✓          |          ✓          |              |                            |                    |
+| AND logic modifier (+)  |          ✓          |                     |              |                            |                    |
 
 <details>
   <summary>In depth comparison of various libraries</summary>
@@ -242,8 +272,8 @@ Because the existing ones are not good enough. They have serious bugs, use bloat
 |                           | croner              | cronosjs            | node-cron | cron                      | node-schedule       |
 |---------------------------|:-------------------:|:-------------------:|:---------:|:-------------------------:|:-------------------:|
 | **Size**                                                                                                                        |
-| Minified size (KB)        | 17.0                | 14.9            | 15.2      | 85.4 :warning:                      | 100.5 :warning:                |
-| Bundlephobia  minzip (KB) | 5.0                 | 5.1                 | 5.7       |                   25.8 | 29.2 :warning:             |
+| Minified size (KB)        | 22.7                | 14.9            | 20.1      | 93.7 :warning:                      | 107.8 :warning:                |
+| Bundlephobia  minzip (KB) | 6.8                 | 5.1                 | 6.1       |                   28.2 | 31.2 :warning:             |
 | Dependencies              |                   0 |                   0 |         1 |                         1 |                   3 :warning: |
 | **Popularity**                                                                                                                        |
 | Downloads/week [^1]        | 2019K                | 31K                 | 447K      | 1366K                     | 1046K                |
