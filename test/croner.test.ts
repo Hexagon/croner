@@ -978,7 +978,7 @@ test(
       },
     );
 
-    // Wait for 3 seconds - should see at least 2 triggers
+    // Wait for 3 seconds - should see at least 3 triggers
     await sleep(3000);
 
     job.stop();
