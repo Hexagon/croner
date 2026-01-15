@@ -76,6 +76,13 @@ Version `10.x` introduces new pattern syntax features and configuration options.
 * `dayOffset` - Offset scheduled dates by a number of days. Positive shifts forward, negative shifts backward. Example: `dayOffset: -1` schedules one day before the pattern match.
 * `mode` - Specify the cron pattern mode: `"auto"` (default), `"5-part"`, `"6-part"`, `"7-part"`, `"5-or-6-parts"`, or `"6-or-7-parts"`. Controls how many fields are expected and how seconds/years are handled.
 * `alternativeWeekdays` - Enable Quartz-style weekday numbering where Sunday=1, Monday=2, ..., Saturday=7. When `false` (default), uses standard cron format where Sunday=0, Monday=1, ..., Saturday=6. Example: `new Cron("0 0 0 * * 1", { alternativeWeekdays: true })` runs on Sunday in Quartz mode.
+* `sloppyRanges` - Enable non-standard stepping formats for backward compatibility. When `false` (default), only wildcard (*\/step) or range (min-max\/step) formats are allowed, following strict vixie cron and cronie parsing rules. When `true`, allows legacy formats like `/10`, `5/5`, `30/30`. This option was added to maintain backward compatibility while enforcing OCPS compliance by default.
+
+**Pattern syntax strictness:**
+By default, Croner now follows strict range parsing rules as used by vixie cron and cronie (upcoming OCPS requirement):
+* ✅ Valid: `*/10`, `0-59/10`, `30-50/10` (wildcard or range with stepping)
+* ❌ Invalid: `/10`, `0/10`, `30/30` (missing prefix or numeric prefix with stepping)
+* To allow the old behavior, use `sloppyRanges: true` option: `new Cron("/10 * * * * *", { sloppyRanges: true })`
 
 ## Switching from Cron
 

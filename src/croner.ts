@@ -196,6 +196,7 @@ class Cron<T = undefined> {
       this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
         mode: this.options.mode,
         alternativeWeekdays: this.options.alternativeWeekdays,
+        sloppyRanges: this.options.sloppyRanges,
       });
     }
 
@@ -326,12 +327,26 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Return the original pattern, if there was one
+   * Return the original pattern, if there was one.
+   * Returns undefined when the job was created with a Date or ISO 8601 string instead of a cron pattern.
    *
-   * @returns Original pattern
+   * @returns Original cron pattern, or undefined for date-based jobs
    */
   public getPattern(): string | undefined {
+    // If this is a one-off job (created with a date), there is no pattern
+    if (this._states.once) {
+      return void 0;
+    }
     return this._states.pattern ? this._states.pattern.pattern : void 0;
+  }
+
+  /**
+   * Return the original run-once date, if there was one
+   *
+   * @returns Original run-once date, or null if not a run-once job
+   */
+  public getOnce(): Date | null {
+    return this._states.once ? this._states.once.getDate() : null;
   }
 
   /**
@@ -508,29 +523,35 @@ class Cron<T = undefined> {
       this.getTz(),
     );
 
-    if (this.options.catch) {
-      try {
+    try {
+      if (this.options.catch) {
+        try {
+          if (this.fn !== undefined) {
+            await this.fn(this, this.options.context as T);
+          }
+        } catch (_e) {
+          if (isFunction(this.options.catch)) {
+            try {
+              (this.options.catch as Function)(_e, this);
+            } catch (_catchError) {
+              // Silently ignore errors thrown by the catch callback so they do not disrupt the job execution flow or leave the blocking state stuck (including when protect is enabled).
+            }
+          }
+        }
+      } else {
+        // Trigger the function without catching
         if (this.fn !== undefined) {
           await this.fn(this, this.options.context as T);
         }
-      } catch (_e) {
-        if (isFunction(this.options.catch)) {
-          (this.options.catch as Function)(_e, this);
-        }
       }
-    } else {
-      // Trigger the function without catching
-      if (this.fn !== undefined) {
-        await this.fn(this, this.options.context as T);
-      }
+    } finally {
+      this._states.previousRun = new CronDate<T>(
+        initiationDate,
+        this.getTz(),
+      );
+
+      this._states.blocking = false;
     }
-
-    this._states.previousRun = new CronDate<T>(
-      initiationDate,
-      this.getTz(),
-    );
-
-    this._states.blocking = false;
   }
 
   /**

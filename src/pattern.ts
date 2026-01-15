@@ -46,6 +46,7 @@ class CronPattern {
   timezone?: string;
   mode: CronMode;
   alternativeWeekdays: boolean;
+  sloppyRanges: boolean;
   second: number[];
   minute: number[];
   hour: number[];
@@ -64,12 +65,13 @@ class CronPattern {
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { mode?: CronMode; alternativeWeekdays?: boolean },
+    options?: { mode?: CronMode; alternativeWeekdays?: boolean; sloppyRanges?: boolean },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
     this.mode = options?.mode ?? "auto";
     this.alternativeWeekdays = options?.alternativeWeekdays ?? false;
+    this.sloppyRanges = options?.sloppyRanges ?? false;
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -173,8 +175,8 @@ class CronPattern {
     if (parts[3].toUpperCase() === "LW") {
       this.lastWeekday = true;
       parts[3] = "";
-    } else if (parts[3].indexOf("L") >= 0) {
-      parts[3] = parts[3].replace("L", "");
+    } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
+      parts[3] = parts[3].replace(/L/gi, "");
       this.lastDayOfMonth = true;
     }
 
@@ -337,8 +339,8 @@ class CronPattern {
   private throwAtIllegalCharacters(parts: string[]) {
     for (let i = 0; i < parts.length; i++) {
       const reValidCron = (i === 3)
-        ? /[^/*0-9,-WL]+/ // Day-of-month: allow W and L modifiers
-        : (i === 5 ? /[^/*0-9,\-#L]+/ : /[^/*0-9,-]+/); // Day-of-week: allow # and L modifiers
+        ? /[^/*0-9,\-WwLl]+/ // Day-of-month: allow W and L modifiers (case-insensitive)
+        : (i === 5 ? /[^/*0-9,\-#Ll]+/ : /[^/*0-9,\-]+/); // Day-of-week: allow # and L modifiers (case-insensitive)
       if (reValidCron.test(parts[i])) {
         throw new TypeError(
           "CronPattern: configuration entry " + i + " (" + parts[i] +
@@ -604,7 +606,7 @@ class CronPattern {
   private handleStepping(
     conf: string,
     type: CronPatternPart,
-    valueIndexOffset: number,
+    _valueIndexOffset: number,
     defaultValue: number,
   ) {
     if (conf.toUpperCase().includes("W")) {
@@ -618,14 +620,33 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + conf + "'");
     }
 
-    // Inject missing asterisk (/3 insted of */3)
-    if (split[0] === "") {
-      split[0] = "*";
+    // OCPS: Strict range parsing - disallow numeric/step format (e.g., 0/10, 30/30) and empty prefix (/10)
+    // Only allow wildcard (*/10) or range (0-59/10) formats unless sloppyRanges is enabled
+    if (!this.sloppyRanges) {
+      // Reject patterns with empty prefix like /10
+      if (split[0] === "") {
+        throw new TypeError(
+          "CronPattern: Syntax error, stepping with missing prefix ('" + conf +
+            "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+        );
+      }
+      // Reject patterns with numeric prefix like 0/10, 30/30
+      if (split[0] !== "*") {
+        throw new TypeError(
+          "CronPattern: Syntax error, stepping with numeric prefix ('" + conf +
+            "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.",
+        );
+      }
+    } else {
+      // In sloppy mode, inject missing asterisk (/3 instead of */3) for backward compatibility
+      if (split[0] === "") {
+        split[0] = "*";
+      }
     }
 
     let start = 0;
     if (split[0] !== "*") {
-      start = parseInt(split[0], 10) + valueIndexOffset;
+      start = parseInt(split[0], 10) + _valueIndexOffset;
     }
 
     const steps = parseInt(split[1], 10);
@@ -738,7 +759,7 @@ class CronPattern {
    * @param nthWeekday bitmask, 2 (0x00010) for 2nd friday, 31 (ANY_OCCURRENCE, 0b100000) for any day
    */
   private setNthWeekdayOfMonth(index: number, nthWeekday: number | string) {
-    if (typeof nthWeekday !== "number" && nthWeekday === "L") {
+    if (typeof nthWeekday !== "number" && nthWeekday.toUpperCase() === "L") {
       this["dayOfWeek"][index] = this["dayOfWeek"][index] | LAST_OCCURRENCE;
     } else if (nthWeekday === ANY_OCCURRENCE) {
       this["dayOfWeek"][index] = ANY_OCCURRENCE;
