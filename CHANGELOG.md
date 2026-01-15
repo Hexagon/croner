@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - DST bugs causing rapid-fire execution during timezone transitions (Issue #286) (#285)
 - DST bug with UTC timezone causing hour skipping during local DST transitions (Issue #284) (#285)
+- Cron job stopping when catch callback throws with protect enabled (#337)
 - L modifier bug and documented W modifier edge cases (#306)
 - `getPattern()` returning wrong value for date-based jobs (#331)
 - Node.js timezone test failures caused by hour 24 midnight formatting (#291)
