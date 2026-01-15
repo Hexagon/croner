@@ -523,29 +523,35 @@ class Cron<T = undefined> {
       this.getTz(),
     );
 
-    if (this.options.catch) {
-      try {
+    try {
+      if (this.options.catch) {
+        try {
+          if (this.fn !== undefined) {
+            await this.fn(this, this.options.context as T);
+          }
+        } catch (_e) {
+          if (isFunction(this.options.catch)) {
+            try {
+              (this.options.catch as Function)(_e, this);
+            } catch (_catchError) {
+              // Silently ignore errors thrown by the catch callback so they do not disrupt the job execution flow or leave the blocking state stuck (including when protect is enabled).
+            }
+          }
+        }
+      } else {
+        // Trigger the function without catching
         if (this.fn !== undefined) {
           await this.fn(this, this.options.context as T);
         }
-      } catch (_e) {
-        if (isFunction(this.options.catch)) {
-          (this.options.catch as Function)(_e, this);
-        }
       }
-    } else {
-      // Trigger the function without catching
-      if (this.fn !== undefined) {
-        await this.fn(this, this.options.context as T);
-      }
+    } finally {
+      this._states.previousRun = new CronDate<T>(
+        initiationDate,
+        this.getTz(),
+      );
+
+      this._states.blocking = false;
     }
-
-    this._states.previousRun = new CronDate<T>(
-      initiationDate,
-      this.getTz(),
-    );
-
-    this._states.blocking = false;
   }
 
   /**

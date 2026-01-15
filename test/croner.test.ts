@@ -957,6 +957,38 @@ test("Number of milliseconds to next run should be < 1s when interval is paired 
   assertEquals(cron.msToNext()! < 1000, true);
 });
 
+test(
+  "Job should continue running when catch callback throws with protect enabled",
+  async () => {
+    let triggerCount = 0;
+
+    const job = new Cron(
+      "* * * * * *",
+      {
+        protect: true,
+        catch: () => {
+          throw new Error("Catch callback error");
+        },
+      },
+      async () => {
+        triggerCount++;
+        if (triggerCount === 1) {
+          throw new Error("First run throws");
+        }
+      },
+    );
+
+    // Wait for 3 seconds - should see at least 3 triggers
+    await sleep(3000);
+
+    job.stop();
+
+    // The job should have continued running after the catch callback threw
+    assertEquals(triggerCount >= 2, true);
+    // The blocking state should have been reset
+    assertEquals(job.isBusy(), false);
+  },
+);
 test("getOnce() should return null for pattern-based jobs", function () {
   let scheduler = new Cron("* * * * * *");
   assertEquals(scheduler.getOnce(), null);
