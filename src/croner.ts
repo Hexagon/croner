@@ -411,7 +411,9 @@ class Cron {
             try {
               (this.options.catch as Function)(_e, this);
             } catch (_catchError) {
-              // Silently ignore errors from catch callback to prevent blocking state from getting stuck
+              // Ignore errors from catch callback to ensure the job continues running.
+              // If the catch callback throws, we must not let it propagate as that would
+              // leave the blocking state stuck, preventing future executions when protect is enabled.
             }
           }
         }
