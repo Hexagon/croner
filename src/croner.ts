@@ -400,29 +400,35 @@ class Cron {
       this.options.timezone || this.options.utcOffset,
     );
 
-    if (this.options.catch) {
-      try {
+    try {
+      if (this.options.catch) {
+        try {
+          if (this.fn !== undefined) {
+            await this.fn(this, this.options.context);
+          }
+        } catch (_e) {
+          if (isFunction(this.options.catch)) {
+            try {
+              (this.options.catch as Function)(_e, this);
+            } catch (_catchError) {
+              // Silently ignore errors from catch callback to prevent blocking state from getting stuck
+            }
+          }
+        }
+      } else {
+        // Trigger the function without catching
         if (this.fn !== undefined) {
           await this.fn(this, this.options.context);
         }
-      } catch (_e) {
-        if (isFunction(this.options.catch)) {
-          (this.options.catch as Function)(_e, this);
-        }
       }
-    } else {
-      // Trigger the function without catching
-      if (this.fn !== undefined) {
-        await this.fn(this, this.options.context);
-      }
+    } finally {
+      this._states.previousRun = new CronDate(
+        initiationDate,
+        this.options.timezone || this.options.utcOffset,
+      );
+
+      this._states.blocking = false;
     }
-
-    this._states.previousRun = new CronDate(
-      initiationDate,
-      this.options.timezone || this.options.utcOffset,
-    );
-
-    this._states.blocking = false;
   }
 
   /**
