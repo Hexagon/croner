@@ -527,7 +527,7 @@ class Cron<T = undefined> {
       if (this.options.catch) {
         try {
           if (this.fn !== undefined) {
-            await this.fn(this, this.options.context);
+            await this.fn(this, this.options.context as T);
           }
         } catch (_e) {
           if (isFunction(this.options.catch)) {
@@ -547,16 +547,10 @@ class Cron<T = undefined> {
         }
       }
     } finally {
-      this._states.previousRun = new CronDate(
+      this._states.previousRun = new CronDate<T>(
         initiationDate,
-        this.options.timezone || this.options.utcOffset,
+        this.getTz(),
       );
-    }
-
-    this._states.previousRun = new CronDate<T>(
-      initiationDate,
-      this.getTz(),
-    );
 
       this._states.blocking = false;
     }
