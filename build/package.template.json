@@ -16,6 +16,16 @@
   "bugs": {
     "url": "https://github.com/hexagon/croner/issues"
   },
+  "funding": [
+    {
+      "type": "other",
+      "url": "https://paypal.me/hexagonpp"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/hexagon"
+    }
+  ],
   "files": [
     "dist/*.js",
     "dist/*.cjs",

@@ -1,4 +1,5 @@
 import { CronDate } from "./date.ts";
+import type { CronMode } from "./pattern.ts";
 import type { Cron } from "./croner.ts";
 
 type CatchCallbackFn = (e: unknown, job: Cron) => void;
@@ -9,7 +10,7 @@ type ProtectCallbackFn = (job: Cron) => void;
  *
  * @interface
  */
-interface CronOptions {
+interface CronOptions<T = undefined> {
   /**
    * The name of the cron job. If provided, the job will be added to the
    * `scheduledJobs` array, allowing it to be accessed by name.
@@ -64,12 +65,12 @@ interface CronOptions {
   /**
    * The date and time at which the job should start running.
    */
-  startAt?: string | Date | CronDate;
+  startAt?: string | Date | CronDate<T>;
 
   /**
    * The date and time at which the job should stop running.
    */
-  stopAt?: string | Date | CronDate;
+  stopAt?: string | Date | CronDate<T>;
 
   /**
    * The timezone for the cron job.
@@ -82,15 +83,62 @@ interface CronOptions {
   utcOffset?: number;
 
   /**
+   * If true, uses AND logic when combining day-of-month and day-of-week.
+   * If false, uses OR logic for combining day-of-month and day-of-week (legacy behavior).
+   * @default false
+   */
+  domAndDow?: boolean;
+
+  /**
+   * @deprecated Use domAndDow instead. This option will be removed in a future version.
+   * If true, enables legacy mode (OR logic) for compatibility with older cron implementations.
+   * Offset the scheduled date by a number of days.
+   * Positive values shift the date forward, negative values shift it backward.
+   * For example, dayOffset: -1 schedules the job one day before the pattern match.
+   * @default 0
+   */
+  dayOffset?: number;
+
+  /**
    * If true, enables legacy mode for compatibility with older cron implementations.
    * @default true
    */
   legacyMode?: boolean;
 
   /**
+   * Specifies the cron pattern mode to use for parsing and execution.
+   *
+   * - "auto": Automatically detect pattern format (default behavior)
+   * - "5-part": Traditional 5-field cron (minute-level precision, seconds forced to 0, years wildcarded)
+   * - "6-part": Extended 6-field cron (second-level precision, years wildcarded)
+   * - "7-part": Full 7-field cron (second-level and year-specific precision)
+   * - "5-or-6-parts": Accept 5 or 6 field patterns (years wildcarded)
+   * - "6-or-7-parts": Accept 6 or 7 field patterns (no additional constraints)
+   *
+   * @default "auto"
+   */
+  mode?: CronMode;
+
+  /**
    * An optional context object that will be passed to the job function.
    */
-  context?: unknown;
+  context?: T;
+
+  /**
+   * If true, enables alternative weekday numbering (Quartz mode).
+   * In standard mode (false): Sunday=0, Monday=1, ..., Saturday=6
+   * In Quartz mode (true): Sunday=1, Monday=2, ..., Saturday=7
+   * @default false
+   */
+  alternativeWeekdays?: boolean;
+
+  /**
+   * If true, allows non-standard stepping formats for backward compatibility.
+   * When false (default), only wildcard (*\/step) or range (min-max\/step) formats are allowed.
+   * When true, allows numeric prefix formats like /10, 5/5, 30/30.
+   * @default false
+   */
+  sloppyRanges?: boolean;
 }
 
 /**
@@ -100,14 +148,27 @@ interface CronOptions {
  * @returns The processed and validated cron options.
  * @throws {Error} If any of the options are invalid.
  */
-function CronOptionsHandler(options?: CronOptions): CronOptions {
+function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOptions<T> {
   if (options === void 0) {
     options = {};
   }
 
   delete options.name;
 
-  options.legacyMode = options.legacyMode === void 0 ? true : options.legacyMode;
+  // Handle backward compatibility: legacyMode is deprecated in favor of domAndDow
+  // domAndDow: true means AND logic, false means OR logic (legacy behavior)
+  // legacyMode: true means OR logic, false means AND logic
+  // Therefore: domAndDow = !legacyMode
+  if (options.legacyMode !== void 0 && options.domAndDow === void 0) {
+    // If only legacyMode is provided, invert it for domAndDow
+    options.domAndDow = !options.legacyMode;
+  } else if (options.domAndDow === void 0) {
+    // If neither is provided, default to false (OR logic, legacy behavior)
+    options.domAndDow = false;
+  }
+  // Keep legacyMode in sync with domAndDow for backward compatibility (inverted)
+  options.legacyMode = !options.domAndDow;
+
   options.paused = options.paused === void 0 ? false : options.paused;
   options.maxRuns = options.maxRuns === void 0 ? Infinity : options.maxRuns;
   options.catch = options.catch === void 0 ? false : options.catch;
@@ -115,7 +176,22 @@ function CronOptionsHandler(options?: CronOptions): CronOptions {
   options.utcOffset = options.utcOffset === void 0
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
+  options.dayOffset = options.dayOffset === void 0 ? 0 : parseInt(options.dayOffset.toString(), 10);
   options.unref = options.unref === void 0 ? false : options.unref;
+  options.mode = options.mode === void 0 ? "auto" : options.mode;
+  options.alternativeWeekdays = options.alternativeWeekdays === void 0
+    ? false
+    : options.alternativeWeekdays;
+  options.sloppyRanges = options.sloppyRanges === void 0 ? false : options.sloppyRanges;
+
+  // Validate mode option
+  if (
+    !["auto", "5-part", "6-part", "7-part", "5-or-6-parts", "6-or-7-parts"].includes(options.mode)
+  ) {
+    throw new Error(
+      "CronOptions: mode must be one of 'auto', '5-part', '6-part', '7-part', '5-or-6-parts', or '6-or-7-parts'.",
+    );
+  }
 
   if (options.startAt) {
     options.startAt = new CronDate(options.startAt, options.timezone);
@@ -148,6 +224,14 @@ function CronOptionsHandler(options?: CronOptions): CronOptions {
 
   if (options.unref !== true && options.unref !== false) {
     throw new Error("CronOptions: Unref should be either true, false or undefined(false).");
+  }
+
+  if (options.dayOffset !== void 0 && options.dayOffset !== 0) {
+    if (isNaN(options.dayOffset)) {
+      throw new Error(
+        "CronOptions: Invalid value passed for dayOffset, should be a number representing days to offset.",
+      );
+    }
   }
 
   return options;

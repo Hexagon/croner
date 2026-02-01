@@ -16,8 +16,8 @@ nav_order: 3
 // Find next month
 const nextMonth = new Cron("@monthly").nextRun(),
 	nextSunday = new Cron("@weekly").nextRun(),
-	nextSat29feb = new Cron("0 0 0 29 2 6", { legacyMode: false }).nextRun(),
-	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { legacyMode: false }).nextRun(),
+	nextSat29feb = new Cron("0 0 0 29 2 6", { domAndDow: true }).nextRun(),
+	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { domAndDow: true }).nextRun(),
     nextLastSundayOfMonth = new Cron("0 0 0 * * L7").nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
@@ -25,6 +25,40 @@ console.log("Next sunday: " +  nextSunday.toLocaleDateString());
 console.log("Next saturday at 29th of february: " +  nextSat29feb.toLocaleDateString());  // 2048-02-29
 console.log("Next month ending with a sunday: " +  nextSunLastOfMonth.toLocaleDateString());
 console.log("Next last sunday of month: " +  nextLastSundayOfMonth.toLocaleDateString());
+```
+
+### List previous scheduled runs
+
+```ts
+// Get previous 5 scheduled times (useful for audit/logging)
+const job = new Cron("0 0 * * *"); // Daily at midnight
+const referenceDate = new Date("2024-01-15T12:00:00");
+const previousRuns = job.previousRuns(5, referenceDate);
+
+console.log("Previous 5 scheduled runs:");
+previousRuns.forEach((run, i) => {
+    console.log(`  ${i + 1}. ${run.toISOString()}`);
+});
+// Output:
+//   1. 2024-01-15T00:00:00.000Z
+//   2. 2024-01-14T00:00:00.000Z
+//   3. 2024-01-13T00:00:00.000Z
+//   4. 2024-01-12T00:00:00.000Z
+//   5. 2024-01-11T00:00:00.000Z
+```
+
+### Get run-once date
+
+```ts
+// When creating a job with a specific date/time, you can retrieve the original date
+const job = new Cron("2025-01-01T00:00:00", { timezone: "Europe/Stockholm" });
+const onceDate = job.getOnce();
+
+if (onceDate) {
+    console.log("This job is scheduled to run once at: " + onceDate.toISOString());
+} else {
+    console.log("This is a pattern-based recurring job");
+}
 ```
 
 ### Job controls

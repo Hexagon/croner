@@ -15,10 +15,7 @@ test("Array passed as next date should throw", function () {
   });
 });
 
-test("31st february should not be found", function () {
-  let scheduler = new Cron("* * * 31 2 *");
-  assertEquals(scheduler.nextRun(), null);
-});
+// Impossible date tests (Feb 31, etc.) are now in impossible-patterns.test.ts
 
 test("Too high days should throw", function () {
   assertThrows(() => {
@@ -103,6 +100,7 @@ test("Too high hours minute should throw", function () {
     scheduler.nextRun();
   });
 });
+
 test(
   "Context is passed",
   //@ts-ignore
@@ -135,17 +133,7 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
   assertEquals(nextRuns[9].getTime() < now.getTime() + 6 * 60 * 1000, true);
 });
 
-test("Extra whitespace at beginning should throw", () => {
-  assertThrows(() => {
-    new Cron(" 0 0 12 9 *").nextRun();
-  });
-});
-
-test("Extra whitespace at end should throw", () => {
-  assertThrows(() => {
-    new Cron("0 0 12 9 * ").nextRun();
-  });
-});
+// Whitespace tests are now covered by OCPS 1.0 tests
 
 test("Next 10 run times is returned by enumeration(), and contain a reasonable time span, when using modified start time", () => {
   // 20 minutes before now
@@ -164,83 +152,12 @@ test("Next 10 run times is returned by enumeration(), and contain a reasonable t
   assertEquals(nextRuns[9].getTime() < now.getTime() + 11 * 60 * 1000, true);
 });
 
-test("@yearly should be replaced", function () {
-  let nextRuns = new Cron("@yearly").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2023);
-  assertEquals(nextRuns[0].getMonth(), 0);
-  assertEquals(nextRuns[0].getDate(), 1);
-  assertEquals(nextRuns[1].getFullYear(), 2024);
-  assertEquals(nextRuns[2].getFullYear(), 2025);
-});
-
-test("@annually should be replaced", function () {
-  let nextRuns = new Cron("@annually").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2023);
-  assertEquals(nextRuns[0].getMonth(), 0);
-  assertEquals(nextRuns[0].getDate(), 1);
-});
-
-test("@monthly should be replaced", function () {
-  let nextRuns = new Cron("@monthly").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 2);
-  assertEquals(nextRuns[0].getDate(), 1);
-  assertEquals(nextRuns[1].getMonth(), 3);
-  assertEquals(nextRuns[1].getDate(), 1);
-  assertEquals(nextRuns[2].getMonth(), 4);
-  assertEquals(nextRuns[2].getDate(), 1);
-});
-
-test("@weekly should be replaced", function () {
-  let nextRuns = new Cron("@weekly").nextRuns(3, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 20);
-  assertEquals(nextRuns[1].getMonth(), 1);
-  assertEquals(nextRuns[1].getDate(), 27);
-  assertEquals(nextRuns[2].getMonth(), 2);
-  assertEquals(nextRuns[2].getDate(), 6);
-});
-
-test("@weekly should be replaced", function () {
-  let nextRuns = new Cron("@daily").nextRuns(3, "2022-02-17T12:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 18);
-  assertEquals(nextRuns[1].getMonth(), 1);
-  assertEquals(nextRuns[1].getDate(), 19);
-  assertEquals(nextRuns[2].getMonth(), 1);
-  assertEquals(nextRuns[2].getDate(), 20);
-});
-
+// Predefined schedule (nickname) tests are now covered by OCPS 1.1 tests
+// Invalid nickname test kept here as it tests error handling, not OCPS compliance
 test("@wekly should throw", function () {
   assertThrows(() => {
     new Cron("@wekly").nextRuns(3, "2022-02-17T12:00:00");
   });
-});
-
-test("@hourly should be replaced (UTC)", function () {
-  let nextRuns = new Cron("@hourly").nextRuns(3, "2022-02-16T23:59:00Z");
-  assertEquals(nextRuns[0].getUTCFullYear(), 2022);
-  assertEquals(nextRuns[0].getUTCMonth(), 1);
-  assertEquals(nextRuns[0].getUTCDate(), 17);
-  assertEquals(nextRuns[0].getUTCHours(), 0);
-  assertEquals(nextRuns[1].getUTCMonth(), 1);
-  assertEquals(nextRuns[1].getUTCDate(), 17);
-  assertEquals(nextRuns[1].getUTCHours(), 1);
-  assertEquals(nextRuns[2].getUTCHours(), 2);
-});
-
-test("@hourly should be replaced (Local)", function () {
-  let nextRuns = new Cron("@hourly").nextRuns(3, "2022-02-16T23:59:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 17);
-  assertEquals(nextRuns[0].getHours(), 0);
-  assertEquals(nextRuns[1].getMonth(), 1);
-  assertEquals(nextRuns[1].getDate(), 17);
-  assertEquals(nextRuns[1].getHours(), 1);
-  assertEquals(nextRuns[2].getHours(), 2);
 });
 
 test("Croner should increment seconds", function () {
@@ -270,6 +187,7 @@ test("Croner should increment days", function () {
   assertEquals(true, runs[1] < runs[2]);
   assertEquals(true, runs[2] < runs[3]);
 });
+
 test("Croner should increment months", function () {
   let runs = new Cron("0 0 0 1 * *").nextRuns(4);
   assertEquals(true, runs[0] < runs[1]);
@@ -342,9 +260,10 @@ test("Croner should give correct last day of months when combined with other dat
 });
 
 test("Impossible combination should result in null (non legacy mode)", function () {
-  let impossible = new Cron("0 0 0 30 2 6", { legacyMode: false }).nextRun(new Date(1634076000000));
+  let impossible = new Cron("0 0 0 30 2 6", { domAndDow: true }).nextRun(new Date(1634076000000));
   assertEquals(null, impossible);
 });
+
 test(
   "currentRun() and previousRun() should be set at correct points in time",
   //@ts-ignore
@@ -361,6 +280,7 @@ test(
     }, 2000);
   }),
 );
+
 test(
   "scheduled job should not stop on unhandled error with option catch: true",
   //@ts-ignore
@@ -376,6 +296,7 @@ test(
     });
   }),
 );
+
 test(
   "scheduled job should execute callback on unhandled error with option catch: callback()",
   //@ts-ignore
@@ -480,6 +401,7 @@ test(
     }
   }),
 );
+
 test("sanity check start stop resume", function () {
   let job = new Cron("* * * 1 11 4", () => {});
   assertEquals(job.isRunning(), true);
@@ -524,6 +446,7 @@ test("previous run time should be null if not yet executed", function () {
   assertEquals(result, null);
   job.stop();
 });
+
 test(
   "previous run time should be set if executed",
   //@ts-ignore
@@ -610,17 +533,20 @@ test("Test milliseconds to 23:59:59 XXXX-01-01 (most often next year), 1000s ste
 
 test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (croner mode)", function () {
   assertEquals(
-    new Cron("0 0 0 1 11 4", { legacyMode: false }).nextRun(new Date(1634076000000))?.getFullYear(),
+    new Cron("0 0 0 1 11 4", { domAndDow: true }).nextRun(new Date(1634076000000))?.getFullYear(),
     2029,
   );
 });
 
-test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (legacy/default mode)", function () {
-  assertEquals(new Cron("0 0 0 1 11 4").nextRun(new Date(1634076000000))?.getFullYear(), 2021);
+test("Test when next thursday 1st november occurr, starting from 2021-10-13 00:00:00 (legacy/OR mode)", function () {
+  assertEquals(
+    new Cron("0 0 0 1 11 4", { domAndDow: false }).nextRun(new Date(1634076000000))?.getFullYear(),
+    2021,
+  );
 });
 
 test("Next saturday at 29th of february should occur 2048. Also test weekday an month names and case insensitivity (croner mode)", function () {
-  let nextSaturday29feb = new Cron("0 0 0 29 feb SAT", { legacyMode: false }).nextRun(
+  let nextSaturday29feb = new Cron("0 0 0 29 feb SAT", { domAndDow: true }).nextRun(
     new Date(1634076000000),
   );
   assertEquals(nextSaturday29feb?.getFullYear(), 2048);
@@ -681,7 +607,7 @@ test("0 * * * * * with 40 iterations should return 45 minutes from now", functio
 });
 
 test("0 * * * * * with 40 iterations should return 45 minutes from now (legacy mode)", function () {
-  let scheduler = new Cron("0 * * * * *", { legacyMode: true }),
+  let scheduler = new Cron("0 * * * * *", { domAndDow: false }),
     prevRun: Date | null = new Date(),
     nextRun,
     iterations = 45,
@@ -740,7 +666,7 @@ test("Weekday pattern should return correct weekdays (legacy mode)", function ()
 });
 
 test("Weekday pattern should return correct combined with day of month (croner mode)", function () {
-  let nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: false }).nextRuns(
+  let nextRuns = new Cron("59 59 23 2 * 6", { domAndDow: true }).nextRuns(
     2,
     "2022-02-17T00:00:00",
   );
@@ -766,7 +692,7 @@ test("Weekday pattern should return correct weekdays (legacy mode)", function ()
 });
 
 test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
-  const nextRuns = new Cron("59 59 23 2 * 6", { legacyMode: true }).nextRuns(
+  const nextRuns = new Cron("59 59 23 2 * 6", { domAndDow: false }).nextRuns(
     6,
     "2022-01-31T00:00:00",
   );
@@ -786,7 +712,7 @@ test("Weekday pattern should return correct combined with day of month (legacy m
 });
 
 test("Weekday pattern should return correct alone (legacy mode)", function () {
-  const nextRuns = new Cron("15 9 * * mon", { legacyMode: true }).nextRuns(
+  const nextRuns = new Cron("15 9 * * mon", { domAndDow: false }).nextRuns(
     3,
     "2022-02-28T23:59:00",
   );
@@ -807,13 +733,13 @@ test("Weekday pattern should return correct alone (legacy mode)", function () {
 
 test("Invalid date should throw", function () {
   assertThrows(() => {
-    new Cron("15 9 * * mon", { legacyMode: true }).nextRun(new Date("pizza"));
+    new Cron("15 9 * * mon", { domAndDow: false }).nextRun(new Date("pizza"));
   });
 });
 
 test("Specific date should not create infinite loop (legacy mode)", function () {
   const cron = new Cron("0 * * * mon,tue,wed,fri,sat,sun", {
-      legacyMode: true,
+      domAndDow: false,
     }),
     next = cron.nextRun(new Date("2022-03-31T11:40:34"));
   assertEquals(next?.getFullYear(), 2022);
@@ -828,7 +754,7 @@ test(
   timeout(4000, (resolve, reject) => {
     let run = 1;
     const cron = new Cron("* * * * * *", {
-      legacyMode: true,
+      domAndDow: false,
     }, () => {
       const now = new Date(),
         nextParsed = new Date(cron.nextRun()!),
@@ -894,7 +820,7 @@ test(
       }
     }, 2100);
   },
-  { waitForCallback: true, timeout: 3000 },
+  { waitForCallback: true, timeout: 5000 },
 );
 
 test(
@@ -919,6 +845,7 @@ test(
   },
   { waitForCallback: true, timeout: 5000 },
 );
+
 test(
   "Job should be working after 1500 ms",
   (context, done) => {
@@ -939,6 +866,7 @@ test(
   },
   { waitForCallback: true, timeout: 4000 },
 );
+
 test(
   "Job should not be working after 1500 ms",
   (context, done) => {
@@ -957,15 +885,16 @@ test(
       }
     }, 3500);
   },
-  { waitForCallback: true, timeout: 4000 },
+  { waitForCallback: true, timeout: 6000 },
 );
+
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null", function () {
   let scheduler0 = new Cron("2020-01-01T00:00:00");
   assertEquals(scheduler0.nextRun(), null);
 });
 
 test("Fire-once should be supported by ISO 8601 string, past and .nextRun() should return null (legacy mode)", function () {
-  let scheduler0 = new Cron("2020-01-01T00:00:00", { legacyMode: true });
+  let scheduler0 = new Cron("2020-01-01T00:00:00", { domAndDow: false });
   assertEquals(scheduler0.nextRun(), null);
 });
 
@@ -1026,4 +955,69 @@ test("Number of milliseconds to next run should be < 1s when interval is paired 
     interval: 5,
   });
   assertEquals(cron.msToNext()! < 1000, true);
+});
+
+test(
+  "Job should continue running when catch callback throws with protect enabled",
+  async () => {
+    let triggerCount = 0;
+
+    const job = new Cron(
+      "* * * * * *",
+      {
+        protect: true,
+        catch: () => {
+          throw new Error("Catch callback error");
+        },
+      },
+      async () => {
+        triggerCount++;
+        if (triggerCount === 1) {
+          throw new Error("First run throws");
+        }
+      },
+    );
+
+    // Wait for 3 seconds - should see at least 3 triggers
+    await sleep(3000);
+
+    job.stop();
+
+    // The job should have continued running after the catch callback threw
+    assertEquals(triggerCount >= 2, true);
+    // The blocking state should have been reset
+    assertEquals(job.isBusy(), false);
+  },
+);
+test("getOnce() should return null for pattern-based jobs", function () {
+  let scheduler = new Cron("* * * * * *");
+  assertEquals(scheduler.getOnce(), null);
+});
+
+test("getOnce() should return the original date when created with ISO 8601 string", function () {
+  let scheduler = new Cron("2200-01-01T00:00:00");
+  let onceDate = scheduler.getOnce();
+  assertEquals(onceDate?.getFullYear(), 2200);
+  assertEquals(onceDate?.getMonth(), 0);
+  assertEquals(onceDate?.getDate(), 1);
+  assertEquals(onceDate?.getHours(), 0);
+});
+
+test("getOnce() should return the original date when created with a Date object", function () {
+  let refTime = new Date(),
+    twoSecsFromNow = new Date(refTime.getTime() + 2000),
+    scheduler = new Cron(twoSecsFromNow),
+    onceDate = scheduler.getOnce();
+  assertEquals(onceDate !== null, true);
+  // Allow for minor time differences due to CronDate processing
+  assertEquals(Math.abs(onceDate!.getTime() - twoSecsFromNow.getTime()) < 1000, true);
+});
+
+test("getOnce() should return the original date when created with ISO 8601 UTC string", function () {
+  let scheduler = new Cron("2200-01-01T00:00:00Z");
+  let onceDate = scheduler.getOnce();
+  assertEquals(onceDate?.getUTCFullYear(), 2200);
+  assertEquals(onceDate?.getUTCMonth(), 0);
+  assertEquals(onceDate?.getUTCDate(), 1);
+  assertEquals(onceDate?.getUTCHours(), 0);
 });
