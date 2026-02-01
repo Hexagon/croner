@@ -214,7 +214,6 @@ test("OCPS 1.0: Should reject step value of 0", function () {
 test("OCPS 1.0: Should accept impossible date combinations without parsing error", function () {
   // February 31st is impossible but should parse
   const cron = new Cron("0 0 31 2 *");
-  assert(cron !== null, "Impossible date should parse successfully");
   // The iterator should indicate no valid run time
   const next = cron.nextRun();
   assertEquals(next, null, "Should return null for impossible date");

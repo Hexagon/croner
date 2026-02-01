@@ -145,12 +145,10 @@ test("OCPS 1.4: DST Overlap (Fall Back) - job should run once at first occurrenc
 test("OCPS 1.4: Years 1-9999 should be supported", function () {
   // Test year 1 (though it will return null as it's in the past)
   const cron1 = new Cron("0 0 0 1 1 * 1");
-  assert(cron1 !== null, "Year 1 should parse successfully");
   assertEquals(cron1.nextRun(), null, "Year 1 is in the past");
 
   // Test year 9999
   const cron2 = new Cron("0 0 0 1 1 * 9999");
-  assert(cron2 !== null, "Year 9999 should parse successfully");
   const run2 = cron2.nextRun();
   assert(run2 !== null, "Year 9999 should be in the future");
   assertEquals(run2.getFullYear(), 9999, "Should match year 9999");
