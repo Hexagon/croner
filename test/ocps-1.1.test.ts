@@ -138,7 +138,8 @@ test("OCPS 1.1: Nicknames should not be combined with other expressions", functi
   // Current implementation replaces the nickname with the pattern, so this might actually work
   // but the spec suggests it shouldn't. Testing what the current behavior is.
   const cron = new Cron("@hourly");
-  assert(cron !== null, "Nickname should create valid cron");
+  const next = cron.nextRun();
+  assert(next !== null, "Nickname should create valid cron");
 });
 
 test("OCPS 1.1: Unknown nickname should throw error", function () {

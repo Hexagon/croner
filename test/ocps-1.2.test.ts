@@ -143,7 +143,6 @@ test("OCPS 1.2: Year field boundary - year 1 should be supported", function () {
   // This pattern would never match in practice (year 1 is in the past)
   // but it should parse correctly
   const cron = new Cron("0 0 0 1 1 * 1");
-  assert(cron !== null, "Year 1 should be accepted");
   // nextRun will return null as year 1 is in the past
   const next = cron.nextRun();
   assertEquals(next, null, "Year 1 is in the past, should return null");
@@ -151,7 +150,6 @@ test("OCPS 1.2: Year field boundary - year 1 should be supported", function () {
 
 test("OCPS 1.2: Year field boundary - year 9999 should be supported", function () {
   const cron = new Cron("0 0 0 1 1 * 9999");
-  assert(cron !== null, "Year 9999 should be accepted");
   const next = cron.nextRun();
   assert(next !== null, "Year 9999 should be in the future");
   assertEquals(next.getFullYear(), 9999, "Should run in year 9999");
