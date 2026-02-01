@@ -74,10 +74,10 @@ Using Deno
 
 ```typescript
 // From deno.land/x
-import { Cron } from "https://deno.land/x/croner@10.0.0/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@10.0.1/dist/croner.js";
 
 // ... or jsr.io
-import { Cron } from "jsr:@hexagon/croner@10.0.0";
+import { Cron } from "jsr:@hexagon/croner@10.0.1";
 ```
 
 In a webpage using the UMD-module
