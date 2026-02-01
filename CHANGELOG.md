@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `mode` option for cron pattern precision control with enforcement and flexible modes (#294)
 - `alternativeWeekdays` option for Quartz-style weekday numbering (1=Sunday...7=Saturday) (#312)
 - `domAndDow` option to replace deprecated `legacyMode` (no breaking change) (#309)
-- `sloppyRanges` option for strict Vixie cron range parsing (#327)
+- `sloppyRanges` option to allow relaxed, backward-compatible non-standard range/stepping syntax (#327)
 - Support for leading/trailing whitespace and consecutive whitespace in patterns
 - Case-insensitive L and W modifiers in cron patterns (#328)
 - Comprehensive edge case tests for year stepping, nth weekday, W modifier, Quartz mode, and boundary conditions (#329)
