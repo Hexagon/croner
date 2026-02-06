@@ -314,6 +314,7 @@ class CronDate<T = undefined> {
     this.minute = d.minute;
     this.second = d.second;
     this.ms = d.ms;
+    this.afterMs = d.afterMs;
   }
 
   /**
