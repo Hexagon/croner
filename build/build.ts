@@ -79,6 +79,7 @@ if (Deno.args[1] === "clean") {
       platform: "neutral",
       format: "esm",
       plugins: [dtsPlugin({
+        experimentalBundling: true,
         tsconfig: {
           compilerOptions: {
             target: "ES2017",
