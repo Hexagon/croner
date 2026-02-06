@@ -199,7 +199,7 @@ Croner uses [Vixie Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) bas
 *   **Enhanced logical control**:
 	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
 	-   *?*: Wildcard alias (behaves identically to `*`). **Non-portable**: Its use is discouraged in patterns intended for cross-system use. Supported in all fields for compatibility, but primarily meaningful in day-of-month and day-of-week fields.
-	-   Proper DST handling: Jobs scheduled during DST gaps are skipped; jobs in DST overlaps run once at first occurrence.
+	-   Proper DST handling: Jobs scheduled during DST gaps are skipped. During DST overlaps (fall-back), specific-time patterns (e.g. `0 30 2 * * *`) run once at the first occurrence; high-frequency patterns (e.g. `* * * * *`) continue executing without gaps.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
