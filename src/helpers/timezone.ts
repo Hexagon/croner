@@ -106,8 +106,9 @@ export function fromTimezone(
   s: number,
   tz: string,
   throwOnInvalid?: boolean,
+  afterMs?: number,
 ): Date {
-  return fromTZ(createTimePoint(y, m, d, h, i, s, tz), throwOnInvalid);
+  return fromTZ(createTimePoint(y, m, d, h, i, s, tz), throwOnInvalid, afterMs);
 }
 
 /**
@@ -127,9 +128,12 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  *
  * @param tp - TimePoint with specified timezone
  * @param throwOnInvalid - Default is to return the adjusted time if the call happens during a DST switch
+ * @param afterMs - Optional UTC milliseconds threshold. When provided and the local time falls
+ *                  in a DST overlap, the returned Date will be the earliest occurrence that is
+ *                  at or after this threshold (ensures monotonic progress across DST transitions).
  * @returns Normal date object
  */
-export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
+export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number): Date {
   // Construct a Date object with UTC components matching the target local time
   const inDate = new Date(timePointToMs(tp));
 
@@ -148,14 +152,31 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   // Check if the first guess produces the target local time
   if (timePointsMatch(check1, tp)) {
     // Even if it matches, we might be in a DST overlap (fall back)
-    // Check if there's another valid time 1 hour earlier
-    const altGuess = new Date(dateGuess.getTime() - 3600000); // 1 hour earlier
-    const altCheck = toTZ(altGuess, tp.tz!);
+    // Check if there's another valid time 1 hour earlier or later
+    const altEarlier = new Date(dateGuess.getTime() - 3600000);
+    const altEarlierCheck = toTZ(altEarlier, tp.tz!);
+    const altLater = new Date(dateGuess.getTime() + 3600000);
+    const altLaterCheck = toTZ(altLater, tp.tz!);
 
-    // If the earlier time also produces the same local time, we're in a DST overlap
-    if (timePointsMatch(altCheck, tp)) {
-      // Return the earlier time (first occurrence per OCPS 1.4)
-      return altGuess;
+    // Determine if we're in a DST overlap
+    const hasEarlier = timePointsMatch(altEarlierCheck, tp);
+    const hasLater = timePointsMatch(altLaterCheck, tp);
+
+    if (hasEarlier || hasLater) {
+      // We're in a DST overlap
+      const firstOccurrence = hasEarlier ? altEarlier : dateGuess;
+      const secondOccurrence = hasEarlier ? dateGuess : altLater;
+
+      // When afterMs is provided, return the earliest occurrence that is >= afterMs
+      // This ensures monotonic progress during DST fall-back transitions
+      if (afterMs !== undefined) {
+        if (firstOccurrence.getTime() >= afterMs) {
+          return firstOccurrence;
+        }
+        return secondOccurrence;
+      }
+      // Default: return the earlier time (first occurrence per OCPS 1.4)
+      return firstOccurrence;
     }
 
     return dateGuess;
