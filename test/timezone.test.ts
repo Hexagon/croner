@@ -389,8 +389,8 @@ test("Issue #286: Starting from DST gap should not cause rapid-fire execution", 
   // First run should be 1:59 AM PDT (1 minute from start)
   assertEquals(runs[0].toISOString(), "2025-11-02T08:59:00.000Z");
 
-  // Second run should continue into the second occurrence of the overlap period
-  // at 1:00 AM PST (1 hour later in UTC = 1 minute after 1:59 AM PDT)
+  // Second run should be the very next UTC minute (09:00Z),
+  // which locally corresponds to 1:00 AM PST after the fall-back from PDT.
   assertEquals(runs[1].toISOString(), "2025-11-02T09:00:00.000Z");
 
   // Subsequent runs should be 1 minute apart

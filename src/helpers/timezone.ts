@@ -131,6 +131,8 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  * @param afterMs - Optional UTC milliseconds threshold. When provided and the local time falls
  *                  in a DST overlap, the returned Date will be the earliest occurrence that is
  *                  at or after this threshold (ensures monotonic progress across DST transitions).
+ *                  If both occurrences are before the threshold, the second (later) occurrence
+ *                  is returned as the closest valid option.
  * @returns Normal date object
  */
 export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number): Date {
