@@ -51,6 +51,14 @@ class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
+   * Optional UTC ms threshold for resolving DST overlap ambiguity.
+   * When set, getTime()/getDate() will return the earliest occurrence
+   * that is at or after this threshold.
+   * @private
+   */
+  private afterMs?: number;
+
+  /**
    * Current milliseconds
    * @type {number}
    */
@@ -271,6 +279,8 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
+          // Preserve original UTC time for DST overlap resolution
+          this.afterMs = inDate.getTime();
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
@@ -304,6 +314,7 @@ class CronDate<T = undefined> {
     this.minute = d.minute;
     this.second = d.second;
     this.ms = d.ms;
+    this.afterMs = d.afterMs;
   }
 
   /**
@@ -949,8 +960,11 @@ class CronDate<T = undefined> {
    * Convert current state back to a javascript Date()
    *
    * @param internal If this is an internal call
+   * @param afterMs Optional UTC ms threshold for resolving DST overlap ambiguity
    */
-  public getDate(internal?: boolean): Date {
+  public getDate(internal?: boolean, afterMs?: number): Date {
+    // Use the instance-level afterMs as fallback if not explicitly provided
+    const resolvedAfterMs = afterMs ?? this.afterMs;
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
@@ -993,6 +1007,7 @@ class CronDate<T = undefined> {
             this.tz,
           ),
           false,
+          resolvedAfterMs,
         );
       }
     }
@@ -1000,9 +1015,22 @@ class CronDate<T = undefined> {
 
   /**
    * Convert current state back to a javascript Date() and return UTC milliseconds
+   *
+   * @param afterMs Optional UTC ms threshold for resolving DST overlap ambiguity
    */
-  public getTime(): number {
-    return this.getDate(false).getTime();
+  public getTime(afterMs?: number): number {
+    return this.getDate(false, afterMs).getTime();
+  }
+
+  /**
+   * Set the afterMs threshold for DST overlap resolution.
+   * When set, getTime()/getDate() will return the earliest occurrence
+   * that is at or after this threshold.
+   *
+   * @param ms UTC milliseconds threshold
+   */
+  public setAfterMs(ms: number): void {
+    this.afterMs = ms;
   }
 
   /**

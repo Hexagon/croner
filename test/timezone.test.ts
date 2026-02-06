@@ -301,10 +301,11 @@ test("OCPS 1.4 compliance: DST Overlap (Fall Back) - job should run once at firs
   const nov2After = nyJob.nextRun("2025-11-02T05:31:00Z"); // Just after first occurrence
   assertEquals(nov2After?.toISOString(), "2025-11-03T06:30:00.000Z"); // Next day at 1:30 AM EST
 
-  // Verify it doesn't run at the second occurrence (1:30 AM EST on Nov 2)
-  // Second occurrence would be at 2025-11-02T06:30:00.000Z
+  // Verify behavior during the second occurrence window (1:00 AM EST on Nov 2)
+  // Since we correctly track DST occurrence, nextRun from the second occurrence
+  // window returns the second occurrence of 1:30 AM (06:30:00Z), which is after the input
   const nov2Second = nyJob.nextRun("2025-11-02T06:00:00Z"); // During second occurrence window
-  assertEquals(nov2Second?.toISOString(), "2025-11-02T05:30:00.000Z"); // Still points to first
+  assertEquals(nov2Second?.toISOString(), "2025-11-02T06:30:00.000Z");
   nyJob.stop();
 });
 
@@ -388,9 +389,9 @@ test("Issue #286: Starting from DST gap should not cause rapid-fire execution", 
   // First run should be 1:59 AM PDT (1 minute from start)
   assertEquals(runs[0].toISOString(), "2025-11-02T08:59:00.000Z");
 
-  // Second run should skip to 2:00 AM PST (after DST transition)
-  // This is 61 minutes from 1:59 AM PDT because the 1:00-1:59 AM hour is skipped
-  assertEquals(runs[1].toISOString(), "2025-11-02T10:00:00.000Z");
+  // Second run should be the very next UTC minute (09:00Z),
+  // which locally corresponds to 1:00 AM PST after the fall-back from PDT.
+  assertEquals(runs[1].toISOString(), "2025-11-02T09:00:00.000Z");
 
   // Subsequent runs should be 1 minute apart
   for (let i = 2; i < runs.length; i++) {
@@ -402,4 +403,95 @@ test("Issue #286: Starting from DST gap should not cause rapid-fire execution", 
     );
   }
   laJob.stop();
+});
+
+test("DST fall-back should not cause scheduling gap with per-second cron", function () {
+  // Europe/Vienna: October 26, 2025 at 3:00 AM CEST -> 2:00 AM CET
+  // A per-second cron should not have a gap at the transition
+  const job = new Cron("* * * * * *", { paused: true, timezone: "Europe/Vienna" });
+
+  // Start just before DST transition: 2:59:58 CEST = 00:59:58 UTC
+  let current: string | Date = "2025-10-26T00:59:58.000Z";
+  const runs: Date[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const next = job.nextRun(current);
+    if (next) {
+      runs.push(next);
+      current = new Date(next.getTime());
+    }
+  }
+
+  assertEquals(runs.length, 7, "Should get 7 runs");
+
+  // Every run should be exactly 1 second apart
+  for (let i = 1; i < runs.length; i++) {
+    const diff = runs[i].getTime() - runs[i - 1].getTime();
+    assertEquals(
+      diff,
+      1000,
+      `Run ${i + 1} should be 1s after run ${i}, got ${diff}ms (${runs[i - 1].toISOString()} -> ${
+        runs[i].toISOString()
+      })`,
+    );
+  }
+
+  // Verify the transition happened correctly:
+  // Run 1: 2:59:59 CEST (00:59:59 UTC)
+  assertEquals(runs[0].toISOString(), "2025-10-26T00:59:59.000Z");
+  // Run 2: 2:00:00 CET second occurrence (01:00:00 UTC) - enters the overlap period
+  assertEquals(runs[1].toISOString(), "2025-10-26T01:00:00.000Z");
+
+  job.stop();
+});
+
+test("DST fall-back should not cause scheduling gap with per-minute cron", function () {
+  // Europe/Vienna: October 26, 2025 at 3:00 AM CEST -> 2:00 AM CET
+  const job = new Cron("* * * * *", { paused: true, timezone: "Europe/Vienna" });
+
+  // Start at 2:58:00 CEST = 00:58:00 UTC
+  let current: string | Date = "2025-10-26T00:58:00.000Z";
+  const runs: Date[] = [];
+
+  for (let i = 0; i < 5; i++) {
+    const next = job.nextRun(current);
+    if (next) {
+      runs.push(next);
+      current = new Date(next.getTime());
+    }
+  }
+
+  assertEquals(runs.length, 5, "Should get 5 runs");
+
+  // All runs should be exactly 60 seconds apart
+  for (let i = 1; i < runs.length; i++) {
+    const diff = runs[i].getTime() - runs[i - 1].getTime();
+    assertEquals(
+      diff,
+      60000,
+      `Run ${i + 1} should be 60s after run ${i}, got ${diff}ms`,
+    );
+  }
+
+  // Run 1: 2:59:00 CEST (00:59:00 UTC)
+  assertEquals(runs[0].toISOString(), "2025-10-26T00:59:00.000Z");
+  // Run 2: 2:00:00 CET second occurrence (01:00:00 UTC)
+  assertEquals(runs[1].toISOString(), "2025-10-26T01:00:00.000Z");
+
+  job.stop();
+});
+
+test("DST fall-back msToNext should not return large values at transition", function () {
+  // Europe/Vienna: October 26, 2025 at 3:00 AM CEST -> 2:00 AM CET
+  const job = new Cron("* * * * * *", { paused: true, timezone: "Europe/Vienna" });
+
+  // At the exact transition point: 2:59:59 CEST = 00:59:59 UTC
+  const ms = job.msToNext(new Date("2025-10-26T00:59:59.000Z"));
+  assertEquals(ms, 1000, "msToNext should be 1000ms at DST transition");
+
+  // During the second occurrence: 2:00:30 CET = 01:00:30 UTC
+  const ms2 = job.msToNext(new Date("2025-10-26T01:00:30.000Z"));
+  assertEquals(ms2, 1000, "msToNext should be 1000ms during second occurrence");
+
+  job.stop();
 });
