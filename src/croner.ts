@@ -640,7 +640,9 @@ class Cron<T = undefined> {
     // - Otherwise, allow it to run (handles edge case where job is created at/near target time)
     if (this._states.once) {
       // Job has already executed
-      if (this._states.currentRun && this._states.once.getTime() <= this._states.currentRun.getTime()) {
+      if (
+        this._states.currentRun && this._states.once.getTime() <= this._states.currentRun.getTime()
+      ) {
         return null;
       }
       // When enumerating, if previousRun is at the once time, we've already returned it
@@ -653,7 +655,7 @@ class Cron<T = undefined> {
         return null;
       }
     }
-    
+
     if (
       (nextRun === null) ||
       (this._states.maxRuns !== undefined && this._states.maxRuns <= 0) ||
