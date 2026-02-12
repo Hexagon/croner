@@ -1021,3 +1021,43 @@ test("getOnce() should return the original date when created with ISO 8601 UTC s
   assertEquals(onceDate?.getUTCDate(), 1);
   assertEquals(onceDate?.getUTCHours(), 0);
 });
+
+test(
+  "Fire-once job scheduled in the recent past (< 1s) should fire immediately",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled 500ms in the past - should still fire
+    const pastTime = new Date(Date.now() - 500);
+    const job = new Cron(pastTime, () => {
+      job.stop();
+      resolve();
+    });
+    // Verify it's scheduled
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test(
+  "Fire-once job scheduled at current time should fire",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled for very near future (10ms) - should fire
+    const nearFuture = new Date(Date.now() + 10);
+    const job = new Cron(nearFuture, () => {
+      job.stop();
+      resolve();
+    });
+    // Verify it's scheduled
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test("Fire-once job scheduled significantly in past (> 1s) should not fire", function () {
+  // Create a job scheduled 2 seconds in the past - should NOT fire
+  const pastTime = new Date(Date.now() - 2000);
+  const job = new Cron(pastTime);
+  // Should return null for nextRun
+  assertEquals(job.nextRun(), null);
+  assertEquals(job.isRunning(), false);
+  job.stop();
+});
