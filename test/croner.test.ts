@@ -1077,22 +1077,44 @@ test(
   }),
 );
 
-test("Fire-once job with allowPast: true should work for very old dates", function () {
-  let fired = false;
-  const veryOldDate = new Date("2020-01-01T00:00:00");
-  const job = new Cron(veryOldDate, { allowPast: true }, () => {
-    fired = true;
-  });
+test(
+  "Fire-once job with allowPast: true should work for very old dates",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    let fired = false;
+    const veryOldDate = new Date("2020-01-01T00:00:00");
+    const job = new Cron(veryOldDate, { allowPast: true }, () => {
+      fired = true;
+    });
 
-  // Should be scheduled
-  assertEquals(job.nextRun() !== null, true);
+    // Should be scheduled
+    assertEquals(job.nextRun() !== null, true);
 
-  // Give it a moment to fire
-  return new Promise((resolve) => {
+    // Give it a moment to fire
     setTimeout(() => {
       assertEquals(fired, true);
       job.stop();
       resolve();
     }, 100);
-  });
+  }),
+);
+
+test("nextRuns(10) returns exactly 1 item for job scheduled slightly in the past", function () {
+  // Job scheduled less than 1 second in the past should still yield a single next run
+  const slightlyPast = new Date(Date.now() - 500);
+  const job = new Cron(slightlyPast);
+  const runs = job.nextRuns(10) as Date[];
+
+  assertEquals(runs.length, 1);
+  job.stop();
+});
+
+test("nextRuns(10) returns exactly 1 item for allowPast job scheduled far in the past", function () {
+  // Job scheduled significantly in the past with allowPast: true should still yield a single next run
+  const farPast = new Date(Date.now() - 60000); // 60 seconds in the past
+  const job = new Cron(farPast, { allowPast: true });
+  const runs = job.nextRuns(10) as Date[];
+
+  assertEquals(runs.length, 1);
+  job.stop();
 });
