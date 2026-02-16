@@ -636,8 +636,9 @@ class Cron<T = undefined> {
     // For "once" jobs:
     // - If the job has already executed (currentRun exists and >= once time), return null
     // - If enumerating and previousRun == once time, we've already returned it, so return null
-    // - If the job hasn't executed yet but once time is significantly in the past (> 1 second), return null
-    // - Otherwise, allow it to run (handles edge case where job is created at/near target time)
+    // - If the job hasn't executed yet but once time is in the past:
+    //   - If allowPast option is true, allow it to fire
+    //   - Otherwise, only allow if within 1 second (handles timing edge cases)
     if (this._states.once) {
       // Job has already executed
       if (
@@ -649,10 +650,13 @@ class Cron<T = undefined> {
       if ((previousRun as CronDate<T>).getTime() === this._states.once.getTime()) {
         return null;
       }
-      // Job hasn't executed, but once time is significantly in the past (more than 1 second)
+      // Job hasn't executed, but once time is in the past
       const timeDiff = (previousRun as CronDate<T>).getTime() - this._states.once.getTime();
-      if (timeDiff > 1000) {
-        return null;
+      if (timeDiff > 0) {
+        // If allowPast is false, only allow jobs within 1 second (timing edge cases)
+        if (!this.options.allowPast && timeDiff > 1000) {
+          return null;
+        }
       }
     }
 

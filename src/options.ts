@@ -139,6 +139,14 @@ interface CronOptions<T = undefined> {
    * @default false
    */
   sloppyRanges?: boolean;
+
+  /**
+   * If true, date-based jobs scheduled in the past will fire immediately.
+   * If false, only jobs scheduled within the past second will fire immediately (to handle timing edge cases).
+   * Jobs scheduled more than 1 second in the past will be rejected unless this is true.
+   * @default false
+   */
+  allowPast?: boolean;
 }
 
 /**
@@ -183,6 +191,7 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     ? false
     : options.alternativeWeekdays;
   options.sloppyRanges = options.sloppyRanges === void 0 ? false : options.sloppyRanges;
+  options.allowPast = options.allowPast === void 0 ? false : options.allowPast;
 
   // Validate mode option
   if (

@@ -1061,3 +1061,38 @@ test("Fire-once job scheduled significantly in past (> 1s) should not fire", fun
   assertEquals(job.isRunning(), false);
   job.stop();
 });
+
+test(
+  "Fire-once job with allowPast: true should fire even if significantly in past",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled 2 seconds in the past with allowPast option
+    const pastTime = new Date(Date.now() - 2000);
+    const job = new Cron(pastTime, { allowPast: true }, () => {
+      job.stop();
+      resolve();
+    });
+    // Should be scheduled even though it's in the past
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test("Fire-once job with allowPast: true should work for very old dates", function () {
+  let fired = false;
+  const veryOldDate = new Date("2020-01-01T00:00:00");
+  const job = new Cron(veryOldDate, { allowPast: true }, () => {
+    fired = true;
+  });
+
+  // Should be scheduled
+  assertEquals(job.nextRun() !== null, true);
+
+  // Give it a moment to fire
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      assertEquals(fired, true);
+      job.stop();
+      resolve();
+    }, 100);
+  });
+});
