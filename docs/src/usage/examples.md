@@ -61,6 +61,25 @@ if (onceDate) {
 }
 ```
 
+### Allow jobs scheduled in the past
+
+```ts
+// By default, jobs scheduled more than 1 second in the past will not run
+const pastJob = new Cron("2020-01-01T00:00:00", () => {
+    console.log("This will NOT run");
+});
+
+// Use allowPast option to fire immediately for past dates
+const pastJobAllowed = new Cron("2020-01-01T00:00:00", { allowPast: true }, () => {
+    console.log("This WILL fire immediately");
+});
+
+// Useful for catch-up jobs or handling missed schedules
+const missedJob = new Cron(new Date(Date.now() - 60000), { allowPast: true }, () => {
+    console.log("This job was scheduled 1 minute ago but will fire now");
+});
+```
+
 ### Job controls
 ```ts
 const job = new Cron('* * * * * *', (self) => {

@@ -633,6 +633,33 @@ class Cron<T = undefined> {
       );
     }
 
+    // For "once" jobs:
+    // - If the job has already executed (currentRun exists and >= once time), return null
+    // - If enumerating and previousRun == once time, we've already returned it, so return null
+    // - If the job hasn't executed yet but once time is in the past:
+    //   - If allowPast option is true, allow it to fire
+    //   - Otherwise, only allow if within 1 second (handles timing edge cases)
+    if (this._states.once) {
+      // Job has already executed
+      if (
+        this._states.currentRun && this._states.once.getTime() <= this._states.currentRun.getTime()
+      ) {
+        return null;
+      }
+      // When enumerating, if previousRun is at the once time, we've already returned it
+      if ((previousRun as CronDate<T>).getTime() === this._states.once.getTime()) {
+        return null;
+      }
+      // Job hasn't executed, but once time is in the past
+      const timeDiff = (previousRun as CronDate<T>).getTime() - this._states.once.getTime();
+      if (timeDiff > 0) {
+        // If allowPast is false, only allow jobs within 1 second (timing edge cases)
+        if (!this.options.allowPast && timeDiff > 1000) {
+          return null;
+        }
+      }
+    }
+
     // DST fall-back overlap fix: When increment() produces a next run whose UTC time
     // is not monotonically advancing relative to the previous run, we may be in a DST
     // overlap period. This can manifest as:
@@ -661,10 +688,6 @@ class Cron<T = undefined> {
     }
 
     if (
-      this._states.once && this._states.once.getTime() <= (previousRun as CronDate<T>).getTime()
-    ) {
-      return null;
-    } else if (
       (nextRun === null) ||
       (this._states.maxRuns !== undefined && this._states.maxRuns <= 0) ||
       (this._states.kill) ||
