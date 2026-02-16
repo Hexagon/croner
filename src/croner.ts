@@ -656,6 +656,10 @@ class Cron<T = undefined> {
         // If allowPast is false, only allow jobs within 1 second (timing edge cases)
         if (!this.options.allowPast && timeDiff > 1000) {
           return null;
+        }
+      }
+    }
+
     // DST fall-back overlap fix: When increment() produces a next run whose UTC time
     // is not monotonically advancing relative to the previous run, we may be in a DST
     // overlap period. This can manifest as:
