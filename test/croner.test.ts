@@ -1118,3 +1118,53 @@ test("nextRuns(10) returns exactly 1 item for allowPast job scheduled far in the
   assertEquals(runs.length, 1);
   job.stop();
 });
+
+test(
+  "Fire-once job with allowPast: true and timezone should fire immediately (issue #348 scenario)",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Simulates the scenario from issue #348: a once-job scheduled with a past time
+    // and a timezone, which previously caused the job to not fire
+    const pastTime = new Date(Date.now() - 5000); // 5 seconds in the past
+    let fired = false;
+    const job = new Cron(pastTime, { allowPast: true, timezone: "America/New_York" }, () => {
+      fired = true;
+      job.stop();
+    });
+
+    // Should be scheduled to fire even though it's in the past
+    assertEquals(job.nextRun() !== null, true);
+
+    setTimeout(() => {
+      assertEquals(fired, true);
+      resolve();
+    }, 200);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true should have correct previousRun after firing",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    const pastTime = new Date(Date.now() - 3000); // 3 seconds in the past
+    const job = new Cron(pastTime, { allowPast: true }, () => {});
+
+    setTimeout(() => {
+      // After firing, previousRun should be set and nextRun should be null
+      assertEquals(job.previousRun() !== null, true);
+      assertEquals(job.nextRun(), null);
+      job.stop();
+      resolve();
+    }, 200);
+  }),
+);
+
+test("Fire-once job with no allowPast and date > 1s in past should have null nextRun and not be running", function () {
+  // A once-job 3 seconds in the past without allowPast should silently not schedule
+  const pastTime = new Date(Date.now() - 3000);
+  const job = new Cron(pastTime);
+
+  assertEquals(job.nextRun(), null);
+  assertEquals(job.isRunning(), false);
+  job.stop();
+});
