@@ -16,7 +16,7 @@ jobs:
         with:
           deno-version: "2.x"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
