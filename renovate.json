@@ -20,9 +20,6 @@
       "schedule": ["* 0-2 * * 1"]
     }
   ],
-  "deno": {
-    "enabled": true
-  },
   "prConcurrentLimit": 10,
   "prHourlyLimit": 0,
   "semanticCommits": "disabled",
