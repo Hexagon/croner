@@ -305,7 +305,7 @@ For example, some popular alternatives include large datetime libraries as depen
 
 ### Master branch
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) 
+![Cross Runtime Tests](https://github.com/Hexagon/croner/actions/workflows/test.yml/badge.svg?branch=master)
 
 This branch contains the latest stable code, released on npm's default channel `latest`. You can install the latest stable revision by running the command below.
 
@@ -315,7 +315,7 @@ npm install croner --save
 
 ### Dev branch
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev) 
+![Cross Runtime Tests](https://github.com/Hexagon/croner/actions/workflows/test.yml/badge.svg?branch=dev)
 
 This branch contains code currently being tested, and is released at channel `dev` on npm. You can install the latest revision of the development branch by running the command below.
 
