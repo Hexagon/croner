@@ -3,28 +3,44 @@
   "extends": [
     "config:recommended"
   ],
-  "baseBranches": ["dev"],
+  "baseBranchPatterns": [
+    "dev"
+  ],
   "packageRules": [
     {
       "description": "JSR dependencies in deno.json",
-      "matchManagers": ["deno"],
-      "matchDepTypes": ["jsr"],
+      "matchManagers": [
+        "deno"
+      ],
+      "matchDepTypes": [
+        "jsr"
+      ],
       "groupName": "JSR dependencies",
-      "schedule": ["* 0-2 * * 1"]
+      "schedule": [
+        "* 0-2 * * 1"
+      ]
     },
     {
       "description": "NPM build dependencies in deno.json",
-      "matchManagers": ["deno"],
-      "matchDepTypes": ["npm"],
+      "matchManagers": [
+        "deno"
+      ],
+      "matchDepTypes": [
+        "npm"
+      ],
       "groupName": "NPM build dependencies",
-      "schedule": ["* 0-2 * * 1"]
+      "schedule": [
+        "* 0-2 * * 1"
+      ]
     }
   ],
   "prConcurrentLimit": 10,
   "prHourlyLimit": 0,
   "semanticCommits": "disabled",
   "dependencyDashboard": true,
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "assignees": [],
   "reviewers": []
 }
