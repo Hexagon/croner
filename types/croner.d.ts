@@ -1,318 +1,103 @@
-export type TimePoint = {
-    /**
-     * - 1970--
-     */
-    y: number;
-    /**
-     * - 1-12
-     */
-    m: number;
-    /**
-     * - 1-31
-     */
-    d: number;
-    /**
-     * - 0-24
-     */
-    h: number;
-    /**
-     * - 0-60 Minute
-     */
-    i: number;
-    /**
-     * - 0-60
-     */
-    s: number;
-    /**
-     * - Time zone in IANA database format 'Europe/Stockholm'
-     */
-    tz: string;
-};
-export type CatchCallbackFn = (e: unknown, job: Cron) => any;
-export type ProtectCallbackFn = (job: Cron) => any;
+// --- Callback types ---
+
 /**
- * - Cron scheduler options
+ * Callback invoked when a scheduled function throws and `catch` is set to a function.
+ *
+ * @template T - Type of the context object passed via CronOptions
  */
-export type CronOptions = {
-    /**
-     * - Name of a job
-     */
+export type CatchCallbackFn<T = undefined> = (e: unknown, job: Cron<T>) => void;
+
+/**
+ * Callback invoked when a trigger is skipped because the previous run is still in progress
+ * and `protect` is set to a function.
+ *
+ * @template T - Type of the context object passed via CronOptions
+ */
+export type ProtectCallbackFn<T = undefined> = (job: Cron<T>) => void;
+
+/**
+ * Function scheduled to run on each cron iteration.
+ *
+ * @template T - Type of the context object passed via CronOptions
+ */
+export type CronCallback<T = undefined> = (self: Cron<T>, context: T) => void | Promise<void>;
+
+// --- Options ---
+
+/**
+ * Cron scheduler options.
+ *
+ * @template T - Type of the context object available inside callbacks
+ */
+export interface CronOptions<T = undefined> {
+    /** Name of the job. Named jobs are tracked in `scheduledJobs`. */
     name?: string;
-    /**
-     * - Job is paused
-     */
+
+    /** Start the job in a paused state. */
     paused?: boolean;
-    /**
-     * - Job is about to be killed or killed
-     */
+
+    /** Immediately kill the job. */
     kill?: boolean;
+
     /**
-     * - Continue exection even if a unhandled error is thrown by triggered function
-     * - If set to a function, execute function on catching the error.
+     * Error-handling strategy for the scheduled function.
+     *
+     * - `true`  – silently swallow errors thrown by the scheduled function.
+     * - A `CatchCallbackFn` – invoke the callback with the error and the job instance.
+     * - `false` (default) – let errors propagate.
      */
-    catch?: boolean | CatchCallbackFn;
-    /**
-     * - Abort job instantly if nothing else keeps the event loop running.
-     */
+    catch?: boolean | CatchCallbackFn<T>;
+
+    /** If `true`, unrefs the internal timer so the process can exit while the job is idle. */
     unref?: boolean;
-    /**
-     * - Maximum nuber of executions
-     */
+
+    /** Maximum number of executions before the job auto-stops. Default: `Infinity`. */
     maxRuns?: number;
-    /**
-     * - Minimum interval between executions, in seconds
-     */
+
+    /** Minimum interval between executions, in seconds. */
     interval?: number;
+
     /**
-     * - Skip current run if job is already running
+     * Overrun protection.
+     *
+     * - `true`  – silently skip a trigger if the previous run is still in progress.
+     * - A `ProtectCallbackFn` – invoke the callback when a trigger is skipped.
+     * - `false` (default) – allow overlapping runs.
      */
-    protect?: boolean | ProtectCallbackFn;
-    /**
-     * - When to start running
-     */
+    protect?: boolean | ProtectCallbackFn<T>;
+
+    /** Earliest date/time the job is allowed to run. */
     startAt?: string | Date;
-    /**
-     * - When to stop running
-     */
+
+    /** Latest date/time the job is allowed to run. */
     stopAt?: string | Date;
-    /**
-     * - Time zone in Europe/Stockholm format
-     */
+
+    /** IANA timezone identifier (e.g. `"Europe/Stockholm"`). */
     timezone?: string;
-    /**
-     * - Offset from UTC in minutes
-     */
+
+    /** Offset from UTC in minutes. Cannot be combined with `timezone`. */
     utcOffset?: number;
+
     /**
-     * - Combine day-of-month and day-of-week using true = OR, false = AND. Default is true = OR.
+     * Combine day-of-month and day-of-week using OR (`true`, default) or AND (`false`).
      */
     legacyMode?: boolean;
-    /**
-     * - Used to pass any object to scheduled function
-     */
-    context?: unknown;
-};
-/**
- * Name for each part of the cron pattern
- */
-export type CronPatternPart = ("second" | "minute" | "hour" | "day" | "month" | "dayOfWeek");
-/**
- * Offset, 0 or -1.
- *
- * 0 offset is used for seconds,minutes and hours as they start on 1.
- * -1 on days and months, as they start on 0
- */
-export type CronIndexOffset = number;
-/**
- * Cron entrypoint
- *
- * @constructor
- * @param {string|Date} pattern - Input pattern, input date, or input ISO 8601 time string
- * @param {CronOptions|Function} [fnOrOptions1] - Options or function to be run each iteration of pattern
- * @param {CronOptions|Function} [fnOrOptions2] - Options or function to be run each iteration of pattern
- * @returns {Cron}
- */
-export function Cron(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function): Cron;
-export class Cron {
-    /**
-     * Cron entrypoint
-     *
-     * @constructor
-     * @param {string|Date} pattern - Input pattern, input date, or input ISO 8601 time string
-     * @param {CronOptions|Function} [fnOrOptions1] - Options or function to be run each iteration of pattern
-     * @param {CronOptions|Function} [fnOrOptions2] - Options or function to be run each iteration of pattern
-     * @returns {Cron}
-     */
-    constructor(pattern: string | Date, fnOrOptions1?: CronOptions | Function, fnOrOptions2?: CronOptions | Function);
-    /**
-     * @public
-     * @type {string|undefined} */
-    public name: string | undefined;
-    /**
-     * @public
-     * @type {CronOptions} */
-    public options: CronOptions;
-    /**
-     * Encapsulate all internal states in an object.
-     * Duplicate all options that can change to internal states, for example maxRuns and paused.
-     * @private
-     */
-    private _states;
-    fn: Function | CronOptions;
-    /**
-     * Find next runtime, based on supplied date. Strips milliseconds.
-     *
-     * @param {CronDate|Date|string} [prev] - Date to start from
-     * @returns {Date | null} - Next run time
-     */
-    nextRun(prev?: CronDate | Date | string): Date | null;
-    /**
-     * Find next n runs, based on supplied date. Strips milliseconds.
-     *
-     * @param {number} n - Number of runs to enumerate
-     * @param {Date|string} [previous] - Date to start from
-     * @returns {Date[]} - Next n run times
-     */
-    nextRuns(n: number, previous?: Date | string): Date[];
-    /**
-     * Return the original pattern, it there was one
-     *
-     * @returns {string|undefined} - Original pattern
-     */
-    getPattern(): string | undefined;
-    /**
-     * Indicates wether or not the cron job is scheduled and running, e.g. awaiting next trigger
-     * @public
-     *
-     * @returns {boolean} - Running or not
-     */
-    public isRunning(): boolean;
-    /**
-     * Indicates wether or not the cron job is permanently stopped
-     * @public
-     *
-     * @returns {boolean} - Running or not
-     */
-    public isStopped(): boolean;
-    /**
-     * Indicates wether or not the cron job is currently working
-     * @public
-     *
-     * @returns {boolean} - Running or not
-     */
-    public isBusy(): boolean;
-    /**
-     * Return current/previous run start time
-     * @public
-     *
-     * @returns {Date | null} - Previous run time
-     */
-    public currentRun(): Date | null;
-    /**
-     * Return previous run start time
-     * @public
-     *
-     * @returns {Date | null} - Previous run time
-     */
-    public previousRun(): Date | null;
-    /**
-     * Returns number of milliseconds to next run
-     * @public
-     *
-     * @param {CronDate|Date|string} [prev] - Starting date, defaults to now - minimum interval
-     * @returns {number | null}
-     */
-    public msToNext(prev?: CronDate | Date | string): number | null;
-    /**
-     * Stop execution
-     *
-     * Running this will forcefully stop the job, and prevent furter exection. `.resume()` will not work after stopping.
-     * It will also be removed from the scheduledJobs array if it were named.
-     *
-     * @public
-     */
-    public stop(): void;
-    /**
-     * Pause execution
-     * @public
-     *
-     * @returns {boolean} - Wether pause was successful
-     */
-    public pause(): boolean;
-    /**
-     * Resume execution
-     * @public
-     *
-     * @returns {boolean} - Wether resume was successful
-     */
-    public resume(): boolean;
-    /**
-     * Schedule a new job
-     * @public
-     *
-     * @param {Function} func - Function to be run each iteration of pattern
-     * @param {Date} [partial] - Internal function indicating a partial run
-     * @returns {Cron}
-     */
-    public schedule(func: Function, partial?: Date): Cron;
-    private _trigger;
-    /**
-     * Trigger a run manually
-     * @public
-     */
-    public trigger(): Promise<void>;
-    private _checkTrigger;
-    private _next;
+
+    /** Arbitrary context object passed as the second argument to the scheduled function. */
+    context?: T;
 }
-export namespace Cron {
-    export { Cron };
-    export { scheduledJobs };
-}
+
+// --- CronDate ---
+
 /**
- * An array containing all named cron jobs.
- *
- * @constant
- * @type {Cron[]}
+ * Internal date representation used by Croner.
  */
-export const scheduledJobs: Cron[];
-/**
- * @callback CatchCallbackFn
- * @param {unknown} e
- * @param {Cron} job
- */
-/**
- * @callback ProtectCallbackFn
- * @param {Cron} job
- */
-/**
- * @typedef {Object} CronOptions - Cron scheduler options
- * @property {string} [name] - Name of a job
- * @property {boolean} [paused] - Job is paused
- * @property {boolean} [kill] - Job is about to be killed or killed
- * @property {boolean | CatchCallbackFn} [catch] - Continue exection even if a unhandled error is thrown by triggered function
- * 										  - If set to a function, execute function on catching the error.
- * @property {boolean} [unref] - Abort job instantly if nothing else keeps the event loop running.
- * @property {number} [maxRuns] - Maximum nuber of executions
- * @property {number} [interval] - Minimum interval between executions, in seconds
- * @property {boolean | ProtectCallbackFn} [protect] - Skip current run if job is already running
- * @property {string | Date} [startAt] - When to start running
- * @property {string | Date} [stopAt] - When to stop running
- * @property {string} [timezone] - Time zone in Europe/Stockholm format
- * @property {number} [utcOffset] - Offset from UTC in minutes
- * @property {boolean} [legacyMode] - Combine day-of-month and day-of-week using true = OR, false = AND. Default is true = OR.
- * @property {?} [context] - Used to pass any object to scheduled function
- */
-/**
- * Internal function that validates options, and sets defaults
- * @private
- *
- * @param {CronOptions} options
- * @returns {CronOptions}
- */
-declare function CronOptions(options: CronOptions): CronOptions;
-/**
- * Converts date to CronDate
- * @constructor
- *
- * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
- * @param {string|number} [tz] - String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
-*/
-declare function CronDate(d?: CronDate | Date | string, tz?: string | number): void;
-declare class CronDate {
-    /**
-     * Converts date to CronDate
-     * @constructor
-     *
-     * @param {CronDate|Date|string} [d] - Input date, if using string representation ISO 8001 (2015-11-24T19:40:00) local timezone is expected
-     * @param {string|number} [tz] - String representation of target timezone in Europe/Stockholm format, or a number representing offset in minutes.
-    */
+export class CronDate {
     constructor(d?: CronDate | Date | string, tz?: string | number);
-    /**
-     * TimeZone
-     * @type {string|number|undefined}
-     */
+
+    /** Timezone string or UTC offset in minutes. */
     tz: string | number | undefined;
-    private fromDate;
+
     ms: number;
     second: number;
     minute: number;
@@ -320,35 +105,180 @@ declare class CronDate {
     day: number;
     month: number;
     year: number;
-    private fromCronDate;
-    private apply;
-    private fromString;
-    private findNext;
-    private recurse;
+
     /**
-     * Increment to next run time
-     * @public
+     * Increment to the next run time according to the given pattern.
      *
-     * @param {string} pattern - The pattern used to increment current state
-     * @param {CronOptions} options - Cron options used for incrementing
-     * @param {boolean} [hasPreviousRun] - If this run should adhere to minimum interval
-     * @return {CronDate|null} - Returns itthis for chaining, or null if increment wasnt possible
+     * @returns The incremented date, or `null` if no future match exists.
      */
-    public increment(pattern: string, options: CronOptions, hasPreviousRun?: boolean): CronDate | null;
+    increment(pattern: string, options: CronOptions, hasPreviousRun?: boolean): CronDate | null;
+
     /**
-     * Convert current state back to a javascript Date()
-     * @public
+     * Convert to a native `Date` object.
      *
-     * @param {boolean} internal - If this is an internal call
-     * @returns {Date}
+     * @param internal - When `true`, returns the date in the internal (possibly shifted) representation.
      */
-    public getDate(internal: boolean): Date;
-    /**
-     * Convert current state back to a javascript Date() and return UTC milliseconds
-     * @public
-     *
-     * @returns {Date}
-     */
-    public getTime(): Date;
+    getDate(internal?: boolean): Date;
+
+    /** Return UTC milliseconds of the represented point in time. */
+    getTime(): number;
 }
+
+// --- CronPattern ---
+
+/** Name for each schedulable part of a cron expression. */
+export type CronPatternPart = "second" | "minute" | "hour" | "day" | "month" | "dayOfWeek";
+
+/**
+ * Index offset applied during pattern parsing.
+ * `0` for seconds/minutes/hours, `-1` for days/months.
+ */
+export type CronIndexOffset = number;
+
+// --- TimePoint (used by minitz helper) ---
+
+export interface TimePoint {
+    /** Full year (1970+) */
+    y: number;
+    /** Month (1-12) */
+    m: number;
+    /** Day of month (1-31) */
+    d: number;
+    /** Hour (0-23) */
+    h: number;
+    /** Minute (0-59) */
+    i: number;
+    /** Second (0-59) */
+    s: number;
+    /** IANA timezone identifier */
+    tz: string;
+}
+
+// --- Cron class ---
+
+/**
+ * Isomorphic cron scheduler.
+ *
+ * @template T - Type of the `context` value passed via options and forwarded to the callback.
+ */
+export class Cron<T = undefined> {
+    /**
+     * Create a new cron job.
+     *
+     * Can be called with or without `new`.
+     *
+     * @param pattern - Cron expression, `Date` instance, or ISO 8601 string for one-off scheduling.
+     * @param fnOrOptions1 - Scheduled callback **or** options object.
+     * @param fnOrOptions2 - Scheduled callback **or** options object (order is flexible).
+     */
+    constructor(pattern: string | Date, fnOrOptions1?: CronOptions<T> | CronCallback<T>, fnOrOptions2?: CronOptions<T> | CronCallback<T>);
+
+    /** Job name (if provided via options). */
+    name: string | undefined;
+
+    /** Resolved options for this job. */
+    options: CronOptions<T>;
+
+    /**
+     * Find the next run time, based on the supplied date (or now).
+     *
+     * @param prev - Reference date to start searching from.
+     * @returns The next `Date` the job would trigger, or `null` if no future run exists.
+     */
+    nextRun(prev?: CronDate | Date | string): Date | null;
+
+    /**
+     * Enumerate the next _n_ run times.
+     *
+     * @param n - Number of runs to enumerate.
+     * @param previous - Reference date to start searching from.
+     */
+    nextRuns(n: number, previous?: Date | string): Date[];
+
+    /** Return the original cron pattern string, or `undefined` for one-off (date-based) jobs. */
+    getPattern(): string | undefined;
+
+    /** `true` if the job is scheduled, not paused, and not killed. */
+    isRunning(): boolean;
+
+    /** `true` if the job has been permanently stopped. */
+    isStopped(): boolean;
+
+    /** `true` if the scheduled function is currently executing. */
+    isBusy(): boolean;
+
+    /** Start time of the current (in-progress) run, or `null`. */
+    currentRun(): Date | null;
+
+    /** Start time of the most recent completed run, or `null`. */
+    previousRun(): Date | null;
+
+    /**
+     * Milliseconds until the next scheduled run.
+     *
+     * @param prev - Reference date (defaults to now).
+     * @returns Milliseconds, or `null` if there is no upcoming run.
+     */
+    msToNext(prev?: CronDate | Date | string): number | null;
+
+    /**
+     * Permanently stop the job. After calling this, `resume()` will have no effect.
+     * Named jobs are removed from `scheduledJobs`.
+     */
+    stop(): void;
+
+    /**
+     * Pause the job. Scheduled triggers are skipped while paused.
+     *
+     * @returns `true` if the job is still alive (not killed), `false` otherwise.
+     */
+    pause(): boolean;
+
+    /**
+     * Resume a paused job.
+     *
+     * @returns `true` if the job is still alive (not killed), `false` otherwise.
+     */
+    resume(): boolean;
+
+    /**
+     * Attach a function and start the scheduling loop.
+     *
+     * @param func - Callback to execute on each trigger.
+     * @returns The `Cron` instance for chaining.
+     */
+    schedule(func?: CronCallback<T>): Cron<T>;
+
+    /**
+     * Manually trigger the scheduled function outside the normal schedule.
+     */
+    trigger(): Promise<void>;
+}
+
+// --- Convenience alias ---
+
+/**
+ * Convenience type alias for a `Cron` instance.
+ * Useful when you need to store or pass job references without importing the class.
+ *
+ * @template T - Type of the context object.
+ */
+export type CronJob<T = undefined> = Cron<T>;
+
+// --- Module-level exports ---
+
+/**
+ * Array of all currently active named cron jobs.
+ */
+export const scheduledJobs: Cron[];
+
+/**
+ * Create a cron job (function-call style, without `new`).
+ */
+export function Cron<T = undefined>(
+    pattern: string | Date,
+    fnOrOptions1?: CronOptions<T> | CronCallback<T>,
+    fnOrOptions2?: CronOptions<T> | CronCallback<T>,
+): Cron<T>;
+
 export { Cron as default };
