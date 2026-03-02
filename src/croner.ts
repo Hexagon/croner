@@ -9,7 +9,7 @@
 
   License:
 
-	Copyright (c) 2015-2024 Hexagon <github.com/Hexagon>
+	Copyright (c) 2015-2026 Hexagon <github.com/Hexagon>
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
