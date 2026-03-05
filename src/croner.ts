@@ -700,6 +700,19 @@ class Cron<T = undefined> {
     }
   }
   /**
+   * Create a stateful iterator for sequential date traversal of this schedule.
+   *
+   * Returns a {@link CronIterator} that implements both the ECMAScript Iterator and
+   * Iterable protocols, enabling `for...of` loops and destructuring assignment.
+   *
+   * @param startAt - Optional. The date to start iterating from. Defaults to current time.
+   * @returns A new CronIterator instance
+   */
+  public enumerate(startAt?: Date | string | null): CronIterator<T> {
+    return new CronIterator<T>(this, startAt);
+  }
+
+  /**
    * Calculate the previous run if no previous run is supplied, but startAt and interval are set.
    * This calculation is only necessary if the startAt time is before the current time.
    * Should only be called from the _next function.
@@ -731,4 +744,86 @@ class Cron<T = undefined> {
   }
 }
 
-export { Cron, CronDate, type CronOptions, CronPattern, scheduledJobs };
+/**
+ * Stateful iterator for sequential date traversal of a Cron schedule.
+ *
+ * Implements both the ECMAScript Iterator and Iterable protocols, which means it can be
+ * used directly in `for...of` loops and with destructuring assignment.
+ *
+ * Obtain an instance via {@link Cron#enumerate}.
+ */
+class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable<Date> {
+  private cron: Cron<T>;
+  private cursor: Date | undefined;
+  private done: boolean;
+
+  /**
+   * @param cron - The Cron instance to iterate over
+   * @param startAt - Optional starting date for iteration. Defaults to current time if omitted.
+   */
+  constructor(cron: Cron<T>, startAt?: Date | string | null) {
+    this.cron = cron;
+    this.cursor = CronIterator._normalizeDate(startAt);
+    this.done = false;
+  }
+
+  /**
+   * Normalizes a date argument to a plain Date, or undefined when the argument is absent/null.
+   * @private
+   */
+  private static _normalizeDate(d?: Date | string | null): Date | undefined {
+    if (d === undefined || d === null) return undefined;
+    return d instanceof Date ? new Date(d.getTime()) : new Date(d);
+  }
+
+  /**
+   * Returns the next scheduled date and advances the cursor.
+   * Implements the ECMAScript Iterator protocol.
+   *
+   * @returns `{ value: Date, done: false }` for the next occurrence,
+   *          or `{ value: undefined, done: true }` when the schedule is exhausted.
+   */
+  public next(): IteratorResult<Date, undefined> {
+    if (this.done) {
+      return { value: undefined, done: true };
+    }
+    const nextDate = this.cron.nextRun(this.cursor ?? null);
+    if (nextDate === null) {
+      this.done = true;
+      return { value: undefined, done: true };
+    }
+    this.cursor = nextDate;
+    return { value: nextDate, done: false };
+  }
+
+  /**
+   * Returns the next scheduled date without advancing the cursor.
+   *
+   * @returns The next scheduled date, or null if the schedule is exhausted.
+   */
+  public peek(): Date | null {
+    if (this.done) {
+      return null;
+    }
+    return this.cron.nextRun(this.cursor ?? null);
+  }
+
+  /**
+   * Resets the cursor, optionally to a new starting date.
+   *
+   * @param newStartAt - New starting date. Defaults to current time if omitted.
+   */
+  public reset(newStartAt?: Date | string | null): void {
+    this.cursor = CronIterator._normalizeDate(newStartAt);
+    this.done = false;
+  }
+
+  /**
+   * Implements the ECMAScript Iterable protocol, enabling `for...of` and destructuring.
+   */
+  [Symbol.iterator](): CronIterator<T> {
+    return this;
+  }
+}
+
+export { Cron, CronDate, CronIterator, type CronOptions, CronPattern, scheduledJobs };

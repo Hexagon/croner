@@ -47,6 +47,44 @@ previousRuns.forEach((run, i) => {
 //   5. 2024-01-11T00:00:00.000Z
 ```
 
+### Stateful iterator (enumerate)
+
+`enumerate()` returns a `CronIterator` that implements the ECMAScript Iterator and
+Iterable protocols. Use it with `for...of` loops, destructuring, or any other construct
+that consumes iterables.
+
+```ts
+// for...of — collect the next 3 daily runs starting from a reference date
+const job = new Cron("0 0 0 * * *");
+const start = new Date("2024-06-01T00:00:00");
+
+for (const date of job.enumerate(start)) {
+    console.log(date.toISOString());
+    // Stop after printing 3 dates
+    if (date >= new Date("2024-06-03T00:00:00")) break;
+}
+
+// Destructuring — capture the next two occurrences
+const [next1, next2] = job.enumerate(start);
+console.log("Next:       ", next1.toISOString());
+console.log("After that: ", next2.toISOString());
+
+// peek() — look at the upcoming date without advancing
+const iter = job.enumerate(start);
+console.log("Upcoming:", iter.peek()?.toISOString()); // does not advance
+console.log("First:   ", iter.next().value?.toISOString()); // same date
+
+// reset() — restart from a new point
+iter.reset(new Date("2024-07-01T00:00:00"));
+console.log("After reset:", iter.next().value?.toISOString()); // 2024-07-02
+
+// Finite schedule — iterator signals done automatically when stopAt is reached
+const finite = new Cron("0 0 0 * * *", { stopAt: "2024-06-03T00:00:00" });
+for (const date of finite.enumerate(start)) {
+    console.log(date.toISOString()); // prints 2024-06-01 and 2024-06-02 only
+}
+```
+
 ### Get run-once date
 
 ```ts

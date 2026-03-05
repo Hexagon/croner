@@ -115,6 +115,7 @@ The job will be sceduled to run at next matching time unless you supply option `
 job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
 job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
+job.enumerate( /*optional*/ startFromDate ); // Get a stateful CronIterator for for...of / destructuring.
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
 job.previousRun( ); 		// Get a Date object showing when the previous job was started.
