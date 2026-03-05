@@ -171,6 +171,24 @@ test("enumerate() produces the same dates as nextRuns()", function () {
   }
 });
 
+test("enumerate() with dayOffset produces the same dates as nextRuns()", function () {
+  const start = new Date("2024-01-01T00:00:00.000Z");
+  const job = new Cron("0 0 * * * *", { dayOffset: 1 }); // shift every occurrence by +1 day
+  const n = 5;
+  const expected = job.nextRuns(n, start);
+  const iter = job.enumerate(start);
+  const actual: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const { value, done } = iter.next();
+    if (done) break;
+    actual.push(value.toISOString());
+  }
+  assertEquals(actual.length, expected.length);
+  for (let i = 0; i < actual.length; i++) {
+    assertEquals(actual[i], expected[i].toISOString());
+  }
+});
+
 // startAt as ISO 8601 string
 
 test("enumerate() accepts an ISO 8601 string as startAt", function () {
