@@ -261,6 +261,19 @@ class Cron<T = undefined> {
   }
 
   /**
+   * Create a stateful iterator for sequential date traversal of this schedule.
+   *
+   * Returns a {@link CronIterator} that implements both the ECMAScript Iterator and
+   * Iterable protocols, enabling `for...of` loops and destructuring assignment.
+   *
+   * @param startAt - Optional. The date to start iterating from. Defaults to current time.
+   * @returns A new CronIterator instance
+   */
+  public enumerate(startAt?: Date | string | null): CronIterator<T> {
+    return new CronIterator<T>(this, startAt);
+  }
+
+  /**
    * Internal helper to enumerate runs in either direction.
    *
    * @param n - Number of runs to enumerate
@@ -699,19 +712,6 @@ class Cron<T = undefined> {
       return previousRun;
     }
   }
-  /**
-   * Create a stateful iterator for sequential date traversal of this schedule.
-   *
-   * Returns a {@link CronIterator} that implements both the ECMAScript Iterator and
-   * Iterable protocols, enabling `for...of` loops and destructuring assignment.
-   *
-   * @param startAt - Optional. The date to start iterating from. Defaults to current time.
-   * @returns A new CronIterator instance
-   */
-  public enumerate(startAt?: Date | string | null): CronIterator<T> {
-    return new CronIterator<T>(this, startAt);
-  }
-
   /**
    * Calculate the previous run if no previous run is supplied, but startAt and interval are set.
    * This calculation is only necessary if the startAt time is before the current time.
