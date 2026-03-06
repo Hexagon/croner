@@ -58,10 +58,11 @@ that consumes iterables.
 const job = new Cron("0 0 0 * * *");
 const start = new Date("2024-06-01T00:00:00");
 
+let count = 0;
 for (const date of job.enumerate(start)) {
     console.log(date.toISOString());
     // Stop after printing 3 dates
-    if (date >= new Date("2024-06-03T00:00:00")) break;
+    if (++count >= 3) break;
 }
 
 // Destructuring — capture the next two occurrences
