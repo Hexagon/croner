@@ -82,7 +82,7 @@ console.log("After reset:", iter.next().value?.toISOString()); // 2024-07-02
 // Finite schedule — iterator signals done automatically when stopAt is reached
 const finite = new Cron("0 0 0 * * *", { stopAt: "2024-06-03T00:00:00" });
 for (const date of finite.enumerate(start)) {
-    console.log(date.toISOString()); // prints 2024-06-01 and 2024-06-02 only
+    console.log(date.toISOString()); // prints 2024-06-02 only (stopAt is exclusive)
 }
 ```
 
