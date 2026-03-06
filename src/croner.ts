@@ -800,7 +800,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     // nextRun() calls find the correct next occurrence.  nextRun() applies
     // dayOffset on the way out, so we reverse it here before storing.
     const dayOffset = this.cron.options.dayOffset;
-    const offsetDays = (dayOffset ?? 0);
+    const offsetDays = dayOffset ?? 0;
     const unoffsetTime = nextDate.getTime() - offsetDays * 24 * 60 * 60 * 1000;
     this.cursor = new Date(unoffsetTime);
     return { value: nextDate, done: false };
