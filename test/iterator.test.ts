@@ -189,6 +189,29 @@ test("enumerate() with dayOffset produces the same dates as nextRuns()", functio
   }
 });
 
+test("enumerate() with timezone: string startAt is parsed in the Cron timezone", function () {
+  // "2024-01-01T12:00:00" without a Z/offset is interpreted in Europe/Stockholm (UTC+1 in January)
+  // meaning it resolves to 2024-01-01T11:00:00.000Z.
+  // enumerate() must match nextRuns() — both should start after 11:00 UTC.
+  const startStr = "2024-01-01T12:00:00";
+  const job = new Cron("0 0 * * * *", { timezone: "Europe/Stockholm" });
+  const n = 5;
+  const expected = job.nextRuns(n, startStr);
+  const iter = job.enumerate(startStr);
+  const actual: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const { value, done } = iter.next();
+    if (done) break;
+    actual.push(value.toISOString());
+  }
+  assertEquals(actual.length, expected.length);
+  for (let i = 0; i < actual.length; i++) {
+    assertEquals(actual[i], expected[i].toISOString());
+  }
+  // First occurrence is 13:00 Stockholm = 12:00 UTC
+  assertEquals(actual[0], "2024-01-01T12:00:00.000Z");
+});
+
 // startAt as ISO 8601 string
 
 test("enumerate() accepts an ISO 8601 string as startAt", function () {

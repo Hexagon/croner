@@ -754,7 +754,7 @@ class Cron<T = undefined> {
  */
 class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable<Date> {
   private cron: Cron<T>;
-  private cursor: Date | undefined;
+  private cursor: Date | string | undefined;
   private done: boolean;
 
   /**
@@ -763,17 +763,21 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    */
   constructor(cron: Cron<T>, startAt?: Date | string | null) {
     this.cron = cron;
-    this.cursor = CronIterator._normalizeDate(startAt);
+    this.cursor = CronIterator._normalizeCursor(startAt);
     this.done = false;
   }
 
   /**
-   * Normalizes a date argument to a plain Date, or undefined when the argument is absent/null.
+   * Normalizes a cursor argument: Date objects are cloned to prevent external mutation;
+   * strings are preserved as-is so that nextRun() can parse them using the Cron instance's
+   * configured timezone (via CronDate/fromTZISO), matching the behaviour of nextRun() and nextRuns().
    * @private
    */
-  private static _normalizeDate(d?: Date | string | null): Date | undefined {
+  private static _normalizeCursor(
+    d?: Date | string | null,
+  ): Date | string | undefined {
     if (d === undefined || d === null) return undefined;
-    return d instanceof Date ? new Date(d.getTime()) : new Date(d);
+    return d instanceof Date ? new Date(d.getTime()) : d;
   }
 
   /**
@@ -820,7 +824,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    * @param newStartAt - New starting date. Defaults to current time if omitted.
    */
   public reset(newStartAt?: Date | string | null): void {
-    this.cursor = CronIterator._normalizeDate(newStartAt);
+    this.cursor = CronIterator._normalizeCursor(newStartAt);
     this.done = false;
   }
 
