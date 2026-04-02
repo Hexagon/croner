@@ -501,9 +501,9 @@ class Cron<T = undefined> {
 
     // Clamp negative delays to 0 - some runtimes (e.g. Deno) treat large negative values
     // as large positive delays due to 32-bit integer overflow, causing jobs with allowPast:true
-    // and a far-past date to never fire.
+    // and a far-past date to never fire. Use a backoff when paused to avoid a tight loop.
     if (waitMs < 0) {
-      waitMs = 0;
+      waitMs = this._states.paused ? 1000 : 0;
     }
 
     // Start the timer loop
