@@ -1159,6 +1159,31 @@ test(
   }),
 );
 
+test(
+  "Fire-once job with allowPast: true, paused: true, and far-past date should fire after resume",
+  //@ts-ignore
+  timeout(4000, (resolve) => {
+    let fired = false;
+    const veryOldDate = new Date("2020-01-01T00:00:00");
+    const job = new Cron(veryOldDate, { allowPast: true, paused: true }, () => {
+      fired = true;
+    });
+
+    // Should not fire while paused
+    setTimeout(() => {
+      assertEquals(fired, false);
+      job.resume();
+
+      // After resume, should fire quickly
+      setTimeout(() => {
+        assertEquals(fired, true);
+        job.stop();
+        resolve();
+      }, 2000);
+    }, 100);
+  }),
+);
+
 test("Fire-once job with no allowPast and date > 1s in past should have null nextRun and not be running", function () {
   // A once-job 3 seconds in the past without allowPast should silently not schedule
   const pastTime = new Date(Date.now() - 3000);
