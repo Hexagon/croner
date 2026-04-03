@@ -499,6 +499,13 @@ class Cron<T = undefined> {
       waitMs = maxDelay;
     }
 
+    // Clamp negative delays to 0 - some runtimes (e.g. Deno) treat large negative values
+    // as large positive delays due to 32-bit integer overflow, causing jobs with allowPast:true
+    // and a far-past date to never fire. Use a backoff when paused to avoid a tight loop.
+    if (waitMs < 0) {
+      waitMs = this._states.paused ? 1000 : 0;
+    }
+
     // Start the timer loop
     // _checkTrigger will either call _trigger (if it's time, croner isn't paused and whatever),
     // or recurse back to this function to wait for next trigger
