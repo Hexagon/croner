@@ -1164,21 +1164,33 @@ test(
   //@ts-ignore
   timeout(4000, (resolve) => {
     let fired = false;
+    let resumed = false;
+    let settled = false;
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
     const veryOldDate = new Date("2020-01-01T00:00:00");
     const job = new Cron(veryOldDate, { allowPast: true, paused: true }, () => {
       fired = true;
+
+      if (!resumed || settled) return;
+
+      settled = true;
+      if (watchdog) clearTimeout(watchdog);
+      job.stop();
+      assertEquals(fired, true);
+      resolve();
     });
 
     // Should not fire while paused
     setTimeout(() => {
       assertEquals(fired, false);
+      resumed = true;
       job.resume();
 
-      // After resume, should fire quickly
-      setTimeout(() => {
-        assertEquals(fired, true);
+      watchdog = setTimeout(() => {
+        if (settled) return;
+        settled = true;
         job.stop();
-        resolve();
+        assertEquals(fired, true);
       }, 2000);
     }, 100);
   }),
