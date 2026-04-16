@@ -32,14 +32,14 @@ test("Comma-separated years should work correctly", function () {
   assertEquals(runs[2]?.getFullYear(), 2028);
 });
 
-test("*/2 year stepping should work (every other year)", function () {
+test("*/2 year stepping should work (every other year, even)", function () {
   const cron = new Cron("0 0 0 1 1 * */2");
   const runs = cron.nextRuns(3, "2024-12-31T00:00:00Z");
 
-  // */2 steps from year 1 by 2, matching odd years (1, 3, 5, ...); from 2025 onwards: 2025, 2027, 2029
-  assertEquals(runs[0]?.getFullYear(), 2025);
-  assertEquals(runs[1]?.getFullYear(), 2027);
-  assertEquals(runs[2]?.getFullYear(), 2029);
+  // */2 steps from 0 by 2 (skipping invalid year 0), matching even years: 2026, 2028, 2030
+  assertEquals(runs[0]?.getFullYear(), 2026);
+  assertEquals(runs[1]?.getFullYear(), 2028);
+  assertEquals(runs[2]?.getFullYear(), 2030);
 });
 
 test("Year range 1-9999/2 should work for odd years", function () {

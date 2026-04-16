@@ -644,7 +644,7 @@ class CronPattern {
       }
     }
 
-    let start = type === "year" ? 1 : 0;
+    let start = 0;
     if (split[0] !== "*") {
       start = parseInt(split[0], 10) + _valueIndexOffset;
     }
@@ -655,6 +655,7 @@ class CronPattern {
     this.validateRange(0, this[type].length - 1, steps, type, conf);
 
     for (let i = start; i < this[type].length; i += steps) {
+      if (type === "year" && i === 0) continue;
       this.setPart(type, i, result[1] || defaultValue);
     }
   }
