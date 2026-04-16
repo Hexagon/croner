@@ -644,7 +644,7 @@ class CronPattern {
       }
     }
 
-    let start = 0;
+    let start = type === "year" ? 1 : 0;
     if (split[0] !== "*") {
       start = parseInt(split[0], 10) + _valueIndexOffset;
     }
