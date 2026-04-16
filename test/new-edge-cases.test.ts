@@ -36,7 +36,7 @@ test("*/2 year stepping should work (every other year)", function () {
   const cron = new Cron("0 0 0 1 1 * */2");
   const runs = cron.nextRuns(3, "2024-12-31T00:00:00Z");
 
-  // */2 means odd years (1, 3, 5, ...) so from 2025 onwards: 2025, 2027, 2029
+  // */2 steps from year 1 by 2, matching odd years (1, 3, 5, ...); from 2025 onwards: 2025, 2027, 2029
   assertEquals(runs[0]?.getFullYear(), 2025);
   assertEquals(runs[1]?.getFullYear(), 2027);
   assertEquals(runs[2]?.getFullYear(), 2029);
