@@ -363,10 +363,10 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
-    // Check for existance of a nth-modifier
+    // Check for existence of a nth-modifier
     const result = this.extractNth(conf, type);
 
-    // Check for existance of a nearest weekday modifier
+    // Check for existence of a nearest weekday modifier
     const nearestWeekdayModifier = conf.toUpperCase().includes("W");
     if (type !== "day" && nearestWeekdayModifier) {
       throw new TypeError(
