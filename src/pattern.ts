@@ -655,6 +655,7 @@ class CronPattern {
     this.validateRange(0, this[type].length - 1, steps, type, conf);
 
     for (let i = start; i < this[type].length; i += steps) {
+      if (type === "year" && i === 0) continue;
       this.setPart(type, i, result[1] || defaultValue);
     }
   }
