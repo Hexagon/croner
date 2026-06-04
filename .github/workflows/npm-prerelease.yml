@@ -26,5 +26,3 @@ jobs:
       - run: deno task build
 
       - run: npm publish --tag dev
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
