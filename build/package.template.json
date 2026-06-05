@@ -11,10 +11,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hexagon/croner.git"
+    "url": "git+https://github.com/Hexagon/croner.git"
   },
   "bugs": {
-    "url": "https://github.com/hexagon/croner/issues"
+    "url": "https://github.com/Hexagon/croner/issues"
   },
   "funding": [
     {
@@ -23,7 +23,7 @@
     },
     {
       "type": "github",
-      "url": "https://github.com/sponsors/hexagon"
+      "url": "https://github.com/sponsors/Hexagon"
     }
   ],
   "files": [
