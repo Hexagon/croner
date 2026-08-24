@@ -1,6 +1,6 @@
 name: Cross Runtime Tests
 
-on: 
+on:
   push:
     branches: [main, dev, dev-9]
   pull_request:
@@ -17,22 +17,19 @@ jobs:
     with:
       jsr_dependencies: "@cross/test @std/assert"
   node_ci:
-    uses: cross-org/workflows/.github/workflows/node-ci.yml@main
-    with:
-      test_target: "test/*.test.ts"
-      jsr_dependencies: "@cross/test @std/assert"
-
-  node_24_compatibility:
-    name: Node.js 24 Compatibility Test
+    name: Node.js ${{ matrix.node-version }} Test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x, 24.x, 26.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup Node.js 24
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: |
