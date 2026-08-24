@@ -868,22 +868,21 @@ test(
 );
 
 test(
-  "Job should not be working after 1500 ms",
+  "Job should not be working after 3000 ms",
   (context, done) => {
-    let sleepPromise;
+    let callbackDone = false;
     const job = new Cron("* * * * * *", async () => {
       job.stop();
-      sleepPromise = sleep(2000);
-      await sleepPromise;
+      await sleep(1000);
+      callbackDone = true;
     });
-    setTimeout(async () => {
-      if (job.isBusy()) {
+    setTimeout(() => {
+      if (job.isBusy() || !callbackDone) {
         /* Let it time out */
       } else {
-        await sleepPromise!;
         done();
       }
-    }, 3500);
+    }, 3000);
   },
   { waitForCallback: true, timeout: 6000 },
 );
