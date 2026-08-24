@@ -7,8 +7,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [11.0.0-dev.0] - 2026-08-24
-
 ### Breaking changes
 
 - **Date-based jobs scheduled in the past are now strict by default**: one-off jobs more than 1
