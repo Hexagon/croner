@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, dev, dev-9]
 
+permissions:
+  contents: read
+
 jobs:
   deno_ci:
     uses: cross-org/workflows/.github/workflows/deno-ci.yml@main
