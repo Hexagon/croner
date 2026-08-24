@@ -7,8 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.0.0-dev.0] - 2026-08-24
+
+### Breaking changes
+- **Date-based jobs scheduled in the past are now strict by default**: one-off jobs more than 1 second in the past no longer auto-fire unless `allowPast: true` is set.
+
+### Added
+- `enumerate(startAt?)` method returning a stateful `CronIterator` that supports iterator/iterable protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`).
+- `allowPast` option for explicitly allowing date-based jobs scheduled in the past to fire immediately.
+
+### Changed
+- Improved DST overlap handling for high-frequency schedules to keep UTC progression monotonic and avoid skip/gap behavior during fall-back transitions.
+- Updated docs and examples for iterator usage, `allowPast`, and DST overlap behavior.
+
 ### Fixed
-- Fix `RangeError` when using stepping with year field wildcard (e.g. `*/2` in year field)
+- Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field).
+- Fixed negative-delay scheduling behavior that could overflow in some runtimes and block expected catch-up execution.
+- Fixed date-based run-once edge cases around creation-time races and paused-resume catch-up flows.
+
+### CI / Build
+- Updated workflow and packaging metadata around publish/test setup.
+- Pinned TypeScript for declaration bundling compatibility in build tooling.
 
 ## [10.0.1] - 2026-02-01
 
