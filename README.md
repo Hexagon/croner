@@ -74,16 +74,16 @@ Using Deno
 
 ```typescript
 // From deno.land/x
-import { Cron } from "https://deno.land/x/croner@10.0.1/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@11.0.0-dev.0/dist/croner.js";
 
 // ... or jsr.io
-import { Cron } from "jsr:@hexagon/croner@10.0.1";
+import { Cron } from "jsr:@hexagon/croner@11.0.0-dev.0";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@10/dist/croner.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0-dev.0/dist/croner.umd.min.js"></script>
 ```
 
 ## Documentation
