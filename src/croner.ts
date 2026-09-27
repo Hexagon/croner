@@ -784,12 +784,16 @@ class Cron<T = undefined> {
       newPrev = this.options.startAt as CronDate<T>;
       let prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
       while (prevTimePlusInterval <= now.getTime()) {
-        newPrev = new CronDate<T>(newPrev, this.getTz())
+        const next = new CronDate<T>(newPrev, this.getTz())
           .increment(
             this._states.pattern,
             this.options,
             true,
           );
+        if (next === null) {
+          break;
+        }
+        newPrev = next;
         prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
       }
       hasPreviousRun = true;
