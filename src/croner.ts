@@ -226,10 +226,20 @@ class Cron<T = undefined> {
    *
    * @param prev - Optional. Date to start from. Can be a CronDate, Date object, or a string representing a date.
    * @param now - Optional clock reading used when no previous run is supplied, letting callers
-   *               derive both the target and its delay from a single reading.
+   *               derive both the target and its delay from a single reading. With a nonzero
+   *               dayOffset, this anchored form returns the timer's target for the shifted
+   *               schedule rather than the offset presentation date.
    * @returns The next run time as a Date object, or null if there is no next run.
    */
   public nextRun(prev?: CronDate<T> | Date | string | null, now?: Date): Date | null {
+    // Anchored with no previous run and a dayOffset in play: return the occurrence the timer
+    // would target from that reading, so `target - now` is a delay the wall clock can reach.
+    // The presentation walk below shifts the pattern result by the offset, which lands in
+    // the past for a negative offset — not a point a delay can be derived from.
+    if (now !== undefined && !prev && (this.options.dayOffset ?? 0) !== 0) {
+      return this._nextTarget(undefined, now);
+    }
+
     const next = this._next(prev, now);
     if (!next) return null;
 
@@ -240,8 +250,8 @@ class Cron<T = undefined> {
    * Timer target for schedule(): the next occurrence of the dayOffset-shifted schedule
    * after `now`.
    *
-   * `nextRun()` is not usable here — its dayOffset-shifted presentation value would desync
-   * the timer from the wall clock: a negative offset keeps the target in the past (waitMs
+   * `nextRun()`'s presentation form is not usable here — its dayOffset-shifted value would
+   * desync the timer from the wall clock: a negative offset keeps the target in the past (waitMs
    * clamps to 0, hot-looping) and a positive one keeps it forever ahead (stalling). The
    * pattern walk is therefore anchored at the inverse-shifted previous run and clock
    * reading, and the offset re-applied to the result — a point in time the wall clock
@@ -527,7 +537,16 @@ class Cron<T = undefined> {
     // clock step (NTP correction, host resync) between them can skip the armed occurrence
     // (#343, #370).
     const currentTime = now ?? new Date();
-    const target = this._nextTarget(this._states.currentRun, currentTime);
+
+    // While a run is blocked by protect, occurrences that come due are deliberately skipped
+    // by the check (firing the protect callback) — arm from the reading so the timer targets
+    // the next occurrence after it, not the just-skipped still-due one, which would re-arm
+    // in a zero-delay loop until the blocked callback finishes.
+    const prev = this._states.blocking && this.options.protect
+      ? undefined
+      : this._states.currentRun;
+
+    const target = this._nextTarget(prev, currentTime);
 
     // No next run, or an unresolvable target (isNaN guards against infinite loops)
     if (target === null || isNaN(target.getTime())) return this;

@@ -847,6 +847,29 @@ test(
 );
 
 test(
+  "Blocked protected job should skip each due occurrence once, not re-arm in a loop",
+  async () => {
+    let protectCalls = 0, runDone: Promise<unknown> | undefined;
+    const job = new Cron("* * * * * *", { protect: () => protectCalls++ }, async () => {
+      runDone = sleep(2100);
+      await runDone;
+    });
+    // The run spans ~2 further occurrences; each must be skipped exactly once
+    // (protect fired once per skipped occurrence). A build that re-arms the
+    // still-due target while blocked fires protect on every event-loop turn —
+    // hundreds of times in this window.
+    await sleep(1600);
+    job.stop();
+    await runDone; // let the in-flight run finish before asserting
+    assertEquals(
+      protectCalls >= 1 && protectCalls <= 5,
+      true,
+      `protect callback fired ${protectCalls} times while one run was blocked`,
+    );
+  },
+);
+
+test(
   "Job should be working after 1500 ms",
   (context, done) => {
     let sleepPromise;

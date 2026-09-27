@@ -34,7 +34,7 @@ The job will be scheduled to run at the next matching time unless you supply the
 Check the status of the job using the following methods:
 
 ```ts
-job.nextRun( /*optional*/ startFromDate, /*optional*/ now );    // Get a Date object representing the next run.
+job.nextRun( /*optional*/ startFromDate );    // Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
 job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
 job.enumerate( /*optional*/ startFromDate );  // Get a stateful CronIterator for use in for...of / destructuring.
@@ -52,7 +52,7 @@ job.getPattern();     // Returns the original cron pattern string, or undefined 
 job.getOnce();     // Returns the original run-once date (Date or null)
 ```
 
-Both `nextRun()` and `schedule()` accept an optional `now` date as their last parameter, which pins the calculation to that clock reading instead of the current time. Croner uses this internally to derive the trigger target and its delay from a single clock read, so a forward clock step (NTP correction, host resync) between arming reads cannot silently skip an occurrence. Supply it yourself only if you need the same guarantee when calculating delays from `nextRun()`.
+`nextRun()` and `schedule()` also accept an optional `now` date as their last parameter — `nextRun(undefined, now)` — which pins the calculation to that clock reading instead of the current time. The anchor only applies when no start date is supplied and the job has no current run. Croner uses this internally to derive the trigger target and its delay from a single clock read, so a forward clock step (NTP correction, host resync) between arming reads cannot silently skip an occurrence. The anchored form returns the exact target the internal timer would use — for `dayOffset` schedules, the shifted schedule's next wall-clock occurrence rather than `nextRun(startFromDate)`'s presentation date — so `target - now` is always a valid delay. Supply it yourself only if you need the same guarantee when calculating delays from `nextRun()`.
 
 ## Control Functions
 

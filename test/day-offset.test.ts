@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
@@ -259,6 +259,23 @@ test("dayOffset should maintain consistency across multiple DST transitions", fu
       true,
       `Run ${i} spacing should be 23-25 hours, got ${diffHours}`,
     );
+  }
+});
+
+test("anchored nextRun should return the shifted schedule's next wall-clock occurrence", function () {
+  // The anchored form (no start date, one clock reading) is what delay-deriving
+  // callers use; it must return the timer's target for the shifted schedule — a
+  // wall-clock point after `now`. The presentation walk used to be returned here
+  // too (2025-01-14T12:00Z for offset -1), a date in the past that clamps any
+  // derived delay to zero.
+  for (const dayOffset of [-1, 1]) {
+    const scheduler = new Cron("0 0 12 * * *", { dayOffset });
+    const now = new Date("2025-01-15T00:00:00.000Z");
+    const next = scheduler.nextRun(undefined, now);
+    // offset -1: next pattern match after now +1d (Jan 16 12:00) − 1d = Jan 15 12:00
+    // offset +1: next pattern match after now −1d (Jan 14 12:00) + 1d = Jan 15 12:00
+    assertEquals(next?.toISOString(), "2025-01-15T12:00:00.000Z");
+    assert((next?.getTime() ?? 0) > now.getTime());
   }
 });
 

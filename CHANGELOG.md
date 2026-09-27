@@ -16,6 +16,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `enumerate(startAt?)` method returning a stateful `CronIterator` that supports iterator/iterable
   protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`).
+- Optional `now` anchor parameter for `nextRun()` and `schedule()`, pinning the target
+  calculation to one clock reading — used internally for single-read arming (see Fixed).
 - `allowPast` option for explicitly allowing date-based jobs scheduled in the past to fire
   immediately.
 
@@ -38,6 +40,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   occurrence of the shifted schedule (the pattern walk is anchored at an inverse-shifted previous
   run and clock reading). Previously a negative `dayOffset` kept the target in the past, firing in
   a tight loop, while a positive one kept the target forever ahead of every poll, stalling the job.
+  The anchored `nextRun(undefined, now)` form returns the same wall-clock target, so delays derived
+  from it stay valid for `dayOffset` schedules.
+- Fixed protected jobs (`protect`) re-arming in a zero-delay loop while a previous run is still
+  executing: occurrences that come due during a blocked run are skipped once each (firing the
+  `protect` callback once per skipped occurrence) and the timer re-arms for the next occurrence,
+  instead of spinning on the still-due target until the blocked run finishes.
 - Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field).
 - Fixed negative-delay scheduling behavior that could overflow in some runtimes and block expected
   catch-up execution.
