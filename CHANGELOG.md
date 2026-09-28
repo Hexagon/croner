@@ -29,6 +29,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fix exhausted schedules with `startAt` and `interval` (`Hexagon/croner#390`,
+  `@Hexagon/croner/pull/390`).
 - Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field).
 - Fixed negative-delay scheduling behavior that could overflow in some runtimes and block expected
   catch-up execution.
