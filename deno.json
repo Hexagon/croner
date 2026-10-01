@@ -13,9 +13,9 @@
     "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts",
     "test": "deno task build:prep && deno test --allow-read",
     "build:prep": "deno install",
-    "build:clean": "deno run --allow-read --allow-write --allow-env --allow-sys build/build.ts -- clean",
-    "build:npm": "deno run --allow-read --allow-write --allow-env --allow-sys build/build.ts -- package",
-    "build:esbuild": "deno run --allow-read --allow-write --allow-env --allow-run --allow-sys build/build.ts -- build",
+    "build:clean": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-ffi build/build.ts -- clean",
+    "build:npm": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-ffi build/build.ts -- package",
+    "build:esbuild": "deno run --allow-read --allow-write --allow-env --allow-run --allow-sys --allow-ffi build/build.ts -- build",
     "build": "deno task build:clean && deno task build:prep && deno test --allow-read && deno task build:esbuild  && deno task build:npm",
     "check-deps": "deno run -A jsr:@check/deps"
   },
