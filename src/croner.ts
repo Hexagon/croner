@@ -474,6 +474,10 @@ class Cron<T = undefined> {
    * @param func - Function to be run each iteration of pattern
    */
   public schedule(func?: CronCallback<T>): Cron<T> {
+    return this._schedule(func);
+  }
+
+  private _schedule(func?: CronCallback<T>, now?: Date): Cron<T> {
     // If a function is already scheduled, bail out
     if (func && this.fn) {
       throw new Error(
@@ -486,10 +490,13 @@ class Cron<T = undefined> {
     }
 
     // Get actual ms to next run, bail out early if any of them is null (no next run)
-    let waitMs = this.msToNext();
+    const currentTime = now ?? new Date();
+    const next = this._next(undefined, currentTime);
+    let waitMs = next ? next.getTime() - currentTime.getTime() : null;
 
     // Get the target date based on previous run
-    const target = this.nextRun(this._states.currentRun);
+    const nextTarget = this._next(this._states.currentRun, currentTime);
+    const target = nextTarget ? this.applyDayOffset(nextTarget.getDate(false)) : null;
 
     // isNaN added to prevent infinite loop
     if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
@@ -519,7 +526,7 @@ class Cron<T = undefined> {
     this._states.blocking = true;
 
     this._states.currentRun = new CronDate<T>(
-      void 0, // We should use initiationDate, but that does not play well with fake timers in third party tests. In real world there is not much difference though */
+      initiationDate,
       this.getTz(),
     );
 
@@ -584,7 +591,7 @@ class Cron<T = undefined> {
       }
 
       // We do not await this
-      this._trigger();
+      this._trigger(now);
     } else {
       // If this trigger were blocked, and protect is a function, trigger protect (without awaiting it, even if it's an synchronous function)
       if (shouldRun && isBlocked && isFunction(this.options.protect)) {
@@ -593,24 +600,24 @@ class Cron<T = undefined> {
     }
 
     // Always reschedule
-    this.schedule();
+    this._schedule(undefined, now);
   }
 
   /**
    * Internal version of next. Cron needs millseconds internally, hence _next.
    */
-  private _next(previousRun?: CronDate<T> | Date | string | null) {
+  private _next(previousRun?: CronDate<T> | Date | string | null, now?: Date) {
     let hasPreviousRun = (previousRun || this._states.currentRun) ? true : false;
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
     let startAtInFutureWithInterval = false;
     if (!previousRun && this.options.startAt && this.options.interval) {
-      [previousRun, hasPreviousRun] = this._calculatePreviousRun(previousRun, hasPreviousRun);
+      [previousRun, hasPreviousRun] = this._calculatePreviousRun(previousRun, hasPreviousRun, now);
       startAtInFutureWithInterval = (!previousRun) ? true : false;
     }
 
     // Ensure previous run is a CronDate
-    previousRun = new CronDate<T>(previousRun, this.getTz());
+    previousRun = new CronDate<T>(previousRun ?? now, this.getTz());
 
     // Previous run should never be before startAt
     if (
@@ -707,13 +714,14 @@ class Cron<T = undefined> {
   private _calculatePreviousRun(
     prev: CronDate<T> | Date | string | undefined | null,
     hasPreviousRun: boolean,
+    now?: Date,
   ): [CronDate<T> | undefined, boolean] {
-    const now = new CronDate<T>(undefined, this.getTz());
+    const nowDate = new CronDate<T>(now, this.getTz());
     let newPrev: CronDate<T> | undefined | null = prev as CronDate<T>;
-    if ((this.options.startAt as CronDate<T>).getTime() <= now.getTime()) {
+    if ((this.options.startAt as CronDate<T>).getTime() <= nowDate.getTime()) {
       newPrev = this.options.startAt as CronDate<T>;
       let prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
-      while (prevTimePlusInterval <= now.getTime()) {
+      while (prevTimePlusInterval <= nowDate.getTime()) {
         newPrev = new CronDate<T>(newPrev, this.getTz())
           .increment(
             this._states.pattern,
