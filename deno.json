@@ -27,7 +27,7 @@
     "@std/path": "jsr:@std/path@~1.1.2",
     "esbuild": "npm:esbuild@0.28.2",
     "esbuild-plugin-d.ts": "npm:esbuild-plugin-d.ts@~2.0.0",
-    "typescript": "npm:typescript@~5.9.2"
+    "typescript": "npm:typescript@~7.0.0"
   },
   "publish": {
     "exclude": ["build", "docs", "test", ".github", ".gitattributes", "croner.png", "SECURITY.md"]
