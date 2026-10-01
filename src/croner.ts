@@ -702,7 +702,7 @@ class Cron<T = undefined> {
     previousRun = new CronDate<T>(previousRun ?? now, this.getTz());
 
     // Previous run should never be before startAt
-    const searchStartAt = bounds?.includeStartAt && startAt
+    const searchStartAt = bounds?.includeStartAt && startAt && !startAtInFutureWithInterval
       ? new CronDate<T>(new Date(startAt.getTime() - 1000), this.getTz())
       : startAt;
     if (searchStartAt && previousRun && previousRun.getTime() < searchStartAt.getTime()) {
