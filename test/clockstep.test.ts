@@ -147,12 +147,9 @@ for (
         fired++;
       });
 
-      clock.setNow(initialTime + clock.timeouts[0].delay);
-      clock.timeouts[0].callback();
-      assertEquals(fired, 0);
-
+      assertEquals(initialTime + clock.timeouts[0].delay, occurrenceTime);
       clock.setNow(occurrenceTime);
-      clock.timeouts.at(-1)!.callback();
+      clock.timeouts[0].callback();
       assertEquals(fired, 1);
     } finally {
       clock.restore();
