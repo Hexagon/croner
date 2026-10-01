@@ -192,6 +192,30 @@ test("dayOffset keeps scheduled targets within the execution window", () => {
   positiveOffsetJob.stop();
 });
 
+test("dayOffset shifts search bounds to include valid edge occurrences", () => {
+  const positiveOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: 1,
+    startAt: new Date(Date.UTC(2025, 0, 15, 12)),
+    timezone: "UTC",
+  });
+  const positiveTarget = (positiveOffsetJob as unknown as {
+    _nextTarget: (previousRun: undefined, now: Date) => Date | null;
+  })._nextTarget(undefined, new Date(Date.UTC(2025, 0, 13, 12)));
+  assertEquals(positiveTarget?.getTime(), Date.UTC(2025, 0, 15, 12));
+  positiveOffsetJob.stop();
+
+  const negativeOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: -1,
+    stopAt: new Date(Date.UTC(2025, 0, 16, 12)),
+    timezone: "UTC",
+  });
+  const negativeTarget = (negativeOffsetJob as unknown as {
+    _nextTarget: (previousRun: undefined, now: Date) => Date | null;
+  })._nextTarget(undefined, new Date(Date.UTC(2025, 0, 14, 12)));
+  assertEquals(negativeTarget?.getTime(), Date.UTC(2025, 0, 15, 12));
+  negativeOffsetJob.stop();
+});
+
 test("a protected job re-arms from the current clock after a backward step", async () => {
   const initialTime = Date.UTC(2025, 0, 1);
   const clock = useClock(initialTime);
