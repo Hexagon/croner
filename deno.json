@@ -25,9 +25,11 @@
     "@cross/test": "jsr:@cross/test@~0.0.14",
     "@std/assert": "jsr:@std/assert@~1.0.6",
     "@std/path": "jsr:@std/path@~1.1.2",
+    "@typescript/typescript6": "npm:@typescript/typescript6@~6.0.2",
     "esbuild": "npm:esbuild@0.28.2",
-    "esbuild-plugin-d.ts": "npm:esbuild-plugin-d.ts@~2.0.0",
-    "typescript": "npm:typescript@~5.9.2"
+    "rollup": "npm:rollup@~3.30.0",
+    "rollup-plugin-dts": "npm:rollup-plugin-dts@~6.5.1",
+    "typescript": "npm:typescript@~7.0.0"
   },
   "publish": {
     "exclude": ["build", "docs", "test", ".github", ".gitattributes", "croner.png", "SECURITY.md"]
