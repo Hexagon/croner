@@ -337,3 +337,27 @@ test("29W in February should only match leap years", function () {
   assertEquals(run2?.getMonth(), 1); // February
   assertEquals(run2?.getDate(), 29);
 });
+
+/**
+ * Negative setTimeout delay regression test (GitHub issue #368)
+ *
+ * When msToNext() returns a value very close to 0 or slightly negative
+ * (due to timing between calculating next run and creating the timer),
+ * setTimeout should never receive a negative delay. Node.js 24+ emits
+ * a TimeoutNegativeWarning for negative delays.
+ *
+ * The fix clamps negative waitMs to 0 in schedule().
+ */
+test("schedule should handle negative msToNext without error", function () {
+  const job = new Cron("* * * * * *");
+
+  // Monkey-patch msToNext to simulate a negative return value
+  // (can happen due to timing race between _next() and Date.now())
+  job.msToNext = () => -1;
+
+  // schedule() should clamp the negative value to 0 and not throw
+  job.schedule(() => {});
+
+  // Clean up - stop the job to prevent dangling timers
+  job.stop();
+});

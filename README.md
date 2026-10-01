@@ -74,16 +74,16 @@ Using Deno
 
 ```typescript
 // From deno.land/x
-import { Cron } from "https://deno.land/x/croner@10.0.1/dist/croner.js";
+import { Cron } from "https://deno.land/x/croner@11.0.0-dev.1/dist/croner.js";
 
 // ... or jsr.io
-import { Cron } from "jsr:@hexagon/croner@10.0.1";
+import { Cron } from "jsr:@hexagon/croner@11.0.0-dev.1";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@10/dist/croner.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0-dev.1/dist/croner.umd.min.js"></script>
 ```
 
 ## Documentation
@@ -115,6 +115,7 @@ The job will be sceduled to run at next matching time unless you supply option `
 job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
 job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
+job.enumerate( /*optional*/ startFromDate ); // Get a stateful CronIterator for use in for...of / destructuring.
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
 job.previousRun( ); 		// Get a Date object showing when the previous job was started.
@@ -164,6 +165,10 @@ job.name 			// Optional job name, populated if a name were passed to options
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
 | alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
+| allowPast    | false          | boolean        | If true, date-based jobs scheduled in the past will fire immediately. If false, only jobs scheduled within the past second will fire (to handle timing edge cases). |
+| dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. |
+| mode         | "auto"         | string         | Controls how the cron pattern field count is interpreted. Options: `"auto"` (detect automatically), `"5-part"` (minute-level), `"6-part"` (second-level), `"7-part"` (second+year), `"5-or-6-parts"`, `"6-or-7-parts"`. |
+| sloppyRanges | false          | boolean        | If true, allows non-standard stepping formats for backward compatibility (e.g. `/10`, `5/5`, `30/30`). When false (default), only `*/step` or `min-max/step` formats are allowed. |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
@@ -199,7 +204,7 @@ Croner uses [Vixie Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) bas
 *   **Enhanced logical control**:
 	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
 	-   *?*: Wildcard alias (behaves identically to `*`). **Non-portable**: Its use is discouraged in patterns intended for cross-system use. Supported in all fields for compatibility, but primarily meaningful in day-of-month and day-of-week fields.
-	-   Proper DST handling: Jobs scheduled during DST gaps are skipped; jobs in DST overlaps run once at first occurrence.
+	-   Proper DST handling: Jobs scheduled during DST gaps are skipped. During DST overlaps (fall-back), specific-time patterns (e.g. `0 30 2 * * *`) run once at the first occurrence; high-frequency patterns (e.g. `* * * * *`) continue executing without gaps.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
@@ -301,7 +306,7 @@ For example, some popular alternatives include large datetime libraries as depen
 
 ### Master branch
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) 
+![Cross Runtime Tests](https://github.com/Hexagon/croner/actions/workflows/test.yml/badge.svg?branch=master)
 
 This branch contains the latest stable code, released on npm's default channel `latest`. You can install the latest stable revision by running the command below.
 
@@ -311,7 +316,7 @@ npm install croner --save
 
 ### Dev branch
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev) 
+![Cross Runtime Tests](https://github.com/Hexagon/croner/actions/workflows/test.yml/badge.svg?branch=dev)
 
 This branch contains code currently being tested, and is released at channel `dev` on npm. You can install the latest revision of the development branch by running the command below.
 

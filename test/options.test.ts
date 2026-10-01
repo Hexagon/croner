@@ -225,6 +225,38 @@ test("Valid interval starting in the future should give correct start date", fun
   assertEquals(nextRun?.getSeconds(), tomorrow.getSeconds());
 });
 
+for (const pattern of ["0 0 0 1 1 * 2020", "0 0 0 29 2 * 2021"]) {
+  test(`Exhausted interval with startAt should return no runs: ${pattern}`, function () {
+    const scheduler = new Cron(pattern, {
+      startAt: "2019-01-01T00:00:00Z",
+      interval: 60,
+      timezone: "UTC",
+    });
+
+    assertEquals(scheduler.nextRun(), null);
+    assertEquals(scheduler.nextRuns(3), []);
+    assertEquals(scheduler.msToNext(), null);
+    assertEquals(scheduler.isRunning(), false);
+  });
+
+  test(`Exhausted interval with startAt should not schedule a callback: ${pattern}`, function () {
+    const scheduler = new Cron(pattern, {
+      startAt: "2019-01-01T00:00:00Z",
+      interval: 60,
+      timezone: "UTC",
+    }, () => {
+      throw new Error("Exhausted schedule must not run");
+    });
+
+    try {
+      assertEquals(scheduler.isRunning(), false);
+      assertEquals(scheduler.currentRun(), null);
+    } finally {
+      scheduler.stop();
+    }
+  });
+}
+
 // Backward compatibility tests for legacyMode -> domAndDow migration
 test("domAndDow: false should use OR logic (default)", function () {
   const cron = new Cron("0 12 1 * MON");

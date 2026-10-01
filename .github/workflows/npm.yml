@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # Build the exact code referenced by the release tag
           ref: ${{ github.event.release.tag_name }}
@@ -16,9 +16,9 @@ jobs:
         with:
           deno-version: "2.x"
           
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '18.x'
+          node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
 
       - run: deno task build
