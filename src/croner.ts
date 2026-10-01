@@ -140,11 +140,28 @@ class Cron<T = undefined> {
 
   private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
     const offsetMs = (this.options.dayOffset ?? 0) * 24 * 60 * 60 * 1000;
-    const next = this._next(
+    let next = this._next(
       previousRun ? new Date(previousRun.getTime() - offsetMs) : undefined,
       new Date(now.getTime() - offsetMs),
     );
-    return next ? this.applyDayOffset(next.getDate(false)) : null;
+    while (next) {
+      const target = this.applyDayOffset(next.getDate(false));
+      if (
+        this.options.startAt &&
+        target.getTime() < (this.options.startAt as CronDate<T>).getTime()
+      ) {
+        next = this._next(next, now);
+        continue;
+      }
+      if (
+        this.options.stopAt &&
+        target.getTime() >= (this.options.stopAt as CronDate<T>).getTime()
+      ) {
+        return null;
+      }
+      return target;
+    }
+    return null;
   }
 
   constructor(

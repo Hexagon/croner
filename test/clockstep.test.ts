@@ -161,6 +161,37 @@ for (
   });
 }
 
+test("dayOffset keeps scheduled targets within the execution window", () => {
+  const startAt = Date.UTC(2025, 0, 15, 12);
+  const negativeOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: -2,
+    startAt: new Date(startAt),
+    timezone: "UTC",
+  });
+
+  const getNextTarget = (job: Cron) =>
+    (job as unknown as { _nextTarget: (previousRun: undefined, now: Date) => Date | null })
+      ._nextTarget(undefined, new Date(Date.UTC(2025, 0, 10, 12)));
+  assertEquals(getNextTarget(negativeOffsetJob)?.getTime(), startAt);
+  negativeOffsetJob.stop();
+
+  const stopAt = Date.UTC(2025, 0, 16, 12);
+  const positiveOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: 1,
+    stopAt: new Date(stopAt),
+    timezone: "UTC",
+  });
+
+  assertEquals(
+    (positiveOffsetJob as unknown as {
+      _nextTarget: (previousRun: undefined, now: Date) => Date | null;
+    })
+      ._nextTarget(undefined, new Date(Date.UTC(2025, 0, 15, 12))),
+    null,
+  );
+  positiveOffsetJob.stop();
+});
+
 test("a protected job re-arms from the current clock after a backward step", async () => {
   const initialTime = Date.UTC(2025, 0, 1);
   const clock = useClock(initialTime);
