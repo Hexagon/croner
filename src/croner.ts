@@ -620,7 +620,7 @@ class Cron<T = undefined> {
     }
 
     // Always reschedule
-    this._schedule(undefined, now);
+this._schedule(undefined, shouldRun ? undefined : now);
   }
 
   /**
