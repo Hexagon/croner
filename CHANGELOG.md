@@ -29,6 +29,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON`
+  ran every day instead of every Monday.
 - Fix exhausted schedules with `startAt` and `interval` (`Hexagon/croner#390`,
   `@Hexagon/croner/pull/390`).
 - Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field).

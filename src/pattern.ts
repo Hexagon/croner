@@ -170,6 +170,18 @@ class CronPattern {
       parts.push("*");
     }
 
+    // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
+    // Note: ? is non-portable and should behave as an alias for * (wildcard)
+    if (this.pattern.indexOf("?") >= 0) {
+      parts[0] = parts[0].replace(/\?/g, "*");
+      parts[1] = parts[1].replace(/\?/g, "*");
+      parts[2] = parts[2].replace(/\?/g, "*");
+      parts[3] = parts[3].replace(/\?/g, "*");
+      parts[4] = parts[4].replace(/\?/g, "*");
+      parts[5] = parts[5].replace(/\?/g, "*");
+      if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
+    }
+
     // Convert 'L' to lastDayOfMonth flag in day-of-month field
     // Check for 'LW' combination first (last weekday of month)
     if (parts[3].toUpperCase() === "LW") {
@@ -214,18 +226,6 @@ class CronPattern {
     // Check for starDOW
     if (parts[5] == "*") {
       this.starDOW = true;
-    }
-
-    // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
-    // Note: ? is non-portable and should behave as an alias for * (wildcard)
-    if (this.pattern.indexOf("?") >= 0) {
-      parts[0] = parts[0].replace(/\?/g, "*");
-      parts[1] = parts[1].replace(/\?/g, "*");
-      parts[2] = parts[2].replace(/\?/g, "*");
-      parts[3] = parts[3].replace(/\?/g, "*");
-      parts[4] = parts[4].replace(/\?/g, "*");
-      parts[5] = parts[5].replace(/\?/g, "*");
-      if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
     }
 
     // Apply mode-specific overrides
