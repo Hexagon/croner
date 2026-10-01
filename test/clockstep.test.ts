@@ -7,6 +7,7 @@ function useClock(initialTime: number) {
   const realSetTimeout = globalThis.setTimeout;
   let now = initialTime;
   const delays: number[] = [];
+  const timeouts: { callback: () => void; delay: number }[] = [];
   const PatchedDate = new Proxy(RealDate, {
     construct(target, args, newTarget) {
       return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
@@ -21,12 +22,15 @@ function useClock(initialTime: number) {
 
   globalThis.Date = PatchedDate;
   globalThis.setTimeout = ((...args: unknown[]) => {
-    delays.push(Number(args[1] ?? 0));
+    const delay = Number(args[1] ?? 0);
+    delays.push(delay);
+    timeouts.push({ callback: args[0] as () => void, delay });
     return 0;
   }) as unknown as typeof setTimeout;
 
   return {
     delays,
+    timeouts,
     setNow(time: number) {
       now = time;
     },
@@ -118,6 +122,70 @@ test("rearming selects the interval cursor using the fresh clock", () => {
 
     assertEquals(clock.delays.at(-1), 3000);
   } finally {
+    clock.restore();
+    job.stop();
+  }
+});
+
+for (
+  const { dayOffset, initialTime, occurrenceTime } of [
+    {
+      dayOffset: -1,
+      initialTime: Date.UTC(2025, 0, 13),
+      occurrenceTime: Date.UTC(2025, 0, 19, 12),
+    },
+    { dayOffset: 1, initialTime: Date.UTC(2025, 0, 14), occurrenceTime: Date.UTC(2025, 0, 14, 12) },
+  ]
+) {
+  test(`dayOffset ${dayOffset} schedules the next shifted occurrence`, () => {
+    const clock = useClock(initialTime);
+    const job = new Cron("0 0 12 * * 1", { dayOffset, timezone: "UTC" });
+    let fired = 0;
+
+    try {
+      job.schedule(() => {
+        fired++;
+      });
+
+      clock.setNow(initialTime + clock.timeouts[0].delay);
+      clock.timeouts[0].callback();
+      assertEquals(fired, 0);
+
+      clock.setNow(occurrenceTime);
+      clock.timeouts.at(-1)!.callback();
+      assertEquals(fired, 1);
+    } finally {
+      clock.restore();
+      job.stop();
+    }
+  });
+}
+
+test("a protected job re-arms from the current clock after a backward step", async () => {
+  const initialTime = Date.UTC(2025, 0, 1);
+  const clock = useClock(initialTime);
+  let finishRun!: () => void;
+  const runDone = new Promise<void>((resolve) => {
+    finishRun = resolve;
+  });
+  let protectCalls = 0;
+  const job = new Cron("* * * * * *", { protect: () => protectCalls++ });
+
+  try {
+    job.schedule(async () => await runDone);
+    clock.setNow(initialTime + 1000);
+    clock.timeouts[0].callback();
+
+    clock.setNow(initialTime);
+    clock.timeouts.at(-1)!.callback();
+    clock.setNow(initialTime + 1000);
+    clock.timeouts.at(-1)!.callback();
+    clock.timeouts.findLast((timeout) => timeout.delay === 0)?.callback();
+
+    assertEquals(protectCalls, 1);
+  } finally {
+    finishRun();
+    await runDone;
     clock.restore();
     job.stop();
   }

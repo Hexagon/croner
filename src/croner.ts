@@ -138,6 +138,15 @@ class Cron<T = undefined> {
     return date;
   }
 
+  private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
+    const offsetMs = (this.options.dayOffset ?? 0) * 24 * 60 * 60 * 1000;
+    const next = this._next(
+      previousRun ? new Date(previousRun.getTime() - offsetMs) : undefined,
+      new Date(now.getTime() - offsetMs),
+    );
+    return next ? this.applyDayOffset(next.getDate(false)) : null;
+  }
+
   constructor(
     pattern: string | Date,
     fnOrOptions1?: CronOptions<T> | CronCallback<T>,
@@ -504,12 +513,14 @@ class Cron<T = undefined> {
 
     // Get actual ms to next run, bail out early if any of them is null (no next run)
     const currentTime = now ?? new Date();
-    const next = this._next(undefined, currentTime);
+    const next = this._nextTarget(undefined, currentTime);
     let waitMs = next ? next.getTime() - currentTime.getTime() : null;
 
     // Get the target date based on previous run
-    const nextTarget = this._next(this._states.currentRun, currentTime);
-    const target = nextTarget ? this.applyDayOffset(nextTarget.getDate(false)) : null;
+    const previousRun = this._states.blocking && this.options.protect
+      ? undefined
+      : this._states.currentRun;
+    const target = this._nextTarget(previousRun, currentTime);
 
     // isNaN added to prevent infinite loop
     if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
