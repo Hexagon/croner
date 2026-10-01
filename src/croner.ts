@@ -140,6 +140,12 @@ class Cron<T = undefined> {
 
   private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
     const offsetMs = (this.options.dayOffset ?? 0) * 24 * 60 * 60 * 1000;
+    if (
+      this._states.once && this._states.currentRun &&
+      this._states.once.getTime() + offsetMs <= this._states.currentRun.getTime()
+    ) {
+      return null;
+    }
     const shiftedNow = new Date(now.getTime() - offsetMs);
     const bounds = {
       startAt: this.options.startAt
