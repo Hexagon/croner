@@ -1,0 +1,124 @@
+import { assertEquals } from "@std/assert";
+import { test } from "@cross/test";
+import { Cron } from "../src/croner.ts";
+
+function useClock(initialTime: number) {
+  const RealDate = Date;
+  const realSetTimeout = globalThis.setTimeout;
+  let now = initialTime;
+  const delays: number[] = [];
+  const PatchedDate = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      if (property === "now") {
+        return () => now;
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+
+  globalThis.Date = PatchedDate;
+  globalThis.setTimeout = ((...args: unknown[]) => {
+    delays.push(Number(args[1] ?? 0));
+    return 0;
+  }) as unknown as typeof setTimeout;
+
+  return {
+    delays,
+    setNow(time: number) {
+      now = time;
+    },
+    restore() {
+      globalThis.Date = RealDate;
+      globalThis.setTimeout = realSetTimeout;
+    },
+  };
+}
+
+test("a forward clock step while arming must not skip the scheduled occurrence", async () => {
+  const RealDate = Date;
+  const target = new RealDate();
+  target.setSeconds(target.getSeconds() + 2, 0);
+  const targetMs = target.getTime();
+
+  let clockReads = 0;
+  let offsetMs = 0;
+  const PatchedDate = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      if (args.length === 0) {
+        clockReads++;
+        if (clockReads === 2) {
+          const now = RealDate.now() + offsetMs;
+          offsetMs += Math.max(targetMs - now, 0) + 5_000;
+        }
+        return Reflect.construct(target, [RealDate.now() + offsetMs], newTarget);
+      }
+      return Reflect.construct(target, args, newTarget);
+    },
+  });
+
+  let fired = 0;
+  const job = new Cron(`${target.getSeconds()} * * * * *`);
+  globalThis.Date = PatchedDate;
+  try {
+    job.schedule(() => {
+      fired++;
+    });
+
+    const deadline = targetMs + 1_200;
+    while (RealDate.now() < deadline && fired === 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 20));
+    }
+    assertEquals(fired, 1, "the stepped-over occurrence should fire once");
+  } finally {
+    globalThis.Date = RealDate;
+    job.stop();
+  }
+});
+
+test("rearming uses a fresh clock after a synchronous callback", () => {
+  const target = new Date();
+  target.setSeconds(target.getSeconds() + 2, 0);
+  const targetMs = target.getTime();
+  const clock = useClock(targetMs - 1000);
+  const job = new Cron("* * * * * *");
+
+  try {
+    job.schedule(() => {
+      clock.setNow(targetMs + 2500);
+    });
+    clock.setNow(targetMs);
+    (job as unknown as { _checkTrigger: (target: Date) => void })._checkTrigger(target);
+
+    assertEquals(clock.delays.at(-1), 500);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});
+
+test("rearming selects the interval cursor using the fresh clock", () => {
+  const startAt = new Date();
+  startAt.setSeconds(startAt.getSeconds() + 2, 0);
+  const startAtMs = startAt.getTime();
+  const clock = useClock(startAtMs - 1000);
+  const job = new Cron("* * * * * *", {
+    interval: 5,
+    startAt,
+  });
+
+  try {
+    job.schedule(() => {
+      clock.setNow(startAtMs + 12_000);
+    });
+    clock.setNow(startAtMs);
+    (job as unknown as { _checkTrigger: (target: Date) => void })._checkTrigger(startAt);
+
+    assertEquals(clock.delays.at(-1), 3000);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});
