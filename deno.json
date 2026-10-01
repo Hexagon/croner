@@ -13,9 +13,9 @@
     "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts",
     "test": "deno task build:prep && deno test --allow-read",
     "build:prep": "deno install",
-    "build:clean": "deno run --allow-read --allow-write --allow-env --allow-sys build/build.ts -- clean",
-    "build:npm": "deno run --allow-read --allow-write --allow-env --allow-sys build/build.ts -- package",
-    "build:esbuild": "deno run --allow-read --allow-write --allow-env --allow-run --allow-sys build/build.ts -- build",
+    "build:clean": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-ffi build/build.ts -- clean",
+    "build:npm": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-ffi build/build.ts -- package",
+    "build:esbuild": "deno run --allow-read --allow-write --allow-env --allow-run --allow-sys --allow-ffi build/build.ts -- build",
     "build": "deno task build:clean && deno task build:prep && deno test --allow-read && deno task build:esbuild  && deno task build:npm",
     "check-deps": "deno run -A jsr:@check/deps"
   },
@@ -27,7 +27,7 @@
     "@std/path": "jsr:@std/path@~1.1.2",
     "@typescript/typescript6": "npm:@typescript/typescript6@~6.0.2",
     "esbuild": "npm:esbuild@0.28.2",
-    "rollup": "npm:rollup@~3.30.0",
+    "rollup": "npm:rollup@~4.63.0",
     "rollup-plugin-dts": "npm:rollup-plugin-dts@~6.5.1",
     "typescript": "npm:typescript@~7.0.0"
   },
