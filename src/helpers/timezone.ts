@@ -204,6 +204,55 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number
 }
 
 /**
+ * Upper bound on cached formatters. Applications rarely use more than a handful of timezones;
+ * the bound only keeps memory flat for one that cycles through many.
+ */
+const FORMATTER_CACHE_LIMIT = 100;
+
+/**
+ * Intl.DateTimeFormat instances keyed by timezone, oldest first (Map keeps insertion order).
+ * Constructing a formatter is far more expensive than using one, and toTZ runs several times
+ * for every scheduling step in a named timezone.
+ */
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function createFormatter(tzStr: string | undefined): Intl.DateTimeFormat {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: tzStr,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: false,
+  });
+}
+
+/**
+ * Returns a formatter for the given timezone, reusing a cached one when possible.
+ * An undefined timezone means the system timezone, which can change at runtime, so it is
+ * never cached. An invalid timezone throws from the constructor and is never cached either.
+ *
+ * @param tzStr - Timezone in IANA database format, or undefined for the system timezone
+ * @returns Formatter producing numeric date and time parts in that timezone
+ */
+function getFormatter(tzStr: string | undefined): Intl.DateTimeFormat {
+  if (typeof tzStr !== "string") {
+    return createFormatter(tzStr);
+  }
+  let formatter = formatterCache.get(tzStr);
+  if (formatter === undefined) {
+    formatter = createFormatter(tzStr);
+    if (formatterCache.size >= FORMATTER_CACHE_LIMIT) {
+      formatterCache.delete(formatterCache.keys().next().value!);
+    }
+    formatterCache.set(tzStr, formatter);
+  }
+  return formatter;
+}
+
+/**
  * Converts a date object to a TimePoint in the specified timezone
  *
  * @param d - Date to convert
@@ -217,16 +266,7 @@ export function toTZ(d: Date, tzStr: string): TimePoint {
   let parts: Intl.DateTimeFormatPart[];
 
   try {
-    formatter = new Intl.DateTimeFormat("en-US", {
-      timeZone: tzStr,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: false,
-    });
+    formatter = getFormatter(tzStr);
     parts = formatter.formatToParts(d);
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);

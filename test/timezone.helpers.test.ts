@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { createTimePoint, fromTimezone, fromTZ, fromTZISO, toTZ } from "../src/helpers/timezone.ts";
 
@@ -84,4 +84,65 @@ test("fromTimezone wrapper produces same result as fromTZ", () => {
 test("createTimePoint returns expected structure", () => {
   const tp = createTimePoint(2025, 2, 3, 4, 5, 6, "Etc/UTC");
   assertEquals(tp, { y: 2025, m: 2, d: 3, h: 4, i: 5, s: 6, tz: "Etc/UTC" });
+});
+
+test("toTZ reuses one Intl.DateTimeFormat per timezone", () => {
+  const Original = Intl.DateTimeFormat;
+  let constructed = 0;
+  const Counting = function (...args: ConstructorParameters<typeof Intl.DateTimeFormat>) {
+    constructed++;
+    return new Original(...args);
+  } as unknown as typeof Intl.DateTimeFormat;
+  Intl.DateTimeFormat = Counting;
+  try {
+    const d = new Date("2025-01-15T12:34:56Z");
+    for (let n = 0; n < 50; n++) {
+      toTZ(new Date(d.getTime() + n * 60000), "Pacific/Chatham");
+    }
+  } finally {
+    Intl.DateTimeFormat = Original;
+  }
+  assert(constructed <= 1, `expected at most 1 formatter, got ${constructed}`);
+});
+
+test("toTZ keeps zones apart when alternating between them", () => {
+  const d = new Date("2025-07-01T12:00:00Z");
+  for (let n = 0; n < 3; n++) {
+    assertEquals(toTZ(d, "America/New_York").h, 8);
+    assertEquals(toTZ(d, "Europe/Stockholm").h, 14);
+    assertEquals(toTZ(d, "Asia/Kolkata").i, 30);
+  }
+});
+
+test("toTZ matches a fresh formatter across many zones (cache eviction)", () => {
+  // Intl.supportedValuesOf is missing in older runtimes; fall back to the Etc/GMT zones.
+  const supportedValuesOf = (Intl as unknown as {
+    supportedValuesOf?: (key: string) => string[];
+  }).supportedValuesOf;
+  const zones = supportedValuesOf ? supportedValuesOf("timeZone") : Array.from(
+    { length: 25 },
+    (_, n) => n === 12 ? "Etc/GMT" : `Etc/GMT${n < 12 ? "+" : "-"}${Math.abs(n - 12)}`,
+  );
+  const d = new Date("2025-03-30T01:30:00Z");
+  // Two passes, so zones evicted during the first pass are rebuilt in the second.
+  for (let pass = 0; pass < 2; pass++) {
+    for (const tz of zones) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+      }).formatToParts(d);
+      const hour = parseInt(parts.find((p) => p.type === "hour")!.value, 10) % 24;
+      const minute = parseInt(parts.find((p) => p.type === "minute")!.value, 10);
+      const tp = toTZ(d, tz);
+      assertEquals([tp.h, tp.i], [hour, minute], tz);
+    }
+  }
+});
+
+test("toTZ still throws for an invalid timezone on repeated calls", () => {
+  const d = new Date("2025-01-15T12:34:56Z");
+  assertThrows(() => toTZ(d, "Invalid/Zone"), RangeError);
+  assertThrows(() => toTZ(d, "Invalid/Zone"), RangeError);
 });
