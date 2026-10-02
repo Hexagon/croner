@@ -27,7 +27,7 @@
     "@std/path": "jsr:@std/path@~1.1.2",
     "@typescript/typescript6": "npm:@typescript/typescript6@~6.0.2",
     "esbuild": "npm:esbuild@0.28.2",
-    "rollup": "npm:rollup@~4.63.0",
+    "rollup": "npm:rollup@~4.64.0",
     "rollup-plugin-dts": "npm:rollup-plugin-dts@~6.5.1",
     "typescript": "npm:typescript@~7.0.0"
   },
