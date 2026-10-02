@@ -147,9 +147,15 @@ for (
         fired++;
       });
 
-      assertEquals(initialTime + clock.timeouts[0].delay, occurrenceTime);
-      clock.setNow(occurrenceTime);
+      // Delays are capped (see maxDelay in src/croner.ts), so the first armed
+      // timeout re-arms without firing early, but the captured target always
+      // stays the shifted occurrence.
+      clock.setNow(initialTime + clock.timeouts[0].delay);
       clock.timeouts[0].callback();
+      assertEquals(fired, 0);
+
+      clock.setNow(occurrenceTime);
+      clock.timeouts.at(-1)!.callback();
       assertEquals(fired, 1);
     } finally {
       clock.restore();
