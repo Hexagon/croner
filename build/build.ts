@@ -81,7 +81,7 @@ if (Deno.args[1] === "clean") {
     input: resolve(relativeProjectRoot, "src/croner.ts"),
     plugins: [dts({
       compilerOptions: {
-        lib: ["ES2017", "ES2017.Intl", "DOM"],
+        lib: ["lib.es2017.d.ts", "lib.es2017.intl.d.ts", "lib.dom.d.ts"],
         allowImportingTsExtensions: true,
       },
     })],
