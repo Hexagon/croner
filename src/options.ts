@@ -245,4 +245,4 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   return options;
 }
 
-export { type CronOptions, CronOptionsHandler };
+export { type CatchCallbackFn, type CronOptions, CronOptionsHandler, type ProtectCallbackFn };

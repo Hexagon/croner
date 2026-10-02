@@ -65,6 +65,11 @@ if (Deno.args[1] === "clean") {
       outExtension: { ".js": ".cjs" },
     },
     {
+      outdir: resolvedDistPath,
+      platform: "neutral",
+      format: "esm",
+    },
+    {
       entryPoints: [],
       stdin: {
         contents: 'import { Cron } from "./croner.ts";module.exports = Cron;',
