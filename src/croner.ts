@@ -138,6 +138,55 @@ class Cron<T = undefined> {
     return date;
   }
 
+  private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
+    const offsetMs = (this.options.dayOffset ?? 0) * 24 * 60 * 60 * 1000;
+    if (
+      this._states.once && this._states.currentRun &&
+      this._states.once.getTime() + offsetMs <= this._states.currentRun.getTime()
+    ) {
+      return null;
+    }
+    const shiftedNow = new Date(now.getTime() - offsetMs);
+    const bounds = {
+      startAt: this.options.startAt
+        ? new CronDate<T>(
+          new Date((this.options.startAt as CronDate<T>).getTime() - offsetMs),
+          this.getTz(),
+        )
+        : undefined,
+      stopAt: this.options.stopAt
+        ? new CronDate<T>(
+          new Date((this.options.stopAt as CronDate<T>).getTime() - offsetMs),
+          this.getTz(),
+        )
+        : undefined,
+      includeStartAt: offsetMs !== 0,
+    };
+    let next = this._next(
+      previousRun ? new Date(previousRun.getTime() - offsetMs) : undefined,
+      shiftedNow,
+      bounds,
+    );
+    while (next) {
+      const target = this.applyDayOffset(next.getDate(false));
+      if (
+        this.options.startAt &&
+        target.getTime() < (this.options.startAt as CronDate<T>).getTime()
+      ) {
+        next = this._next(next, shiftedNow, bounds);
+        continue;
+      }
+      if (
+        this.options.stopAt &&
+        target.getTime() >= (this.options.stopAt as CronDate<T>).getTime()
+      ) {
+        return null;
+      }
+      return target;
+    }
+    return null;
+  }
+
   constructor(
     pattern: string | Date,
     fnOrOptions1?: CronOptions<T> | CronCallback<T>,
@@ -504,12 +553,14 @@ class Cron<T = undefined> {
 
     // Get actual ms to next run, bail out early if any of them is null (no next run)
     const currentTime = now ?? new Date();
-    const next = this._next(undefined, currentTime);
+    const next = this._nextTarget(undefined, currentTime);
     let waitMs = next ? next.getTime() - currentTime.getTime() : null;
 
     // Get the target date based on previous run
-    const nextTarget = this._next(this._states.currentRun, currentTime);
-    const target = nextTarget ? this.applyDayOffset(nextTarget.getDate(false)) : null;
+    const previousRun = this._states.blocking && this.options.protect
+      ? undefined
+      : this._states.currentRun;
+    const target = this._nextTarget(previousRun, currentTime);
 
     // isNaN added to prevent infinite loop
     if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
@@ -626,13 +677,24 @@ class Cron<T = undefined> {
   /**
    * Internal version of next. Cron needs millseconds internally, hence _next.
    */
-  private _next(previousRun?: CronDate<T> | Date | string | null, now?: Date) {
+  private _next(
+    previousRun?: CronDate<T> | Date | string | null,
+    now?: Date,
+    bounds?: { startAt?: CronDate<T>; stopAt?: CronDate<T>; includeStartAt?: boolean },
+  ) {
+    const startAt = bounds ? bounds.startAt : this.options.startAt as CronDate<T> | undefined;
+    const stopAt = bounds ? bounds.stopAt : this.options.stopAt as CronDate<T> | undefined;
     let hasPreviousRun = (previousRun || this._states.currentRun) ? true : false;
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
     let startAtInFutureWithInterval = false;
-    if (!previousRun && this.options.startAt && this.options.interval) {
-      [previousRun, hasPreviousRun] = this._calculatePreviousRun(previousRun, hasPreviousRun, now);
+    if (!previousRun && startAt && this.options.interval) {
+      [previousRun, hasPreviousRun] = this._calculatePreviousRun(
+        previousRun,
+        hasPreviousRun,
+        now,
+        startAt,
+      );
       startAtInFutureWithInterval = (!previousRun) ? true : false;
     }
 
@@ -640,11 +702,11 @@ class Cron<T = undefined> {
     previousRun = new CronDate<T>(previousRun ?? now, this.getTz());
 
     // Previous run should never be before startAt
-    if (
-      this.options.startAt && previousRun &&
-      previousRun.getTime() < (this.options.startAt as CronDate<T>).getTime()
-    ) {
-      previousRun = this.options.startAt;
+    const searchStartAt = bounds?.includeStartAt && startAt && !startAtInFutureWithInterval
+      ? new CronDate<T>(new Date(startAt.getTime() - 1000), this.getTz())
+      : startAt;
+    if (searchStartAt && previousRun && previousRun.getTime() < searchStartAt.getTime()) {
+      previousRun = searchStartAt;
     }
 
     // Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
@@ -718,7 +780,7 @@ class Cron<T = undefined> {
       (nextRun === null) ||
       (this._states.maxRuns !== undefined && this._states.maxRuns <= 0) ||
       (this._states.kill) ||
-      (this.options.stopAt && nextRun.getTime() >= (this.options.stopAt as CronDate<T>).getTime())
+      (stopAt && nextRun.getTime() >= stopAt.getTime())
     ) {
       return null;
     } else {
@@ -785,11 +847,12 @@ class Cron<T = undefined> {
     prev: CronDate<T> | Date | string | undefined | null,
     hasPreviousRun: boolean,
     now?: Date,
+    startAt?: CronDate<T>,
   ): [CronDate<T> | undefined, boolean] {
     const nowDate = new CronDate<T>(now, this.getTz());
     let newPrev: CronDate<T> | undefined | null = prev as CronDate<T>;
-    if ((this.options.startAt as CronDate<T>).getTime() <= nowDate.getTime()) {
-      newPrev = this.options.startAt as CronDate<T>;
+    if (startAt && startAt.getTime() <= nowDate.getTime()) {
+      newPrev = startAt;
       let prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
       while (prevTimePlusInterval <= nowDate.getTime()) {
         const next = new CronDate<T>(newPrev, this.getTz())

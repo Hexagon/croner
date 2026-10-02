@@ -30,6 +30,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Fixed cron jobs silently skipping occurrences after forward system-clock adjustments.
+- Fixed timer targeting for `dayOffset` schedules and protected jobs after clock changes.
 - Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON`
   ran every day instead of every Monday.
 - Fix exhausted schedules with `startAt` and `interval` (`Hexagon/croner#390`,
