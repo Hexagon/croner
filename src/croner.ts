@@ -29,8 +29,13 @@
 
   ------------------------------------------------------------------------------------  */
 import { CronDate } from "./date.ts";
-import { CronPattern } from "./pattern.ts";
-import { type CronOptions, CronOptionsHandler } from "./options.ts";
+import { type CronMode, CronPattern } from "./pattern.ts";
+import {
+  type CatchCallbackFn,
+  type CronOptions,
+  CronOptionsHandler,
+  type ProtectCallbackFn,
+} from "./options.ts";
 import { isCronCallback, isFunction, unrefTimer } from "./utils.ts";
 
 /**
@@ -968,4 +973,14 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
   }
 }
 
-export { Cron, CronDate, CronIterator, type CronOptions, CronPattern, scheduledJobs };
+export {
+  type CatchCallbackFn,
+  Cron,
+  CronDate,
+  CronIterator,
+  type CronMode,
+  type CronOptions,
+  CronPattern,
+  type ProtectCallbackFn,
+  scheduledJobs,
+};

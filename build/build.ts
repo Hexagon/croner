@@ -65,6 +65,11 @@ if (Deno.args[1] === "clean") {
       outExtension: { ".js": ".cjs" },
     },
     {
+      outdir: resolvedDistPath,
+      platform: "neutral",
+      format: "esm",
+    },
+    {
       entryPoints: [],
       stdin: {
         contents: 'import { Cron } from "./croner.ts";module.exports = Cron;',
@@ -81,7 +86,7 @@ if (Deno.args[1] === "clean") {
     input: resolve(relativeProjectRoot, "src/croner.ts"),
     plugins: [dts({
       compilerOptions: {
-        lib: ["ES2017", "ES2017.Intl", "DOM"],
+        lib: ["lib.es2017.d.ts", "lib.es2017.intl.d.ts", "lib.dom.d.ts"],
         allowImportingTsExtensions: true,
       },
     })],
