@@ -279,7 +279,6 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
-          // Preserve original UTC time for DST overlap resolution
           this.afterMs = inDate.getTime();
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
@@ -1029,7 +1028,7 @@ class CronDate<T = undefined> {
    *
    * @param ms UTC milliseconds threshold
    */
-  public setAfterMs(ms: number): void {
+  public setAfterMs(ms?: number): void {
     this.afterMs = ms;
   }
 

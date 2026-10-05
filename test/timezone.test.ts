@@ -301,11 +301,9 @@ test("OCPS 1.4 compliance: DST Overlap (Fall Back) - job should run once at firs
   const nov2After = nyJob.nextRun("2025-11-02T05:31:00Z"); // Just after first occurrence
   assertEquals(nov2After?.toISOString(), "2025-11-03T06:30:00.000Z"); // Next day at 1:30 AM EST
 
-  // Verify behavior during the second occurrence window (1:00 AM EST on Nov 2)
-  // Since we correctly track DST occurrence, nextRun from the second occurrence
-  // window returns the second occurrence of 1:30 AM (06:30:00Z), which is after the input
+  // Fixed-time patterns run only at the first occurrence and skip the second.
   const nov2Second = nyJob.nextRun("2025-11-02T06:00:00Z"); // During second occurrence window
-  assertEquals(nov2Second?.toISOString(), "2025-11-02T06:30:00.000Z");
+  assertEquals(nov2Second?.toISOString(), "2025-11-03T06:30:00.000Z");
   nyJob.stop();
 });
 
@@ -441,6 +439,33 @@ test("DST fall-back should not cause scheduling gap with per-second cron", funct
   assertEquals(runs[0].toISOString(), "2025-10-26T00:59:59.000Z");
   // Run 2: 2:00:00 CET second occurrence (01:00:00 UTC) - enters the overlap period
   assertEquals(runs[1].toISOString(), "2025-10-26T01:00:00.000Z");
+
+  job.stop();
+});
+
+test("DST fall-back should support 30-minute overlaps with per-second cron", function () {
+  const job = new Cron("* * * * * *", { paused: true, timezone: "Australia/Lord_Howe" });
+  let current: string | Date = "2026-04-04T14:59:58.000Z";
+  const runs: Date[] = [];
+
+  for (let i = 0; i < 5; i++) {
+    const next = job.nextRun(current);
+    if (next) {
+      runs.push(next);
+      current = next;
+    }
+  }
+
+  assertEquals(
+    runs.map((run) => run.toISOString()),
+    [
+      "2026-04-04T14:59:59.000Z",
+      "2026-04-04T15:00:00.000Z",
+      "2026-04-04T15:00:01.000Z",
+      "2026-04-04T15:00:02.000Z",
+      "2026-04-04T15:00:03.000Z",
+    ],
+  );
 
   job.stop();
 });

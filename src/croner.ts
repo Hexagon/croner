@@ -629,6 +629,9 @@ class Cron<T = undefined> {
     // Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
     let nextRun: CronDate<T> | null = this._states.once ||
       new CronDate<T>(previousRun, this.getTz());
+    if (nextRun !== this._states.once) {
+      nextRun.setAfterMs();
+    }
 
     // if the startAt is in the future and the interval is set, then the prev is already set to the startAt, so there is no need to increment it
     if (!startAtInFutureWithInterval && nextRun !== this._states.once) {
@@ -639,29 +642,39 @@ class Cron<T = undefined> {
       );
     }
 
-    // DST fall-back overlap fix: When increment() produces a next run whose UTC time
-    // is not monotonically advancing relative to the previous run, we may be in a DST
-    // overlap period. This can manifest as:
-    // 1. A gap >= 1 hour beyond expected (skipped over the overlap period entirely)
-    // 2. A negative gap (increment wrapped to the first DST occurrence, which is before prevUtc)
     if (nextRun !== null && nextRun !== this._states.once && typeof this.getTz() === "string") {
       const prevUtc = (previousRun as CronDate<T>).getTime();
       const nextUtc = nextRun.getTime();
-      const expectedIncrementMs =
-        ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
       const gap = nextUtc - prevUtc;
 
-      if (gap >= expectedIncrementMs + 3600000 || gap < 0) {
-        // Try the candidate 1 hour after the computed next time (for case 2: first→second occurrence)
-        // or 1 hour before (for case 1: skipped over overlap)
-        const overlapUtc = gap < 0 ? nextUtc + 3600000 : nextUtc - 3600000;
-        const overlapDate = new Date(overlapUtc);
-        const overlapCron = new CronDate<T>(overlapDate, this.getTz());
-        // Verify the candidate matches the pattern and is after the previous run
-        if (overlapCron.match(this._states.pattern, this.options) && overlapUtc > prevUtc) {
-          // Set afterMs to ensure getTime() returns the correct DST occurrence
-          overlapCron.setAfterMs(prevUtc);
-          nextRun = overlapCron;
+      const everySecond = this._states.pattern.second.every(Boolean) &&
+        this._states.pattern.minute.every(Boolean);
+      const everyMinute = this._states.pattern.second.filter(Boolean).length === 1 &&
+        this._states.pattern.second[0] === 1 &&
+        this._states.pattern.minute.every(Boolean);
+
+      if (everySecond || everyMinute) {
+        const expectedIncrementMs = everySecond ? 1000 : 60000;
+        if (gap < 0) {
+          nextRun.setAfterMs(prevUtc);
+        } else if (gap > expectedIncrementMs) {
+          const firstCandidate = Math.floor(prevUtc / 1000) * 1000 + 1000;
+          for (
+            let candidateMs = firstCandidate;
+            candidateMs <= prevUtc + expectedIncrementMs + 60000;
+            candidateMs += 1000
+          ) {
+            const candidate = new CronDate<T>(new Date(candidateMs), this.getTz());
+            candidate.setAfterMs(prevUtc);
+            if (candidate.match(this._states.pattern, this.options)) {
+              nextRun = candidate;
+              break;
+            }
+          }
+        }
+      } else {
+        while (nextRun && nextRun.getTime() <= prevUtc) {
+          nextRun = nextRun.increment(this._states.pattern, this.options, true);
         }
       }
     }

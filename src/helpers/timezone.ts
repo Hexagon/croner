@@ -153,28 +153,24 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number
 
   // Check if the first guess produces the target local time
   if (timePointsMatch(check1, tp)) {
-    // Even if it matches, we might be in a DST overlap (fall back)
-    // Check if there's another valid time 1 hour earlier or later
-    const altEarlier = new Date(dateGuess.getTime() - 3600000);
-    const altEarlierCheck = toTZ(altEarlier, tp.tz!);
-    const altLater = new Date(dateGuess.getTime() + 3600000);
-    const altLaterCheck = toTZ(altLater, tp.tz!);
-
-    // Determine if we're in a DST overlap
-    const hasEarlier = timePointsMatch(altEarlierCheck, tp);
-    const hasLater = timePointsMatch(altLaterCheck, tp);
-
-    if (hasEarlier || hasLater) {
-      // We're in a DST overlap
-      const firstOccurrence = hasEarlier ? altEarlier : dateGuess;
-      const secondOccurrence = hasEarlier ? dateGuess : altLater;
-
-      // When afterMs is provided, return the earliest occurrence that is >= afterMs
-      // This ensures monotonic progress during DST fall-back transitions
-      if (afterMs !== undefined) {
-        if (firstOccurrence.getTime() >= afterMs) {
-          return firstOccurrence;
+    const currentOffset = timePointToMs(check1) - dateGuess.getTime();
+    const alternateOccurrences = new Set<number>();
+    for (const probeMs of [dateGuess.getTime() - 86400000, dateGuess.getTime() + 86400000]) {
+      const probe = new Date(probeMs);
+      const alternateOffset = timePointToMs(toTZ(probe, tp.tz!)) - probeMs;
+      if (alternateOffset !== currentOffset) {
+        const alternate = dateGuess.getTime() + currentOffset - alternateOffset;
+        if (timePointsMatch(toTZ(new Date(alternate), tp.tz!), tp)) {
+          alternateOccurrences.add(alternate);
         }
+      }
+    }
+
+    if (alternateOccurrences.size > 0) {
+      const occurrences = [dateGuess.getTime(), ...alternateOccurrences].sort((a, b) => a - b);
+      const firstOccurrence = new Date(occurrences[0]);
+      const secondOccurrence = new Date(occurrences[occurrences.length - 1]);
+      if (afterMs !== undefined && firstOccurrence.getTime() < afterMs) {
         return secondOccurrence;
       }
       // Default: return the earlier time (first occurrence per OCPS 1.4)
