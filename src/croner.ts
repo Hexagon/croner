@@ -485,18 +485,24 @@ class Cron<T = undefined> {
       this.fn = func;
     }
 
-    // Get actual ms to next run, bail out early if any of them is null (no next run)
-    let waitMs = this.msToNext();
-
     // Get the target date based on previous run
     const target = this.nextRun(this._states.currentRun);
 
+    if (target === null) return this;
+
+    // Measure the delay to the same occurrence the timer will check.
+    let waitMs = target.getTime() - Date.now();
+
     // isNaN added to prevent infinite loop
-    if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
+    if (isNaN(waitMs)) return this;
 
     // setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
     if (waitMs > maxDelay) {
       waitMs = maxDelay;
+    }
+
+    if (waitMs < 0) {
+      waitMs = this._states.paused ? 1000 : 0;
     }
 
     // Start the timer loop
@@ -631,6 +637,33 @@ class Cron<T = undefined> {
         this.options,
         hasPreviousRun, // hasPreviousRun is used to allow
       );
+    }
+
+    // DST fall-back overlap fix: When increment() produces a next run whose UTC time
+    // is not monotonically advancing relative to the previous run, we may be in a DST
+    // overlap period. This can manifest as:
+    // 1. A gap >= 1 hour beyond expected (skipped over the overlap period entirely)
+    // 2. A negative gap (increment wrapped to the first DST occurrence, which is before prevUtc)
+    if (nextRun !== null && nextRun !== this._states.once && typeof this.getTz() === "string") {
+      const prevUtc = (previousRun as CronDate<T>).getTime();
+      const nextUtc = nextRun.getTime();
+      const expectedIncrementMs =
+        ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
+      const gap = nextUtc - prevUtc;
+
+      if (gap >= expectedIncrementMs + 3600000 || gap < 0) {
+        // Try the candidate 1 hour after the computed next time (for case 2: first→second occurrence)
+        // or 1 hour before (for case 1: skipped over overlap)
+        const overlapUtc = gap < 0 ? nextUtc + 3600000 : nextUtc - 3600000;
+        const overlapDate = new Date(overlapUtc);
+        const overlapCron = new CronDate<T>(overlapDate, this.getTz());
+        // Verify the candidate matches the pattern and is after the previous run
+        if (overlapCron.match(this._states.pattern, this.options) && overlapUtc > prevUtc) {
+          // Set afterMs to ensure getTime() returns the correct DST occurrence
+          overlapCron.setAfterMs(prevUtc);
+          nextRun = overlapCron;
+        }
+      }
     }
 
     if (
