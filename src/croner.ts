@@ -654,11 +654,14 @@ class Cron<T = undefined> {
         this._states.pattern.minute.every(Boolean);
 
       if (everySecond || everyMinute) {
-        const expectedIncrementMs = everySecond ? 1000 : 60000;
+        const intervalSeconds = hasPreviousRun ? Math.max(1, this.options.interval || 1) : 1;
+        const expectedIncrementMs = everySecond
+          ? intervalSeconds * 1000
+          : Math.ceil(intervalSeconds / 60) * 60000;
         if (gap < 0) {
           nextRun.setAfterMs(prevUtc);
         } else if (gap > expectedIncrementMs) {
-          const firstCandidate = Math.floor(prevUtc / 1000) * 1000 + 1000;
+          const firstCandidate = Math.floor(prevUtc / 1000) * 1000 + intervalSeconds * 1000;
           for (
             let candidateMs = firstCandidate;
             candidateMs <= prevUtc + expectedIncrementMs + 60000;

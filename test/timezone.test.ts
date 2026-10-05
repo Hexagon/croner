@@ -332,6 +332,36 @@ test("OCPS 1.4 compliance: Europe/London DST transitions", function () {
   londonFall.stop();
 });
 
+test("Timezone-aware schedules respect interval", function () {
+  const everySecond = new Cron("* * * * * *", {
+    interval: 5,
+    paused: true,
+    timezone: "Etc/UTC",
+  });
+  const secondRuns = everySecond.nextRuns(3, "2024-01-01T00:00:00Z");
+  assertEquals(
+    secondRuns.map((run, index) =>
+      index === 0 ? 0 : run.getTime() - secondRuns[index - 1].getTime()
+    ),
+    [0, 5000, 5000],
+  );
+  everySecond.stop();
+
+  const everyMinute = new Cron("* * * * *", {
+    interval: 65,
+    paused: true,
+    timezone: "Etc/UTC",
+  });
+  const minuteRuns = everyMinute.nextRuns(3, "2024-01-01T00:00:00Z");
+  assertEquals(
+    minuteRuns.map((run, index) =>
+      index === 0 ? 0 : run.getTime() - minuteRuns[index - 1].getTime()
+    ),
+    [0, 120000, 120000],
+  );
+  everyMinute.stop();
+});
+
 test("Issue #286: Starting from DST gap should not cause rapid-fire execution", function () {
   // Issue #286: Croner was running every millisecond during DST fall back
   // America/Los_Angeles: November 2, 2025 at 2:00 AM PDT -> 1:00 AM PST
