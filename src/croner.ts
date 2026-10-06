@@ -481,7 +481,7 @@ class Cron<T = undefined> {
       if (prev instanceof CronDate || prev instanceof Date) {
         return (next.getTime() - prev.getTime());
       } else {
-        return (next.getTime() - new CronDate<T>(prev).getTime());
+        return (next.getTime() - new CronDate<T>(prev, this.getTz()).getTime());
       }
     } else {
       return null;
