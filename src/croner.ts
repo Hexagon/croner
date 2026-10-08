@@ -481,7 +481,8 @@ class Cron<T = undefined> {
       if (prev instanceof CronDate || prev instanceof Date) {
         return (next.getTime() - prev.getTime());
       } else {
-        return (next.getTime() - new CronDate<T>(prev).getTime());
+        const timezone = typeof prev === "string" ? this.getTz() : undefined;
+        return (next.getTime() - new CronDate<T>(prev, timezone).getTime());
       }
     } else {
       return null;

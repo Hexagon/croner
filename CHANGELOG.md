@@ -29,6 +29,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fixed `msToNext()` returning a wrong (often negative) value when passed an ISO 8601 string on a
+  job with `timezone` or `utcOffset` set. The string was read in system local time.
 - Fixed cron jobs silently skipping occurrences after forward system-clock adjustments.
 - Fixed timer targeting for `dayOffset` schedules and protected jobs after clock changes.
 - Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON`

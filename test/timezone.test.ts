@@ -495,3 +495,14 @@ test("DST fall-back msToNext should not return large values at transition", func
 
   job.stop();
 });
+
+test("msToNext with an ISO string should read it in the job timezone", function () {
+  // Two zones, so the test fails on any host timezone if the string is read as local time
+  const tokyo = new Cron("* * * * *", { paused: true, timezone: "Asia/Tokyo" });
+  const newYork = new Cron("* * * * *", { paused: true, timezone: "America/New_York" });
+  const offset = new Cron("* * * * *", { paused: true, utcOffset: 540 });
+
+  assertEquals(tokyo.msToNext("2026-01-01T00:00:00"), 60000);
+  assertEquals(newYork.msToNext("2026-01-01T00:00:00"), 60000);
+  assertEquals(offset.msToNext("2026-01-01T00:00:00"), 60000);
+});
