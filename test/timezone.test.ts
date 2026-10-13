@@ -445,6 +445,13 @@ test("DST fall-back should not cause scheduling gap with per-second cron", funct
   job.stop();
 });
 
+test("DST fall-back should not skip 30-minute overlap with per-second cron", function () {
+  const job = new Cron("* * * * * *", { paused: true, timezone: "Australia/Lord_Howe" });
+  const next = job.nextRun(new Date("2026-04-04T14:59:59.000Z"));
+
+  assertEquals(next?.toISOString(), "2026-04-04T15:00:00.000Z");
+});
+
 test("DST fall-back should not cause scheduling gap with per-minute cron", function () {
   // Europe/Vienna: October 26, 2025 at 3:00 AM CEST -> 2:00 AM CET
   const job = new Cron("* * * * *", { paused: true, timezone: "Europe/Vienna" });

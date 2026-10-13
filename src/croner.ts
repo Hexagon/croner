@@ -766,11 +766,31 @@ class Cron<T = undefined> {
       const expectedIncrementMs =
         ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
       const gap = nextUtc - prevUtc;
+      const previous = previousRun as CronDate<T>;
+      const prevOffsetMs = Date.UTC(
+        previous.year,
+        previous.month,
+        previous.day,
+        previous.hour,
+        previous.minute,
+        previous.second,
+        previous.ms,
+      ) - prevUtc;
+      const nextOffsetMs = Date.UTC(
+        nextRun.year,
+        nextRun.month,
+        nextRun.day,
+        nextRun.hour,
+        nextRun.minute,
+        nextRun.second,
+        nextRun.ms,
+      ) - nextUtc;
+      const overlapMs = prevOffsetMs - nextOffsetMs;
 
-      if (gap >= expectedIncrementMs + 3600000 || gap < 0) {
-        // Try the candidate 1 hour after the computed next time (for case 2: first→second occurrence)
-        // or 1 hour before (for case 1: skipped over overlap)
-        const overlapUtc = gap < 0 ? nextUtc + 3600000 : nextUtc - 3600000;
+      if (overlapMs > 0 && (gap >= expectedIncrementMs + overlapMs || gap < 0)) {
+        // Try the candidate one overlap after the computed next time (for case 2: first→second occurrence)
+        // or one overlap before (for case 1: skipped over overlap)
+        const overlapUtc = gap < 0 ? nextUtc + overlapMs : nextUtc - overlapMs;
         const overlapDate = new Date(overlapUtc);
         const overlapCron = new CronDate<T>(overlapDate, this.getTz());
         // Verify the candidate matches the pattern and is after the previous run
