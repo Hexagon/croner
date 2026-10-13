@@ -29,6 +29,17 @@ function timePointToMs(tp: TimePoint): number {
 }
 
 /**
+ * Helper function to get the UTC offset of a timezone at a given instant
+ *
+ * @param date - The instant
+ * @param tz - Timezone name
+ * @returns Offset in milliseconds (local wall time minus UTC)
+ */
+function utcOffsetMs(date: Date, tz: string): number {
+  return timePointToMs(toTZ(date, tz)) - date.getTime();
+}
+
+/**
  * Helper function to check if two TimePoints represent the same local time
  *
  * @param tp1 - First TimePoint
@@ -153,11 +164,18 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number
 
   // Check if the first guess produces the target local time
   if (timePointsMatch(check1, tp)) {
-    // Even if it matches, we might be in a DST overlap (fall back)
-    // Check if there's another valid time 1 hour earlier or later
-    const altEarlier = new Date(dateGuess.getTime() - 3600000);
+    // Even if it matches, we might be in a DST overlap (fall back).
+    // The overlap is as long as the UTC offset change, which is not always
+    // one hour (Australia/Lord_Howe shifts by 30 minutes), so take it from
+    // the offsets a day before and a day after.
+    const overlapMs = utcOffsetMs(new Date(dateGuess.getTime() - 86400000), tp.tz!) -
+      utcOffsetMs(new Date(dateGuess.getTime() + 86400000), tp.tz!);
+    const shiftMs = overlapMs > 0 ? overlapMs : 3600000;
+
+    // Check if there's another valid time one shift earlier or later
+    const altEarlier = new Date(dateGuess.getTime() - shiftMs);
     const altEarlierCheck = toTZ(altEarlier, tp.tz!);
-    const altLater = new Date(dateGuess.getTime() + 3600000);
+    const altLater = new Date(dateGuess.getTime() + shiftMs);
     const altLaterCheck = toTZ(altLater, tp.tz!);
 
     // Determine if we're in a DST overlap
