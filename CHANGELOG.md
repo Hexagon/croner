@@ -26,6 +26,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Clarified `dayOffset` JSDoc and completed missing option documentation, including iterator usage,
   `allowPast`, and DST overlap behavior.
 - Updated the copyright year to 2026.
+- Timezone conversion now reuses one `Intl.DateTimeFormat` per timezone instead of constructing
+  a new one on every call, which made scheduling in a named timezone orders of magnitude slower
+  than without one.
 
 ### Fixed
 
