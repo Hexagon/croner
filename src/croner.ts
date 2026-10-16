@@ -915,6 +915,8 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
   private cron: Cron<T>;
   private cursor: Date | string | undefined;
   private done: boolean;
+  private initialMaxRuns: number;
+  private remainingRuns: number;
 
   /**
    * @param cron - The Cron instance to iterate over
@@ -924,6 +926,8 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     this.cron = cron;
     this.cursor = CronIterator._normalizeCursor(startAt);
     this.done = false;
+    this.initialMaxRuns = cron.options.maxRuns ?? Infinity;
+    this.remainingRuns = this.initialMaxRuns;
   }
 
   /**
@@ -947,7 +951,8 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    *          or `{ value: undefined, done: true }` when the schedule is exhausted.
    */
   public next(): IteratorResult<Date, undefined> {
-    if (this.done) {
+    if (this.done || this.remainingRuns <= 0) {
+      this.done = true;
       return { value: undefined, done: true };
     }
     const nextDate = this.cron.nextRun(this.cursor ?? null);
@@ -962,6 +967,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     const offsetDays = dayOffset ?? 0;
     const unoffsetTime = nextDate.getTime() - offsetDays * 24 * 60 * 60 * 1000;
     this.cursor = new Date(unoffsetTime);
+    this.remainingRuns--;
     return { value: nextDate, done: false };
   }
 
@@ -971,7 +977,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    * @returns The next scheduled date, or null if the schedule is exhausted.
    */
   public peek(): Date | null {
-    if (this.done) {
+    if (this.done || this.remainingRuns <= 0) {
       return null;
     }
     return this.cron.nextRun(this.cursor ?? null);
@@ -985,6 +991,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
   public reset(newStartAt?: Date | string | null): void {
     this.cursor = CronIterator._normalizeCursor(newStartAt);
     this.done = false;
+    this.remainingRuns = this.initialMaxRuns;
   }
 
   /**

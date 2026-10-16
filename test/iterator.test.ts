@@ -16,6 +16,23 @@ test("enumerate() does not mutate the parent Cron instance", function () {
   assertEquals(job.nextRun()?.getTime(), before?.getTime());
 });
 
+test("enumerate() honors maxRuns without mutating the parent and reset restores the budget", function () {
+  const start = new Date("2024-01-01T00:00:00.000Z");
+  const job = new Cron("* * * * * *", { maxRuns: 2, timezone: "UTC" });
+  const iter = job.enumerate(start);
+
+  const runs = Array.from(iter);
+  assertEquals(runs.length, 2);
+  assertEquals(iter.peek(), null);
+  assertEquals(iter.next().done, true);
+  assertEquals(job.runsLeft(), 2);
+
+  iter.reset(start);
+  assertEquals(iter.peek()?.toISOString(), "2024-01-01T00:00:01.000Z");
+  assertEquals(Array.from(iter).length, 2);
+  assertEquals(job.runsLeft(), 2);
+});
+
 // Iterator protocol — next()
 
 test("enumerate() next() returns dates in ascending order", function () {
