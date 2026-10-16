@@ -1,5 +1,6 @@
 import esbuild from "esbuild";
-import { dtsPlugin } from "esbuild-plugin-d.ts";
+import { rollup } from "rollup";
+import { dts } from "rollup-plugin-dts";
 import { cp, readFile, writeFile } from "@cross/fs";
 
 /**
@@ -64,6 +65,11 @@ if (Deno.args[1] === "clean") {
       outExtension: { ".js": ".cjs" },
     },
     {
+      outdir: resolvedDistPath,
+      platform: "neutral",
+      format: "esm",
+    },
+    {
       entryPoints: [],
       stdin: {
         contents: 'import { Cron } from "./croner.ts";module.exports = Cron;',
@@ -74,25 +80,22 @@ if (Deno.args[1] === "clean") {
       format: "iife",
       globalName: "Cron",
     },
-    {
-      outdir: resolvedDistPath,
-      platform: "neutral",
-      format: "esm",
-      plugins: [dtsPlugin({
-        experimentalBundling: true,
-        tsconfig: {
-          compilerOptions: {
-            target: "ES2017",
-            lib: ["ES2017", "ES2017.Intl", "DOM"],
-            declaration: true,
-            emitDeclarationOnly: true,
-            allowImportingTsExtensions: true,
-            skipLibCheck: true,
-          },
-        },
-      })],
-    },
   ]);
+
+  const declarations = await rollup({
+    input: resolve(relativeProjectRoot, "src/croner.ts"),
+    plugins: [dts({
+      compilerOptions: {
+        lib: ["lib.es2017.d.ts", "lib.es2017.intl.d.ts", "lib.dom.d.ts"],
+        allowImportingTsExtensions: true,
+      },
+    })],
+  });
+  await declarations.write({
+    file: resolve(resolvedDistPath, "croner.d.ts"),
+    format: "es",
+  });
+  await declarations.close();
 
   // Just re-use the .d.ts for commonjs, as .d.cts
   await cp(

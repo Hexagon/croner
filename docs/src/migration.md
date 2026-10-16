@@ -84,6 +84,37 @@ By default, Croner now follows strict range parsing rules as used by vixie cron 
 * ❌ Invalid: `/10`, `0/10`, `30/30` (missing prefix or numeric prefix with stepping)
 * To allow the old behavior, use `sloppyRanges: true` option: `new Cron("/10 * * * * *", { sloppyRanges: true })`
 
+### Upgrading from 10.x to 11.x
+
+Version `11.x` adds iterator-based schedule traversal and introduces stricter default behavior for date-based jobs in the past.
+
+### Breaking change
+
+* **Past date-based jobs are no longer auto-fired by default if older than 1 second.**
+  * In `10.x`, some past run-once jobs could still fire immediately depending on timing/runtime behavior.
+  * In `11.x`, run-once jobs older than 1 second are skipped unless `allowPast: true` is explicitly set.
+
+### How to keep previous catch-up behavior
+
+If you rely on firing missed date-based jobs, enable `allowPast`:
+
+```ts
+new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
+  // explicit catch-up behavior
+});
+```
+
+### New API in 11.x
+
+* `enumerate(startAt?)` returns a stateful `CronIterator` for sequential traversal:
+  * Works with `for...of` and destructuring.
+  * Supports `next()`, `peek()`, and `reset()`.
+
+### DST overlap behavior improvements
+
+* High-frequency schedules now continue through fall-back DST overlap windows without large gaps.
+* Specific-time schedules in overlap windows still follow first-occurrence semantics.
+
 ## Switching from Cron
 
 If you're currently using the cron package and want to migrate to Croner, the following steps can guide you:

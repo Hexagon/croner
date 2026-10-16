@@ -141,6 +141,20 @@ test("OCPS 1.4: DST Overlap (Fall Back) - job should run once at first occurrenc
   }
 });
 
+test("OCPS 1.4: DST Overlap (Fall Back) of 30 minutes - job should run at first occurrence", function () {
+  // In Australia/Lord_Howe, DST ends on April 5, 2026 at 2:00 AM (+11:00)
+  // Clock falls back 30 minutes to 1:30 AM (+10:30), so 1:30-2:00 happens twice
+  // A job scheduled for 1:45 AM should run at the first occurrence, 1:45 AM +11:00
+  const cron = new Cron("0 45 1 * * *", { timezone: "Australia/Lord_Howe" });
+
+  const run1 = cron.nextRun(new Date("2026-04-04T12:00:00Z"));
+  assertEquals(run1?.toISOString(), "2026-04-04T14:45:00.000Z");
+
+  // The next run is the following day at 1:45 AM +10:30
+  const run2 = cron.nextRun(run1!);
+  assertEquals(run2?.toISOString(), "2026-04-05T15:15:00.000Z");
+});
+
 // Section 4.3.2: Date and Time Range Limitations
 test("OCPS 1.4: Years 1-9999 should be supported", function () {
   // Test year 1 (though it will return null as it's in the past)

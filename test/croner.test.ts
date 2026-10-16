@@ -868,22 +868,21 @@ test(
 );
 
 test(
-  "Job should not be working after 1500 ms",
+  "Job should not be working after 3000 ms",
   (context, done) => {
-    let sleepPromise;
+    let callbackDone = false;
     const job = new Cron("* * * * * *", async () => {
       job.stop();
-      sleepPromise = sleep(2000);
-      await sleepPromise;
+      await sleep(1000);
+      callbackDone = true;
     });
-    setTimeout(async () => {
-      if (job.isBusy()) {
+    setTimeout(() => {
+      if (job.isBusy() || !callbackDone) {
         /* Let it time out */
       } else {
-        await sleepPromise!;
         done();
       }
-    }, 3500);
+    }, 3000);
   },
   { waitForCallback: true, timeout: 6000 },
 );
@@ -1020,4 +1019,188 @@ test("getOnce() should return the original date when created with ISO 8601 UTC s
   assertEquals(onceDate?.getUTCMonth(), 0);
   assertEquals(onceDate?.getUTCDate(), 1);
   assertEquals(onceDate?.getUTCHours(), 0);
+});
+
+test(
+  "Fire-once job scheduled in the recent past (< 1s) should fire immediately",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled 500ms in the past - should still fire
+    const pastTime = new Date(Date.now() - 500);
+    const job = new Cron(pastTime, () => {
+      job.stop();
+      resolve();
+    });
+    // Verify it's scheduled
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test(
+  "Fire-once job scheduled at current time should fire",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled for very near future (10ms) - should fire
+    const nearFuture = new Date(Date.now() + 10);
+    const job = new Cron(nearFuture, () => {
+      job.stop();
+      resolve();
+    });
+    // Verify it's scheduled
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test("Fire-once job scheduled significantly in past (> 1s) should not fire", function () {
+  // Create a job scheduled 2 seconds in the past - should NOT fire
+  const pastTime = new Date(Date.now() - 2000);
+  const job = new Cron(pastTime);
+  // Should return null for nextRun
+  assertEquals(job.nextRun(), null);
+  assertEquals(job.isRunning(), false);
+  job.stop();
+});
+
+test(
+  "Fire-once job with allowPast: true should fire even if significantly in past",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled 2 seconds in the past with allowPast option
+    const pastTime = new Date(Date.now() - 2000);
+    const job = new Cron(pastTime, { allowPast: true }, () => {
+      job.stop();
+      resolve();
+    });
+    // Should be scheduled even though it's in the past
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true should work for very old dates",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    let fired = false;
+    const veryOldDate = new Date("2020-01-01T00:00:00");
+    const job = new Cron(veryOldDate, { allowPast: true }, () => {
+      fired = true;
+    });
+
+    // Should be scheduled
+    assertEquals(job.nextRun() !== null, true);
+
+    // Give it a moment to fire
+    setTimeout(() => {
+      assertEquals(fired, true);
+      job.stop();
+      resolve();
+    }, 100);
+  }),
+);
+
+test("nextRuns(10) returns exactly 1 item for job scheduled slightly in the past", function () {
+  // Job scheduled less than 1 second in the past should still yield a single next run
+  const slightlyPast = new Date(Date.now() - 500);
+  const job = new Cron(slightlyPast);
+  const runs = job.nextRuns(10) as Date[];
+
+  assertEquals(runs.length, 1);
+  job.stop();
+});
+
+test("nextRuns(10) returns exactly 1 item for allowPast job scheduled far in the past", function () {
+  // Job scheduled significantly in the past with allowPast: true should still yield a single next run
+  const farPast = new Date(Date.now() - 60000); // 60 seconds in the past
+  const job = new Cron(farPast, { allowPast: true });
+  const runs = job.nextRuns(10) as Date[];
+
+  assertEquals(runs.length, 1);
+  job.stop();
+});
+
+test(
+  "Fire-once job with allowPast: true and timezone should fire immediately (issue #348 scenario)",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Simulates the scenario from issue #348: a once-job scheduled with a past time
+    // and a timezone, which previously caused the job to not fire
+    const pastTime = new Date(Date.now() - 5000); // 5 seconds in the past
+    let fired = false;
+    const job = new Cron(pastTime, { allowPast: true, timezone: "America/New_York" }, () => {
+      fired = true;
+      job.stop();
+    });
+
+    // Should be scheduled to fire even though it's in the past
+    assertEquals(job.nextRun() !== null, true);
+
+    setTimeout(() => {
+      assertEquals(fired, true);
+      resolve();
+    }, 200);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true should have correct previousRun after firing",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    const pastTime = new Date(Date.now() - 3000); // 3 seconds in the past
+    const job = new Cron(pastTime, { allowPast: true }, () => {});
+
+    setTimeout(() => {
+      // After firing, previousRun should be set and nextRun should be null
+      assertEquals(job.previousRun() !== null, true);
+      assertEquals(job.nextRun(), null);
+      job.stop();
+      resolve();
+    }, 200);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true, paused: true, and far-past date should fire after resume",
+  //@ts-ignore
+  timeout(4000, (resolve) => {
+    let fired = false;
+    let resumed = false;
+    let settled = false;
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    const veryOldDate = new Date("2020-01-01T00:00:00");
+    const job = new Cron(veryOldDate, { allowPast: true, paused: true }, () => {
+      fired = true;
+
+      if (!resumed || settled) return;
+
+      settled = true;
+      if (watchdog) clearTimeout(watchdog);
+      job.stop();
+      assertEquals(fired, true);
+      resolve();
+    });
+
+    // Should not fire while paused
+    setTimeout(() => {
+      assertEquals(fired, false);
+      resumed = true;
+      job.resume();
+
+      watchdog = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        job.stop();
+        assertEquals(fired, true);
+      }, 2000);
+    }, 100);
+  }),
+);
+
+test("Fire-once job with no allowPast and date > 1s in past should have null nextRun and not be running", function () {
+  // A once-job 3 seconds in the past without allowPast should silently not schedule
+  const pastTime = new Date(Date.now() - 3000);
+  const job = new Cron(pastTime);
+
+  assertEquals(job.nextRun(), null);
+  assertEquals(job.isRunning(), false);
+  job.stop();
 });
