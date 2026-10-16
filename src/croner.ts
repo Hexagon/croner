@@ -796,7 +796,7 @@ class Cron<T = undefined> {
         // Verify the candidate matches the pattern and is after the previous run
         if (overlapCron.match(this._states.pattern, this.options) && overlapUtc > prevUtc) {
           // Set afterMs to ensure getTime() returns the correct DST occurrence
-          overlapCron.setAfterMs(prevUtc);
+          overlapCron.setAfterMs(overlapUtc);
           nextRun = overlapCron;
         }
       }
