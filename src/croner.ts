@@ -735,6 +735,9 @@ class Cron<T = undefined> {
     //   - If allowPast option is true, allow it to fire
     //   - Otherwise, only allow if within 1 second (handles timing edge cases)
     if (this._states.once) {
+      if (startAt && this._states.once.getTime() < startAt.getTime()) {
+        return null;
+      }
       // Job has already executed
       if (
         this._states.currentRun && this._states.once.getTime() <= this._states.currentRun.getTime()
