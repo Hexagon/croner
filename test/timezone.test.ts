@@ -508,8 +508,10 @@ test("msToNext with an ISO string should read it in the job timezone", function 
   const tokyo = new Cron("* * * * *", { paused: true, timezone: "Asia/Tokyo" });
   const newYork = new Cron("* * * * *", { paused: true, timezone: "America/New_York" });
   const offset = new Cron("* * * * *", { paused: true, utcOffset: 540 });
+  const utcOffsetZero = new Cron("0 0 3 * * *", { paused: true, utcOffset: 0 });
 
   assertEquals(tokyo.msToNext("2026-01-01T00:00:00"), 60000);
   assertEquals(newYork.msToNext("2026-01-01T00:00:00"), 60000);
   assertEquals(offset.msToNext("2026-01-01T00:00:00"), 60000);
+  assertEquals(utcOffsetZero.msToNext("2026-03-08T01:59:59Z"), 3601000);
 });

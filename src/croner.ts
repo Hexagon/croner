@@ -124,7 +124,7 @@ class Cron<T = undefined> {
    * @private
    */
   private getTz(): string | number | undefined {
-    return this.options.timezone || this.options.utcOffset;
+    return this.options.timezone ?? this.options.utcOffset;
   }
 
   /**
