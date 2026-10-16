@@ -351,9 +351,9 @@ test("29W in February should only match leap years", function () {
 test("schedule should handle negative msToNext without error", function () {
   const job = new Cron("* * * * * *");
 
-  // Monkey-patch msToNext to simulate a negative return value
-  // (can happen due to timing race between _next() and Date.now())
-  job.msToNext = () => -1;
+  // Monkey-patch target calculation to simulate a negative wait value
+  // (can happen due to timing between target calculation and creating the timer)
+  (job as unknown as { _nextTarget: () => Date })._nextTarget = () => new Date(Date.now() - 1);
 
   // schedule() should clamp the negative value to 0 and not throw
   job.schedule(() => {});
