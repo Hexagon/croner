@@ -777,7 +777,6 @@ class Cron<T = undefined> {
         previous.hour,
         previous.minute,
         previous.second,
-        previous.ms,
       ) - prevUtc;
       const nextOffsetMs = Date.UTC(
         nextRun.year,
@@ -786,7 +785,6 @@ class Cron<T = undefined> {
         nextRun.hour,
         nextRun.minute,
         nextRun.second,
-        nextRun.ms,
       ) - nextUtc;
       const overlapMs = prevOffsetMs - nextOffsetMs;
 

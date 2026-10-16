@@ -279,8 +279,8 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
-          // Preserve original UTC time for DST overlap resolution
-          this.afterMs = inDate.getTime();
+          // Match the whole-second precision used by timezone conversion.
+          this.afterMs = inDate.getTime() - inDate.getUTCMilliseconds();
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
