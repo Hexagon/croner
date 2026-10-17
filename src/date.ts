@@ -89,7 +89,7 @@ class CronDate<T = undefined> {
   day!: number;
 
   /**
-   * Current month (1-12), in local time or target timezone specified by `this.tz`
+   * Current month (0-11), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
   month!: number;

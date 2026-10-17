@@ -71,3 +71,4 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 | \@weekly | Run once a week, i.e.  "0 0 * * 0". |
 | \@daily / \@midnight | Run once a day, i.e.   "0 0 * * *". |
 | \@hourly | Run once an hour, i.e. "0 * * * *". |
+| \@reboot | Recognized but not supported. Throws an error as Croner cannot detect system reboot events. |
