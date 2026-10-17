@@ -5,7 +5,7 @@ All notable changes to Croner will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [11.0.0] - 2026-10-13
+## [Unreleased]
 
 ### Breaking changes
 
@@ -46,6 +46,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Corrected the `existance` typo in `pattern.ts` comments.
 - Added regression coverage for negative-delay clamping and hardened once-job tests around catch-up
   behavior.
+- Fixed `previousRuns()` throwing for patterns with month-specific wildcards (e.g., `0 9 * 4 *`) when the reference date falls outside allowed
+  months, and for leap-day patterns (`0 0 29 2 *`) in leap years (#409)
 
 ### CI / Build
 
