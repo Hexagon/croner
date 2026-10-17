@@ -325,7 +325,8 @@ class CronDate<T = undefined> {
   private apply() {
     // If any value could be out of bounds, apply
     if (
-      this.month > 11 || this.month < 0 || this.day > DaysOfMonth[this.month] || this.day < 1 ||
+      this.month > 11 || this.month < 0 ||
+      this.day > this.getLastDayOfMonth(this.year, this.month) || this.day < 1 ||
       this.hour > 59 ||
       this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
@@ -762,7 +763,14 @@ class CronDate<T = undefined> {
 
         // Find the maximum valid value in the pattern
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
-        this[target] = maxValue;
+
+        // Cap the day at the last day of the current month, so that e.g. April 31
+        // does not roll over into May when the date is applied
+        if (target === "day") {
+          this[target] = Math.min(maxValue, this.getLastDayOfMonth(this.year, this.month));
+        } else {
+          this[target] = maxValue;
+        }
 
         resetLevel++;
       }
