@@ -150,14 +150,14 @@ test("L (last day of month) AND specific weekday using + modifier", function () 
  * Mixed weekday notation edge cases
  */
 test("Mixed alpha and numeric weekdays should work", function () {
-  const cron = new Cron("0 0 * * MON,3,FRI");
+  const cron = new Cron("0 0 * * MON,3,FRI", { utcOffset: 0 });
   const runs = cron.nextRuns(6, "2024-01-01T00:00:00Z");
 
   // Should match Monday (1), Wednesday (3), Friday (5)
   // Jan 1, 2024 is Monday but pattern starts after that, so first match is Wed Jan 3
   const expectedDays = [3, 5, 1, 3, 5, 1]; // Wed, Fri, Mon, Wed, Fri, Mon
   for (let i = 0; i < runs.length; i++) {
-    assertEquals(runs[i].getDay(), expectedDays[i]);
+    assertEquals(runs[i].getUTCDay(), expectedDays[i]);
   }
 });
 
@@ -238,9 +238,9 @@ test("Interval of 1 day (86400 seconds) should work", function () {
   const runs = cron.nextRuns(3, "2024-01-01T00:00:00Z");
 
   // Each run should be 1 day apart, starting from day after reference
-  assertEquals(runs[0].getDate(), 2);
-  assertEquals(runs[1].getDate(), 3);
-  assertEquals(runs[2].getDate(), 4);
+  assertEquals(runs[0].getUTCDate(), 2);
+  assertEquals(runs[1].getUTCDate(), 3);
+  assertEquals(runs[2].getUTCDate(), 4);
 });
 
 /**

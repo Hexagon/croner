@@ -42,6 +42,23 @@ jobs:
       - name: Run tests
         run: npx --yes tsx --test test/*.test.ts
 
+  deno_non_utc_test:
+    name: Deno tests (non-UTC TZ)
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: "2.x"
+
+      - name: Run tests
+        run: deno test --allow-read
+
   prerelease_build_check:
     name: Esbuild + DTS check (GA parity)
     runs-on: ubuntu-latest
