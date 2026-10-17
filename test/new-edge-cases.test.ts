@@ -213,6 +213,7 @@ test("stopAt exactly at pattern match time should return null", function () {
 test("stopAt one second after pattern match should include the match", function () {
   const cron = new Cron("0 0 * * *", {
     stopAt: "2024-01-15T00:00:01Z",
+    utcOffset: 0,
   });
   const next = cron.nextRun("2024-01-14T23:59:00Z");
 
@@ -300,7 +301,7 @@ test("msToNext should handle milliseconds correctly", function () {
  * Starting at exact match time edge cases
  */
 test("nextRun when starting at exact pattern match should skip to next occurrence", function () {
-  const cron = new Cron("0 0 12 * * *");
+  const cron = new Cron("0 0 12 * * *", { utcOffset: 0 });
   const next = cron.nextRun("2024-01-15T12:00:00Z");
 
   // Should skip to the next day since we're at exactly the match time
@@ -308,7 +309,7 @@ test("nextRun when starting at exact pattern match should skip to next occurrenc
 });
 
 test("nextRun one second after pattern match should go to next occurrence", function () {
-  const cron = new Cron("0 0 12 * * *");
+  const cron = new Cron("0 0 12 * * *", { utcOffset: 0 });
   const next = cron.nextRun("2024-01-15T12:00:01Z");
 
   assertEquals(next?.toISOString(), "2024-01-16T12:00:00.000Z");

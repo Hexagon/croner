@@ -467,21 +467,21 @@ test("W Modifier: Should throw when used with a range", function () {
 
 // Case-insensitivity tests for modifiers and aliases
 test("L modifier in day-of-week field should be case-insensitive (fril)", function () {
-  const scheduler = new Cron("0 0 * * fril");
+  const scheduler = new Cron("0 0 * * fril", { utcOffset: 0 });
   const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
   assert(nextRun !== null);
   assertEquals(nextRun.getUTCDay(), 5); // Friday
 });
 
 test("L modifier in day-of-week field should be case-insensitive (fri#l)", function () {
-  const scheduler = new Cron("0 0 * * fri#l");
+  const scheduler = new Cron("0 0 * * fri#l", { utcOffset: 0 });
   const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
   assert(nextRun !== null);
   assertEquals(nextRun.getUTCDay(), 5); // Friday
 });
 
 test("L modifier in day-of-week field should be case-insensitive (5l)", function () {
-  const scheduler = new Cron("0 0 * * 5l");
+  const scheduler = new Cron("0 0 * * 5l", { utcOffset: 0 });
   const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
   assert(nextRun !== null);
   assertEquals(nextRun.getUTCDay(), 5); // Friday
@@ -502,7 +502,7 @@ test("L modifier in day-of-week should produce same results for upper and lower 
 });
 
 test("L modifier in day-of-month field should be case-insensitive (l)", function () {
-  const scheduler = new Cron("0 0 l * *");
+  const scheduler = new Cron("0 0 l * *", { utcOffset: 0 });
   const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
   assert(nextRun !== null);
   assertEquals(nextRun.getUTCDate(), 31); // Last day of January
@@ -544,7 +544,7 @@ test("W modifier in day-of-month should produce same results for upper and lower
 });
 
 test("LW modifier in day-of-month field should be case-insensitive (lw)", function () {
-  const scheduler = new Cron("0 0 lw * *");
+  const scheduler = new Cron("0 0 lw * *", { utcOffset: 0 });
   const nextRun = scheduler.nextRun(new Date("2024-01-01T00:00:00Z"));
   assert(nextRun !== null);
   // January 31, 2024 is a Wednesday, so last weekday is the 31st
