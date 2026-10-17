@@ -24,7 +24,7 @@ const job = new Cron(
 If the function is omitted in the constructor, it can be scheduled later:
 
 ```ts
-job.schedule(job, /* optional */ context) => {});
+job.schedule((job, context) => {});
 ```
 
 The job will be scheduled to run at the next matching time unless you supply the option `{ paused: true }`. The `Cron(...)` constructor will return a Cron instance, later referred to as `job`, which have a few methods and properties.
