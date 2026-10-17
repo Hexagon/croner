@@ -235,3 +235,26 @@ test("previousRuns() with one-off schedule returns nothing if after reference", 
   // Should return nothing since scheduled time is in the future
   assertEquals(runs.length, 0);
 });
+
+test("previousRuns() should work when the matching months are shorter than 31 days", () => {
+  const referenceDate = new Date("2026-10-16T12:00:00Z");
+
+  const april = new Cron("0 9 * 4 *", { timezone: "UTC" }).previousRuns(2, referenceDate);
+  assertEquals(april.map((d) => d.toISOString()), [
+    "2026-04-30T09:00:00.000Z",
+    "2026-04-29T09:00:00.000Z",
+  ]);
+
+  const november = new Cron("0 0 * 11 *", { timezone: "UTC" }).previousRuns(1, referenceDate);
+  assertEquals(november[0].toISOString(), "2025-11-30T00:00:00.000Z");
+});
+
+test("previousRuns() should find previous leap days", () => {
+  const job = new Cron("0 0 29 2 *", { timezone: "UTC" });
+  const runs = job.previousRuns(2, new Date("2026-10-16T12:00:00Z"));
+
+  assertEquals(runs.map((d) => d.toISOString()), [
+    "2024-02-29T00:00:00.000Z",
+    "2020-02-29T00:00:00.000Z",
+  ]);
+});
