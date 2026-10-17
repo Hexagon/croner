@@ -64,8 +64,7 @@
       "require": {
         "types": "./dist/croner.d.cts",
         "default": "./dist/croner.cjs"
-      },
-      "browser": "./dist/croner.umd.js"
+      }
     }
   },
   "license": "MIT"
