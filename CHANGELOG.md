@@ -56,6 +56,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed `utcOffset: 0` being discarded due to falsy handling, causing jobs to silently fall back to
   system local time.
 - Fixed DST overlap scheduling where `setAfterMs` used the wrong date argument in `overlapCron`.
+- Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which
+  could silently accept out-of-range hours.
 
 ### CI / Build
 
