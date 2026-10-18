@@ -15,6 +15,7 @@ export interface TimePoint {
   h: number; // Hour: 0-23
   i: number; // Minute: 0-59
   s: number; // Second: 0-59
+  ms: number; // Millisecond: 0-999
   tz?: string; // Time zone in IANA database format 'Europe/Stockholm'
 }
 
@@ -25,7 +26,7 @@ export interface TimePoint {
  * @returns Milliseconds since epoch (UTC)
  */
 function timePointToMs(tp: TimePoint): number {
-  return Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
+  return Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s, tp.ms ?? 0);
 }
 
 /**
@@ -324,6 +325,7 @@ export function createTimePoint(
   i: number,
   s: number,
   tz?: string,
+  ms?: number,
 ): TimePoint {
-  return { y, m, d, h, i, s, tz };
+  return { y, m, d, h, i, s, tz, ms: ms ?? 0 };
 }
