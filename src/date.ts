@@ -1028,6 +1028,7 @@ class CronDate<T = undefined> {
             this.minute,
             this.second,
             this.tz,
+            this.ms,
           ),
           false,
           resolvedAfterMs,
