@@ -15,7 +15,7 @@ export interface TimePoint {
   h: number; // Hour: 0-23
   i: number; // Minute: 0-59
   s: number; // Second: 0-59
-  ms: number; // Millisecond: 0-999
+  ms?: number; // Millisecond: 0-999
   tz?: string; // Time zone in IANA database format 'Europe/Stockholm'
 }
 
