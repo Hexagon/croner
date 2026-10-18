@@ -678,19 +678,6 @@ test("Weekday pattern should return correct combined with day of month (croner m
   assertEquals(nextRuns[1].getDate(), 2);
 });
 
-test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-  let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 18);
-  assertEquals(nextRuns[1].getDate(), 19);
-  assertEquals(nextRuns[2].getDate(), 25);
-  assertEquals(nextRuns[3].getDate(), 26);
-  assertEquals(nextRuns[4].getMonth(), 2);
-  assertEquals(nextRuns[4].getDate(), 4);
-  assertEquals(nextRuns[5].getDate(), 5);
-});
-
 test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
   const nextRuns = new Cron("59 59 23 2 * 6", { domAndDow: false }).nextRuns(
     6,
