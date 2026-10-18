@@ -327,7 +327,7 @@ class CronDate<T = undefined> {
     if (
       this.month > 11 || this.month < 0 ||
       this.day > this.getLastDayOfMonth(this.year, this.month) || this.day < 1 ||
-      this.hour > 59 ||
+      this.hour > 23 ||
       this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
     ) {
