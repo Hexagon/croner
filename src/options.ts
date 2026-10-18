@@ -163,34 +163,31 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   delete options.name;
 
   // Handle backward compatibility: legacyMode is deprecated in favor of domAndDow
-  // domAndDow: true means AND logic, false means OR logic (legacy behavior)
-  // legacyMode: true means OR logic, false means AND logic
-  // Therefore: domAndDow = !legacyMode
+  // domAndDow: true = AND logic, false = OR logic (legacy behavior)
+  // legacyMode is the inverse
   if (options.legacyMode !== void 0 && options.domAndDow === void 0) {
-    // If only legacyMode is provided, invert it for domAndDow
     options.domAndDow = !options.legacyMode;
   } else if (options.domAndDow === void 0) {
-    // If neither is provided, default to false (OR logic, legacy behavior)
     options.domAndDow = false;
   }
-  // Keep legacyMode in sync with domAndDow for backward compatibility (inverted)
   options.legacyMode = !options.domAndDow;
 
-  options.paused = options.paused === void 0 ? false : options.paused;
-  options.maxRuns = options.maxRuns === void 0 ? Infinity : options.maxRuns;
-  options.catch = options.catch === void 0 ? false : options.catch;
+  // Apply simple defaults using a helper for readability
+  const d = <T>(v: T | undefined, fallback: T): T => v === void 0 ? fallback : v;
+  options.paused = d(options.paused, false);
+  options.maxRuns = d(options.maxRuns, Infinity);
+  options.catch = d(options.catch, false);
+  options.unref = d(options.unref, false);
+  options.mode = d(options.mode, "auto");
+  options.alternativeWeekdays = d(options.alternativeWeekdays, false);
+  options.sloppyRanges = d(options.sloppyRanges, false);
+  options.allowPast = d(options.allowPast, false);
+
   options.interval = options.interval === void 0 ? 0 : parseInt(options.interval.toString(), 10);
   options.utcOffset = options.utcOffset === void 0
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
   options.dayOffset = options.dayOffset === void 0 ? 0 : parseInt(options.dayOffset.toString(), 10);
-  options.unref = options.unref === void 0 ? false : options.unref;
-  options.mode = options.mode === void 0 ? "auto" : options.mode;
-  options.alternativeWeekdays = options.alternativeWeekdays === void 0
-    ? false
-    : options.alternativeWeekdays;
-  options.sloppyRanges = options.sloppyRanges === void 0 ? false : options.sloppyRanges;
-  options.allowPast = options.allowPast === void 0 ? false : options.allowPast;
 
   // Validate mode option
   if (

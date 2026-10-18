@@ -830,9 +830,7 @@ class CronDate<T = undefined> {
             }
 
             // Get the last day of the normalized month
-            const lastDayOfMonth = tempMonth !== 1
-              ? DaysOfMonth[tempMonth]
-              : new Date(Date.UTC(tempYear, tempMonth + 1, 0)).getUTCDate();
+            const lastDayOfMonth = this.getLastDayOfMonth(tempYear, tempMonth);
 
             // If current day exceeds the last day of the new month, cap it
             if (this.day > lastDayOfMonth) {

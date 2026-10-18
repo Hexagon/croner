@@ -199,11 +199,11 @@ class CronPattern {
     }
 
     // Replace alpha representations
-    if (parts[4].length >= 3) parts[4] = this.replaceAlphaMonths(parts[4]);
+    if (parts[4].length >= 3) parts[4] = this.replaceAlpha(parts[4], CronPattern.MONTH_NAMES);
     if (parts[5].length >= 3) {
       parts[5] = this.alternativeWeekdays
-        ? this.replaceAlphaDaysQuartz(parts[5])
-        : this.replaceAlphaDays(parts[5]);
+        ? this.replaceAlpha(parts[5], CronPattern.DAY_NAMES_QUARTZ)
+        : this.replaceAlpha(parts[5], CronPattern.DAY_NAMES);
     }
 
     // OCPS 1.4: Check for + modifier in day-of-week field for explicit AND logic
@@ -290,10 +290,8 @@ class CronPattern {
   ) {
     const arr = this[type];
 
-    // Error on empty part
-    const lastDayOfMonth = type === "day" && this.lastDayOfMonth;
-    const lastWeekday = type === "day" && this.lastWeekday;
-    if (conf === "" && !lastDayOfMonth && !lastWeekday) {
+    // Error on empty part (unless L/LW modifier is set on day field)
+    if (conf === "" && !(type === "day" && (this.lastDayOfMonth || this.lastWeekday))) {
       throw new TypeError(
         "CronPattern: configuration entry " + type + " (" + conf +
           ") is empty, check for trailing spaces.",
@@ -306,23 +304,15 @@ class CronPattern {
     // Handle separated entries (,) by recursion
     const split = conf.split(",");
     if (split.length > 1) {
-      for (let i = 0; i < split.length; i++) {
-        this.partToArray(type, split[i], valueIndexOffset, defaultValue);
+      for (const part of split) {
+        this.partToArray(type, part, valueIndexOffset, defaultValue);
       }
-
-      // Handle range with stepping (x-y/z)
-    } else if (conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1) {
+    } else if (conf.includes("-") && conf.includes("/")) {
       this.handleRangeWithStepping(conf, type, valueIndexOffset, defaultValue);
-
-      // Handle range
-    } else if (conf.indexOf("-") !== -1) {
+    } else if (conf.includes("-")) {
       this.handleRange(conf, type, valueIndexOffset, defaultValue);
-
-      // Handle stepping
-    } else if (conf.indexOf("/") !== -1) {
+    } else if (conf.includes("/")) {
       this.handleStepping(conf, type, valueIndexOffset, defaultValue);
-
-      // Anything left should be a number, potentially with a modifier
     } else if (conf !== "") {
       this.handleNumber(conf, type, valueIndexOffset, defaultValue);
     }
@@ -657,70 +647,60 @@ class CronPattern {
   }
 
   /**
-   * Replace day name with day numbers
+   * Replace alpha names (day/month) with numeric values using a mapping.
    *
-   * @param conf Current part, expected to be a string that might contain sun,mon etc.
-   *
-   * @returns Conf with 0 instead of sun etc.
+   * @param conf Current part, expected to be a string that might contain alpha names.
+   * @param mapping Object mapping names to their numeric string replacements.
+   * @returns Conf with alpha names replaced by numbers.
    */
-  private replaceAlphaDays(conf: string): string {
-    return conf
-      .replace(/-sun/gi, "-7") // choose 7 if sunday is the upper value of a range because the upper value must not be smaller than the lower value
-      .replace(/sun/gi, "0")
-      .replace(/mon/gi, "1")
-      .replace(/tue/gi, "2")
-      .replace(/wed/gi, "3")
-      .replace(/thu/gi, "4")
-      .replace(/fri/gi, "5")
-      .replace(/sat/gi, "6");
-  }
-
-  /**
-   * Replace day name with day numbers (Quartz mode)
-   * In Quartz mode: Sunday=1, Monday=2, ..., Saturday=7
-   *
-   * @param conf Current part, expected to be a string that might contain sun,mon etc.
-   *
-   * @returns Conf with Quartz-style numbering
-   */
-  private replaceAlphaDaysQuartz(conf: string): string {
-    return conf
-      .replace(/sun/gi, "1")
-      .replace(/mon/gi, "2")
-      .replace(/tue/gi, "3")
-      .replace(/wed/gi, "4")
-      .replace(/thu/gi, "5")
-      .replace(/fri/gi, "6")
-      .replace(/sat/gi, "7");
-  }
-
-  /**
-   * Replace month name with month numbers
-   *
-   * @param conf Current part, expected to be a string that might contain jan,feb etc.
-   *
-   * @returns conf with 0 instead of sun etc.
-   */
-  private replaceAlphaMonths(conf: string): string {
-    return conf
-      .replace(/jan/gi, "1")
-      .replace(/feb/gi, "2")
-      .replace(/mar/gi, "3")
-      .replace(/apr/gi, "4")
-      .replace(/may/gi, "5")
-      .replace(/jun/gi, "6")
-      .replace(/jul/gi, "7")
-      .replace(/aug/gi, "8")
-      .replace(/sep/gi, "9")
-      .replace(/oct/gi, "10")
-      .replace(/nov/gi, "11")
-      .replace(/dec/gi, "12");
+  private replaceAlpha(conf: string, mapping: Record<string, string>): string {
+    let result = conf;
+    for (const [name, value] of Object.entries(mapping)) {
+      result = result.replace(new RegExp(name, "gi"), value);
+    }
+    return result;
   }
 
   /**
    * Map of cron nickname patterns to their equivalent cron expressions.
    * @private
    */
+  private static DAY_NAMES: Record<string, string> = {
+    "-sun": "-7", // choose 7 if sunday is the upper value of a range because the upper value must not be smaller than the lower value; preserve the hyphen
+    "sun": "0",
+    "mon": "1",
+    "tue": "2",
+    "wed": "3",
+    "thu": "4",
+    "fri": "5",
+    "sat": "6",
+  };
+
+  private static DAY_NAMES_QUARTZ: Record<string, string> = {
+    "sun": "1",
+    "mon": "2",
+    "tue": "3",
+    "wed": "4",
+    "thu": "5",
+    "fri": "6",
+    "sat": "7",
+  };
+
+  private static MONTH_NAMES: Record<string, string> = {
+    "jan": "1",
+    "feb": "2",
+    "mar": "3",
+    "apr": "4",
+    "may": "5",
+    "jun": "6",
+    "jul": "7",
+    "aug": "8",
+    "sep": "9",
+    "oct": "10",
+    "nov": "11",
+    "dec": "12",
+  };
+
   private static NICKNAME_MAP: Record<string, string> = {
     "@yearly": "0 0 1 1 *",
     "@annually": "0 0 1 1 *",
