@@ -153,19 +153,11 @@ class Cron<T = undefined> {
       return null;
     }
     const shiftedNow = new Date(now.getTime() - offsetMs);
+    const shiftCron = (d: CronDate<T> | undefined) =>
+      d ? new CronDate<T>(new Date(d.getTime() - offsetMs), this.getTz()) : undefined;
     const bounds = {
-      startAt: this.options.startAt
-        ? new CronDate<T>(
-          new Date((this.options.startAt as CronDate<T>).getTime() - offsetMs),
-          this.getTz(),
-        )
-        : undefined,
-      stopAt: this.options.stopAt
-        ? new CronDate<T>(
-          new Date((this.options.stopAt as CronDate<T>).getTime() - offsetMs),
-          this.getTz(),
-        )
-        : undefined,
+      startAt: shiftCron(this.options.startAt as CronDate<T> | undefined),
+      stopAt: shiftCron(this.options.stopAt as CronDate<T> | undefined),
       includeStartAt: offsetMs !== 0,
     };
     let next = this._next(
@@ -202,24 +194,16 @@ class Cron<T = undefined> {
     let options: CronOptions<T> | undefined;
     let func: CronCallback<T> | undefined;
 
-    if (isFunction(fnOrOptions1)) {
-      func = fnOrOptions1 as CronCallback<T>;
-    } else if (typeof fnOrOptions1 === "object") {
-      options = fnOrOptions1 as CronOptions<T>;
-    } else if (fnOrOptions1 !== void 0) {
-      throw new Error(
-        "Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).",
-      );
-    }
-
-    if (isFunction(fnOrOptions2)) {
-      func = fnOrOptions2 as CronCallback<T>;
-    } else if (typeof fnOrOptions2 === "object") {
-      options = fnOrOptions2 as CronOptions<T>;
-    } else if (fnOrOptions2 !== void 0) {
-      throw new Error(
-        "Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).",
-      );
+    for (const arg of [fnOrOptions1, fnOrOptions2]) {
+      if (isFunction(arg)) {
+        func = arg as CronCallback<T>;
+      } else if (typeof arg === "object") {
+        options = arg as CronOptions<T>;
+      } else if (arg !== void 0) {
+        throw new Error(
+          "Cron: Invalid argument passed. Should be one of function, or object (options).",
+        );
+      }
     }
 
     this.name = options?.name;
@@ -423,14 +407,8 @@ class Cron<T = undefined> {
    * @returns Running or not
    */
   public isRunning(): boolean {
-    const nextRunTime = this.nextRun(this._states.currentRun);
-
-    const isRunning = !this._states.paused;
-    const isScheduled = this.fn !== void 0;
-    // msLeft will be null if _states.kill is set to true, so we don't need to check this one, but we do anyway...
-    const notIsKilled = !this._states.kill;
-
-    return isRunning && isScheduled && notIsKilled && nextRunTime !== null;
+    return !this._states.paused && !this._states.kill && this.fn !== void 0 &&
+      this.nextRun(this._states.currentRun) !== null;
   }
 
   /**
@@ -691,7 +669,7 @@ class Cron<T = undefined> {
   ) {
     const startAt = bounds ? bounds.startAt : this.options.startAt as CronDate<T> | undefined;
     const stopAt = bounds ? bounds.stopAt : this.options.stopAt as CronDate<T> | undefined;
-    let hasPreviousRun = (previousRun || this._states.currentRun) ? true : false;
+    let hasPreviousRun = !!(previousRun || this._states.currentRun);
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
     let startAtInFutureWithInterval = false;
@@ -702,7 +680,7 @@ class Cron<T = undefined> {
         now,
         startAt,
       );
-      startAtInFutureWithInterval = (!previousRun) ? true : false;
+      startAtInFutureWithInterval = !previousRun;
     }
 
     // Ensure previous run is a CronDate
@@ -759,62 +737,16 @@ class Cron<T = undefined> {
       }
     }
 
-    // DST fall-back overlap fix: When increment() produces a next run whose UTC time
-    // is not monotonically advancing relative to the previous run, we may be in a DST
-    // overlap period. This can manifest as:
-    // 1. A gap >= 1 hour beyond expected (skipped over the overlap period entirely)
-    // 2. A negative gap (increment wrapped to the first DST occurrence, which is before prevUtc)
-    if (nextRun !== null && nextRun !== this._states.once && typeof this.getTz() === "string") {
-      const prevUtc = (previousRun as CronDate<T>).getTime();
-      const nextUtc = nextRun.getTime();
-      const expectedIncrementMs =
-        ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
-      const gap = nextUtc - prevUtc;
-      const previous = previousRun as CronDate<T>;
-      const prevOffsetMs = Date.UTC(
-        previous.year,
-        previous.month,
-        previous.day,
-        previous.hour,
-        previous.minute,
-        previous.second,
-      ) - prevUtc;
-      const nextOffsetMs = Date.UTC(
-        nextRun.year,
-        nextRun.month,
-        nextRun.day,
-        nextRun.hour,
-        nextRun.minute,
-        nextRun.second,
-      ) - nextUtc;
-      const overlapMs = prevOffsetMs - nextOffsetMs;
-
-      if (overlapMs > 0 && (gap >= expectedIncrementMs + overlapMs || gap < 0)) {
-        // Try the candidate one overlap after the computed next time (for case 2: first→second occurrence)
-        // or one overlap before (for case 1: skipped over overlap)
-        const overlapUtc = gap < 0 ? nextUtc + overlapMs : nextUtc - overlapMs;
-        const overlapDate = new Date(overlapUtc);
-        const overlapCron = new CronDate<T>(overlapDate, this.getTz());
-        // Verify the candidate matches the pattern and is after the previous run
-        if (overlapCron.match(this._states.pattern, this.options) && overlapUtc > prevUtc) {
-          // Set afterMs to ensure getTime() returns the correct DST occurrence
-          overlapCron.setAfterMs(overlapUtc);
-          nextRun = overlapCron;
-        }
-      }
-    }
+    // DST fall-back overlap fix
+    nextRun = this._resolveDSTOverlap(nextRun, previousRun as CronDate<T>, hasPreviousRun);
 
     if (
-      (nextRun === null) ||
-      (this._states.maxRuns !== undefined && this._states.maxRuns <= 0) ||
-      (this._states.kill) ||
-      (stopAt && nextRun.getTime() >= stopAt.getTime())
+      nextRun === null || this._states.maxRuns !== undefined && this._states.maxRuns <= 0 ||
+      this._states.kill || stopAt && nextRun.getTime() >= stopAt.getTime()
     ) {
       return null;
-    } else {
-      // All seem good, return next run
-      return nextRun;
     }
+    return nextRun;
   }
 
   /**
@@ -842,11 +774,7 @@ class Cron<T = undefined> {
 
     // For one-off schedules, check if the scheduled time is before the reference
     if (this._states.once) {
-      if (this._states.once.getTime() < reference.getTime()) {
-        return this._states.once;
-      } else {
-        return null;
-      }
+      return this._states.once.getTime() < reference.getTime() ? this._states.once : null;
     }
 
     // Use decrement to find previous match
@@ -857,14 +785,65 @@ class Cron<T = undefined> {
 
     // Check if previous run is valid
     if (
-      (previousRun === null) ||
+      previousRun === null ||
       (this.options.startAt &&
         previousRun.getTime() < (this.options.startAt as CronDate<T>).getTime())
     ) {
       return null;
-    } else {
-      return previousRun;
     }
+    return previousRun;
+  }
+
+  /**
+   * Resolve DST fall-back overlap: when increment() produces a next run that is not
+   * monotonically advancing in UTC relative to the previous run, adjust to the correct
+   * DST occurrence (earlier wall clock, later UTC).
+   *
+   * @private
+   */
+  private _resolveDSTOverlap(
+    nextRun: CronDate<T> | null,
+    previousRun: CronDate<T>,
+    hasPreviousRun: boolean,
+  ): CronDate<T> | null {
+    if (nextRun === null || nextRun === this._states.once || typeof this.getTz() !== "string") {
+      return nextRun;
+    }
+
+    const prevUtc = previousRun.getTime();
+    const nextUtc = nextRun.getTime();
+    const expectedIncrementMs =
+      ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
+    const gap = nextUtc - prevUtc;
+    const prevOffsetMs = Date.UTC(
+      previousRun.year,
+      previousRun.month,
+      previousRun.day,
+      previousRun.hour,
+      previousRun.minute,
+      previousRun.second,
+    ) - prevUtc;
+    const nextOffsetMs = Date.UTC(
+      nextRun.year,
+      nextRun.month,
+      nextRun.day,
+      nextRun.hour,
+      nextRun.minute,
+      nextRun.second,
+    ) - nextUtc;
+    const overlapMs = prevOffsetMs - nextOffsetMs;
+
+    if (overlapMs > 0 && (gap >= expectedIncrementMs + overlapMs || gap < 0)) {
+      const overlapUtc = gap < 0 ? nextUtc + overlapMs : nextUtc - overlapMs;
+      const overlapDate = new Date(overlapUtc);
+      const overlapCron = new CronDate<T>(overlapDate, this.getTz());
+      if (overlapCron.match(this._states.pattern, this.options) && overlapUtc > prevUtc) {
+        overlapCron.setAfterMs(overlapUtc);
+        return overlapCron;
+      }
+    }
+
+    return nextRun;
   }
   /**
    * Calculate the previous run if no previous run is supplied, but startAt and interval are set.
