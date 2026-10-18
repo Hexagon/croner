@@ -53,6 +53,7 @@ import { isCronCallback, isFunction, unrefTimer } from "./utils.ts";
  * But due to a problem with certain javascript engines not behaving well when the
  * computer is suspended, we'll never wait more than 30 seconds between each trigger.
  */
+const MS_PER_DAY: number = 24 * 60 * 60 * 1000;
 const maxDelay: number = 30 * 1000;
 
 /**
@@ -137,14 +138,14 @@ class Cron<T = undefined> {
    */
   private applyDayOffset(date: Date): Date {
     if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-      const offsetMs = this.options.dayOffset * 24 * 60 * 60 * 1000;
+      const offsetMs = this.options.dayOffset * MS_PER_DAY;
       return new Date(date.getTime() + offsetMs);
     }
     return date;
   }
 
   private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
-    const offsetMs = (this.options.dayOffset ?? 0) * 24 * 60 * 60 * 1000;
+    const offsetMs = (this.options.dayOffset ?? 0) * MS_PER_DAY;
     if (
       this._states.once && this._states.currentRun &&
       this._states.once.getTime() + offsetMs <= this._states.currentRun.getTime()
@@ -965,7 +966,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     // dayOffset on the way out, so we reverse it here before storing.
     const dayOffset = this.cron.options.dayOffset;
     const offsetDays = dayOffset ?? 0;
-    const unoffsetTime = nextDate.getTime() - offsetDays * 24 * 60 * 60 * 1000;
+    const unoffsetTime = nextDate.getTime() - offsetDays * MS_PER_DAY;
     this.cursor = new Date(unoffsetTime);
     this.remainingRuns--;
     return { value: nextDate, done: false };

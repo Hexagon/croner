@@ -393,6 +393,91 @@ class CronDate<T = undefined> {
    *
    * @private
    */
+  /**
+   * Evaluate whether a specific day value matches, applying all day-specific
+   * special-case logic (W, LW, L modifiers and DOW AND/OR combination).
+   *
+   * Used by both `_findMatch` (iterative search) and `match` (static check).
+   *
+   * @param initialMatch - The match value from the pattern array for this day index
+   * @param dayValue - The actual day of month (1-31)
+   * @param pattern - The cron pattern to match against
+   * @param options - The cron options that influence matching behavior
+   * @returns 1 if the day matches, 0 otherwise
+   * @private
+   */
+  private _matchDayValue(
+    initialMatch: number,
+    dayValue: number,
+    pattern: CronPattern,
+    options: CronOptions<T>,
+  ): number {
+    let match = initialMatch;
+
+    // Special case for nearest weekday (W modifier)
+    if (!match) {
+      for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
+        if (pattern.nearestWeekdays[dayWithW]) {
+          const executionDay = this.getNearestWeekday(
+            this.year,
+            this.month,
+            dayWithW + 1, // pattern.nearestWeekdays uses -1 offset; dayWithW + 1 = actual day
+          );
+          if (executionDay !== -1 && executionDay === dayValue) {
+            match = 1;
+            break;
+          }
+        }
+      }
+    }
+
+    // Special case for last weekday of month (LW modifier)
+    if (pattern.lastWeekday) {
+      const lastWeekday = this.getLastWeekday(this.year, this.month);
+      if (dayValue === lastWeekday) {
+        match = 1;
+      }
+    }
+
+    // Special case for last day of month (L modifier)
+    if (pattern.lastDayOfMonth) {
+      const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
+      if (dayValue === lastDayOfMonth) {
+        match = 1;
+      }
+    }
+
+    // Special case for day of week
+    if (!pattern.starDOW) {
+      const fDomWeekDay = new Date(
+        Date.UTC(this.year, this.month, 1, 0, 0, 0, 0),
+      ).getUTCDay();
+      let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (dayValue - 1)) % 7];
+
+      // Extra check for nth weekday of month
+      if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
+        dowMatch = this.isNthWeekdayOfMonth(
+            this.year,
+            this.month,
+            dayValue,
+            dowMatch,
+          )
+          ? 1
+          : 0;
+      }
+
+      // Combine day of month and day of week using AND/OR logic
+      if (pattern.useAndLogic) {
+        match = match && dowMatch;
+      } else if (!options.domAndDow && !pattern.starDOM) {
+        match = match || dowMatch;
+      } else {
+        match = match && dowMatch;
+      }
+    }
+
+    return match;
+  }
   private _findMatch(
     options: CronOptions<T>,
     target: RecursionTarget,
@@ -405,18 +490,6 @@ class CronDate<T = undefined> {
     // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster
     // than new Date(y,m,d). We use the UTC functions to set/get date parts.
 
-    // Pre-calculate last day of month if needed
-    let lastDayOfMonth;
-    if (pattern.lastDayOfMonth) {
-      lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-    }
-
-    // Pre-calculate weekday if needed
-    // Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
-    const fDomWeekDay = (!pattern.starDOW && target == "day")
-      ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay()
-      : undefined;
-
     // Determine loop bounds based on direction
     const startIdx = this[target] + offset;
     const endCondition = direction === 1
@@ -427,65 +500,9 @@ class CronDate<T = undefined> {
       // this applies to all "levels"
       let match: number = pattern[target][i];
 
-      // Special case for nearest weekday
-      if (target === "day" && !match) {
-        // Iterate through all possible 'W' days in the pattern
-        for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
-          // Check if the pattern specifies the 'W' modifier for this day
-          if (pattern.nearestWeekdays[dayWithW]) {
-            // Calculate the actual execution day for this 'W' day
-            const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
-
-            // Skip if the day doesn't exist in this month (executionDay === -1)
-            if (executionDay === -1) {
-              continue;
-            }
-
-            // Check if the day currently being evaluated by the outer loop is that execution day
-            if (executionDay === (i - offset)) {
-              match = 1;
-              break; // Match found, no need to check other 'W' days
-            }
-          }
-        }
-      }
-
-      // Special case for last weekday of month
-      if (target === "day" && pattern.lastWeekday) {
-        const lastWeekday = this.getLastWeekday(this.year, this.month);
-        if (i - offset === lastWeekday) {
-          match = 1;
-        }
-      }
-
-      // Special case for last day of month
-      if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
-        match = 1;
-      }
-
-      // Special case for day of week
-      if (target === "day" && !pattern.starDOW) {
-        let dowMatch = pattern.dayOfWeek[(fDomWeekDay! + ((i - offset) - 1)) % 7];
-
-        // Extra check for nth weekday of month
-        // 0b011111 === All occurences of weekday in month
-        // 0b100000 === Last occurence of weekday in month
-        if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
-          dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, i - offset, dowMatch) ? 1 : 0;
-        } else if (dowMatch) {
-          throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
-        }
-
-        // OCPS 1.4: If + modifier is used (useAndLogic), always use AND logic
-        // Otherwise: If domAndDow is false (legacy OR mode), and dayOfMonth is specified - use "OR" to combine day of week with day of month
-        // In all other cases use "AND"
-        if (pattern.useAndLogic) {
-          match = match && dowMatch;
-        } else if (!options.domAndDow && !pattern.starDOM) {
-          match = match || dowMatch;
-        } else {
-          match = match && dowMatch;
-        }
+      // Apply day-specific special cases (W, LW, L, DOW modifiers)
+      if (target === "day") {
+        match = this._matchDayValue(match, i - offset, pattern, options);
       }
 
       if (match) {
@@ -1074,59 +1091,9 @@ class CronDate<T = undefined> {
 
       let match: number = pattern[target][targetValue + offset];
 
-      // Apply the same special cases as in findNext
+      // Apply day-specific special cases (W, LW, L, DOW modifiers)
       if (target === "day") {
-        // Special case for nearest weekday (W modifier)
-        if (!match) {
-          for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
-            if (pattern.nearestWeekdays[dayWithW]) {
-              const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
-              // Skip if the day doesn't exist in this month
-              if (executionDay !== -1 && executionDay === targetValue) {
-                match = 1;
-                break;
-              }
-            }
-          }
-        }
-
-        // Special case for last weekday of month (LW modifier)
-        if (pattern.lastWeekday) {
-          const lastWeekday = this.getLastWeekday(this.year, this.month);
-          if (targetValue === lastWeekday) {
-            match = 1;
-          }
-        }
-
-        // Special case for last day of month (L modifier)
-        if (pattern.lastDayOfMonth) {
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          if (targetValue === lastDayOfMonth) {
-            match = 1;
-          }
-        }
-
-        // Special case for day of week
-        if (!pattern.starDOW) {
-          const fDomWeekDay = new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay();
-          let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (targetValue - 1)) % 7];
-
-          // Extra check for nth weekday of month
-          if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
-            dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, targetValue, dowMatch)
-              ? 1
-              : 0;
-          }
-
-          // Apply same logic as in findNext for combining day of month and day of week
-          if (pattern.useAndLogic) {
-            match = match && dowMatch;
-          } else if (!options.domAndDow && !pattern.starDOM) {
-            match = match || dowMatch;
-          } else {
-            match = match && dowMatch;
-          }
-        }
+        match = this._matchDayValue(match, targetValue, pattern, options);
       }
 
       // If this component doesn't match, the date doesn't match the pattern

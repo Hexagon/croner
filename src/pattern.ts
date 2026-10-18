@@ -173,13 +173,9 @@ class CronPattern {
     // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
     // Note: ? is non-portable and should behave as an alias for * (wildcard)
     if (this.pattern.indexOf("?") >= 0) {
-      parts[0] = parts[0].replace(/\?/g, "*");
-      parts[1] = parts[1].replace(/\?/g, "*");
-      parts[2] = parts[2].replace(/\?/g, "*");
-      parts[3] = parts[3].replace(/\?/g, "*");
-      parts[4] = parts[4].replace(/\?/g, "*");
-      parts[5] = parts[5].replace(/\?/g, "*");
-      if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
+      for (let i = 0; i < parts.length; i++) {
+        parts[i] = parts[i].replace(/\?/g, "*");
+      }
     }
 
     // Convert 'L' to lastDayOfMonth flag in day-of-month field
@@ -722,6 +718,20 @@ class CronPattern {
   }
 
   /**
+   * Map of cron nickname patterns to their equivalent cron expressions.
+   * @private
+   */
+  private static NICKNAME_MAP: Record<string, string> = {
+    "@yearly": "0 0 1 1 *",
+    "@annually": "0 0 1 1 *",
+    "@monthly": "0 0 1 * *",
+    "@weekly": "0 0 * * 0",
+    "@daily": "0 0 * * *",
+    "@midnight": "0 0 * * *",
+    "@hourly": "0 * * * *",
+  };
+
+  /**
    * Replace nicknames with actual cron patterns
    *
    * @param pattern Pattern, may contain nicknames, or not
@@ -731,26 +741,15 @@ class CronPattern {
   private handleNicknames(pattern: string): string {
     // Replace textual representations of pattern
     const cleanPattern = pattern.trim().toLowerCase();
-    if (cleanPattern === "@yearly" || cleanPattern === "@annually") {
-      return "0 0 1 1 *";
-    } else if (cleanPattern === "@monthly") {
-      return "0 0 1 * *";
-    } else if (cleanPattern === "@weekly") {
-      return "0 0 * * 0";
-    } else if (cleanPattern === "@daily" || cleanPattern === "@midnight") {
-      return "0 0 * * *";
-    } else if (cleanPattern === "@hourly") {
-      return "0 * * * *";
-    } else if (cleanPattern === "@reboot") {
+    if (cleanPattern === "@reboot") {
       // OCPS 1.1: @reboot is event-based, not time-based
       // It should be parsed successfully but handled specially at runtime
       throw new TypeError(
         "CronPattern: @reboot is not supported in this environment. " +
           "This is an event-based trigger that requires system startup detection.",
       );
-    } else {
-      return pattern;
     }
+    return CronPattern.NICKNAME_MAP[cleanPattern] || pattern;
   }
 
   /**
