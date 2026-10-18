@@ -352,15 +352,16 @@ class CronDate<T = undefined> {
    */
   private fromString(str: string) {
     if (typeof this.tz === "number") {
-      // Parse without timezone
-      const inDate = fromTZISO(str);
+      // Parse in UTC and apply the numeric offset manually
+      const inDate = new Date(Date.parse(str));
       this.ms = inDate.getUTCMilliseconds();
       this.second = inDate.getUTCSeconds();
-      this.minute = inDate.getUTCMinutes();
+      this.minute = inDate.getUTCMinutes() + this.tz;
       this.hour = inDate.getUTCHours();
       this.day = inDate.getUTCDate();
       this.month = inDate.getUTCMonth();
       this.year = inDate.getUTCFullYear();
+      // Minute could be out of bounds after applying offset, normalize
       this.apply();
     } else {
       return this.fromDate(fromTZISO(str, this.tz));
