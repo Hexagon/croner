@@ -255,21 +255,25 @@ test("a non-protected job uses consistent timer and target after a backward cloc
   const job = new Cron("* * * * * *"); // every second, no protect
 
   try {
-    job.schedule(() => {});
+    let fired = 0;
+    job.schedule(() => {
+      fired++;
+    });
 
     // Advance 1s and fire → currentRun = 00:00:01
     clock.setNow(initialTime + 1000);
     clock.timeouts[0].callback();
+    assertEquals(fired, 1);
 
-    // Step backward to initial time (now < currentRun)
+    // Step backward and re-arm from the current clock.
     clock.setNow(initialTime);
-
-    // Fire the re-arm timeout. After the fix, the backward clock step is
-    // detected (currentRun > now) and effectivePrev is reset to undefined,
-    // so both _nextTarget calls agree on 00:00:01 with waitMs = 1s.
     clock.timeouts.at(-1)!.callback();
-
     assertEquals(clock.delays.at(-1), 1000);
+
+    // The timer must target 00:00:01, not the stale 00:00:02.
+    clock.setNow(initialTime + 1000);
+    clock.timeouts.at(-1)!.callback();
+    assertEquals(fired, 2);
   } finally {
     clock.restore();
     job.stop();
