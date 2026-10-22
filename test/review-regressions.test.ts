@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron } from "../src/croner.ts";
+import { Cron, CronDate, CronPattern } from "../src/croner.ts";
 
 test("one-off allowPast catches up within the current second in a named timezone", () => {
   const RealDate = Date;
@@ -101,3 +101,16 @@ for (
     });
   }
 }
+
+test("CronDate switches to forward overlap resolution after decrement", () => {
+  const timezone = "America/New_York";
+  const job = new Cron("0 * * * * *", { timezone, interval: 20 });
+  const pattern = new CronPattern("0 * * * * *", timezone);
+  const date = new CronDate(new Date("2026-11-01T06:29:50Z"), timezone);
+
+  date.decrement(pattern, { ...job.options, interval: 1 });
+  assertEquals(
+    date.increment(pattern, job.options, true)?.getTime(),
+    Date.parse("2026-11-01T06:30:00Z"),
+  );
+});

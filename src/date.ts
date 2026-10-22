@@ -658,6 +658,11 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     hasPreviousRun: boolean,
   ): CronDate<T> | null {
+    if (this.beforeMs !== undefined) {
+      this.afterMs = this.getTime();
+      this.beforeMs = undefined;
+    }
+
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
