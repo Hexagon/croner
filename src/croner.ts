@@ -54,6 +54,8 @@ import { isCronCallback, isFunction, unrefTimer } from "./utils.ts";
  * computer is suspended, we'll never wait more than 30 seconds between each trigger.
  */
 const MS_PER_DAY: number = 24 * 60 * 60 * 1000;
+const ITERATOR_CURSOR = Symbol("iteratorCursor");
+type IteratorCursor = Date & { [ITERATOR_CURSOR]?: boolean };
 const maxDelay: number = 30 * 1000;
 
 /**
@@ -674,6 +676,8 @@ class Cron<T = undefined> {
     now?: Date,
     bounds?: { startAt?: CronDate<T>; stopAt?: CronDate<T>; includeStartAt?: boolean },
   ) {
+    const isTraversalCursor = previousRun !== undefined && previousRun !== null &&
+      (previousRun as IteratorCursor)[ITERATOR_CURSOR] !== false;
     const startAt = bounds ? bounds.startAt : this.options.startAt as CronDate<T> | undefined;
     const stopAt = bounds ? bounds.stopAt : this.options.stopAt as CronDate<T> | undefined;
     let hasPreviousRun = !!(previousRun || this._states.currentRun);
@@ -731,7 +735,10 @@ class Cron<T = undefined> {
         return null;
       }
       // When enumerating, if previousRun is at the once time, we've already returned it
-      if ((previousRun as CronDate<T>).getTime() === this._states.once.getTime()) {
+      if (
+        isTraversalCursor &&
+        (previousRun as CronDate<T>).getTime() === this._states.once.getTime()
+      ) {
         return null;
       }
       // Job hasn't executed, but once time is in the past
@@ -821,6 +828,7 @@ class Cron<T = undefined> {
     const nextUtc = nextRun.getTime();
     const expectedIncrementMs =
       ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
+    const minimumNextUtc = prevUtc + expectedIncrementMs - previousRun.ms;
     const gap = nextUtc - prevUtc;
     const prevOffsetMs = Date.UTC(
       previousRun.year,
@@ -842,11 +850,19 @@ class Cron<T = undefined> {
 
     if (overlapMs > 0 && (gap >= expectedIncrementMs + overlapMs || gap < 0)) {
       const overlapUtc = gap < 0 ? nextUtc + overlapMs : nextUtc - overlapMs;
-      const overlapDate = new Date(overlapUtc);
-      const overlapCron = new CronDate<T>(overlapDate, this.getTz());
-      if (overlapCron.match(this._states.pattern, this.options) && overlapUtc > prevUtc) {
-        overlapCron.setAfterMs(overlapUtc);
-        return overlapCron;
+      const overlapCron = new CronDate<T>(new Date(overlapUtc), this.getTz());
+      overlapCron.setAfterMs(minimumNextUtc);
+      while (true) {
+        const candidateUtc = overlapCron.getTime();
+        if (candidateUtc < minimumNextUtc || (gap >= 0 && candidateUtc >= nextUtc)) {
+          break;
+        }
+        if (overlapCron.match(this._states.pattern, this.options)) {
+          return overlapCron;
+        }
+        if (overlapCron.increment(this._states.pattern, this.options, false) === null) {
+          break;
+        }
       }
     }
 
@@ -912,6 +928,9 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
   constructor(cron: Cron<T>, startAt?: Date | string | null) {
     this.cron = cron;
     this.cursor = CronIterator._normalizeCursor(startAt);
+    if (this.cursor === undefined) {
+      this.cursor = CronIterator._markCursor(new Date(), false);
+    }
     this.done = false;
     this.initialMaxRuns = cron.options.maxRuns ?? Infinity;
     this.remainingRuns = this.initialMaxRuns;
@@ -928,6 +947,11 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
   ): Date | string | undefined {
     if (d === undefined || d === null) return undefined;
     return d instanceof Date ? new Date(d.getTime()) : d;
+  }
+
+  private static _markCursor(date: Date, hasBeenReturned: boolean): Date {
+    Object.defineProperty(date, ITERATOR_CURSOR, { value: hasBeenReturned });
+    return date;
   }
 
   /**
@@ -953,7 +977,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     const dayOffset = this.cron.options.dayOffset;
     const offsetDays = dayOffset ?? 0;
     const unoffsetTime = nextDate.getTime() - offsetDays * MS_PER_DAY;
-    this.cursor = new Date(unoffsetTime);
+    this.cursor = CronIterator._markCursor(new Date(unoffsetTime), true);
     this.remainingRuns--;
     return { value: nextDate, done: false };
   }
@@ -977,6 +1001,9 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    */
   public reset(newStartAt?: Date | string | null): void {
     this.cursor = CronIterator._normalizeCursor(newStartAt);
+    if (this.cursor === undefined) {
+      this.cursor = CronIterator._markCursor(new Date(), false);
+    }
     this.done = false;
     this.remainingRuns = this.initialMaxRuns;
   }

@@ -57,6 +57,7 @@ class CronDate<T = undefined> {
    * @private
    */
   private afterMs?: number;
+  private beforeMs?: number;
 
   /**
    * Current milliseconds
@@ -315,6 +316,7 @@ class CronDate<T = undefined> {
     this.second = d.second;
     this.ms = d.ms;
     this.afterMs = d.afterMs;
+    this.beforeMs = d.beforeMs;
   }
 
   /**
@@ -683,6 +685,9 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
   ): CronDate<T> | null {
+    this.beforeMs = this.getTime();
+    this.afterMs = undefined;
+
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
     this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
 
@@ -1031,6 +1036,7 @@ class CronDate<T = undefined> {
           ),
           false,
           resolvedAfterMs,
+          this.beforeMs,
         );
       }
     }
@@ -1054,6 +1060,7 @@ class CronDate<T = undefined> {
    */
   public setAfterMs(ms: number): void {
     this.afterMs = ms;
+    this.beforeMs = undefined;
   }
 
   /**

@@ -32,6 +32,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fixed one-off catch-up for dates in the current second with a named timezone.
+- Fixed `CronIterator` start-time consistency between `peek()` and `next()`, including after reset.
+- Fixed backward traversal selecting the wrong occurrence in repeated DST hours.
+- Fixed DST overlap scheduling when cron cadence does not divide the repeated window.
 - Fixed DST fall-back scheduling gaps when timer callbacks fire with fractional seconds, including
   timezones with 30-minute overlaps.
 - Fixed `msToNext()` returning a wrong (often negative) value when passed an ISO 8601 string on a

@@ -144,9 +144,15 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  *                  at or after this threshold (ensures monotonic progress across DST transitions).
  *                  If both occurrences are before the threshold, the second (later) occurrence
  *                  is returned as the closest valid option.
+ * @param beforeMs Optional UTC threshold for choosing the latest occurrence at or before it.
  * @returns Normal date object
  */
-export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number): Date {
+export function fromTZ(
+  tp: TimePoint,
+  throwOnInvalid?: boolean,
+  afterMs?: number,
+  beforeMs?: number,
+): Date {
   // Construct a Date object with UTC components matching the target local time
   const inDate = new Date(timePointToMs(tp));
 
@@ -186,6 +192,10 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean, afterMs?: number
       // We're in a DST overlap
       const firstOccurrence = hasEarlier ? altEarlier : dateGuess;
       const secondOccurrence = hasEarlier ? dateGuess : altLater;
+
+      if (beforeMs !== undefined) {
+        return secondOccurrence.getTime() <= beforeMs ? secondOccurrence : firstOccurrence;
+      }
 
       // When afterMs is provided, return the earliest occurrence that is >= afterMs
       // This ensures monotonic progress during DST fall-back transitions
