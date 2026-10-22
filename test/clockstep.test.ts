@@ -248,3 +248,30 @@ test("a protected job re-arms from the current clock after a backward step", asy
     job.stop();
   }
 });
+
+test("a non-protected job uses consistent timer and target after a backward clock step", () => {
+  const initialTime = Date.UTC(2025, 0, 1, 0, 0, 0); // 00:00:00
+  const clock = useClock(initialTime);
+  const job = new Cron("* * * * * *"); // every second, no protect
+
+  try {
+    job.schedule(() => {});
+
+    // Advance 1s and fire → currentRun = 00:00:01
+    clock.setNow(initialTime + 1000);
+    clock.timeouts[0].callback();
+
+    // Step backward to initial time (now < currentRun)
+    clock.setNow(initialTime);
+
+    // Fire the re-arm timeout. After the fix, the backward clock step is
+    // detected (currentRun > now) and effectivePrev is reset to undefined,
+    // so both _nextTarget calls agree on 00:00:01 with waitMs = 1s.
+    clock.timeouts.at(-1)!.callback();
+
+    assertEquals(clock.delays.at(-1), 1000);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});
