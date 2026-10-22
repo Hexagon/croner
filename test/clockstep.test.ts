@@ -248,3 +248,34 @@ test("a protected job re-arms from the current clock after a backward step", asy
     job.stop();
   }
 });
+
+test("a non-protected job uses consistent timer and target after a backward clock step", () => {
+  const initialTime = Date.UTC(2025, 0, 1, 0, 0, 0); // 00:00:00
+  const clock = useClock(initialTime);
+  const job = new Cron("* * * * * *"); // every second, no protect
+
+  try {
+    let fired = 0;
+    job.schedule(() => {
+      fired++;
+    });
+
+    // Advance 1s and fire → currentRun = 00:00:01
+    clock.setNow(initialTime + 1000);
+    clock.timeouts[0].callback();
+    assertEquals(fired, 1);
+
+    // Step backward and re-arm from the current clock.
+    clock.setNow(initialTime);
+    clock.timeouts.at(-1)!.callback();
+    assertEquals(clock.delays.at(-1), 1000);
+
+    // The timer must target 00:00:01, not the stale 00:00:02.
+    clock.setNow(initialTime + 1000);
+    clock.timeouts.at(-1)!.callback();
+    assertEquals(fired, 2);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});

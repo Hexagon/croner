@@ -536,16 +536,23 @@ class Cron<T = undefined> {
       this.fn = func;
     }
 
-    // Get actual ms to next run, bail out early if any of them is null (no next run)
+    // Get the effective previous run. When the clock has stepped backward
+    // (currentRun > now), reset to undefined so both target and waitMs are
+    // computed from the current wall-clock time, avoiding mismatched timers.
     const currentTime = now ?? new Date();
-    const next = this._nextTarget(undefined, currentTime);
-    let waitMs = next ? next.getTime() - currentTime.getTime() : null;
-
-    // Get the target date based on previous run
     const previousRun = this._states.blocking && this.options.protect
       ? undefined
       : this._states.currentRun;
-    const target = this._nextTarget(previousRun, currentTime);
+    const effectivePrev = previousRun && previousRun.getTime() > currentTime.getTime()
+      ? undefined
+      : previousRun;
+
+    // Get actual ms to next run, bail out early if any of them is null (no next run)
+    const next = this._nextTarget(undefined, currentTime);
+    let waitMs = next ? next.getTime() - currentTime.getTime() : null;
+
+    // Get the target date based on (potentially adjusted) previous run
+    const target = this._nextTarget(effectivePrev, currentTime);
 
     // isNaN added to prevent infinite loop
     if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
