@@ -33,7 +33,7 @@ test("DST overlap search finds cadence matches throughout Lord Howe's repeated w
 
 test("iterator without startAt keeps its captured reference through peek and reset", () => {
   const RealDate = Date;
-  let now = RealDate.parse("2026-01-01T12:00:30.000Z");
+  let now = RealDate.parse("2026-01-01T12:00:25.000Z");
   globalThis.Date = new Proxy(RealDate, {
     construct(target, args, newTarget) {
       return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
@@ -46,12 +46,27 @@ test("iterator without startAt keeps its captured reference through peek and res
   try {
     const iterator = new Cron("0 * * * * *", { timezone: "UTC" }).enumerate();
     const peeked = iterator.peek();
+    const intervalIterator = new Cron("* * * * * *", {
+      timezone: "UTC",
+      startAt: new RealDate("2026-01-01T12:00:00.000Z"),
+      interval: 10,
+    }).enumerate();
+    assertEquals(intervalIterator.peek()?.toISOString(), "2026-01-01T12:00:30.000Z");
+    const intervalWithoutStart = new Cron("* * * * * *", {
+      timezone: "UTC",
+      interval: 10,
+    }).enumerate();
+    assertEquals(intervalWithoutStart.peek()?.toISOString(), "2026-01-01T12:00:26.000Z");
     now += 60_000;
     assertEquals(iterator.next().value?.toISOString(), peeked?.toISOString());
 
-    now = RealDate.parse("2026-01-01T12:03:30.000Z");
+    now = RealDate.parse("2026-01-01T12:03:25.000Z");
     iterator.reset();
     const resetPeek = iterator.peek();
+    intervalIterator.reset();
+    assertEquals(intervalIterator.peek()?.toISOString(), "2026-01-01T12:03:30.000Z");
+    intervalWithoutStart.reset();
+    assertEquals(intervalWithoutStart.peek()?.toISOString(), "2026-01-01T12:03:26.000Z");
     now += 60_000;
     assertEquals(iterator.next().value?.toISOString(), resetPeek?.toISOString());
   } finally {

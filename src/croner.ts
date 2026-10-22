@@ -676,18 +676,23 @@ class Cron<T = undefined> {
     now?: Date,
     bounds?: { startAt?: CronDate<T>; stopAt?: CronDate<T>; includeStartAt?: boolean },
   ) {
+    const isImplicitIteratorCursor = previousRun !== undefined && previousRun !== null &&
+      (previousRun as IteratorCursor)[ITERATOR_CURSOR] === false;
     const isTraversalCursor = previousRun !== undefined && previousRun !== null &&
       (previousRun as IteratorCursor)[ITERATOR_CURSOR] !== false;
+    if (isImplicitIteratorCursor) {
+      now = new Date((previousRun as Date).getTime());
+    }
     const startAt = bounds ? bounds.startAt : this.options.startAt as CronDate<T> | undefined;
     const stopAt = bounds ? bounds.stopAt : this.options.stopAt as CronDate<T> | undefined;
-    let hasPreviousRun = !!(previousRun || this._states.currentRun);
+    let hasPreviousRun = !!((previousRun && !isImplicitIteratorCursor) || this._states.currentRun);
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
     let startAtInFutureWithInterval = false;
-    if (!previousRun && startAt && this.options.interval) {
+    if ((!previousRun || isImplicitIteratorCursor) && startAt && this.options.interval) {
       [previousRun, hasPreviousRun] = this._calculatePreviousRun(
-        previousRun,
-        hasPreviousRun,
+        isImplicitIteratorCursor ? undefined : previousRun,
+        isImplicitIteratorCursor ? false : hasPreviousRun,
         now,
         startAt,
       );
