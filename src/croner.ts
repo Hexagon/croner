@@ -165,20 +165,44 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Find the next time the scheduler should fire, after previousRun (or now).
-   *
-   * Unlike nextRun(), which applies dayOffset to the next pattern match, this searches in
-   * shifted time, so the result (and startAt/stopAt) is compared to the actual fire time.
+   * Find the next time the job runs, after a reference (default: now). With dayOffset, the
+   * pattern is searched in shifted time, so the reference, startAt and stopAt are all compared
+   * with the actual run time.
    */
-  private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
+  private _nextTarget(
+    reference: CronDate<T> | Date | string | null | undefined,
+    now: Date,
+  ): Date | null {
     const offsetMs = this._offsetMs();
-    const shift = (d: CronDate<T> | Date | undefined) =>
-      d ? new CronDate<T>(new Date(d.getTime() - offsetMs), this.getTz()) : undefined;
-    const next = this._next(shift(previousRun), new Date(now.getTime() - offsetMs), {
-      startAt: shift(this._startAt),
-      stopAt: shift(this._stopAt),
+    const next = this._next(this._shift(reference), new Date(now.getTime() - offsetMs), {
+      startAt: this._shift(this._startAt),
+      stopAt: this._shift(this._stopAt),
     });
     return next ? this.applyDayOffset(next.getDate(false)) : null;
+  }
+
+  /**
+   * Find the previous time the job ran, before a reference (default: now). See _nextTarget.
+   */
+  private _previousTarget(
+    reference: CronDate<T> | Date | string | null | undefined,
+    now: Date,
+  ): Date | null {
+    const previous = this._previous(this._shift(reference ?? now), {
+      startAt: this._shift(this._startAt),
+      stopAt: this._shift(this._stopAt),
+    });
+    return previous ? this.applyDayOffset(previous.getDate(false)) : null;
+  }
+
+  /**
+   * Move a run time back by dayOffset, to the pattern match it was shifted from
+   */
+  private _shift(
+    date: CronDate<T> | Date | string | null | undefined,
+  ): CronDate<T> | undefined {
+    if (date === null || date === undefined) return undefined;
+    return new CronDate<T>(new Date(this._toMs(date) - this._offsetMs()), this.getTz());
   }
 
   constructor(
@@ -263,17 +287,7 @@ class Cron<T = undefined> {
    * @returns The next run time as a Date object, or null if there is no next run.
    */
   public nextRun(prev?: CronDate<T> | Date | string | null): Date | null {
-    return this._nextRun(prev);
-  }
-
-  /**
-   * Internal version of nextRun, which also accepts the current time used when prev is not set.
-   */
-  private _nextRun(prev?: CronDate<T> | Date | string | null, now?: Date): Date | null {
-    const next = this._next(prev, now);
-    if (!next) return null;
-
-    return this.applyDayOffset(next.getDate(false));
+    return this._nextTarget(prev, new Date());
   }
 
   /**
@@ -321,7 +335,7 @@ class Cron<T = undefined> {
    * @param n - Number of runs to enumerate
    * @param startDate - Date to start from
    * @param direction - Direction to enumerate ("next" or "previous")
-   * @returns Array of run times with dayOffset applied
+   * @returns Array of run times
    * @private
    */
   private _enumerateRuns(
@@ -330,25 +344,16 @@ class Cron<T = undefined> {
     direction: "next" | "previous",
   ): Date[] {
     const enumeration: Date[] = [];
-    // Normalize startDate to CronDate or null so type is narrowed before loop
-    let currentCron: CronDate<T> | null = startDate
-      ? new CronDate<T>(startDate, this.getTz())
-      : null;
-
-    const findMethod = direction === "next" ? this._next : this._previous;
-
-    while (n--) {
-      const nextCron = findMethod.call(this, currentCron);
-      if (!nextCron) break;
-
-      // Apply dayOffset if needed when pushing to result array
-      const baseDate = nextCron.getDate(false);
-      enumeration.push(this.applyDayOffset(baseDate));
-
-      // Continue enumeration from the unmodified CronDate
-      currentCron = nextCron;
+    const now = new Date();
+    let current: CronDate<T> | Date | string | undefined | null = startDate;
+    while (n-- > 0) {
+      const run = direction === "next"
+        ? this._nextTarget(current, now)
+        : this._previousTarget(current, now);
+      if (!run) break;
+      enumeration.push(run);
+      current = run;
     }
-
     return enumeration;
   }
 
@@ -457,7 +462,7 @@ class Cron<T = undefined> {
    */
   public msToNext(prev?: CronDate<T> | Date | string): number | null {
     const now = new Date();
-    const next = this._next(prev, now);
+    const next = this._nextTarget(prev, now);
     return next ? next.getTime() - this._toMs(prev ?? now) : null;
   }
 
@@ -662,6 +667,7 @@ class Cron<T = undefined> {
   ) {
     const startAt = bounds ? bounds.startAt : this._startAt;
     const stopAt = bounds ? bounds.stopAt : this._stopAt;
+    const isEnumerating = !!previousRun;
     let hasPreviousRun = !!(previousRun || this._states.currentRun);
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
@@ -697,7 +703,7 @@ class Cron<T = undefined> {
     // For "once" jobs, return null if:
     // - the once time is before startAt
     // - the job has already executed (currentRun is the actual fire time, so include dayOffset)
-    // - the reference is the once time, it has already been returned when enumerating
+    // - enumerating from the once time, which has already been returned
     // - the once time is more than 1 second in the past, unless allowPast is set
     if (this._states.once) {
       const onceMs = this._states.once.getTime();
@@ -707,7 +713,7 @@ class Cron<T = undefined> {
         (this._states.currentRun &&
           this.applyDayOffset(this._states.once.getDate()).getTime() <=
             this._states.currentRun.getTime()) ||
-        pastMs === 0 ||
+        (isEnumerating && pastMs === 0) ||
         (pastMs > 1000 && !this.options.allowPast)
       ) {
         return null;
@@ -729,12 +735,15 @@ class Cron<T = undefined> {
    * @param referenceDate - Optional reference date to search backwards from (defaults to now)
    * @returns Previous scheduled run time, or null if no previous run exists
    */
-  private _previous(referenceDate?: CronDate<T> | Date | string | null): CronDate<T> | null {
+  private _previous(
+    referenceDate: CronDate<T> | Date | string | null | undefined,
+    bounds: { startAt?: CronDate<T>; stopAt?: CronDate<T> },
+  ): CronDate<T> | null {
     let referenceMs = this._toMs(referenceDate ?? new Date());
 
     // Don't return runs that would be after stopAt
-    if (this._stopAt && referenceMs > this._stopAt.getTime()) {
-      referenceMs = this._stopAt.getTime();
+    if (bounds.stopAt && referenceMs > bounds.stopAt.getTime()) {
+      referenceMs = bounds.stopAt.getTime();
     }
 
     // For one-off schedules, check if the scheduled time is before the reference
@@ -750,7 +759,7 @@ class Cron<T = undefined> {
 
     // Check if previous run is valid
     if (
-      previousRun === null || (this._startAt && previousRun.getTime() < this._startAt.getTime())
+      previousRun === null || (bounds.startAt && previousRun.getTime() < bounds.startAt.getTime())
     ) {
       return null;
     }
@@ -914,7 +923,7 @@ class Cron<T = undefined> {
  */
 class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable<Date> {
   private cron: Cron<T>;
-  /** Last returned (un-offset) date, or the user supplied start date */
+  /** Last returned date, or the user supplied start date */
   private cursor!: Date | string | undefined;
   /** Time of creation or reset, used as reference while there is no cursor */
   private now!: Date;
@@ -944,15 +953,12 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
       this.done = true;
       return { value: undefined, done: true };
     }
-    const nextDate = this.cron["_nextRun"](this.cursor, this.now);
+    const nextDate = this.cron["_nextTarget"](this.cursor, this.now);
     if (nextDate === null) {
       this.done = true;
       return { value: undefined, done: true };
     }
-    // The cursor must track the un-offset schedule time so that subsequent
-    // nextRun() calls find the correct next occurrence.  nextRun() applies
-    // dayOffset on the way out, so we reverse it here before storing.
-    this.cursor = new Date(nextDate.getTime() - this.cron["_offsetMs"]());
+    this.cursor = nextDate;
     this.remainingRuns--;
     return { value: nextDate, done: false };
   }
@@ -966,7 +972,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     if (this.done || this.remainingRuns <= 0) {
       return null;
     }
-    return this.cron["_nextRun"](this.cursor, this.now);
+    return this.cron["_nextTarget"](this.cursor, this.now);
   }
 
   /**

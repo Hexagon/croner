@@ -63,12 +63,14 @@ interface CronOptions<T = undefined> {
   protect?: boolean | ProtectCallbackFn;
 
   /**
-   * The date and time at which the job should start running.
+   * The date and time at which the job should start running. Inclusive, a run exactly at startAt
+   * is included. Strings are read in the timezone or UTC offset of the job.
    */
   startAt?: string | Date | CronDate<T>;
 
   /**
-   * The date and time at which the job should stop running.
+   * The date and time at which the job should stop running. Exclusive, a run exactly at stopAt
+   * is not included. Strings are read in the timezone or UTC offset of the job.
    */
   stopAt?: string | Date | CronDate<T>;
 
@@ -93,6 +95,8 @@ interface CronOptions<T = undefined> {
    * Offset the scheduled date by a number of days.
    * Positive values shift the date forward, negative values shift it backward.
    * For example, dayOffset: -1 schedules the job one day before the pattern match.
+   * nextRun(), nextRuns(), previousRuns(), msToNext(), enumerate(), startAt and stopAt all
+   * refer to the shifted run time.
    * @default 0
    */
   dayOffset?: number;

@@ -19,10 +19,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Fixed-time jobs still run once, at the first occurrence, in a DST overlap.
 - **Date-based jobs scheduled in the past are now strict by default**: one-off jobs more than 1
   second in the past no longer auto-fire unless `allowPast: true` is set (#348).
-- **Job execution prevented when `startAt` is in the past**: previously a job with `startAt` set to
-  a past date could still trigger; now it is blocked.
+- **One-off jobs dated before `startAt` never run**: previously a date-based job could still
+  trigger when its date was before `startAt`.
 - **`startAt` is inclusive**: a pattern match exactly at `startAt` now runs. Previously the first
   run was the following match.
+- **With `dayOffset`, `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()`
+  return actual run times**, searched from the reference, the same way the scheduler and
+  `isRunning()` do. Previously they shifted the next pattern match after the reference, so a
+  negative offset could return a time before the reference, and `msToNext()` ignored the offset.
 
 ### Added
 
@@ -56,7 +60,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed scheduling after system clock changes: occurrences silently skipped after forward clock
   steps (#393), timer and target disagreeing after backward clock steps (#417), and timer targets
   for `dayOffset` schedules and protected jobs (#395).
-- Fixed `isRunning()` disagreeing with the scheduler when `dayOffset` is set.
+- Fixed `isRunning()`, `nextRun()` and `msToNext()` disagreeing with the scheduler when
+  `dayOffset` is set.
 - Fixed negative timer delays overflowing in some runtimes, blocking expected catch-up execution
   (#370, #369).
 - Fixed date-based run-once edge cases around creation-time races, paused-resume catch-up flows,

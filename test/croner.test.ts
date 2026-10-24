@@ -1212,3 +1212,37 @@ test("one-off allowPast catches up within the current second in a named timezone
     globalThis.Date = RealDate;
   }
 });
+
+test("a one-off job created for the current millisecond is scheduled", function () {
+  const RealDate = Date;
+  const now = RealDate.parse("2026-01-01T12:00:00.000Z");
+  const realSetTimeout = globalThis.setTimeout;
+  const delays: number[] = [];
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+  globalThis.setTimeout = ((_callback: () => void, delay: number) => {
+    delays.push(delay);
+    return 0;
+  }) as unknown as typeof setTimeout;
+
+  try {
+    for (const options of [{}, { timezone: "UTC" }]) {
+      delays.length = 0;
+      const job = new Cron(new Date(now), options, () => {});
+      assertEquals(delays, [0]);
+      assertEquals(job.nextRun()?.getTime(), now);
+      // Enumerating from the once time has already returned it
+      assertEquals(job.nextRun(new Date(now)), null);
+      job.stop();
+    }
+  } finally {
+    globalThis.setTimeout = realSetTimeout;
+    globalThis.Date = RealDate;
+  }
+});

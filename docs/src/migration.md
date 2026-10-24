@@ -88,11 +88,22 @@ By default, Croner now follows strict range parsing rules as used by vixie cron 
 
 Version `11.x` adds iterator-based schedule traversal and introduces stricter default behavior for date-based jobs in the past.
 
-### Breaking change
+### Breaking changes
 
 * **Past date-based jobs are no longer auto-fired by default if older than 1 second.**
   * In `10.x`, some past run-once jobs could still fire immediately depending on timing/runtime behavior.
   * In `11.x`, run-once jobs older than 1 second are skipped unless `allowPast: true` is explicitly set.
+* **`startAt` is inclusive.** A pattern match exactly at `startAt` now runs. In `10.x`, the first
+  run was the following match.
+* **One-off jobs dated before `startAt` never run.** In `10.x`, a date-based job could still
+  trigger when its date was before `startAt`.
+* **With `dayOffset`, `nextRun()` and friends return actual run times.** `nextRun()`,
+  `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()` find the first run after (or
+  before) the reference, as the scheduler does. In `10.x` they shifted the next pattern match
+  after the reference, so `dayOffset: -1` could return a time before the reference, and
+  `msToNext()` ignored the offset.
+* **DST transitions are handled as in croner-rust**, see
+  [DST behavior](#dst-behavior-aligned-with-croner-rust) below.
 
 ### How to keep previous catch-up behavior
 
