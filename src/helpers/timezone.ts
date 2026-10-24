@@ -48,6 +48,17 @@ function timePointsMatch(tp1: TimePoint, tp2: TimePoint): boolean {
  * @param tz - Optional timezone
  * @returns TimePoint instance from parsing the string
  */
+/**
+ * Whether an ISO 8601 string specifies UTC or a UTC offset, and so is an exact instant
+ *
+ * @param dtStr - an ISO 8601 format date and time string
+ */
+export function hasUtcDesignator(dtStr: string): boolean {
+  // Z-flag included, or + or - included after character 9 (20200101 or 2020-01-0)
+  const stringEnd = dtStr.substring(9);
+  return stringEnd.includes("Z") || stringEnd.includes("+") || stringEnd.includes("-");
+}
+
 function parseISOLocal(dtStr: string, tz?: string): TimePoint {
   // Parse date using built in Date.parse
   const pd = new Date(Date.parse(dtStr));
@@ -57,11 +68,9 @@ function parseISOLocal(dtStr: string, tz?: string): TimePoint {
     throw new Error("Invalid ISO8601 passed to timezone parser.");
   }
 
-  // If date/time is specified in UTC (Z-flag included) or UTC offset is specified
-  // (+ or - included after character 9 (20200101 or 2020-01-0))
-  // Return time in UTC, else return local time and include timezone identifier
-  const stringEnd = dtStr.substring(9);
-  if (stringEnd.includes("Z") || stringEnd.includes("+") || stringEnd.includes("-")) {
+  // If date/time is specified in UTC or with a UTC offset, return time in UTC,
+  // else return local time and include timezone identifier
+  if (hasUtcDesignator(dtStr)) {
     return createTimePoint(
       pd.getUTCFullYear(),
       pd.getUTCMonth() + 1,

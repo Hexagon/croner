@@ -202,13 +202,18 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     );
   }
 
+  // An empty timezone is the same as no timezone
+  if (options.timezone === "") {
+    options.timezone = void 0;
+  }
+
   // Read startAt and stopAt in the timezone (or UTC offset) of the job
   const tz = options.timezone ?? options.utcOffset;
   if (options.startAt) {
-    options.startAt = new CronDate(options.startAt, tz);
+    options.startAt = toWholeSecond(new CronDate(options.startAt, tz));
   }
   if (options.stopAt) {
-    options.stopAt = new CronDate(options.stopAt, tz);
+    options.stopAt = toWholeSecond(new CronDate(options.stopAt, tz));
   }
 
   if (options.interval !== null) {
@@ -246,6 +251,15 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   }
 
   return options;
+}
+
+/**
+ * Runs are on whole seconds, so a time between two seconds counts as the next second
+ */
+function toWholeSecond<T>(date: CronDate<T>): CronDate<T> {
+  if (!date.ms) return date;
+  date.ms = 0;
+  return new CronDate<T>(new Date(date.getTime() + 1000), date.tz);
 }
 
 export { type CatchCallbackFn, type CronOptions, CronOptionsHandler, type ProtectCallbackFn };

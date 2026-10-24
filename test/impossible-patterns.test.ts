@@ -80,3 +80,42 @@ test("Pattern with far future year should work within limits", function () {
   assertExists(next);
   assertEquals(next.getFullYear(), 2030);
 });
+
+test("Patterns that can never match return null and empty lists, without throwing", function () {
+  const ref = new Date("2026-06-15T12:00:00Z");
+  const patterns: [string, { domAndDow?: boolean }][] = [
+    ["0 0 30 2 *", {}],
+    ["0 0 0 31 4 *", {}],
+    ["* 49 2 30W FEB *", {}],
+    ["0 0 16 * 5#L", { domAndDow: true }], // The last Friday is never the 16th
+    ["0 0 1W * SUN", { domAndDow: true }], // The weekday nearest the 1st is never a Sunday
+    ["0 0 1W * +SUN", {}],
+  ];
+  for (const [pattern, options] of patterns) {
+    const cron = new Cron(pattern, { ...options, utcOffset: 0 });
+    assertEquals(cron.nextRun(ref), null, pattern);
+    assertEquals(cron.nextRuns(3, ref), [], pattern);
+    assertEquals(cron.previousRuns(3, ref), [], pattern);
+    assertEquals(cron.msToNext(ref), null, pattern);
+    assertEquals(cron.enumerate(ref).next().done, true, pattern);
+  }
+});
+
+test("A job with a pattern that can never match is not running", function () {
+  const cron = new Cron("0 0 16 * 5#L", { domAndDow: true }, () => {});
+  assertEquals(cron.isRunning(), false);
+  cron.stop();
+});
+
+test("Matches that are many years apart are still found in both directions", function () {
+  // February 29 on a Monday: 2016, 2044
+  const cron = new Cron("0 0 0 29 2 MON", { domAndDow: true, utcOffset: 0 });
+  assertEquals(
+    cron.nextRun(new Date("2016-03-01T00:00:00Z"))?.toISOString(),
+    "2044-02-29T00:00:00.000Z",
+  );
+  assertEquals(
+    cron.previousRuns(2, new Date("2044-03-01T00:00:00Z")).map((d) => d.toISOString()),
+    ["2044-02-29T00:00:00.000Z", "2016-02-29T00:00:00.000Z"],
+  );
+});

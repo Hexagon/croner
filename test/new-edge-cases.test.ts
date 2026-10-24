@@ -7,7 +7,7 @@
 
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron } from "../src/croner.ts";
+import { Cron, CronDate } from "../src/croner.ts";
 
 /**
  * Year field edge cases
@@ -313,4 +313,12 @@ test("nextRun one second after pattern match should go to next occurrence", func
   const next = cron.nextRun("2024-01-15T12:00:01Z");
 
   assertEquals(next?.toISOString(), "2024-01-16T12:00:00.000Z");
+});
+
+test("CronDate moves hours above 23 to the next day", function () {
+  const date = new CronDate(new Date(Date.UTC(2026, 0, 1, 0, 0, 0)), 0);
+  date.hour = 25;
+  // deno-lint-ignore no-explicit-any
+  (date as any).apply();
+  assertEquals([date.day, date.hour], [2, 1]);
 });

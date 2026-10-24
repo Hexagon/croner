@@ -214,16 +214,24 @@ class Cron<T = undefined> {
     let options: CronOptions<T> | undefined;
     let func: CronCallback<T> | undefined;
 
-    for (const arg of [fnOrOptions1, fnOrOptions2]) {
-      if (isFunction(arg)) {
-        func = arg as CronCallback<T>;
-      } else if (typeof arg === "object") {
-        options = arg as CronOptions<T>;
-      } else if (arg !== void 0) {
-        throw new Error(
-          "Cron: Invalid argument passed. Should be one of function, or object (options).",
-        );
-      }
+    if (isFunction(fnOrOptions1)) {
+      func = fnOrOptions1 as CronCallback<T>;
+    } else if (typeof fnOrOptions1 === "object") {
+      options = fnOrOptions1 as CronOptions<T>;
+    } else if (fnOrOptions1 !== void 0) {
+      throw new Error(
+        "Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).",
+      );
+    }
+
+    if (isFunction(fnOrOptions2)) {
+      func = fnOrOptions2 as CronCallback<T>;
+    } else if (typeof fnOrOptions2 === "object") {
+      options = fnOrOptions2 as CronOptions<T>;
+    } else if (fnOrOptions2 !== void 0) {
+      throw new Error(
+        "Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).",
+      );
     }
 
     this.name = options?.name;
@@ -576,7 +584,7 @@ class Cron<T = undefined> {
   /**
    * Internal function to trigger a run, used by both scheduled and manual trigger
    */
-  private async _trigger(initiationDate?: Date) {
+  private async _trigger(initiationDate: Date = new Date()) {
     this._states.blocking = true;
 
     this._states.currentRun = new CronDate<T>(
@@ -703,7 +711,7 @@ class Cron<T = undefined> {
     // For "once" jobs, return null if:
     // - the once time is before startAt
     // - the job has already executed (currentRun is the actual fire time, so include dayOffset)
-    // - enumerating from the once time, which has already been returned
+    // - searching from a reference at or after the once time
     // - the once time is more than 1 second in the past, unless allowPast is set
     if (this._states.once) {
       const onceMs = this._states.once.getTime();
@@ -713,8 +721,7 @@ class Cron<T = undefined> {
         (this._states.currentRun &&
           this.applyDayOffset(this._states.once.getDate()).getTime() <=
             this._states.currentRun.getTime()) ||
-        (isEnumerating && pastMs === 0) ||
-        (pastMs > 1000 && !this.options.allowPast)
+        (isEnumerating ? pastMs >= 0 : pastMs > 1000 && !this.options.allowPast)
       ) {
         return null;
       }

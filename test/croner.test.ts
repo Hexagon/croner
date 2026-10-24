@@ -653,7 +653,10 @@ test("Weekday pattern should return correct weekdays", function () {
 });
 
 test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-  let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
+  let nextRuns = new Cron("0 0 0 * * 5,6", { legacyMode: true }).nextRuns(
+    10,
+    "2022-02-17T00:00:00",
+  );
   assertEquals(nextRuns[0].getFullYear(), 2022);
   assertEquals(nextRuns[0].getMonth(), 1);
   assertEquals(nextRuns[0].getDate(), 18);
@@ -1244,5 +1247,38 @@ test("a one-off job created for the current millisecond is scheduled", function 
   } finally {
     globalThis.setTimeout = realSetTimeout;
     globalThis.Date = RealDate;
+  }
+});
+
+test("A one-off job has no next run after an explicit reference at or after it", function () {
+  const job = new Cron("2026-06-10T12:00:00Z", { paused: true });
+  assertEquals(
+    job.nextRun(new Date("2026-06-10T11:59:59Z"))?.toISOString(),
+    "2026-06-10T12:00:00.000Z",
+  );
+  assertEquals(job.nextRun(new Date("2026-06-10T12:00:00Z")), null);
+  assertEquals(job.nextRun(new Date("2026-06-10T12:00:00.500Z")), null);
+
+  const allowPast = new Cron("2026-06-10T12:00:00Z", { paused: true, allowPast: true });
+  assertEquals(allowPast.nextRuns(2, new Date("2026-07-01T00:00:00Z")), []);
+});
+
+test("previousRun() is the start of a manually triggered run", async function () {
+  const job = new Cron("* * * * *", { paused: true }, async () => {
+    await sleep(300);
+  });
+  const before = Date.now();
+  await job.trigger();
+  assertEquals(job.previousRun()!.getTime() - before < 200, true);
+  job.stop();
+});
+
+test("Searches in different timezones don't affect each other", function () {
+  const ref = new Date("2026-01-01T00:00:00Z");
+  const tokyo = new Cron("0 0 12 * * *", { timezone: "Asia/Tokyo" });
+  const newYork = new Cron("0 0 12 * * *", { timezone: "America/New_York" });
+  for (let i = 0; i < 3; i++) {
+    assertEquals(tokyo.nextRun(ref)?.toISOString(), "2026-01-01T03:00:00.000Z");
+    assertEquals(newYork.nextRun(ref)?.toISOString(), "2026-01-01T17:00:00.000Z");
   }
 });

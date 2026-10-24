@@ -27,11 +27,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   return actual run times**, searched from the reference, the same way the scheduler and
   `isRunning()` do. Previously they shifted the next pattern match after the reference, so a
   negative offset could return a time before the reference, and `msToNext()` ignored the offset.
+- **`previousRun()` returns when the previous run started**, as documented. Previously it returned
+  when the run finished.
 
 ### Added
 
 - `enumerate(startAt?)` method returning a stateful `CronIterator` that supports iterator/iterable
-  protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`) (#365).
+  protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`) and honors `maxRuns`
+  (#365). The `CronIterator` class is exported.
 - `allowPast` option for explicitly allowing date-based jobs scheduled in the past to fire
   immediately (#349).
 - New public type exports: `CatchCallbackFn`, `CronMode`, and `ProtectCallbackFn`.
@@ -39,7 +42,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Cached `Intl.DateTimeFormat` instances per timezone, making timezone-aware scheduling noticeably
-  faster.
+  faster (#389).
 - Clarified `dayOffset` JSDoc and completed missing option documentation, including iterator usage,
   `allowPast`, and DST behavior.
 - Updated the copyright year to 2026.
@@ -50,13 +53,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (#399). `nextRun()` and `msToNext()` no longer return a time in the past when the reference is
   inside the repeated hour, and searches move in real time in both directions.
 - Fixed `nextRuns()` going backwards or repeating times around a DST spring forward.
-- Fixed DST handling in timezones with a 30-minute overlap (Australia/Lord_Howe).
+- Fixed DST handling in timezones with a 30-minute overlap (Australia/Lord_Howe) (#404).
+- Fixed scheduling gaps after a DST fall back when the reference had fractional seconds (#407).
 - Fixed `msToNext()` returning a wrong (often negative) value when passed an ISO 8601 string on a
-  job with `timezone` or `utcOffset` set. The string was read in system local time (#401, #402).
-- Fixed `startAt` and `stopAt` strings being read in system local time on jobs with `utcOffset`.
+  job with `timezone` set. The string was read in system local time (#401, #402).
+- Fixed ISO 8601 strings being read in system local time on jobs with `utcOffset`, in `nextRun()`,
+  `msToNext()`, `match()`, `startAt`, `stopAt` and one-off dates. Strings with `Z` or an offset,
+  like `2026-01-01T00:00:00Z`, are read as that exact instant (#401).
+- Fixed `startAt` given as a `Date` being searched in system local time on jobs with `utcOffset`.
 - Fixed `previousRuns()` throwing for patterns with month-specific wildcards (e.g., `0 9 * 4 *`)
   when the reference date falls outside allowed months, and for leap-day patterns (`0 0 29 2 *`)
   in leap years (#408, #409).
+- Fixed `nextRun()` and `previousRuns()` throwing `Maximum call stack size exceeded` for patterns
+  that can never match, like `0 0 30 2 *` or `0 0 16 * 5#L` with `domAndDow: true`. They return
+  `null` and an empty list.
 - Fixed scheduling after system clock changes: occurrences silently skipped after forward clock
   steps (#393), timer and target disagreeing after backward clock steps (#417), and timer targets
   for `dayOffset` schedules and protected jobs (#395).
@@ -69,21 +79,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON` ran every
   day instead of every Monday (#392).
 - Fixed exhausted schedules with `startAt` and `interval` (#390).
-- Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field)
-  (#373, #374).
-- Fixed `CronIterator` not honoring the `maxRuns` option, and `peek()` and `next()` disagreeing
-  when no start date was given.
-- Fixed `utcOffset: 0` being discarded due to falsy handling, causing jobs to silently fall back to
-  system local time.
+- Fixed `RangeError` when using stepping with year field wildcard. `*/2` in the year field matches
+  even years (#373, #374).
 - Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which
   could silently accept out-of-range hours.
+- Fixed the `@deprecated` JSDoc tag being on `dayOffset` instead of `legacyMode`.
 
 ### CI / Build
 
 - Updated workflow and packaging metadata around publish/test setup.
-- Pinned TypeScript for declaration bundling compatibility in build tooling.
-- Switched bundler from esbuild to rollup for declaration generation, restoring dist parity with
-  previous releases.
+- Switched declaration bundling from esbuild to rollup with rollup-plugin-dts, restoring dist
+  parity with previous releases.
 
 ## [10.0.1] - 2026-02-01
 

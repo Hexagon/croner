@@ -39,8 +39,8 @@ const msLeft = new Cron('59 59 23 24 DEC *').nextRun() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 
 // Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
-// This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
-new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+// This will run 2030-01-23 00:00:00 according to the time in Asia/Kolkata
+new Cron('2030-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
 // Check if a date matches a cron pattern
 const mondayCheck = new Cron('0 0 0 * * MON');
@@ -73,17 +73,13 @@ const { Cron } = require("croner");
 Using Deno
 
 ```typescript
-// From deno.land/x
-import { Cron } from "https://deno.land/x/croner@11.0.0-dev.7/dist/croner.js";
-
-// ... or jsr.io
 import { Cron } from "jsr:@hexagon/croner@11.0.0-dev.7";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0-dev.7/dist/croner.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0-dev.7/dist/croner.umd.js"></script>
 ```
 
 ## Documentation
@@ -104,7 +100,7 @@ Cron takes three arguments
 const job = new Cron("* * * * * *", { maxRuns: 1 }, () => {} );
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule(job, /* optional */ context) => {});
+job.schedule((job, /* optional */ context) => {});
 ```
 
 The job will be sceduled to run at next matching time unless you supply option `{ paused: true }`. The `new Cron(...)` constructor will return a Cron instance, later called `job`, which have a couple of methods and properties listed below.
@@ -166,7 +162,7 @@ job.name 			// Optional job name, populated if a name were passed to options
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
 | alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
 | allowPast    | false          | boolean        | If true, date-based jobs scheduled in the past will fire immediately. If false, only jobs scheduled within the past second will fire (to handle timing edge cases). |
-| dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. `nextRun()`, `msToNext()`, `startAt` and `stopAt` all refer to the shifted run time. |
+| dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()`, `enumerate()`, `startAt` and `stopAt` all refer to the shifted run time. |
 | mode         | "auto"         | string         | Controls how the cron pattern field count is interpreted. Options: `"auto"` (detect automatically), `"5-part"` (minute-level), `"6-part"` (second-level), `"7-part"` (second+year), `"5-or-6-parts"`, `"6-or-7-parts"`. |
 | sloppyRanges | false          | boolean        | If true, allows non-standard stepping formats for backward compatibility (e.g. `/10`, `5/5`, `30/30`). When false (default), only `*/step` or `min-max/step` formats are allowed. |
 

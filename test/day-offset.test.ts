@@ -10,23 +10,26 @@ test("dayOffset should default to 0 if not specified", function () {
 });
 
 test("dayOffset -1 should schedule one day before pattern match", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -1, utcOffset: 0 });
-  const now = new Date("2025-01-14T00:00:00.000Z");
+  // Every Wednesday, so that the run day shows the offset
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: -1, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-15T12:00:00.000Z, offset by -1 day = 2025-01-14T12:00:00.000Z
   assertEquals(next?.toISOString(), "2025-01-14T12:00:00.000Z");
 });
 
 test("dayOffset +1 should schedule one day after pattern match", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: 1, utcOffset: 0 });
-  const now = new Date("2025-01-16T00:00:00.000Z");
+  // Every Wednesday, so that the run day shows the offset
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: 1, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-15T12:00:00.000Z, offset by +1 day = 2025-01-16T12:00:00.000Z
   assertEquals(next?.toISOString(), "2025-01-16T12:00:00.000Z");
 });
 
 test("dayOffset -2 should schedule two days before pattern match", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -2, utcOffset: 0 });
+  // Every Wednesday, so that the run day shows the offset
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: -2, utcOffset: 0 });
   const now = new Date("2025-01-13T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-15T12:00:00.000Z, offset by -2 days = 2025-01-13T12:00:00.000Z
@@ -78,15 +81,15 @@ test("dayOffset should work across year boundaries (forward)", function () {
 });
 
 test("dayOffset with multiple runs should maintain offset", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -1, utcOffset: 0 });
-  const now = new Date("2025-01-14T00:00:00.000Z");
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: -1, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const runs = scheduler.nextRuns(3, now);
 
   assertEquals(runs.length, 3);
-  // Pattern matches at noon each day, offset by -1 day
+  // Pattern matches at noon each Wednesday, offset by -1 day to Tuesday
   assertEquals(runs[0]?.toISOString(), "2025-01-14T12:00:00.000Z");
-  assertEquals(runs[1]?.toISOString(), "2025-01-15T12:00:00.000Z");
-  assertEquals(runs[2]?.toISOString(), "2025-01-16T12:00:00.000Z");
+  assertEquals(runs[1]?.toISOString(), "2025-01-21T12:00:00.000Z");
+  assertEquals(runs[2]?.toISOString(), "2025-01-28T12:00:00.000Z");
 });
 
 test("dayOffset should work with weekly patterns", function () {
@@ -127,8 +130,11 @@ test("dayOffset should throw on invalid (NaN) value", function () {
 });
 
 test("dayOffset should work with timezone option", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -1, timezone: "America/New_York" });
-  const now = new Date("2025-01-14T05:00:00.000Z"); // 00:00 EST
+  const scheduler = new Cron("0 0 12 * * WED", {
+    dayOffset: -1,
+    timezone: "America/New_York",
+  });
+  const now = new Date("2025-01-13T05:00:00.000Z"); // Monday 00:00 EST
   const next = scheduler.nextRun(now);
 
   // Pattern matches at 2025-01-15 12:00 EST (17:00 UTC), offset by -1 day = 2025-01-14 12:00 EST (17:00 UTC)

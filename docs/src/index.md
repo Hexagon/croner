@@ -57,7 +57,7 @@ Time is ISO 8601 local time, this will run 2024-01-23 00:00:00 according to the 
 new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 ```
 
-More examples at [usage/examples.md]([usage/examples.md])
+More examples at [usage/examples.md](usage/examples.md)
 
 ## Feature comparison
 

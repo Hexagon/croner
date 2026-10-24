@@ -1,4 +1,4 @@
-import { createTimePoint, fromTZ, fromTZISO, toTZ } from "./helpers/timezone.ts";
+import { createTimePoint, fromTZ, fromTZISO, hasUtcDesignator, toTZ } from "./helpers/timezone.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
 import {
@@ -329,9 +329,10 @@ class CronDate<T = undefined> {
       this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
     ) {
-      const d = new Date(
-        Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms),
-      );
+      // setUTCFullYear, unlike Date.UTC, doesn't read years 0-99 as 1900-1999
+      const d = new Date(0);
+      d.setUTCFullYear(this.year, this.month, this.day);
+      d.setUTCHours(this.hour, this.minute, this.second, this.ms);
       this.ms = d.getUTCMilliseconds();
       this.second = d.getUTCSeconds();
       this.minute = d.getUTCMinutes();
@@ -350,8 +351,13 @@ class CronDate<T = undefined> {
    */
   private fromString(str: string) {
     if (typeof this.tz === "number") {
-      // Parse without timezone
-      const inDate = fromTZISO(str);
+      // A string with Z or an offset is an exact instant
+      if (hasUtcDesignator(str)) {
+        return this.fromDate(fromTZISO(str));
+      }
+
+      // Otherwise it is wall clock time at the UTC offset of the job
+      const inDate = fromTZISO(str, "Etc/UTC");
       this.ms = inDate.getUTCMilliseconds();
       this.second = inDate.getUTCSeconds();
       this.minute = inDate.getUTCMinutes();
@@ -377,20 +383,6 @@ class CronDate<T = undefined> {
     return this._findMatch(options, target, pattern, offset, 1);
   }
 
-  /**
-   * Internal unified method to find a matching time component in either direction.
-   * This method searches through the pattern to find the next or previous valid value
-   * for the specified target component (second, minute, hour, day, or month).
-   *
-   * @param options Cron options
-   * @param target Target property (second, minute, hour, day, month)
-   * @param pattern Pattern to use
-   * @param offset Offset to use
-   * @param direction 1 for forward (next), -1 for backward (previous)
-   * @returns Status code: 1 = same value matches, 2 = value changed, 3 = no match found
-   *
-   * @private
-   */
   /**
    * Evaluate whether a specific day value matches, applying all day-specific
    * special-case logic (W, LW, L modifiers and DOW AND/OR combination).
@@ -476,6 +468,21 @@ class CronDate<T = undefined> {
 
     return match;
   }
+
+  /**
+   * Internal unified method to find a matching time component in either direction.
+   * This method searches through the pattern to find the next or previous valid value
+   * for the specified target component (second, minute, hour, day, or month).
+   *
+   * @param options Cron options
+   * @param target Target property (second, minute, hour, day, month)
+   * @param pattern Pattern to use
+   * @param offset Offset to use
+   * @param direction 1 for forward (next), -1 for backward (previous)
+   * @returns Status code: 1 = same value matches, 2 = value changed, 3 = no match found
+   *
+   * @private
+   */
   private _findMatch(
     options: CronOptions<T>,
     target: RecursionTarget,
@@ -542,6 +549,27 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     doing: number,
   ): CronDate<T> | null {
+    // Step in a loop rather than recursing, so that a long search can't overflow the stack
+    // Without a year field, the pattern repeats with the calendar every 400 years
+    const startYear = this.year;
+    let next: CronDate<T> | number | null = doing;
+    while (typeof next === "number") {
+      if (pattern.starYear && Math.abs(this.year - startYear) > 400) return null;
+      next = this.recurseStep(pattern, options, next);
+    }
+    return next;
+  }
+
+  /**
+   * One step of recurse(). Returns the level to continue at, or the result.
+   *
+   * @private
+   */
+  private recurseStep(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | number | null {
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -617,9 +645,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurse(pattern, options, 0);
+        return 0;
       } else if (this.apply()) {
-        return this.recurse(pattern, options, doing - 1);
+        return doing - 1;
       }
     }
 
@@ -637,7 +665,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurse(pattern, options, doing);
+      return doing;
     }
   }
 
@@ -695,7 +723,7 @@ class CronDate<T = undefined> {
     this.apply();
 
     // Recursively change each part (y, m, d ...) until previous match is found, return null on failure
-    return this.recurseBackward(pattern, options, 0, 0);
+    return this.recurseBackward(pattern, options, 0);
   }
 
   /**
@@ -718,13 +746,28 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
     doing: number,
-    depth: number = 0,
   ): CronDate<T> | null {
-    // Safety: prevent infinite recursion
-    if (depth > 10000) {
-      return null;
+    // Step in a loop rather than recursing, so that a long search can't overflow the stack
+    // Without a year field, the pattern repeats with the calendar every 400 years
+    const startYear = this.year;
+    let next: CronDate<T> | number | null = doing;
+    while (typeof next === "number") {
+      if (pattern.starYear && Math.abs(this.year - startYear) > 400) return null;
+      next = this.recurseBackwardStep(pattern, options, next);
     }
+    return next;
+  }
 
+  /**
+   * One step of recurseBackward(). Returns the level to continue at, or the result.
+   *
+   * @private
+   */
+  private recurseBackwardStep(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | number | null {
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -879,9 +922,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurseBackward(pattern, options, 0, depth + 1);
+        return 0;
       } else if (this.apply()) {
-        return this.recurseBackward(pattern, options, doing - 1, depth + 1);
+        return doing - 1;
       }
     }
 
@@ -898,7 +941,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurseBackward(pattern, options, doing, depth + 1);
+      return doing;
     }
   }
 

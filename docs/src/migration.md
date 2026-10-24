@@ -86,9 +86,10 @@ By default, Croner now follows strict range parsing rules as used by vixie cron 
 
 ### Upgrading from 10.x to 11.x
 
-Version `11.x` adds iterator-based schedule traversal and introduces stricter default behavior for date-based jobs in the past.
+Version `11.x` adds iterator-based schedule traversal (`enumerate()`), aligns DST handling with
+croner-rust, and tightens `startAt`, `dayOffset` and past date-based job behavior.
 
-### Breaking changes
+#### Breaking changes
 
 * **Past date-based jobs are no longer auto-fired by default if older than 1 second.**
   * In `10.x`, some past run-once jobs could still fire immediately depending on timing/runtime behavior.
@@ -102,10 +103,12 @@ Version `11.x` adds iterator-based schedule traversal and introduces stricter de
   before) the reference, as the scheduler does. In `10.x` they shifted the next pattern match
   after the reference, so `dayOffset: -1` could return a time before the reference, and
   `msToNext()` ignored the offset.
+* **`previousRun()` returns when the previous run started**, as documented. In `10.x` it returned
+  when the run finished.
 * **DST transitions are handled as in croner-rust**, see
   [DST behavior](#dst-behavior-aligned-with-croner-rust) below.
 
-### How to keep previous catch-up behavior
+#### How to keep previous catch-up behavior
 
 If you rely on firing missed date-based jobs, enable `allowPast`:
 
@@ -115,13 +118,13 @@ new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
 });
 ```
 
-### New API in 11.x
+#### New API in 11.x
 
 * `enumerate(startAt?)` returns a stateful `CronIterator` for sequential traversal:
   * Works with `for...of` and destructuring.
   * Supports `next()`, `peek()`, and `reset()`.
 
-### DST behavior, aligned with croner-rust
+#### DST behavior aligned with croner-rust
 
 Croner now handles DST transitions the same way as croner-rust and Vixie cron. This deviates from
 the recommendation in OCPS 1.4 §4.3.1, see [Pattern](usage/pattern.md). Jobs are either
@@ -135,10 +138,14 @@ the recommendation in OCPS 1.4 §4.3.1, see [Pattern](usage/pattern.md). Jobs ar
 * **Interval jobs in a DST gap** skip the times that don't exist. In 10.x, `nextRuns()` could go
   backwards or repeat times around the gap.
 * Patterns with more than one hour, minute or second, like `0 30 1,2 * * *`, are interval jobs, so
-  1:30 AM runs twice on the day the clock goes back.
+  1:30 AM runs twice on the day the clock goes back, where 1:00-2:00 repeats (as in
+  America/New_York).
 * Fixed-time jobs in a DST overlap run once, at the first occurrence, as in 10.x.
 * `nextRun()`, `previousRuns()` and `enumerate()` move in real time, also when started from inside
   a repeated hour.
+* `dayOffset` shifts the run time by whole days of 24 hours, also when that run time was moved by a
+  DST gap. In America/New_York, `0 30 2 * * *` with `dayOffset: -1` moves the March 8 2026 match
+  to 3:00 AM EDT, after the gap, and runs 24 hours earlier: 2:00 AM EST on March 7, not 2:30 AM.
 
 ## Switching from Cron
 
