@@ -29,17 +29,6 @@ function timePointToMs(tp: TimePoint): number {
 }
 
 /**
- * Helper function to get the UTC offset of a timezone at a given instant
- *
- * @param date - The instant
- * @param tz - Timezone name
- * @returns Offset in milliseconds (local wall time minus UTC)
- */
-function utcOffsetMs(date: Date, tz: string): number {
-  return timePointToMs(toTZ(date, tz)) - date.getTime();
-}
-
-/**
  * Helper function to check if two TimePoints represent the same local time
  *
  * @param tp1 - First TimePoint
@@ -117,9 +106,8 @@ export function fromTimezone(
   s: number,
   tz: string,
   throwOnInvalid?: boolean,
-  afterMs?: number,
 ): Date {
-  return fromTZ(createTimePoint(y, m, d, h, i, s, tz), throwOnInvalid, afterMs);
+  return fromTZ(createTimePoint(y, m, d, h, i, s, tz), throwOnInvalid);
 }
 
 /**
@@ -139,20 +127,9 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  *
  * @param tp - TimePoint with specified timezone
  * @param throwOnInvalid - Default is to return the adjusted time if the call happens during a DST switch
- * @param afterMs - Optional UTC milliseconds threshold. When provided and the local time falls
- *                  in a DST overlap, the returned Date will be the earliest occurrence that is
- *                  at or after this threshold (ensures monotonic progress across DST transitions).
- *                  If both occurrences are before the threshold, the second (later) occurrence
- *                  is returned as the closest valid option.
- * @param beforeMs Optional UTC threshold for choosing the latest occurrence at or before it.
  * @returns Normal date object
  */
-export function fromTZ(
-  tp: TimePoint,
-  throwOnInvalid?: boolean,
-  afterMs?: number,
-  beforeMs?: number,
-): Date {
+export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
   // Construct a Date object with UTC components matching the target local time
   const inDate = new Date(timePointToMs(tp));
 
@@ -170,43 +147,17 @@ export function fromTZ(
 
   // Check if the first guess produces the target local time
   if (timePointsMatch(check1, tp)) {
-    // Even if it matches, we might be in a DST overlap (fall back).
-    // The overlap is as long as the UTC offset change, which is not always
-    // one hour (Australia/Lord_Howe shifts by 30 minutes), so take it from
-    // the offsets a day before and a day after.
-    const overlapMs = utcOffsetMs(new Date(dateGuess.getTime() - 86400000), tp.tz!) -
-      utcOffsetMs(new Date(dateGuess.getTime() + 86400000), tp.tz!);
-    const shiftMs = overlapMs > 0 ? overlapMs : 3600000;
+    // Even if it matches, we might be in a DST overlap (fall back)
+    // Check if there's another valid time 1 hour (or 30 minutes, e.g. Australia/Lord_Howe) earlier
+    for (const shiftMs of [3600000, 1800000]) {
+      const altGuess = new Date(dateGuess.getTime() - shiftMs);
+      const altCheck = toTZ(altGuess, tp.tz!);
 
-    // Check if there's another valid time one shift earlier or later
-    const altEarlier = new Date(dateGuess.getTime() - shiftMs);
-    const altEarlierCheck = toTZ(altEarlier, tp.tz!);
-    const altLater = new Date(dateGuess.getTime() + shiftMs);
-    const altLaterCheck = toTZ(altLater, tp.tz!);
-
-    // Determine if we're in a DST overlap
-    const hasEarlier = timePointsMatch(altEarlierCheck, tp);
-    const hasLater = timePointsMatch(altLaterCheck, tp);
-
-    if (hasEarlier || hasLater) {
-      // We're in a DST overlap
-      const firstOccurrence = hasEarlier ? altEarlier : dateGuess;
-      const secondOccurrence = hasEarlier ? dateGuess : altLater;
-
-      if (beforeMs !== undefined) {
-        return secondOccurrence.getTime() <= beforeMs ? secondOccurrence : firstOccurrence;
+      // If the earlier time also produces the same local time, we're in a DST overlap
+      if (timePointsMatch(altCheck, tp)) {
+        // Return the earlier time (first occurrence per OCPS 1.4)
+        return altGuess;
       }
-
-      // When afterMs is provided, return the earliest occurrence that is >= afterMs
-      // This ensures monotonic progress during DST fall-back transitions
-      if (afterMs !== undefined) {
-        if (firstOccurrence.getTime() >= afterMs) {
-          return firstOccurrence;
-        }
-        return secondOccurrence;
-      }
-      // Default: return the earlier time (first occurrence per OCPS 1.4)
-      return firstOccurrence;
     }
 
     return dateGuess;
@@ -232,6 +183,11 @@ export function fromTZ(
 }
 
 /**
+ * Creating an Intl.DateTimeFormat is expensive, so keep one per timezone
+ */
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+
+/**
  * Converts a date object to a TimePoint in the specified timezone
  *
  * @param d - Date to convert
@@ -241,20 +197,23 @@ export function fromTZ(
 export function toTZ(d: Date, tzStr: string): TimePoint {
   // Use Intl.DateTimeFormat.formatToParts to extract date components in the target timezone
   // This avoids DST-related bugs that occur when parsing date strings in the local timezone
-  let formatter: Intl.DateTimeFormat;
+  let formatter: Intl.DateTimeFormat | undefined = formatterCache.get(tzStr);
   let parts: Intl.DateTimeFormatPart[];
 
   try {
-    formatter = new Intl.DateTimeFormat("en-US", {
-      timeZone: tzStr,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: false,
-    });
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: tzStr,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+      });
+      formatterCache.set(tzStr, formatter);
+    }
     parts = formatter.formatToParts(d);
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);

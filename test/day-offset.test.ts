@@ -165,11 +165,12 @@ test("dayOffset should work across DST Spring Forward transition (America/New_Yo
   // March 8 pattern match at 2:30 AM EST (07:30 UTC), offset -1 day = March 7 at 07:30 UTC
   assertEquals(runs[0]?.toISOString(), "2025-03-07T07:30:00.000Z");
 
-  // March 9 pattern would be at 2:30 AM (skipped, becomes 3:30 AM EDT = 07:30 UTC), offset -1 day = March 8 at 07:30 UTC
-  assertEquals(runs[1]?.toISOString(), "2025-03-08T07:30:00.000Z");
-
+  // March 9 pattern at 2:30 AM doesn't exist (DST gap) and is skipped
   // March 10 pattern at 2:30 AM EDT (06:30 UTC), offset -1 day = March 9 at 06:30 UTC
-  assertEquals(runs[2]?.toISOString(), "2025-03-09T06:30:00.000Z");
+  assertEquals(runs[1]?.toISOString(), "2025-03-09T06:30:00.000Z");
+
+  // March 11 pattern at 2:30 AM EDT (06:30 UTC), offset -1 day = March 10 at 06:30 UTC
+  assertEquals(runs[2]?.toISOString(), "2025-03-10T06:30:00.000Z");
 });
 
 test("dayOffset should work across DST Fall Back transition (America/New_York)", function () {
@@ -206,8 +207,9 @@ test("dayOffset should work across DST Spring Forward with positive offset", fun
   // Note: March 30 at 1:00 AM doesn't exist, but we're offsetting the pattern match from March 29
   assertEquals(runs[1]?.toISOString(), "2025-03-30T01:00:00.000Z");
 
-  // March 30 pattern skipped to 2:00 AM BST (01:00 UTC), offset +1 day = March 31 at 01:00 UTC
-  assertEquals(runs[2]?.toISOString(), "2025-03-31T01:00:00.000Z");
+  // March 30 pattern at 1:00 AM doesn't exist (DST gap) and is skipped
+  // March 31 pattern at 1:00 AM BST (00:00 UTC), offset +1 day = April 1 at 00:00 UTC
+  assertEquals(runs[2]?.toISOString(), "2025-04-01T00:00:00.000Z");
 });
 
 test("dayOffset should work across DST Fall Back with positive offset", function () {
@@ -250,14 +252,19 @@ test("dayOffset should maintain consistency across multiple DST transitions", fu
   const runs = scheduler.nextRuns(15, feb);
 
   // Check that runs maintain daily spacing (24 hours in most cases, 23 or 25 during DST)
+  let skippedDays = 0;
   for (let i = 1; i < runs.length; i++) {
     const diffHours = (runs[i].getTime() - runs[i - 1].getTime()) / (60 * 60 * 1000);
-    // Allow for DST transitions causing 23 or 25 hour differences
-    const isValidSpacing = diffHours === 24 || diffHours === 23 || diffHours === 25;
+    // Allow for DST transitions causing 23 or 25 hour differences, and 47 hours where
+    // 2:00 AM doesn't exist (DST gap) and that day is skipped
+    const isValidSpacing = diffHours === 24 || diffHours === 23 || diffHours === 25 ||
+      diffHours === 47;
+    if (diffHours === 47) skippedDays++;
     assertEquals(
       isValidSpacing,
       true,
       `Run ${i} spacing should be 23-25 hours, got ${diffHours}`,
     );
   }
+  assertEquals(skippedDays, 1);
 });

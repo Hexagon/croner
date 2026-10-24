@@ -1,7 +1,10 @@
 import { assert, assertEquals } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron, CronDate } from "../src/croner.ts";
+import { Cron } from "../src/croner.ts";
 
+// OCPS 1.4 §4.3.1: a time that occurs twice in a DST overlap runs once, at its first occurrence.
+// `first` is the start of the first pass through the repeated window, `width` its length in minutes.
+// The repeated wall-clock window ends at first + 2 * width.
 const overlaps = [
   { timezone: "Europe/Stockholm", first: "2026-10-25T00:00:00Z", width: 60 },
   { timezone: "America/New_York", first: "2026-11-01T05:00:00Z", width: 60 },
@@ -10,17 +13,8 @@ const overlaps = [
 
 for (const { timezone, first, width } of overlaps) {
   const firstMs = Date.parse(first);
-
-  test(`CronDate keeps the DST occurrence with fractional seconds in ${timezone}`, () => {
-    for (const occurrence of [0, width * 60_000]) {
-      for (const ms of [0, 1, 10, 999]) {
-        const date = new CronDate(new Date(firstMs + occurrence + ms), timezone);
-        assertEquals(date.getTime(), firstMs + occurrence);
-        assertEquals(date.ms, ms);
-        assertEquals(new CronDate(date, timezone).getTime(), firstMs + occurrence);
-      }
-    }
-  });
+  const widthMs = width * 60_000;
+  const windowEndMs = firstMs + 2 * widthMs;
 
   for (
     const [pattern, stepMs] of [
@@ -37,53 +31,46 @@ for (const { timezone, first, width } of overlaps) {
         : []),
     ] as const
   ) {
-    test(`DST traversal stays increasing for ${pattern} in ${timezone}`, () => {
+    test(`DST overlap runs each time once for ${pattern} in ${timezone}`, () => {
       const job = new Cron(pattern, { timezone });
-      const start = new Date(
-        stepMs === 1000 ? firstMs + width * 60_000 - 5000 : firstMs - 1000,
-      );
-      const count = stepMs === 1000 ? 12 : Math.ceil((width * 2 * 60_000) / stepMs) + 2;
-      const runs = job.nextRuns(count, start);
+      const start = new Date(firstMs + widthMs - 2 * stepMs - 1000);
+      const runs = job.nextRuns(4, start);
       const iterator = job.enumerate(start);
-      assertEquals(runs.length, count);
+      assertEquals(runs.length, 4);
       let previous = start;
+      let skips = 0;
       for (const run of runs) {
+        // Never inside the second pass, and never going backwards
         assert(run.getTime() > previous.getTime());
-        if (previous !== start) {
-          assertEquals(run.getTime() - previous.getTime(), stepMs);
-        }
+        assert(run.getTime() < firstMs + widthMs || run.getTime() >= windowEndMs);
         assertEquals(iterator.next().value, run);
         assertEquals(job.nextRun(previous), run);
+        if (previous !== start) {
+          const diff = run.getTime() - previous.getTime();
+          // Normal step, or a step that also passes over the second pass
+          assert(diff === stepMs || diff === stepMs + widthMs, `unexpected step ${diff}`);
+          if (diff !== stepMs) skips++;
+        }
         previous = run;
       }
+      assertEquals(skips, 1);
     });
   }
 
-  test(`DST iterator reaches a date-based break in ${timezone}`, () => {
-    const job = new Cron("0 */15 * * * *", { timezone });
-    const end = firstMs + width * 2 * 60_000;
-    let count = 0;
-    for (const date of job.enumerate(new Date(firstMs - 1000))) {
-      if (date.getTime() > end) break;
-      assert(++count <= width * 2 / 15 + 1, "iterator must advance past the overlap");
-    }
-    assertEquals(count, width * 2 / 15 + 1);
-  });
-
-  test(`DST next run is independent of reference milliseconds in ${timezone}`, () => {
+  test(`DST next run from inside the repeated window is in the future in ${timezone}`, () => {
     const job = new Cron("0 */15 * * * *", { timezone });
     for (let minute = 0; minute < width * 2; minute += 15) {
       const referenceMs = firstMs + minute * 60_000;
-      const expected = new Date(referenceMs + 15 * 60_000);
+      const expectedMs = minute + 15 < width ? referenceMs + 15 * 60_000 : windowEndMs;
       for (const ms of [0, 1, 10, 999]) {
         const reference = new Date(referenceMs + ms);
-        assertEquals(job.nextRun(reference), expected);
-        assertEquals(job.msToNext(reference), 15 * 60_000 - ms);
+        assertEquals(job.nextRun(reference)?.getTime(), expectedMs);
+        assertEquals(job.msToNext(reference), expectedMs - referenceMs - ms);
       }
     }
   });
 
-  test(`live timer keeps quarter-hour runs through DST overlap in ${timezone}`, async () => {
+  test(`live timer runs quarter-hours once through DST overlap in ${timezone}`, async () => {
     const RealDate = Date;
     const realSetTimeout = globalThis.setTimeout;
     const realClearTimeout = globalThis.clearTimeout;
@@ -109,23 +96,25 @@ for (const { timezone, first, width } of overlaps) {
       job.schedule(() => {
         fired.push(now);
       });
-      const count = width * 2 / 15 + 1;
-      for (let i = 0; i < count; i++) {
-        const expectedMs = firstMs + i * 15 * 60_000;
+      const expected: number[] = [];
+      for (let ms = firstMs; ms < firstMs + widthMs; ms += 15 * 60_000) expected.push(ms);
+      expected.push(windowEndMs);
+      for (let i = 0; i < expected.length; i++) {
         let polls = 0;
         while (fired.length <= i) {
-          assert(++polls <= 40, "timer must reach the next quarter-hour");
+          assert(++polls <= 400, "timer must reach the next run");
           assert(pending);
           const timer = pending;
           pending = undefined;
-          assert(now + timer.delay <= expectedMs, "timer must not skip the next run");
+          assert(timer.delay >= 0, "timer delay must not be negative");
+          assert(now + timer.delay <= expected[i], "timer must not skip the next run");
           now += timer.delay + 10;
           timer.callback();
           await Promise.resolve();
         }
-        assertEquals(fired[i], firstMs + i * 15 * 60_000 + 10);
+        assertEquals(fired[i], expected[i] + 10);
       }
-      assertEquals(fired.length, count);
+      assertEquals(fired.length, expected.length);
     } finally {
       job.stop();
       globalThis.Date = RealDate;
@@ -141,6 +130,23 @@ test("fixed-hour jobs still skip the second occurrence after running in the firs
     job.nextRun(new Date("2026-10-25T00:30:00.010Z"))?.toISOString(),
     "2026-10-26T01:30:00.000Z",
   );
+});
+
+test("fixed times in several hours run once during DST overlap", () => {
+  const job = new Cron("0 30 0-2 * * *", { timezone: "America/New_York" });
+  assertEquals(job.nextRuns(4, new Date("2025-11-02T03:00:00Z")).map((d) => d.toISOString()), [
+    "2025-11-02T04:30:00.000Z", // 00:30 EDT
+    "2025-11-02T05:30:00.000Z", // 01:30 EDT, first occurrence
+    "2025-11-02T07:30:00.000Z", // 02:30 EST
+    "2025-11-03T05:30:00.000Z", // 00:30 EST next day
+  ]);
+});
+
+test("previousRuns mirrors nextRuns across DST overlap", () => {
+  const job = new Cron("0 */20 * * * *", { timezone: "America/New_York" });
+  const forward = job.nextRuns(6, new Date("2025-11-02T04:50:00Z"));
+  const backward = job.previousRuns(6, new Date(forward[5].getTime() + 1000));
+  assertEquals(backward.reverse(), forward);
 });
 
 test("once jobs without a named timezone retain millisecond precision", () => {

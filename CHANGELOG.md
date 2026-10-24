@@ -13,6 +13,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   second in the past no longer auto-fire unless `allowPast: true` is set.
 - **Job execution prevented when `startAt` is in the past**: previously a job with `startAt` set to
   a past date could still trigger; now it is blocked.
+- **Times in a DST gap are skipped**: following OCPS 1.4 §4.3.1, a scheduled time that does not exist
+  because of a spring-forward transition is skipped, instead of being delayed until after the
+  transition (e.g. `0 30 2 * * *` no longer runs at 3:30 AM on the transition day).
 
 ### Added
 
@@ -24,8 +27,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Improved DST overlap handling for high-frequency schedules to keep UTC progression monotonic and
-  avoid skip/gap behavior during fall-back transitions.
+- Cached `Intl.DateTimeFormat` instances per timezone, making timezone-aware scheduling noticeably
+  faster.
 - Clarified `dayOffset` JSDoc and completed missing option documentation, including iterator usage,
   `allowPast`, and DST overlap behavior.
 - Updated the copyright year to 2026.
@@ -34,10 +37,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Fixed one-off catch-up for dates in the current second with a named timezone.
 - Fixed `CronIterator` start-time consistency between `peek()` and `next()`, including after reset.
-- Fixed backward traversal selecting the wrong occurrence in repeated DST hours.
-- Fixed DST overlap scheduling when cron cadence does not divide the repeated window.
-- Fixed DST fall-back scheduling gaps when timer callbacks fire with fractional seconds, including
-  timezones with 30-minute overlaps.
+- Fixed DST handling to follow OCPS 1.4 §4.3.1 consistently: times repeated by a fall-back
+  transition run once, at the first occurrence. `nextRun()`/`msToNext()` no longer return a time in
+  the past when the reference is inside the repeated hour (which could make the scheduler spin),
+  enumeration no longer goes backwards or repeats around spring-forward, and 30-minute overlaps
+  (Australia/Lord_Howe) keep their first occurrence.
+- Fixed `isRunning()` disagreeing with the scheduler when `dayOffset` is set.
 - Fixed `msToNext()` returning a wrong (often negative) value when passed an ISO 8601 string on a
   job with `timezone` or `utcOffset` set. The string was read in system local time. (#402)
 - Fixed cron jobs silently skipping occurrences after forward system-clock adjustments.
@@ -62,7 +67,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   iterating indefinitely.
 - Fixed `utcOffset: 0` being discarded due to falsy handling, causing jobs to silently fall back to
   system local time.
-- Fixed DST overlap scheduling where `setAfterMs` used the wrong date argument in `overlapCron`.
 - Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which
   could silently accept out-of-range hours.
 

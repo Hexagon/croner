@@ -110,10 +110,11 @@ new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
   * Works with `for...of` and destructuring.
   * Supports `next()`, `peek()`, and `reset()`.
 
-### DST overlap behavior improvements
+### DST behavior (OCPS 1.4 §4.3.1)
 
-* High-frequency schedules now continue through fall-back DST overlap windows without large gaps.
-* Specific-time schedules in overlap windows still follow first-occurrence semantics.
+* Times that fall in a DST gap (spring forward) are now skipped. Previously they were delayed until
+  after the transition, e.g. `0 30 2 * * *` ran at 3:30 AM on the transition day.
+* Times repeated by a DST overlap (fall back) run once, at the first occurrence, as in 10.x.
 
 ## Switching from Cron
 

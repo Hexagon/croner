@@ -100,7 +100,7 @@ test("OCPS 1.4: + without following value should throw", function () {
 test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
   // In America/New_York, DST begins on March 12, 2023 at 2:00 AM
   // Clock jumps from 2:00 AM to 3:00 AM
-  // A job scheduled for 2:30 AM should be adjusted to 3:30 AM
+  // A job scheduled for 2:30 AM on March 12 should be skipped that year
   const cron = new Cron("0 30 2 12 3 *", { timezone: "America/New_York" });
 
   // Start from before the DST transition
@@ -108,14 +108,10 @@ test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
   const run = cron.nextRun(startDate);
 
   assert(run !== null, "Should find a next run");
-  // The job should run on March 12, 2023
-  assertEquals(run.getFullYear(), 2023, "Should run in 2023");
-  assertEquals(run.getMonth(), 2, "Should run in March (month 2)");
-  assertEquals(run.getDate(), 12, "Should run on the 12th");
 
-  // The time 2:30 AM doesn't exist, so it should be adjusted to 3:30 AM EDT
-  // 3:30 AM EDT = 07:30 UTC
-  assertEquals(run.toISOString(), "2023-03-12T07:30:00.000Z", "Should be adjusted to 3:30 AM EDT");
+  // The time 2:30 AM doesn't exist on March 12, 2023, so the next run is
+  // March 12, 2024 at 2:30 AM EDT = 06:30 UTC
+  assertEquals(run.toISOString(), "2024-03-12T06:30:00.000Z", "Should skip to 2024");
 });
 
 test("OCPS 1.4: DST Overlap (Fall Back) - job should run once at first occurrence", function () {

@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron, CronDate, CronPattern } from "../src/croner.ts";
+import { Cron } from "../src/croner.ts";
 
 test("one-off allowPast catches up within the current second in a named timezone", () => {
   const RealDate = Date;
@@ -23,11 +23,12 @@ test("one-off allowPast catches up within the current second in a named timezone
   }
 });
 
-test("DST overlap search finds cadence matches throughout Lord Howe's repeated window", () => {
+test("DST overlap keeps the first pass of Lord Howe's 30-minute repeated window", () => {
   const job = new Cron("0 */20 * * * *", { timezone: "Australia/Lord_Howe" });
+  // 14:40Z is 01:40 LHDT (first pass), the second pass 15:00Z-15:30Z is skipped
   assertEquals(
-    job.nextRun(new Date("2026-04-04T14:40:00Z"))?.toISOString(),
-    "2026-04-04T15:10:00.000Z",
+    job.nextRuns(2, new Date("2026-04-04T14:30:00Z")).map((d) => d.toISOString()),
+    ["2026-04-04T14:40:00.000Z", "2026-04-04T15:30:00.000Z"],
   );
 });
 
@@ -75,42 +76,59 @@ test("iterator without startAt keeps its captured reference through peek and res
 });
 
 for (
-  const [timezone, references] of [
-    [
-      "America/New_York",
-      [
-        ["2026-11-01T05:30:00Z", "2026-11-01T05:29:59.000Z"],
-        ["2026-11-01T06:30:00Z", "2026-11-01T06:29:59.000Z"],
-      ],
-    ],
-    [
-      "Europe/Stockholm",
-      [
-        ["2026-10-25T00:30:00Z", "2026-10-25T00:29:59.000Z"],
-        ["2026-10-25T01:30:00Z", "2026-10-25T01:29:59.000Z"],
-      ],
-    ],
+  const [timezone, reference, expected] of [
+    ["America/New_York", "2026-11-01T05:30:00Z", "2026-11-01T05:29:59.000Z"],
+    ["Europe/Stockholm", "2026-10-25T00:30:00Z", "2026-10-25T00:29:59.000Z"],
   ] as const
 ) {
-  for (const [reference, expected] of references) {
-    test(`previousRuns resolves the correct repeated-hour occurrence in ${timezone}`, () => {
-      const job = new Cron("* * * * * *", { timezone });
-      const previous = job.previousRuns(1, new Date(reference))[0];
-      assert(previous);
-      assertEquals(previous.toISOString(), expected);
-    });
-  }
+  test(`previousRuns resolves the first repeated-hour occurrence in ${timezone}`, () => {
+    const job = new Cron("* * * * * *", { timezone });
+    const previous = job.previousRuns(1, new Date(reference))[0];
+    assert(previous);
+    assertEquals(previous.toISOString(), expected);
+  });
 }
 
-test("CronDate switches to forward overlap resolution after decrement", () => {
-  const timezone = "America/New_York";
-  const job = new Cron("0 * * * * *", { timezone, interval: 20 });
-  const pattern = new CronPattern("0 * * * * *", timezone);
-  const date = new CronDate(new Date("2026-11-01T06:29:50Z"), timezone);
+test("isRunning agrees with the scheduler when dayOffset moves the last run past the pattern", () => {
+  const RealDate = Date;
+  const now = RealDate.parse("2027-01-01T00:00:00.000Z");
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
 
-  date.decrement(pattern, { ...job.options, interval: 1 });
-  assertEquals(
-    date.increment(pattern, job.options, true)?.getTime(),
-    Date.parse("2026-11-01T06:30:00Z"),
-  );
+  // Last pattern match is 2026-12-31 12:00, which dayOffset moves to 2027-01-01 12:00
+  const job = new Cron("0 0 12 31 12 * 2026", { timezone: "UTC", dayOffset: 1 }, () => {});
+  try {
+    assertEquals(job.isRunning(), true);
+  } finally {
+    job.stop();
+    globalThis.Date = RealDate;
+  }
+});
+
+test("isRunning agrees with the scheduler when dayOffset moves the last run past the pattern", () => {
+  const RealDate = Date;
+  const now = RealDate.parse("2027-01-01T00:00:00.000Z");
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+
+  // Last pattern match is 2026-12-31 12:00, which dayOffset moves to 2027-01-01 12:00
+  const job = new Cron("0 0 12 31 12 * 2026", { timezone: "UTC", dayOffset: 1 }, () => {});
+  try {
+    assertEquals(job.isRunning(), true);
+  } finally {
+    job.stop();
+    globalThis.Date = RealDate;
+  }
 });

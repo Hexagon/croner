@@ -51,15 +51,6 @@ class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
-   * Optional UTC ms threshold for resolving DST overlap ambiguity.
-   * When set, getTime()/getDate() will return the earliest occurrence
-   * that is at or after this threshold.
-   * @private
-   */
-  private afterMs?: number;
-  private beforeMs?: number;
-
-  /**
    * Current milliseconds
    * @type {number}
    */
@@ -280,8 +271,6 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
-          // Match the whole-second precision used by timezone conversion.
-          this.afterMs = inDate.getTime() - inDate.getUTCMilliseconds();
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
@@ -315,8 +304,6 @@ class CronDate<T = undefined> {
     this.minute = d.minute;
     this.second = d.second;
     this.ms = d.ms;
-    this.afterMs = d.afterMs;
-    this.beforeMs = d.beforeMs;
   }
 
   /**
@@ -658,11 +645,6 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     hasPreviousRun: boolean,
   ): CronDate<T> | null {
-    if (this.beforeMs !== undefined) {
-      this.afterMs = this.getTime();
-      this.beforeMs = undefined;
-    }
-
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
@@ -690,9 +672,6 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
   ): CronDate<T> | null {
-    this.beforeMs = this.getTime();
-    this.afterMs = undefined;
-
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
     this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
 
@@ -993,11 +972,8 @@ class CronDate<T = undefined> {
    * Convert current state back to a javascript Date()
    *
    * @param internal If this is an internal call
-   * @param afterMs Optional UTC ms threshold for resolving DST overlap ambiguity
    */
-  public getDate(internal?: boolean, afterMs?: number): Date {
-    // Use the instance-level afterMs as fallback if not explicitly provided
-    const resolvedAfterMs = afterMs ?? this.afterMs;
+  public getDate(internal?: boolean): Date {
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
@@ -1040,8 +1016,6 @@ class CronDate<T = undefined> {
             this.tz,
           ),
           false,
-          resolvedAfterMs,
-          this.beforeMs,
         );
       }
     }
@@ -1049,23 +1023,9 @@ class CronDate<T = undefined> {
 
   /**
    * Convert current state back to a javascript Date() and return UTC milliseconds
-   *
-   * @param afterMs Optional UTC ms threshold for resolving DST overlap ambiguity
    */
-  public getTime(afterMs?: number): number {
-    return this.getDate(false, afterMs).getTime();
-  }
-
-  /**
-   * Set the afterMs threshold for DST overlap resolution.
-   * When set, getTime()/getDate() will return the earliest occurrence
-   * that is at or after this threshold.
-   *
-   * @param ms UTC milliseconds threshold
-   */
-  public setAfterMs(ms: number): void {
-    this.afterMs = ms;
-    this.beforeMs = undefined;
+  public getTime(): number {
+    return this.getDate(false).getTime();
   }
 
   /**
