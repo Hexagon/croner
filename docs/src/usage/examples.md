@@ -18,7 +18,7 @@ const nextMonth = new Cron("@monthly").nextRun(),
 	nextSunday = new Cron("@weekly").nextRun(),
 	nextSat29feb = new Cron("0 0 0 29 2 6", { domAndDow: true }).nextRun(),
 	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { domAndDow: true }).nextRun(),
-    nextLastSundayOfMonth = new Cron("0 0 0 * * L7").nextRun();
+    nextLastSundayOfMonth = new Cron("0 0 0 * * 7L").nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());

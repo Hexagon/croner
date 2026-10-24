@@ -1,6 +1,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
+import { timeout } from "./utils.ts";
 
 test("name should be undefined if it's not specified", function () {
   const scheduler = new Cron("* * * * * *");
@@ -334,4 +335,105 @@ test("domAndDow should take precedence over legacyMode when both are provided", 
   }
 
   assertEquals(has1stNotMonday || hasMondayNot1st, true, "Should match 1st OR Monday");
+});
+
+test("startAt is inclusive when it falls exactly on a pattern match", function () {
+  const job = new Cron("0 0 12 * * *", { timezone: "UTC", startAt: "2025-01-01T12:00:00Z" });
+  assertEquals(
+    job.nextRun(new Date("2025-01-01T00:00:00Z"))?.toISOString(),
+    "2025-01-01T12:00:00.000Z",
+  );
+  assertEquals(
+    job.nextRun(new Date("2025-01-01T12:00:00Z"))?.toISOString(),
+    "2025-01-02T12:00:00.000Z",
+  );
+});
+
+test("startAt string is read in the UTC offset of the job", function () {
+  // 12:00 at +02:00 is 10:00 UTC
+  const job = new Cron("0 0 12 * * *", { utcOffset: 120, startAt: "2025-01-02T12:00:00" });
+  assertEquals(
+    job.nextRun(new Date("2025-01-01T00:00:00Z"))?.toISOString(),
+    "2025-01-02T10:00:00.000Z",
+  );
+});
+
+test("startAt between two seconds starts at the next second", function () {
+  const startAt = new Date("2026-06-10T12:00:00.400Z");
+  for (const tz of [{ utcOffset: 0 }, { timezone: "Europe/Stockholm" }, {}]) {
+    const job = new Cron("* * * * * *", { ...tz, startAt });
+    assertEquals(
+      job.nextRun(new Date("2026-06-01T00:00:00Z"))?.toISOString(),
+      "2026-06-10T12:00:01.000Z",
+      JSON.stringify(tz),
+    );
+  }
+  const daily = new Cron("0 0 12 * * *", { utcOffset: 0, startAt });
+  assertEquals(
+    daily.nextRun(new Date("2026-06-01T00:00:00Z"))?.toISOString(),
+    "2026-06-11T12:00:00.000Z",
+  );
+});
+
+test("stopAt between two seconds still includes the second before it", function () {
+  const job = new Cron("* * * * * *", {
+    timezone: "Europe/Stockholm",
+    stopAt: new Date("2026-06-10T12:00:00.400Z"),
+  });
+  assertEquals(
+    job.nextRuns(2, new Date("2026-06-10T11:59:58.500Z")).map((d) => d.toISOString()),
+    ["2026-06-10T11:59:59.000Z", "2026-06-10T12:00:00.000Z"],
+  );
+});
+
+test(
+  "A job with startAt between two seconds does not run before startAt",
+  //@ts-ignore
+  timeout(4000, (resolve: () => void, reject: (e: Error) => void) => {
+    const startAt = new Date(Math.floor(Date.now() / 1000) * 1000 + 1500);
+    let runs = 0;
+    const job = new Cron("* * * * * *", { startAt }, () => {
+      runs++;
+      if (Date.now() < startAt.getTime()) reject(new Error("Ran before startAt"));
+    });
+    setTimeout(() => {
+      job.stop();
+      assertEquals(runs <= 2, true, `${runs} runs`);
+      resolve();
+    }, 2700);
+  }),
+);
+
+test("Strings are read at the UTC offset of the job", function () {
+  // 00:00 at +09:00, the next 03:00 at +09:00 is 3 hours later
+  const tokyo = new Cron("0 0 3 * * *", { utcOffset: 540 });
+  assertEquals(tokyo.msToNext("2026-01-01T00:00:00"), 3 * 3600 * 1000);
+  assertEquals(tokyo.nextRun("2026-01-01T03:30:00")?.toISOString(), "2026-01-01T18:00:00.000Z");
+  assertEquals(tokyo.match("2026-01-01T03:00:00"), true);
+  assertEquals(tokyo.match("2026-01-01T04:00:00"), false);
+
+  // A string with Z or an offset is an exact instant: 00:00Z is 09:00 at +09:00
+  assertEquals(tokyo.msToNext("2026-01-01T00:00:00Z"), 18 * 3600 * 1000);
+  assertEquals(tokyo.msToNext("2026-01-01T09:00:00+09:00"), 18 * 3600 * 1000);
+
+  const once = new Cron("2026-01-01T03:00:00", { paused: true, utcOffset: 540 });
+  assertEquals(once.getOnce()?.toISOString(), "2025-12-31T18:00:00.000Z");
+
+  const bounded = new Cron("0 0 * * * *", {
+    utcOffset: 60,
+    startAt: "2026-01-01T03:00:00",
+    stopAt: "2026-01-01T05:00:00",
+  });
+  assertEquals(
+    bounded.nextRuns(5, new Date("2025-12-31T00:00:00Z")).map((d) => d.toISOString()),
+    ["2026-01-01T02:00:00.000Z", "2026-01-01T03:00:00.000Z"],
+  );
+});
+
+test("An empty timezone is the same as no timezone", function () {
+  const job = new Cron("0 0 12 * * *", { timezone: "", utcOffset: 0 });
+  assertEquals(
+    job.nextRun(new Date("2026-01-01T00:00:00Z"))?.toISOString(),
+    "2026-01-01T12:00:00.000Z",
+  );
 });

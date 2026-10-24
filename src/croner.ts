@@ -37,6 +37,13 @@ import {
   type ProtectCallbackFn,
 } from "./options.ts";
 import { isCronCallback, isFunction, unrefTimer } from "./utils.ts";
+import {
+  createTimePoint,
+  findOffsetChange,
+  foldOf,
+  resolveLocal,
+  toTZ,
+} from "./helpers/timezone.ts";
 
 /**
  * Many JS engines stores the delay as a 32-bit signed integer internally.
@@ -54,8 +61,6 @@ import { isCronCallback, isFunction, unrefTimer } from "./utils.ts";
  * computer is suspended, we'll never wait more than 30 seconds between each trigger.
  */
 const MS_PER_DAY: number = 24 * 60 * 60 * 1000;
-const ITERATOR_CURSOR = Symbol("iteratorCursor");
-type IteratorCursor = Date & { [ITERATOR_CURSOR]?: boolean };
 const maxDelay: number = 30 * 1000;
 
 /**
@@ -132,59 +137,72 @@ class Cron<T = undefined> {
 
   /**
    * Internal helper to apply dayOffset to a date if configured.
-   * Reduces duplication of dayOffset calculation logic.
    *
    * @param date - The base date to apply offset to
    * @returns The date with dayOffset applied, or the original date if no offset is configured
    * @private
    */
   private applyDayOffset(date: Date): Date {
-    if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
-      const offsetMs = this.options.dayOffset * MS_PER_DAY;
-      return new Date(date.getTime() + offsetMs);
-    }
-    return date;
+    const offsetMs = this._offsetMs();
+    return offsetMs ? new Date(date.getTime() + offsetMs) : date;
   }
 
-  private _nextTarget(previousRun: CronDate<T> | undefined, now: Date): Date | null {
-    const offsetMs = (this.options.dayOffset ?? 0) * MS_PER_DAY;
-    if (
-      this._states.once && this._states.currentRun &&
-      this._states.once.getTime() + offsetMs <= this._states.currentRun.getTime()
-    ) {
-      return null;
-    }
-    const shiftedNow = new Date(now.getTime() - offsetMs);
-    const shiftCron = (d: CronDate<T> | undefined) =>
-      d ? new CronDate<T>(new Date(d.getTime() - offsetMs), this.getTz()) : undefined;
-    const bounds = {
-      startAt: shiftCron(this.options.startAt as CronDate<T> | undefined),
-      stopAt: shiftCron(this.options.stopAt as CronDate<T> | undefined),
-      includeStartAt: offsetMs !== 0,
-    };
-    let next = this._next(
-      previousRun ? new Date(previousRun.getTime() - offsetMs) : undefined,
-      shiftedNow,
-      bounds,
-    );
-    while (next) {
-      const target = this.applyDayOffset(next.getDate(false));
-      if (
-        this.options.startAt &&
-        target.getTime() < (this.options.startAt as CronDate<T>).getTime()
-      ) {
-        next = this._next(next, shiftedNow, bounds);
-        continue;
-      }
-      if (
-        this.options.stopAt &&
-        target.getTime() >= (this.options.stopAt as CronDate<T>).getTime()
-      ) {
-        return null;
-      }
-      return target;
-    }
-    return null;
+  /**
+   * The dayOffset option in milliseconds
+   */
+  private _offsetMs(): number {
+    return (this.options.dayOffset ?? 0) * MS_PER_DAY;
+  }
+
+  /**
+   * The startAt and stopAt options, which CronOptionsHandler has made CronDates
+   */
+  private get _startAt(): CronDate<T> | undefined {
+    return this.options.startAt as CronDate<T> | undefined;
+  }
+  private get _stopAt(): CronDate<T> | undefined {
+    return this.options.stopAt as CronDate<T> | undefined;
+  }
+
+  /**
+   * Find the next time the job runs, after a reference (default: now). With dayOffset, the
+   * pattern is searched in shifted time, so the reference, startAt and stopAt are all compared
+   * with the actual run time.
+   */
+  private _nextTarget(
+    reference: CronDate<T> | Date | string | null | undefined,
+    now: Date,
+  ): Date | null {
+    const offsetMs = this._offsetMs();
+    const next = this._next(this._shift(reference), new Date(now.getTime() - offsetMs), {
+      startAt: this._shift(this._startAt),
+      stopAt: this._shift(this._stopAt),
+    });
+    return next ? this.applyDayOffset(next.getDate(false)) : null;
+  }
+
+  /**
+   * Find the previous time the job ran, before a reference (default: now). See _nextTarget.
+   */
+  private _previousTarget(
+    reference: CronDate<T> | Date | string | null | undefined,
+    now: Date,
+  ): Date | null {
+    const previous = this._previous(this._shift(reference ?? now), {
+      startAt: this._shift(this._startAt),
+      stopAt: this._shift(this._stopAt),
+    });
+    return previous ? this.applyDayOffset(previous.getDate(false)) : null;
+  }
+
+  /**
+   * Move a run time back by dayOffset, to the pattern match it was shifted from
+   */
+  private _shift(
+    date: CronDate<T> | Date | string | null | undefined,
+  ): CronDate<T> | undefined {
+    if (date === null || date === undefined) return undefined;
+    return new CronDate<T>(new Date(this._toMs(date) - this._offsetMs()), this.getTz());
   }
 
   constructor(
@@ -196,16 +214,24 @@ class Cron<T = undefined> {
     let options: CronOptions<T> | undefined;
     let func: CronCallback<T> | undefined;
 
-    for (const arg of [fnOrOptions1, fnOrOptions2]) {
-      if (isFunction(arg)) {
-        func = arg as CronCallback<T>;
-      } else if (typeof arg === "object") {
-        options = arg as CronOptions<T>;
-      } else if (arg !== void 0) {
-        throw new Error(
-          "Cron: Invalid argument passed. Should be one of function, or object (options).",
-        );
-      }
+    if (isFunction(fnOrOptions1)) {
+      func = fnOrOptions1 as CronCallback<T>;
+    } else if (typeof fnOrOptions1 === "object") {
+      options = fnOrOptions1 as CronOptions<T>;
+    } else if (fnOrOptions1 !== void 0) {
+      throw new Error(
+        "Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).",
+      );
+    }
+
+    if (isFunction(fnOrOptions2)) {
+      func = fnOrOptions2 as CronCallback<T>;
+    } else if (typeof fnOrOptions2 === "object") {
+      options = fnOrOptions2 as CronOptions<T>;
+    } else if (fnOrOptions2 !== void 0) {
+      throw new Error(
+        "Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).",
+      );
     }
 
     this.name = options?.name;
@@ -269,10 +295,7 @@ class Cron<T = undefined> {
    * @returns The next run time as a Date object, or null if there is no next run.
    */
   public nextRun(prev?: CronDate<T> | Date | string | null): Date | null {
-    const next = this._next(prev);
-    if (!next) return null;
-
-    return this.applyDayOffset(next.getDate(false));
+    return this._nextTarget(prev, new Date());
   }
 
   /**
@@ -320,7 +343,7 @@ class Cron<T = undefined> {
    * @param n - Number of runs to enumerate
    * @param startDate - Date to start from
    * @param direction - Direction to enumerate ("next" or "previous")
-   * @returns Array of run times with dayOffset applied
+   * @returns Array of run times
    * @private
    */
   private _enumerateRuns(
@@ -329,25 +352,16 @@ class Cron<T = undefined> {
     direction: "next" | "previous",
   ): Date[] {
     const enumeration: Date[] = [];
-    // Normalize startDate to CronDate or null so type is narrowed before loop
-    let currentCron: CronDate<T> | null = startDate
-      ? new CronDate<T>(startDate, this.getTz())
-      : null;
-
-    const findMethod = direction === "next" ? this._next : this._previous;
-
-    while (n--) {
-      const nextCron = findMethod.call(this, currentCron);
-      if (!nextCron) break;
-
-      // Apply dayOffset if needed when pushing to result array
-      const baseDate = nextCron.getDate(false);
-      enumeration.push(this.applyDayOffset(baseDate));
-
-      // Continue enumeration from the unmodified CronDate
-      currentCron = nextCron;
+    const now = new Date();
+    let current: CronDate<T> | Date | string | undefined | null = startDate;
+    while (n-- > 0) {
+      const run = direction === "next"
+        ? this._nextTarget(current, now)
+        : this._previousTarget(current, now);
+      if (!run) break;
+      enumeration.push(run);
+      current = run;
     }
-
     return enumeration;
   }
 
@@ -410,7 +424,7 @@ class Cron<T = undefined> {
    */
   public isRunning(): boolean {
     return !this._states.paused && !this._states.kill && this.fn !== void 0 &&
-      this.nextRun(this._states.currentRun) !== null;
+      this._nextTarget(this._states.currentRun, new Date()) !== null;
   }
 
   /**
@@ -455,19 +469,9 @@ class Cron<T = undefined> {
    * @param prev Starting date, defaults to now - minimum interval
    */
   public msToNext(prev?: CronDate<T> | Date | string): number | null {
-    // Get next run time
-    const next = this._next(prev);
-
-    if (next) {
-      if (prev instanceof CronDate || prev instanceof Date) {
-        return (next.getTime() - prev.getTime());
-      } else {
-        const timezone = typeof prev === "string" ? this.getTz() : undefined;
-        return (next.getTime() - new CronDate<T>(prev, timezone).getTime());
-      }
-    } else {
-      return null;
-    }
+    const now = new Date();
+    const next = this._nextTarget(prev, now);
+    return next ? next.getTime() - this._toMs(prev ?? now) : null;
   }
 
   /**
@@ -538,26 +542,19 @@ class Cron<T = undefined> {
       this.fn = func;
     }
 
-    // Get the effective previous run. When the clock has stepped backward
-    // (currentRun > now), reset to undefined so both target and waitMs are
-    // computed from the current wall-clock time, avoiding mismatched timers.
-    const currentTime = now ?? new Date();
-    const previousRun = this._states.blocking && this.options.protect
-      ? undefined
-      : this._states.currentRun;
-    const effectivePrev = previousRun && previousRun.getTime() > currentTime.getTime()
-      ? undefined
-      : previousRun;
-
     // Get actual ms to next run, bail out early if any of them is null (no next run)
+    const currentTime = now ?? new Date();
     const next = this._nextTarget(undefined, currentTime);
     let waitMs = next ? next.getTime() - currentTime.getTime() : null;
 
-    // Get the target date based on (potentially adjusted) previous run
-    const target = this._nextTarget(effectivePrev, currentTime);
+    // Get the target date based on previous run. If the clock has stepped backward
+    // (currentRun > now), use the current time instead, so target and waitMs agree.
+    let previousRun = this._states.currentRun;
+    if (previousRun && previousRun.getTime() > currentTime.getTime()) previousRun = undefined;
+    const target = this._nextTarget(previousRun, currentTime);
 
     // isNaN added to prevent infinite loop
-    if (waitMs === null || waitMs === undefined || isNaN(waitMs) || target === null) return this;
+    if (waitMs === null || isNaN(waitMs) || target === null) return this;
 
     // setTimeout cant handle more than Math.pow(2, 32 - 1) - 1 ms
     if (waitMs > maxDelay) {
@@ -587,7 +584,7 @@ class Cron<T = undefined> {
   /**
    * Internal function to trigger a run, used by both scheduled and manual trigger
    */
-  private async _trigger(initiationDate?: Date) {
+  private async _trigger(initiationDate: Date = new Date()) {
     this._states.blocking = true;
 
     this._states.currentRun = new CronDate<T>(
@@ -674,40 +671,32 @@ class Cron<T = undefined> {
   private _next(
     previousRun?: CronDate<T> | Date | string | null,
     now?: Date,
-    bounds?: { startAt?: CronDate<T>; stopAt?: CronDate<T>; includeStartAt?: boolean },
+    bounds?: { startAt?: CronDate<T>; stopAt?: CronDate<T> },
   ) {
-    const isImplicitIteratorCursor = previousRun !== undefined && previousRun !== null &&
-      (previousRun as IteratorCursor)[ITERATOR_CURSOR] === false;
-    const isTraversalCursor = previousRun !== undefined && previousRun !== null &&
-      (previousRun as IteratorCursor)[ITERATOR_CURSOR] !== false;
-    if (isImplicitIteratorCursor) {
-      now = new Date((previousRun as Date).getTime());
-    }
-    const startAt = bounds ? bounds.startAt : this.options.startAt as CronDate<T> | undefined;
-    const stopAt = bounds ? bounds.stopAt : this.options.stopAt as CronDate<T> | undefined;
-    let hasPreviousRun = !!((previousRun && !isImplicitIteratorCursor) || this._states.currentRun);
+    const startAt = bounds ? bounds.startAt : this._startAt;
+    const stopAt = bounds ? bounds.stopAt : this._stopAt;
+    const isEnumerating = !!previousRun;
+    let hasPreviousRun = !!(previousRun || this._states.currentRun);
 
     // If no previous run, and startAt and interval is set, calculate when the last run should have been
     let startAtInFutureWithInterval = false;
-    if ((!previousRun || isImplicitIteratorCursor) && startAt && this.options.interval) {
-      [previousRun, hasPreviousRun] = this._calculatePreviousRun(
-        isImplicitIteratorCursor ? undefined : previousRun,
-        isImplicitIteratorCursor ? false : hasPreviousRun,
-        now,
-        startAt,
-      );
+    if (!previousRun && startAt && this.options.interval) {
+      previousRun = this._calculatePreviousRun(startAt, now);
+      if (previousRun) hasPreviousRun = true;
       startAtInFutureWithInterval = !previousRun;
     }
 
-    // Ensure previous run is a CronDate
-    previousRun = new CronDate<T>(previousRun ?? now, this.getTz());
+    // Search from the exact reference instant
+    const reference = previousRun ?? now ?? new Date();
+    let referenceMs = this._toMs(reference);
+    previousRun = new CronDate<T>(reference, this.getTz());
 
     // Previous run should never be before startAt
-    const searchStartAt = bounds?.includeStartAt && startAt && !startAtInFutureWithInterval
-      ? new CronDate<T>(new Date(startAt.getTime() - 1000), this.getTz())
-      : startAt;
-    if (searchStartAt && previousRun && previousRun.getTime() < searchStartAt.getTime()) {
-      previousRun = searchStartAt;
+    if (startAt && referenceMs < startAt.getTime()) {
+      previousRun = startAtInFutureWithInterval
+        ? startAt
+        : new CronDate<T>(new Date(startAt.getTime() - 1000), this.getTz());
+      referenceMs = previousRun.getTime();
     }
 
     // Calculate next run according to pattern or one-off timestamp, pass actual previous run to increment
@@ -716,48 +705,27 @@ class Cron<T = undefined> {
 
     // if the startAt is in the future and the interval is set, then the prev is already set to the startAt, so there is no need to increment it
     if (!startAtInFutureWithInterval && nextRun !== this._states.once) {
-      nextRun = nextRun.increment(
-        this._states.pattern,
-        this.options,
-        hasPreviousRun, // hasPreviousRun is used to allow
-      );
+      nextRun = this._findOccurrence(previousRun, referenceMs, 1, hasPreviousRun);
     }
 
-    // For "once" jobs:
-    // - If the job has already executed (currentRun exists and >= once time), return null
-    // - If enumerating and previousRun == once time, we've already returned it, so return null
-    // - If the job hasn't executed yet but once time is in the past:
-    //   - If allowPast option is true, allow it to fire
-    //   - Otherwise, only allow if within 1 second (handles timing edge cases)
+    // For "once" jobs, return null if:
+    // - the once time is before startAt
+    // - the job has already executed (currentRun is the actual fire time, so include dayOffset)
+    // - searching from a reference at or after the once time
+    // - the once time is more than 1 second in the past, unless allowPast is set
     if (this._states.once) {
-      if (startAt && this._states.once.getTime() < startAt.getTime()) {
-        return null;
-      }
-      // Job has already executed
+      const onceMs = this._states.once.getTime();
+      const pastMs = referenceMs - onceMs;
       if (
-        this._states.currentRun && this._states.once.getTime() <= this._states.currentRun.getTime()
+        (startAt && onceMs < startAt.getTime()) ||
+        (this._states.currentRun &&
+          this.applyDayOffset(this._states.once.getDate()).getTime() <=
+            this._states.currentRun.getTime()) ||
+        (isEnumerating ? pastMs >= 0 : pastMs > 1000 && !this.options.allowPast)
       ) {
         return null;
-      }
-      // When enumerating, if previousRun is at the once time, we've already returned it
-      if (
-        isTraversalCursor &&
-        (previousRun as CronDate<T>).getTime() === this._states.once.getTime()
-      ) {
-        return null;
-      }
-      // Job hasn't executed, but once time is in the past
-      const timeDiff = (previousRun as CronDate<T>).getTime() - this._states.once.getTime();
-      if (timeDiff > 0) {
-        // If allowPast is false, only allow jobs within 1 second (timing edge cases)
-        if (!this.options.allowPast && timeDiff > 1000) {
-          return null;
-        }
       }
     }
-
-    // DST fall-back overlap fix
-    nextRun = this._resolveDSTOverlap(nextRun, previousRun as CronDate<T>, hasPreviousRun);
 
     if (
       nextRun === null || this._states.maxRuns !== undefined && this._states.maxRuns <= 0 ||
@@ -774,39 +742,31 @@ class Cron<T = undefined> {
    * @param referenceDate - Optional reference date to search backwards from (defaults to now)
    * @returns Previous scheduled run time, or null if no previous run exists
    */
-  private _previous(referenceDate?: CronDate<T> | Date | string | null): CronDate<T> | null {
-    // Ensure reference date is a CronDate
-    let reference = new CronDate<T>(referenceDate, this.getTz());
+  private _previous(
+    referenceDate: CronDate<T> | Date | string | null | undefined,
+    bounds: { startAt?: CronDate<T>; stopAt?: CronDate<T> },
+  ): CronDate<T> | null {
+    let referenceMs = this._toMs(referenceDate ?? new Date());
 
     // Don't return runs that would be after stopAt
-    if (
-      this.options.stopAt && reference.getTime() > (this.options.stopAt as CronDate<T>).getTime()
-    ) {
-      reference = this.options.stopAt as CronDate<T>;
+    if (bounds.stopAt && referenceMs > bounds.stopAt.getTime()) {
+      referenceMs = bounds.stopAt.getTime();
     }
-
-    // Calculate previous run according to pattern
-    let previousRun: CronDate<T> | null = new CronDate<T>(
-      reference,
-      this.getTz(),
-    );
 
     // For one-off schedules, check if the scheduled time is before the reference
     if (this._states.once) {
-      return this._states.once.getTime() < reference.getTime() ? this._states.once : null;
+      return this._states.once.getTime() < referenceMs ? this._states.once : null;
     }
 
-    // Use decrement to find previous match
-    previousRun = previousRun.decrement(
-      this._states.pattern,
-      this.options,
+    const previousRun = this._findOccurrence(
+      new CronDate<T>(new Date(referenceMs), this.getTz()),
+      referenceMs,
+      -1,
     );
 
     // Check if previous run is valid
     if (
-      previousRun === null ||
-      (this.options.startAt &&
-        previousRun.getTime() < (this.options.startAt as CronDate<T>).getTime())
+      previousRun === null || (bounds.startAt && previousRun.getTime() < bounds.startAt.getTime())
     ) {
       return null;
     }
@@ -814,100 +774,149 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Resolve DST fall-back overlap: when increment() produces a next run that is not
-   * monotonically advancing in UTC relative to the previous run, adjust to the correct
-   * DST occurrence (earlier wall clock, later UTC).
-   *
-   * @private
+   * The exact instant of a reference date. Strings are read in the timezone of the job.
    */
-  private _resolveDSTOverlap(
-    nextRun: CronDate<T> | null,
-    previousRun: CronDate<T>,
-    hasPreviousRun: boolean,
-  ): CronDate<T> | null {
-    if (nextRun === null || nextRun === this._states.once || typeof this.getTz() !== "string") {
-      return nextRun;
-    }
-
-    const prevUtc = previousRun.getTime();
-    const nextUtc = nextRun.getTime();
-    const expectedIncrementMs =
-      ((this.options.interval && hasPreviousRun) ? this.options.interval : 1) * 1000;
-    const minimumNextUtc = prevUtc + expectedIncrementMs - previousRun.ms;
-    const gap = nextUtc - prevUtc;
-    const prevOffsetMs = Date.UTC(
-      previousRun.year,
-      previousRun.month,
-      previousRun.day,
-      previousRun.hour,
-      previousRun.minute,
-      previousRun.second,
-    ) - prevUtc;
-    const nextOffsetMs = Date.UTC(
-      nextRun.year,
-      nextRun.month,
-      nextRun.day,
-      nextRun.hour,
-      nextRun.minute,
-      nextRun.second,
-    ) - nextUtc;
-    const overlapMs = prevOffsetMs - nextOffsetMs;
-
-    if (overlapMs > 0 && (gap >= expectedIncrementMs + overlapMs || gap < 0)) {
-      const overlapUtc = gap < 0 ? nextUtc + overlapMs : nextUtc - overlapMs;
-      const overlapCron = new CronDate<T>(new Date(overlapUtc), this.getTz());
-      overlapCron.setAfterMs(minimumNextUtc);
-      while (true) {
-        const candidateUtc = overlapCron.getTime();
-        if (candidateUtc < minimumNextUtc || (gap >= 0 && candidateUtc >= nextUtc)) {
-          break;
-        }
-        if (overlapCron.match(this._states.pattern, this.options)) {
-          return overlapCron;
-        }
-        if (overlapCron.increment(this._states.pattern, this.options, false) === null) {
-          break;
-        }
-      }
-    }
-
-    return nextRun;
+  private _toMs(reference: CronDate<T> | Date | string): number {
+    return reference instanceof Date
+      ? reference.getTime()
+      : new CronDate<T>(reference, this.getTz()).getTime();
   }
+
   /**
-   * Calculate the previous run if no previous run is supplied, but startAt and interval are set.
-   * This calculation is only necessary if the startAt time is before the current time.
-   * Should only be called from the _next function.
+   * Find the first occurrence after (direction 1) or before (direction -1) referenceMs,
+   * walking the wall clock from `start`. Same algorithm as find_occurrence in croner-rust.
+   *
+   * When the clock goes back (DST fall back), a range of wall clock times repeats, and one
+   * walk covers only one pass of it. If the reference is on the pass the search meets first,
+   * the other pass still lies ahead, so it is walked too, and the nearer match wins.
    */
-  private _calculatePreviousRun(
-    prev: CronDate<T> | Date | string | undefined | null,
+  private _findOccurrence(
+    start: CronDate<T>,
+    referenceMs: number,
+    direction: 1 | -1,
+    hasPreviousRun = false,
+  ): CronDate<T> | null {
+    const found = this._walk(start, referenceMs, direction, hasPreviousRun);
+
+    // A fixed-time job never runs on the later pass, and a fixed UTC offset has no DST
+    const tz = this.getTz();
+    if ((this._states.pattern.isFixedTime && direction === 1) || typeof tz === "number") {
+      return found;
+    }
+    if (foldOf(referenceMs, tz) !== (direction === 1 ? "earlier" : "later")) return found;
+
+    // The other pass starts when the clock goes back, and ends just before it
+    const ms = Math.floor(referenceMs / 1000) * 1000;
+    const edgeMs = direction === 1
+      ? findOffsetChange(ms, ms + MS_PER_DAY, tz)
+      : findOffsetChange(ms - MS_PER_DAY, ms, tz) - 1000;
+
+    // A match before the edge beats anything on the other pass
+    if (found && (edgeMs - found.getTime()) * direction > 0) return found;
+
+    const other = this._walk(
+      new CronDate<T>(new Date(edgeMs), tz),
+      edgeMs - direction,
+      direction,
+      false,
+      true,
+    );
+    if (!found || !other) return found ?? other;
+    return (found.getTime() - other.getTime()) * direction > 0 ? other : found;
+  }
+
+  /**
+   * Walk the wall clock from `start` until a time matches the pattern, and runs after
+   * (direction 1) or before (direction -1) referenceMs. Same algorithm as walk in croner-rust.
+   */
+  private _walk(
+    start: CronDate<T>,
+    referenceMs: number,
+    direction: 1 | -1,
     hasPreviousRun: boolean,
-    now?: Date,
-    startAt?: CronDate<T>,
-  ): [CronDate<T> | undefined, boolean] {
-    const nowDate = new CronDate<T>(now, this.getTz());
-    let newPrev: CronDate<T> | undefined | null = prev as CronDate<T>;
-    if (startAt && startAt.getTime() <= nowDate.getTime()) {
-      newPrev = startAt;
-      let prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
-      while (prevTimePlusInterval <= nowDate.getTime()) {
-        const next = new CronDate<T>(newPrev, this.getTz())
-          .increment(
-            this._states.pattern,
-            this.options,
-            true,
-          );
-        if (next === null) {
-          break;
-        }
-        newPrev = next;
-        prevTimePlusInterval = (newPrev as CronDate<T>).getTime() + this.options.interval! * 1000;
-      }
-      hasPreviousRun = true;
+    inclusive = false,
+  ): CronDate<T> | null {
+    const pattern = this._states.pattern;
+    const step = (date: CronDate<T>, hasPrevious: boolean) =>
+      direction === 1
+        ? date.increment(pattern, this.options, hasPrevious)
+        : date.decrement(pattern, this.options);
+
+    let candidate: CronDate<T> | null = new CronDate<T>(start, this.getTz());
+    if (!inclusive || !candidate.match(pattern, this.options)) {
+      candidate = step(candidate, hasPreviousRun);
     }
-    if (newPrev === null) {
-      newPrev = undefined;
+    while (candidate) {
+      const runAt = this._runAt(candidate, referenceMs, direction);
+      if (runAt) return new CronDate<T>(runAt, this.getTz());
+      candidate = step(candidate, false);
     }
-    return [newPrev, hasPreviousRun];
+    return null;
+  }
+
+  /**
+   * When a matching wall clock time runs, if that is after (direction 1) or
+   * before (direction -1) referenceMs. DST rules, shared with croner-rust:
+   * - A time that occurs twice (fall back) runs once, at its first occurrence, for
+   *   fixed-time jobs, and on both occurrences for interval jobs.
+   * - A time that doesn't exist (spring forward) is skipped by interval jobs, and runs
+   *   when the clock has jumped forward for fixed-time jobs, if that is on the same day.
+   */
+  private _runAt(candidate: CronDate<T>, referenceMs: number, direction: 1 | -1): Date | null {
+    const isAhead = (date: Date) => (date.getTime() - referenceMs) * direction > 0;
+    const tz = candidate.tz;
+    if (typeof tz === "number") {
+      const date = candidate.getDate();
+      return isAhead(date) ? date : null;
+    }
+
+    const local = createTimePoint(
+      candidate.year,
+      candidate.month + 1,
+      candidate.day,
+      candidate.hour,
+      candidate.minute,
+      candidate.second,
+      tz,
+    );
+    const resolved = resolveLocal(local);
+    const isFixedTime = this._states.pattern.isFixedTime;
+
+    if (resolved.kind === "single") {
+      return isAhead(resolved.date) ? resolved.date : null;
+    }
+    if (resolved.kind === "ambiguous") {
+      const { earlier, later } = resolved;
+      const order = isFixedTime ? [earlier] : direction === 1 ? [earlier, later] : [later, earlier];
+      return order.find(isAhead) ?? null;
+    }
+    if (!isFixedTime) return null;
+    const gapEnd = new Date(
+      findOffsetChange(resolved.before.getTime(), resolved.after.getTime(), tz),
+    );
+    const gapEndLocal = toTZ(gapEnd, tz);
+    const sameDay = gapEndLocal.y === local.y && gapEndLocal.m === local.m &&
+      gapEndLocal.d === local.d;
+    return sameDay && isAhead(gapEnd) ? gapEnd : null;
+  }
+
+  /**
+   * When startAt and interval are set and there is no previous run, find the last run there
+   * would have been between startAt and now. Returns undefined if startAt is in the future.
+   */
+  private _calculatePreviousRun(startAt: CronDate<T>, now?: Date): CronDate<T> | undefined {
+    const nowMs = new CronDate<T>(now, this.getTz()).getTime();
+    if (startAt.getTime() > nowMs) return undefined;
+
+    const intervalMs = this.options.interval! * 1000;
+    let previous = startAt;
+    while (previous.getTime() + intervalMs <= nowMs) {
+      const next = new CronDate<T>(previous, this.getTz())
+        .increment(this._states.pattern, this.options, true);
+      if (next === null) break;
+      previous = next;
+    }
+    return previous;
   }
 }
 
@@ -921,10 +930,13 @@ class Cron<T = undefined> {
  */
 class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable<Date> {
   private cron: Cron<T>;
-  private cursor: Date | string | undefined;
-  private done: boolean;
+  /** Last returned date, or the user supplied start date */
+  private cursor!: Date | string | undefined;
+  /** Time of creation or reset, used as reference while there is no cursor */
+  private now!: Date;
+  private done!: boolean;
   private initialMaxRuns: number;
-  private remainingRuns: number;
+  private remainingRuns!: number;
 
   /**
    * @param cron - The Cron instance to iterate over
@@ -932,31 +944,8 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    */
   constructor(cron: Cron<T>, startAt?: Date | string | null) {
     this.cron = cron;
-    this.cursor = CronIterator._normalizeCursor(startAt);
-    if (this.cursor === undefined) {
-      this.cursor = CronIterator._markCursor(new Date(), false);
-    }
-    this.done = false;
     this.initialMaxRuns = cron.options.maxRuns ?? Infinity;
-    this.remainingRuns = this.initialMaxRuns;
-  }
-
-  /**
-   * Normalizes a cursor argument: Date objects are cloned to prevent external mutation;
-   * strings are preserved as-is so that nextRun() can parse them using the Cron instance's
-   * configured timezone (via CronDate/fromTZISO), matching the behaviour of nextRun() and nextRuns().
-   * @private
-   */
-  private static _normalizeCursor(
-    d?: Date | string | null,
-  ): Date | string | undefined {
-    if (d === undefined || d === null) return undefined;
-    return d instanceof Date ? new Date(d.getTime()) : d;
-  }
-
-  private static _markCursor(date: Date, hasBeenReturned: boolean): Date {
-    Object.defineProperty(date, ITERATOR_CURSOR, { value: hasBeenReturned });
-    return date;
+    this.reset(startAt);
   }
 
   /**
@@ -971,18 +960,12 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
       this.done = true;
       return { value: undefined, done: true };
     }
-    const nextDate = this.cron.nextRun(this.cursor ?? null);
+    const nextDate = this.cron["_nextTarget"](this.cursor, this.now);
     if (nextDate === null) {
       this.done = true;
       return { value: undefined, done: true };
     }
-    // The cursor must track the un-offset schedule time so that subsequent
-    // nextRun() calls find the correct next occurrence.  nextRun() applies
-    // dayOffset on the way out, so we reverse it here before storing.
-    const dayOffset = this.cron.options.dayOffset;
-    const offsetDays = dayOffset ?? 0;
-    const unoffsetTime = nextDate.getTime() - offsetDays * MS_PER_DAY;
-    this.cursor = CronIterator._markCursor(new Date(unoffsetTime), true);
+    this.cursor = nextDate;
     this.remainingRuns--;
     return { value: nextDate, done: false };
   }
@@ -996,7 +979,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
     if (this.done || this.remainingRuns <= 0) {
       return null;
     }
-    return this.cron.nextRun(this.cursor ?? null);
+    return this.cron["_nextTarget"](this.cursor, this.now);
   }
 
   /**
@@ -1005,10 +988,12 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    * @param newStartAt - New starting date. Defaults to current time if omitted.
    */
   public reset(newStartAt?: Date | string | null): void {
-    this.cursor = CronIterator._normalizeCursor(newStartAt);
-    if (this.cursor === undefined) {
-      this.cursor = CronIterator._markCursor(new Date(), false);
-    }
+    // Clone Date objects to prevent external mutation. Strings are kept, so that they are
+    // parsed in the timezone of the Cron instance, like nextRun() does.
+    this.cursor = newStartAt instanceof Date
+      ? new Date(newStartAt.getTime())
+      : newStartAt ?? undefined;
+    this.now = new Date();
     this.done = false;
     this.remainingRuns = this.initialMaxRuns;
   }

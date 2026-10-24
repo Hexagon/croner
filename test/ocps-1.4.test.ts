@@ -97,10 +97,11 @@ test("OCPS 1.4: + without following value should throw", function () {
 // Note: Comprehensive ? character tests are in question-mark.test.ts
 
 // Section 4.3.1: DST Transitions
-test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
+test("DST Gap (Spring Forward) - fixed-time job runs after the gap", function () {
+  // Croner deviates from OCPS 1.4 Section 4.3.1 (skip), and follows croner-rust and Vixie cron.
   // In America/New_York, DST begins on March 12, 2023 at 2:00 AM
   // Clock jumps from 2:00 AM to 3:00 AM
-  // A job scheduled for 2:30 AM should be adjusted to 3:30 AM
+  // A job scheduled for 2:30 AM runs at 3:00 AM, the first valid time after the gap
   const cron = new Cron("0 30 2 12 3 *", { timezone: "America/New_York" });
 
   // Start from before the DST transition
@@ -113,9 +114,8 @@ test("OCPS 1.4: DST Gap (Spring Forward) - job should be skipped", function () {
   assertEquals(run.getMonth(), 2, "Should run in March (month 2)");
   assertEquals(run.getDate(), 12, "Should run on the 12th");
 
-  // The time 2:30 AM doesn't exist, so it should be adjusted to 3:30 AM EDT
-  // 3:30 AM EDT = 07:30 UTC
-  assertEquals(run.toISOString(), "2023-03-12T07:30:00.000Z", "Should be adjusted to 3:30 AM EDT");
+  // The time 2:30 AM doesn't exist, so it runs at 3:00 AM EDT = 07:00 UTC
+  assertEquals(run.toISOString(), "2023-03-12T07:00:00.000Z", "Should run at 3:00 AM EDT");
 });
 
 test("OCPS 1.4: DST Overlap (Fall Back) - job should run once at first occurrence", function () {

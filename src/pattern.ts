@@ -61,6 +61,11 @@ class CronPattern {
   starDOW: boolean;
   starYear: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
+  /**
+   * True if seconds, minutes and hours each have a single value, without wildcard or step.
+   * Fixed-time and interval jobs handle DST transitions differently, as in croner-rust.
+   */
+  isFixedTime: boolean;
 
   constructor(
     pattern: string,
@@ -89,6 +94,7 @@ class CronPattern {
     this.starDOW = false; // Asterisk used for dayOfWeek
     this.starYear = false; // Asterisk used for year
     this.useAndLogic = false; // OCPS 1.4: Default is OR logic
+    this.isFixedTime = false;
 
     this.parse();
   }
@@ -277,6 +283,12 @@ class CronPattern {
     if (!this.alternativeWeekdays && this.dayOfWeek[7]) {
       this.dayOfWeek[0] = this.dayOfWeek[7];
     }
+
+    // A fixed-time job has exactly one second, minute and hour, not from a wildcard or step
+    const isFixed = (part: string, values: number[]) =>
+      !part.includes("*") && !part.includes("/") && values.filter((v) => v).length === 1;
+    this.isFixedTime = isFixed(parts[0], this.second) && isFixed(parts[1], this.minute) &&
+      isFixed(parts[2], this.hour);
   }
 
   /**
@@ -641,7 +653,7 @@ class CronPattern {
     this.validateRange(0, this[type].length - 1, steps, type, conf);
 
     for (let i = start; i < this[type].length; i += steps) {
-      if (type === "year" && i === 0) continue;
+      if (type === "year" && i === 0) continue; // There is no year 0 (OCPS 1.2: years 1-9999)
       this.setPart(type, i, result[1] || defaultValue);
     }
   }
@@ -662,7 +674,8 @@ class CronPattern {
   }
 
   /**
-   * Map of cron nickname patterns to their equivalent cron expressions.
+   * Day names to day-of-week numbers. Names are replaced in this order, so "-sun" must come
+   * before "sun".
    * @private
    */
   private static DAY_NAMES: Record<string, string> = {
@@ -701,6 +714,10 @@ class CronPattern {
     "dec": "12",
   };
 
+  /**
+   * Map of cron nickname patterns to their equivalent cron expressions.
+   * @private
+   */
   private static NICKNAME_MAP: Record<string, string> = {
     "@yearly": "0 0 1 1 *",
     "@annually": "0 0 1 1 *",

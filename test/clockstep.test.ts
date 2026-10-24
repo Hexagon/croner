@@ -127,6 +127,32 @@ test("rearming selects the interval cursor using the fresh clock", () => {
   }
 });
 
+/**
+ * Schedules a job on a fake clock starting at `startTime`, follows the armed timers, and
+ * returns when the job first runs, or null if it doesn't run before `untilTime`.
+ */
+function firstRunAt(job: Cron, startTime: number, untilTime: number): number | null {
+  const clock = useClock(startTime);
+  let now = startTime;
+  let firedAt: number | null = null;
+  try {
+    job.schedule(() => {
+      firedAt ??= now;
+    });
+    let handled = 0;
+    while (firedAt === null && now <= untilTime && clock.timeouts.length > handled) {
+      const timer = clock.timeouts[handled++];
+      now += timer.delay;
+      clock.setNow(now);
+      timer.callback();
+    }
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+  return firedAt;
+}
+
 for (
   const { dayOffset, initialTime, occurrenceTime } of [
     {
@@ -165,58 +191,52 @@ for (
 }
 
 test("dayOffset keeps scheduled targets within the execution window", () => {
+  // The first base match after the clock is Jan 11, but its target Jan 9 is before startAt
   const startAt = Date.UTC(2025, 0, 15, 12);
   const negativeOffsetJob = new Cron("0 0 12 * * *", {
     dayOffset: -2,
     startAt: new Date(startAt),
     timezone: "UTC",
   });
+  assertEquals(
+    firstRunAt(negativeOffsetJob, Date.UTC(2025, 0, 10, 12), Date.UTC(2025, 0, 20)),
+    startAt,
+  );
 
-  const getNextTarget = (job: Cron) =>
-    (job as unknown as { _nextTarget: (previousRun: undefined, now: Date) => Date | null })
-      ._nextTarget(undefined, new Date(Date.UTC(2025, 0, 10, 12)));
-  assertEquals(getNextTarget(negativeOffsetJob)?.getTime(), startAt);
-  negativeOffsetJob.stop();
-
-  const stopAt = Date.UTC(2025, 0, 16, 12);
+  // The next target, Jan 16 12:00, is not before stopAt
   const positiveOffsetJob = new Cron("0 0 12 * * *", {
     dayOffset: 1,
-    stopAt: new Date(stopAt),
+    stopAt: new Date(Date.UTC(2025, 0, 16, 12)),
     timezone: "UTC",
   });
-
   assertEquals(
-    (positiveOffsetJob as unknown as {
-      _nextTarget: (previousRun: undefined, now: Date) => Date | null;
-    })
-      ._nextTarget(undefined, new Date(Date.UTC(2025, 0, 15, 12))),
+    firstRunAt(positiveOffsetJob, Date.UTC(2025, 0, 15, 12), Date.UTC(2025, 0, 20)),
     null,
   );
-  positiveOffsetJob.stop();
 });
 
 test("dayOffset shifts search bounds to include valid edge occurrences", () => {
+  // Target Jan 15 12:00 is exactly startAt, from the base match on Jan 14
   const positiveOffsetJob = new Cron("0 0 12 * * *", {
     dayOffset: 1,
     startAt: new Date(Date.UTC(2025, 0, 15, 12)),
     timezone: "UTC",
   });
-  const positiveTarget = (positiveOffsetJob as unknown as {
-    _nextTarget: (previousRun: undefined, now: Date) => Date | null;
-  })._nextTarget(undefined, new Date(Date.UTC(2025, 0, 13, 12)));
-  assertEquals(positiveTarget?.getTime(), Date.UTC(2025, 0, 15, 12));
-  positiveOffsetJob.stop();
+  assertEquals(
+    firstRunAt(positiveOffsetJob, Date.UTC(2025, 0, 13, 12), Date.UTC(2025, 0, 20)),
+    Date.UTC(2025, 0, 15, 12),
+  );
 
+  // Target Jan 15 12:00 is before stopAt, although its base match on Jan 16 is not
   const negativeOffsetJob = new Cron("0 0 12 * * *", {
     dayOffset: -1,
     stopAt: new Date(Date.UTC(2025, 0, 16, 12)),
     timezone: "UTC",
   });
-  const negativeTarget = (negativeOffsetJob as unknown as {
-    _nextTarget: (previousRun: undefined, now: Date) => Date | null;
-  })._nextTarget(undefined, new Date(Date.UTC(2025, 0, 14, 12)));
-  assertEquals(negativeTarget?.getTime(), Date.UTC(2025, 0, 15, 12));
-  negativeOffsetJob.stop();
+  assertEquals(
+    firstRunAt(negativeOffsetJob, Date.UTC(2025, 0, 14, 12), Date.UTC(2025, 0, 20)),
+    Date.UTC(2025, 0, 15, 12),
+  );
 });
 
 test("a protected job re-arms from the current clock after a backward step", async () => {

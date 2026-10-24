@@ -260,9 +260,9 @@ test("UTC timezone should not skip hours during local DST transitions (issue #28
   testjob.stop();
 });
 
-test("OCPS 1.4 compliance: DST Gap (Spring Forward) - job should be skipped", function () {
-  // OCPS 1.4 Section 4.3.1: When a scheduled time falls into a DST gap,
-  // the job SHOULD be skipped (not run earlier or delayed after transition)
+test("DST Gap (Spring Forward) - fixed-time job runs when the clock has jumped forward", function () {
+  // Croner deviates from OCPS 1.4 Section 4.3.1 (skip), and follows croner-rust and Vixie cron:
+  // a fixed-time job in a DST gap runs at the first valid time after the gap, on the same day
 
   // America/New_York: March 9, 2025 at 2:00 AM EST -> 3:00 AM EDT
   // Times 2:00-2:59 AM don't exist
@@ -271,11 +271,10 @@ test("OCPS 1.4 compliance: DST Gap (Spring Forward) - job should be skipped", fu
   // When asking for next run on March 9 (before DST transition)
   const march9Next = nyJob.nextRun("2025-03-09T06:00:00Z"); // 1 AM EST on March 9
 
-  // Should skip to 3:30 AM EDT (not 2:30 AM which doesn't exist)
-  // 3:30 AM EDT on March 9 = 2025-03-09T07:30:00.000Z
-  assertEquals(march9Next?.toISOString(), "2025-03-09T07:30:00.000Z");
+  // 2:30 AM doesn't exist, so it runs at 3:00 AM EDT = 2025-03-09T07:00:00.000Z
+  assertEquals(march9Next?.toISOString(), "2025-03-09T07:00:00.000Z");
 
-  // Verify it's 3:30 AM in local time
+  // Verify it's 3 AM in local time
   const localHour = march9Next?.toLocaleString("en-US", {
     timeZone: "America/New_York",
     hour: "2-digit",
@@ -301,11 +300,9 @@ test("OCPS 1.4 compliance: DST Overlap (Fall Back) - job should run once at firs
   const nov2After = nyJob.nextRun("2025-11-02T05:31:00Z"); // Just after first occurrence
   assertEquals(nov2After?.toISOString(), "2025-11-03T06:30:00.000Z"); // Next day at 1:30 AM EST
 
-  // Verify behavior during the second occurrence window (1:00 AM EST on Nov 2)
-  // Since we correctly track DST occurrence, nextRun from the second occurrence
-  // window returns the second occurrence of 1:30 AM (06:30:00Z), which is after the input
+  // A fixed-time job never runs on the second occurrence, also when asked from within it
   const nov2Second = nyJob.nextRun("2025-11-02T06:00:00Z"); // During second occurrence window
-  assertEquals(nov2Second?.toISOString(), "2025-11-02T06:30:00.000Z");
+  assertEquals(nov2Second?.toISOString(), "2025-11-03T06:30:00.000Z");
   nyJob.stop();
 });
 
@@ -315,9 +312,8 @@ test("OCPS 1.4 compliance: Europe/London DST transitions", function () {
 
   const march30 = londonSpring.nextRun("2025-03-30T00:00:00Z");
 
-  // Should skip to 2:30 AM BST (not 1:30 AM which doesn't exist)
-  // 2:30 AM BST on March 30 = 2025-03-30T01:30:00.000Z
-  assertEquals(march30?.toISOString(), "2025-03-30T01:30:00.000Z");
+  // 1:30 AM doesn't exist, so it runs at 2:00 AM BST = 2025-03-30T01:00:00.000Z
+  assertEquals(march30?.toISOString(), "2025-03-30T01:00:00.000Z");
   londonSpring.stop();
 
   // Fall Back: October 26, 2025 at 2:00 AM BST -> 1:00 AM GMT

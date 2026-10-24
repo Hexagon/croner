@@ -349,15 +349,22 @@ test("29W in February should only match leap years", function () {
  * The fix clamps negative waitMs to 0 in schedule().
  */
 test("schedule should handle negative msToNext without error", function () {
-  const job = new Cron("* * * * * *");
+  const realSetTimeout = globalThis.setTimeout;
+  const delays: number[] = [];
+  globalThis.setTimeout = ((_callback: () => void, delay: number) => {
+    delays.push(delay);
+    return 0;
+  }) as unknown as typeof setTimeout;
 
-  // Monkey-patch target calculation to simulate a negative wait value
-  // (can happen due to timing between target calculation and creating the timer)
-  (job as unknown as { _nextTarget: () => Date })._nextTarget = () => new Date(Date.now() - 1);
+  try {
+    // A one-off date in the past with allowPast makes the wait negative
+    const job = new Cron(new Date(Date.now() - 60_000), { allowPast: true });
+    job.schedule(() => {});
+    job.stop();
+  } finally {
+    globalThis.setTimeout = realSetTimeout;
+  }
 
-  // schedule() should clamp the negative value to 0 and not throw
-  job.schedule(() => {});
-
-  // Clean up - stop the job to prevent dangling timers
-  job.stop();
+  // schedule() should clamp the negative value to 0
+  assertEquals(delays, [0]);
 });

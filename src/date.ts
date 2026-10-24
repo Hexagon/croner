@@ -1,4 +1,4 @@
-import { createTimePoint, fromTZ, fromTZISO, toTZ } from "./helpers/timezone.ts";
+import { createTimePoint, fromTZ, fromTZISO, hasUtcDesignator, toTZ } from "./helpers/timezone.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
 import {
@@ -51,13 +51,10 @@ class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
-   * Optional UTC ms threshold for resolving DST overlap ambiguity.
-   * When set, getTime()/getDate() will return the earliest occurrence
-   * that is at or after this threshold.
-   * @private
+   * The instant (whole seconds) this CronDate was created from, if its time has not changed since.
+   * A local time that occurs twice (DST fall back) then keeps the occurrence it was created from.
    */
-  private afterMs?: number;
-  private beforeMs?: number;
+  private instantMs?: number;
 
   /**
    * Current milliseconds
@@ -280,8 +277,7 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
-          // Match the whole-second precision used by timezone conversion.
-          this.afterMs = inDate.getTime() - inDate.getUTCMilliseconds();
+          this.instantMs = inDate.getTime() - this.ms;
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
@@ -298,6 +294,7 @@ class CronDate<T = undefined> {
       this.day = inDate.getDate();
       this.month = inDate.getMonth();
       this.year = inDate.getFullYear();
+      this.instantMs = inDate.getTime() - this.ms;
     }
   }
 
@@ -315,8 +312,7 @@ class CronDate<T = undefined> {
     this.minute = d.minute;
     this.second = d.second;
     this.ms = d.ms;
-    this.afterMs = d.afterMs;
-    this.beforeMs = d.beforeMs;
+    this.instantMs = d.instantMs;
   }
 
   /**
@@ -333,9 +329,10 @@ class CronDate<T = undefined> {
       this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
     ) {
-      const d = new Date(
-        Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms),
-      );
+      // setUTCFullYear, unlike Date.UTC, doesn't read years 0-99 as 1900-1999
+      const d = new Date(0);
+      d.setUTCFullYear(this.year, this.month, this.day);
+      d.setUTCHours(this.hour, this.minute, this.second, this.ms);
       this.ms = d.getUTCMilliseconds();
       this.second = d.getUTCSeconds();
       this.minute = d.getUTCMinutes();
@@ -354,8 +351,13 @@ class CronDate<T = undefined> {
    */
   private fromString(str: string) {
     if (typeof this.tz === "number") {
-      // Parse without timezone
-      const inDate = fromTZISO(str);
+      // A string with Z or an offset is an exact instant
+      if (hasUtcDesignator(str)) {
+        return this.fromDate(fromTZISO(str));
+      }
+
+      // Otherwise it is wall clock time at the UTC offset of the job
+      const inDate = fromTZISO(str, "Etc/UTC");
       this.ms = inDate.getUTCMilliseconds();
       this.second = inDate.getUTCSeconds();
       this.minute = inDate.getUTCMinutes();
@@ -381,20 +383,6 @@ class CronDate<T = undefined> {
     return this._findMatch(options, target, pattern, offset, 1);
   }
 
-  /**
-   * Internal unified method to find a matching time component in either direction.
-   * This method searches through the pattern to find the next or previous valid value
-   * for the specified target component (second, minute, hour, day, or month).
-   *
-   * @param options Cron options
-   * @param target Target property (second, minute, hour, day, month)
-   * @param pattern Pattern to use
-   * @param offset Offset to use
-   * @param direction 1 for forward (next), -1 for backward (previous)
-   * @returns Status code: 1 = same value matches, 2 = value changed, 3 = no match found
-   *
-   * @private
-   */
   /**
    * Evaluate whether a specific day value matches, applying all day-specific
    * special-case logic (W, LW, L modifiers and DOW AND/OR combination).
@@ -480,6 +468,21 @@ class CronDate<T = undefined> {
 
     return match;
   }
+
+  /**
+   * Internal unified method to find a matching time component in either direction.
+   * This method searches through the pattern to find the next or previous valid value
+   * for the specified target component (second, minute, hour, day, or month).
+   *
+   * @param options Cron options
+   * @param target Target property (second, minute, hour, day, month)
+   * @param pattern Pattern to use
+   * @param offset Offset to use
+   * @param direction 1 for forward (next), -1 for backward (previous)
+   * @returns Status code: 1 = same value matches, 2 = value changed, 3 = no match found
+   *
+   * @private
+   */
   private _findMatch(
     options: CronOptions<T>,
     target: RecursionTarget,
@@ -546,6 +549,27 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     doing: number,
   ): CronDate<T> | null {
+    // Step in a loop rather than recursing, so that a long search can't overflow the stack
+    // Without a year field, the pattern repeats with the calendar every 400 years
+    const startYear = this.year;
+    let next: CronDate<T> | number | null = doing;
+    while (typeof next === "number") {
+      if (pattern.starYear && Math.abs(this.year - startYear) > 400) return null;
+      next = this.recurseStep(pattern, options, next);
+    }
+    return next;
+  }
+
+  /**
+   * One step of recurse(). Returns the level to continue at, or the result.
+   *
+   * @private
+   */
+  private recurseStep(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | number | null {
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -621,9 +645,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurse(pattern, options, 0);
+        return 0;
       } else if (this.apply()) {
-        return this.recurse(pattern, options, doing - 1);
+        return doing - 1;
       }
     }
 
@@ -641,7 +665,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurse(pattern, options, doing);
+      return doing;
     }
   }
 
@@ -658,10 +682,7 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     hasPreviousRun: boolean,
   ): CronDate<T> | null {
-    if (this.beforeMs !== undefined) {
-      this.afterMs = this.getTime();
-      this.beforeMs = undefined;
-    }
+    this.instantMs = undefined;
 
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
@@ -690,8 +711,7 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
   ): CronDate<T> | null {
-    this.beforeMs = this.getTime();
-    this.afterMs = undefined;
+    this.instantMs = undefined;
 
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
     this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
@@ -703,7 +723,7 @@ class CronDate<T = undefined> {
     this.apply();
 
     // Recursively change each part (y, m, d ...) until previous match is found, return null on failure
-    return this.recurseBackward(pattern, options, 0, 0);
+    return this.recurseBackward(pattern, options, 0);
   }
 
   /**
@@ -726,13 +746,28 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
     doing: number,
-    depth: number = 0,
   ): CronDate<T> | null {
-    // Safety: prevent infinite recursion
-    if (depth > 10000) {
-      return null;
+    // Step in a loop rather than recursing, so that a long search can't overflow the stack
+    // Without a year field, the pattern repeats with the calendar every 400 years
+    const startYear = this.year;
+    let next: CronDate<T> | number | null = doing;
+    while (typeof next === "number") {
+      if (pattern.starYear && Math.abs(this.year - startYear) > 400) return null;
+      next = this.recurseBackwardStep(pattern, options, next);
     }
+    return next;
+  }
 
+  /**
+   * One step of recurseBackward(). Returns the level to continue at, or the result.
+   *
+   * @private
+   */
+  private recurseBackwardStep(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | number | null {
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -790,14 +825,7 @@ class CronDate<T = undefined> {
 
         // Find the maximum valid value in the pattern
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
-
-        // Cap the day at the last day of the current month, so that e.g. April 31
-        // does not roll over into May when the date is applied
-        if (target === "day") {
-          this[target] = Math.min(maxValue, this.getLastDayOfMonth(this.year, this.month));
-        } else {
-          this[target] = maxValue;
-        }
+        this[target] = maxValue;
 
         resetLevel++;
       }
@@ -855,15 +883,7 @@ class CronDate<T = undefined> {
         // Now reset current level to max based on the normalized date
         const target = RecursionSteps[doing][0];
         const offset = RecursionSteps[doing][2];
-        const maxValue = this.getMaxPatternValue(target, pattern, offset);
-
-        // For day patterns, cap at the actual last day of the current month
-        if (target === "day") {
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          this[target] = Math.min(maxValue, lastDayOfMonth);
-        } else {
-          this[target] = maxValue;
-        }
+        this[target] = this.getMaxPatternValue(target, pattern, offset);
 
         // Apply again to ensure the date is valid
         this.apply();
@@ -874,9 +894,7 @@ class CronDate<T = undefined> {
         if (doing === 0) {
           // We just reset month - check if day needs to be reset based on the new month
           const dayOffset = RecursionSteps[1][2]; // offset for day
-          const dayMaxValue = this.getMaxPatternValue("day", pattern, dayOffset);
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          const newDay = Math.min(dayMaxValue, lastDayOfMonth);
+          const newDay = this.getMaxPatternValue("day", pattern, dayOffset);
           if (newDay !== this.day) {
             this.day = newDay;
             // Reset hour/minute/second as well since day changed
@@ -904,9 +922,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurseBackward(pattern, options, 0, depth + 1);
+        return 0;
       } else if (this.apply()) {
-        return this.recurseBackward(pattern, options, doing - 1, depth + 1);
+        return doing - 1;
       }
     }
 
@@ -923,7 +941,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurseBackward(pattern, options, doing, depth + 1);
+      return doing;
     }
   }
 
@@ -943,29 +961,23 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     offset: number,
   ): number {
-    // Special handling for day when lastDayOfMonth is set
-    if (target === "day" && pattern.lastDayOfMonth) {
-      // Return the actual last day of the current month
-      return this.getLastDayOfMonth(this.year, this.month);
-    }
-
-    // Special handling for day with day-of-week patterns
-    if (target === "day" && !pattern.starDOW) {
-      // Get the actual last day of the current month as we need to check all days
-      const lastDay = this.getLastDayOfMonth(this.year, this.month);
-      return lastDay;
-    }
-
     // Find the highest value in the pattern array that equals 1
+    // Fallback: the pattern length minus offset, a reasonable upper bound to search from
+    let maxValue = pattern[target].length - 1 - offset;
     for (let i = pattern[target].length - 1; i >= 0; i--) {
       if (pattern[target][i]) {
-        return i - offset;
+        maxValue = i - offset;
+        break;
       }
     }
 
-    // Fallback: return the pattern length minus offset
-    // This ensures we at least try searching from a reasonable upper bound
-    return pattern[target].length - 1 - offset;
+    // A day can't be after the last day of the month, so that e.g. April 31 doesn't roll
+    // over into May. L and day-of-week patterns search from the last day of the month.
+    if (target === "day") {
+      const lastDay = this.getLastDayOfMonth(this.year, this.month);
+      return pattern.lastDayOfMonth || !pattern.starDOW ? lastDay : Math.min(maxValue, lastDay);
+    }
+    return maxValue;
   }
 
   /**
@@ -993,11 +1005,13 @@ class CronDate<T = undefined> {
    * Convert current state back to a javascript Date()
    *
    * @param internal If this is an internal call
-   * @param afterMs Optional UTC ms threshold for resolving DST overlap ambiguity
    */
-  public getDate(internal?: boolean, afterMs?: number): Date {
-    // Use the instance-level afterMs as fallback if not explicitly provided
-    const resolvedAfterMs = afterMs ?? this.afterMs;
+  public getDate(internal?: boolean): Date {
+    // Keep the occurrence this CronDate was created from
+    if (!internal && this.instantMs !== undefined && typeof this.tz !== "number") {
+      return new Date(this.instantMs + (this.tz === void 0 ? this.ms : 0));
+    }
+
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
@@ -1040,8 +1054,6 @@ class CronDate<T = undefined> {
             this.tz,
           ),
           false,
-          resolvedAfterMs,
-          this.beforeMs,
         );
       }
     }
@@ -1049,23 +1061,9 @@ class CronDate<T = undefined> {
 
   /**
    * Convert current state back to a javascript Date() and return UTC milliseconds
-   *
-   * @param afterMs Optional UTC ms threshold for resolving DST overlap ambiguity
    */
-  public getTime(afterMs?: number): number {
-    return this.getDate(false, afterMs).getTime();
-  }
-
-  /**
-   * Set the afterMs threshold for DST overlap resolution.
-   * When set, getTime()/getDate() will return the earliest occurrence
-   * that is at or after this threshold.
-   *
-   * @param ms UTC milliseconds threshold
-   */
-  public setAfterMs(ms: number): void {
-    this.afterMs = ms;
-    this.beforeMs = undefined;
+  public getTime(): number {
+    return this.getDate(false).getTime();
   }
 
   /**

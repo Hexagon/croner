@@ -249,3 +249,46 @@ test("enumerate() on a once-only job returns one date then done", function () {
   assertEquals(a.value instanceof Date, true);
   assertEquals(b.done, true);
 });
+
+test("iterator without startAt keeps its captured reference through peek and reset", () => {
+  const RealDate = Date;
+  let now = RealDate.parse("2026-01-01T12:00:25.000Z");
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+
+  try {
+    const iterator = new Cron("0 * * * * *", { timezone: "UTC" }).enumerate();
+    const peeked = iterator.peek();
+    const intervalIterator = new Cron("* * * * * *", {
+      timezone: "UTC",
+      startAt: new RealDate("2026-01-01T12:00:00.000Z"),
+      interval: 10,
+    }).enumerate();
+    assertEquals(intervalIterator.peek()?.toISOString(), "2026-01-01T12:00:30.000Z");
+    const intervalWithoutStart = new Cron("* * * * * *", {
+      timezone: "UTC",
+      interval: 10,
+    }).enumerate();
+    assertEquals(intervalWithoutStart.peek()?.toISOString(), "2026-01-01T12:00:26.000Z");
+    now += 60_000;
+    assertEquals(iterator.next().value?.toISOString(), peeked?.toISOString());
+
+    now = RealDate.parse("2026-01-01T12:03:25.000Z");
+    iterator.reset();
+    const resetPeek = iterator.peek();
+    intervalIterator.reset();
+    assertEquals(intervalIterator.peek()?.toISOString(), "2026-01-01T12:03:30.000Z");
+    intervalWithoutStart.reset();
+    assertEquals(intervalWithoutStart.peek()?.toISOString(), "2026-01-01T12:03:26.000Z");
+    now += 60_000;
+    assertEquals(iterator.next().value?.toISOString(), resetPeek?.toISOString());
+  } finally {
+    globalThis.Date = RealDate;
+  }
+});
