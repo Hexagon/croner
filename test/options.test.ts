@@ -335,3 +335,15 @@ test("domAndDow should take precedence over legacyMode when both are provided", 
 
   assertEquals(has1stNotMonday || hasMondayNot1st, true, "Should match 1st OR Monday");
 });
+
+test("startAt is inclusive when it falls exactly on a pattern match", function () {
+  const job = new Cron("0 0 12 * * *", { timezone: "UTC", startAt: "2025-01-01T12:00:00Z" });
+  assertEquals(
+    job.nextRun(new Date("2025-01-01T00:00:00Z"))?.toISOString(),
+    "2025-01-01T12:00:00.000Z",
+  );
+  assertEquals(
+    job.nextRun(new Date("2025-01-01T12:00:00Z"))?.toISOString(),
+    "2025-01-02T12:00:00.000Z",
+  );
+});

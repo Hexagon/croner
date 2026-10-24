@@ -16,6 +16,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Times in a DST gap are skipped**: following OCPS 1.4 §4.3.1, a scheduled time that does not exist
   because of a spring-forward transition is skipped, instead of being delayed until after the
   transition (e.g. `0 30 2 * * *` no longer runs at 3:30 AM on the transition day).
+- **`startAt` is inclusive**: a pattern match exactly at `startAt` now runs. Previously the first
+  run was the following match.
 
 ### Added
 
