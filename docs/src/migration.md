@@ -110,11 +110,24 @@ new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
   * Works with `for...of` and destructuring.
   * Supports `next()`, `peek()`, and `reset()`.
 
-### DST behavior (OCPS 1.4 §4.3.1)
+### DST behavior, aligned with croner-rust
 
-* Times that fall in a DST gap (spring forward) are now skipped. Previously they were delayed until
-  after the transition, e.g. `0 30 2 * * *` ran at 3:30 AM on the transition day.
-* Times repeated by a DST overlap (fall back) run once, at the first occurrence, as in 10.x.
+Croner now handles DST transitions the same way as croner-rust and Vixie cron. This deviates from
+the recommendation in OCPS 1.4 §4.3.1, see [Pattern](usage/pattern.md). Jobs are either
+*fixed-time* (one value each for seconds, minutes and hours) or *interval* jobs (anything else).
+
+* **Fixed-time jobs in a DST gap** (spring forward) run at the first valid time after the gap. In
+  10.x they ran as much later as the gap was long: `0 30 2 * * *` ran at 3:30 AM, now at 3:00 AM.
+* **Interval jobs in a DST overlap** (fall back) run on both occurrences of a repeated time, so
+  `* * * * *` keeps running through the repeated hour. In 10.x the second pass was skipped, and
+  timers could be re-armed with negative delays throughout it (#399).
+* **Interval jobs in a DST gap** skip the times that don't exist. In 10.x, `nextRuns()` could go
+  backwards or repeat times around the gap.
+* Patterns with more than one hour, minute or second, like `0 30 1,2 * * *`, are interval jobs, so
+  1:30 AM runs twice on the day the clock goes back.
+* Fixed-time jobs in a DST overlap run once, at the first occurrence, as in 10.x.
+* `nextRun()`, `previousRuns()` and `enumerate()` move in real time, also when started from inside
+  a repeated hour.
 
 ## Switching from Cron
 

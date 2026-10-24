@@ -9,22 +9,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Breaking changes
 
+- **DST handling aligned with croner-rust and Vixie cron, deviating from OCPS 1.4 §4.3.1**: jobs
+  are either fixed-time jobs (one value each for seconds, minutes and hours) or interval jobs.
+  - A fixed-time job in a DST gap (spring forward) runs at the first valid time after the gap. In
+    10.x it ran as much later as the gap was long (`0 30 2 * * *` ran at 3:30 AM, now 3:00 AM).
+  - An interval job runs on both occurrences of a time repeated by a DST overlap (fall back), so
+    `* * * * *` keeps running through the repeated hour (#343). Patterns with more than one
+    hour, minute or second, like `0 30 1,2 * * *`, are interval jobs.
+  - Fixed-time jobs still run once, at the first occurrence, in a DST overlap.
 - **Date-based jobs scheduled in the past are now strict by default**: one-off jobs more than 1
-  second in the past no longer auto-fire unless `allowPast: true` is set.
+  second in the past no longer auto-fire unless `allowPast: true` is set (#348).
 - **Job execution prevented when `startAt` is in the past**: previously a job with `startAt` set to
   a past date could still trigger; now it is blocked.
-- **Times in a DST gap are skipped**: following OCPS 1.4 §4.3.1, a scheduled time that does not exist
-  because of a spring-forward transition is skipped, instead of being delayed until after the
-  transition (e.g. `0 30 2 * * *` no longer runs at 3:30 AM on the transition day).
 - **`startAt` is inclusive**: a pattern match exactly at `startAt` now runs. Previously the first
   run was the following match.
 
 ### Added
 
 - `enumerate(startAt?)` method returning a stateful `CronIterator` that supports iterator/iterable
-  protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`).
+  protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`) (#365).
 - `allowPast` option for explicitly allowing date-based jobs scheduled in the past to fire
-  immediately.
+  immediately (#349).
 - New public type exports: `CatchCallbackFn`, `CronMode`, and `ProtectCallbackFn`.
 
 ### Changed
@@ -32,41 +37,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Cached `Intl.DateTimeFormat` instances per timezone, making timezone-aware scheduling noticeably
   faster.
 - Clarified `dayOffset` JSDoc and completed missing option documentation, including iterator usage,
-  `allowPast`, and DST overlap behavior.
+  `allowPast`, and DST behavior.
 - Updated the copyright year to 2026.
 
 ### Fixed
 
-- Fixed one-off catch-up for dates in the current second with a named timezone.
-- Fixed `CronIterator` start-time consistency between `peek()` and `next()`, including after reset.
-- Fixed DST handling to follow OCPS 1.4 §4.3.1 consistently: times repeated by a fall-back
-  transition run once, at the first occurrence. `nextRun()`/`msToNext()` no longer return a time in
-  the past when the reference is inside the repeated hour (which could make the scheduler spin),
-  enumeration no longer goes backwards or repeats around spring-forward, and 30-minute overlaps
-  (Australia/Lord_Howe) keep their first occurrence.
-- Fixed `isRunning()` disagreeing with the scheduler when `dayOffset` is set.
+- Fixed timers being re-armed with negative delays throughout the repeated hour of a DST fall back
+  (#399). `nextRun()` and `msToNext()` no longer return a time in the past when the reference is
+  inside the repeated hour, and searches move in real time in both directions.
+- Fixed `nextRuns()` going backwards or repeating times around a DST spring forward.
+- Fixed DST handling in timezones with a 30-minute overlap (Australia/Lord_Howe).
 - Fixed `msToNext()` returning a wrong (often negative) value when passed an ISO 8601 string on a
-  job with `timezone` or `utcOffset` set. The string was read in system local time. (#402)
-- Fixed cron jobs silently skipping occurrences after forward system-clock adjustments.
-- Fixed timer targeting for `dayOffset` schedules and protected jobs after clock changes.
-- Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON`
-  ran every day instead of every Monday.
-- Fix exhausted schedules with `startAt` and `interval` (`Hexagon/croner#390`,
-  `@Hexagon/croner/pull/390`).
-- Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field).
-- Fixed negative-delay scheduling behavior that could overflow in some runtimes and block expected
-  catch-up execution.
-- Fixed date-based run-once edge cases around creation-time races and paused-resume catch-up flows.
-- Corrected the `existance` typo in `pattern.ts` comments.
-- Added regression coverage for negative-delay clamping and hardened once-job tests around catch-up
-  behavior.
-- Fix `_schedule` timer/target mismatch when the system clock steps backward. Previously the
-  two `_nextTarget` calls could disagree (waitMs from "now" vs target from a stale `currentRun`),
-  causing unnecessary tight-loop re-schedules or missed executions for non-protected jobs.
-- Fixed `previousRuns()` throwing for patterns with month-specific wildcards (e.g., `0 9 * 4 *`) when the reference date falls outside allowed
-  months, and for leap-day patterns (`0 0 29 2 *`) in leap years (#409)
-- Fixed `CronIterator` generated by `enumerate()` not honoring the `maxRuns` option, potentially
-  iterating indefinitely.
+  job with `timezone` or `utcOffset` set. The string was read in system local time (#401, #402).
+- Fixed `startAt` and `stopAt` strings being read in system local time on jobs with `utcOffset`.
+- Fixed `previousRuns()` throwing for patterns with month-specific wildcards (e.g., `0 9 * 4 *`)
+  when the reference date falls outside allowed months, and for leap-day patterns (`0 0 29 2 *`)
+  in leap years (#408, #409).
+- Fixed scheduling after system clock changes: occurrences silently skipped after forward clock
+  steps (#393), timer and target disagreeing after backward clock steps (#417), and timer targets
+  for `dayOffset` schedules and protected jobs (#395).
+- Fixed `isRunning()` disagreeing with the scheduler when `dayOffset` is set.
+- Fixed negative timer delays overflowing in some runtimes, blocking expected catch-up execution
+  (#370, #369).
+- Fixed date-based run-once edge cases around creation-time races, paused-resume catch-up flows,
+  and catch-up within the current second in a named timezone (#348, #349).
+- Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON` ran every
+  day instead of every Monday (#392).
+- Fixed exhausted schedules with `startAt` and `interval` (#390).
+- Fixed `RangeError` when using stepping with year field wildcard (for example `*/2` in year field)
+  (#373, #374).
+- Fixed `CronIterator` not honoring the `maxRuns` option, and `peek()` and `next()` disagreeing
+  when no start date was given.
 - Fixed `utcOffset: 0` being discarded due to falsy handling, causing jobs to silently fall back to
   system local time.
 - Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which

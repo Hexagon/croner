@@ -1191,3 +1191,24 @@ test("Fire-once job with no allowPast and date > 1s in past should have null nex
   assertEquals(job.isRunning(), false);
   job.stop();
 });
+
+test("one-off allowPast catches up within the current second in a named timezone", () => {
+  const RealDate = Date;
+  let now = RealDate.parse("2026-01-01T00:00:00.500Z");
+  const fireAt = new RealDate("2026-01-01T00:00:00.100Z");
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+
+  try {
+    const job = new Cron(fireAt, { timezone: "UTC", allowPast: true });
+    assertEquals(job.nextRun()?.toISOString(), "2026-01-01T00:00:00.000Z");
+  } finally {
+    globalThis.Date = RealDate;
+  }
+});

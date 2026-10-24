@@ -51,6 +51,12 @@ class CronDate<T = undefined> {
   tz: string | number | undefined;
 
   /**
+   * The instant (whole seconds) this CronDate was created from, if its time has not changed since.
+   * A local time that occurs twice (DST fall back) then keeps the occurrence it was created from.
+   */
+  private instantMs?: number;
+
+  /**
    * Current milliseconds
    * @type {number}
    */
@@ -271,6 +277,7 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
+          this.instantMs = inDate.getTime() - this.ms;
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
@@ -287,6 +294,7 @@ class CronDate<T = undefined> {
       this.day = inDate.getDate();
       this.month = inDate.getMonth();
       this.year = inDate.getFullYear();
+      this.instantMs = inDate.getTime() - this.ms;
     }
   }
 
@@ -304,6 +312,7 @@ class CronDate<T = undefined> {
     this.minute = d.minute;
     this.second = d.second;
     this.ms = d.ms;
+    this.instantMs = d.instantMs;
   }
 
   /**
@@ -645,6 +654,8 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     hasPreviousRun: boolean,
   ): CronDate<T> | null {
+    this.instantMs = undefined;
+
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
@@ -672,6 +683,8 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
   ): CronDate<T> | null {
+    this.instantMs = undefined;
+
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
     this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
 
@@ -769,14 +782,7 @@ class CronDate<T = undefined> {
 
         // Find the maximum valid value in the pattern
         const maxValue = this.getMaxPatternValue(target, pattern, offset);
-
-        // Cap the day at the last day of the current month, so that e.g. April 31
-        // does not roll over into May when the date is applied
-        if (target === "day") {
-          this[target] = Math.min(maxValue, this.getLastDayOfMonth(this.year, this.month));
-        } else {
-          this[target] = maxValue;
-        }
+        this[target] = maxValue;
 
         resetLevel++;
       }
@@ -834,15 +840,7 @@ class CronDate<T = undefined> {
         // Now reset current level to max based on the normalized date
         const target = RecursionSteps[doing][0];
         const offset = RecursionSteps[doing][2];
-        const maxValue = this.getMaxPatternValue(target, pattern, offset);
-
-        // For day patterns, cap at the actual last day of the current month
-        if (target === "day") {
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          this[target] = Math.min(maxValue, lastDayOfMonth);
-        } else {
-          this[target] = maxValue;
-        }
+        this[target] = this.getMaxPatternValue(target, pattern, offset);
 
         // Apply again to ensure the date is valid
         this.apply();
@@ -853,9 +851,7 @@ class CronDate<T = undefined> {
         if (doing === 0) {
           // We just reset month - check if day needs to be reset based on the new month
           const dayOffset = RecursionSteps[1][2]; // offset for day
-          const dayMaxValue = this.getMaxPatternValue("day", pattern, dayOffset);
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          const newDay = Math.min(dayMaxValue, lastDayOfMonth);
+          const newDay = this.getMaxPatternValue("day", pattern, dayOffset);
           if (newDay !== this.day) {
             this.day = newDay;
             // Reset hour/minute/second as well since day changed
@@ -922,29 +918,23 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     offset: number,
   ): number {
-    // Special handling for day when lastDayOfMonth is set
-    if (target === "day" && pattern.lastDayOfMonth) {
-      // Return the actual last day of the current month
-      return this.getLastDayOfMonth(this.year, this.month);
-    }
-
-    // Special handling for day with day-of-week patterns
-    if (target === "day" && !pattern.starDOW) {
-      // Get the actual last day of the current month as we need to check all days
-      const lastDay = this.getLastDayOfMonth(this.year, this.month);
-      return lastDay;
-    }
-
     // Find the highest value in the pattern array that equals 1
+    // Fallback: the pattern length minus offset, a reasonable upper bound to search from
+    let maxValue = pattern[target].length - 1 - offset;
     for (let i = pattern[target].length - 1; i >= 0; i--) {
       if (pattern[target][i]) {
-        return i - offset;
+        maxValue = i - offset;
+        break;
       }
     }
 
-    // Fallback: return the pattern length minus offset
-    // This ensures we at least try searching from a reasonable upper bound
-    return pattern[target].length - 1 - offset;
+    // A day can't be after the last day of the month, so that e.g. April 31 doesn't roll
+    // over into May. L and day-of-week patterns search from the last day of the month.
+    if (target === "day") {
+      const lastDay = this.getLastDayOfMonth(this.year, this.month);
+      return pattern.lastDayOfMonth || !pattern.starDOW ? lastDay : Math.min(maxValue, lastDay);
+    }
+    return maxValue;
   }
 
   /**
@@ -974,6 +964,11 @@ class CronDate<T = undefined> {
    * @param internal If this is an internal call
    */
   public getDate(internal?: boolean): Date {
+    // Keep the occurrence this CronDate was created from
+    if (!internal && this.instantMs !== undefined && typeof this.tz !== "number") {
+      return new Date(this.instantMs + (this.tz === void 0 ? this.ms : 0));
+    }
+
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {

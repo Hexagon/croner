@@ -347,3 +347,12 @@ test("startAt is inclusive when it falls exactly on a pattern match", function (
     "2025-01-02T12:00:00.000Z",
   );
 });
+
+test("startAt string is read in the UTC offset of the job", function () {
+  // 12:00 at +02:00 is 10:00 UTC
+  const job = new Cron("0 0 12 * * *", { utcOffset: 120, startAt: "2025-01-02T12:00:00" });
+  assertEquals(
+    job.nextRun(new Date("2025-01-01T00:00:00Z"))?.toISOString(),
+    "2025-01-02T10:00:00.000Z",
+  );
+});

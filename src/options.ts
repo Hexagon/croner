@@ -198,11 +198,13 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     );
   }
 
+  // Read startAt and stopAt in the timezone (or UTC offset) of the job
+  const tz = options.timezone ?? options.utcOffset;
   if (options.startAt) {
-    options.startAt = new CronDate(options.startAt, options.timezone);
+    options.startAt = new CronDate(options.startAt, tz);
   }
   if (options.stopAt) {
-    options.stopAt = new CronDate(options.stopAt, options.timezone);
+    options.stopAt = new CronDate(options.stopAt, tz);
   }
 
   if (options.interval !== null) {
