@@ -73,13 +73,13 @@ const { Cron } = require("croner");
 Using Deno
 
 ```typescript
-import { Cron } from "jsr:@hexagon/croner@11.0.0-dev.7";
+import { Cron } from "jsr:@hexagon/croner@11.0.0-dev.8";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0-dev.7/dist/croner.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0-dev.8/dist/croner.umd.js"></script>
 ```
 
 ## Documentation
