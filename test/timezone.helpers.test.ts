@@ -75,6 +75,27 @@ test("fromTZISO treats Z/offset ISO strings as absolute UTC", () => {
   assertEquals(d3.toISOString(), "2025-01-15T15:34:56.000Z");
 });
 
+test("fromTZISO keeps milliseconds", () => {
+  assertEquals(fromTZISO("2025-01-15T12:34:56.789Z").toISOString(), "2025-01-15T12:34:56.789Z");
+  assertEquals(
+    fromTZISO("2025-01-15T12:34:56.789+02:00").toISOString(),
+    "2025-01-15T10:34:56.789Z",
+  );
+  assertEquals(
+    fromTZISO("2025-01-15T07:34:56.789", "America/New_York").toISOString(),
+    "2025-01-15T12:34:56.789Z",
+  );
+  assertEquals(
+    fromTZISO("2025-01-15T12:34:56.789", "Etc/UTC").toISOString(),
+    "2025-01-15T12:34:56.789Z",
+  );
+  // In a DST gap, the time is moved forward and keeps its milliseconds
+  assertEquals(
+    fromTZISO("2025-03-09T02:30:00.250", "America/New_York").toISOString(),
+    "2025-03-09T07:30:00.250Z",
+  );
+});
+
 test("fromTimezone wrapper produces same result as fromTZ", () => {
   const a = fromTimezone(2025, 1, 15, 7, 34, 56, "America/New_York");
   const b = fromTZ(createTimePoint(2025, 1, 15, 7, 34, 56, "America/New_York"));

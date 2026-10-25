@@ -187,11 +187,11 @@ test("Valid interval starting in the past should give correct start date", funct
 
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  yesterday.setHours(19, 31, 2);
+  yesterday.setHours(19, 31, 2, 0);
 
   const sixDaysFromNow = new Date(now);
   sixDaysFromNow.setDate(now.getDate() + 6);
-  sixDaysFromNow.setHours(19, 31, 2);
+  sixDaysFromNow.setHours(19, 31, 2, 0);
 
   const nextRun = new Cron("* * * * * *", {
     interval: 60 * 60 * 24 * 7,
@@ -211,7 +211,7 @@ test("Valid interval starting in the future should give correct start date", fun
 
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
-  tomorrow.setHours(0, 31, 2);
+  tomorrow.setHours(0, 31, 2, 0);
 
   const nextRun = new Cron("* * * * * *", {
     interval: 60 * 60 * 24 * 7,
@@ -384,6 +384,76 @@ test("stopAt between two seconds still includes the second before it", function 
     job.nextRuns(2, new Date("2026-06-10T11:59:58.500Z")).map((d) => d.toISOString()),
     ["2026-06-10T11:59:59.000Z", "2026-06-10T12:00:00.000Z"],
   );
+});
+
+test("startAt and stopAt strings between two seconds behave like Dates", function () {
+  // The same instant written as a Date, a Z string, an offset string and a local string
+  const cases: [Record<string, unknown>, string][] = [
+    [{}, "2026-06-10T12:00:01.400Z"],
+    [{ utcOffset: 0 }, "2026-06-10T12:00:01.400"],
+    [{ utcOffset: 120 }, "2026-06-10T14:00:01.400"],
+    [{ timezone: "Europe/Stockholm" }, "2026-06-10T14:00:01.400"],
+    [{ timezone: "America/New_York" }, "2026-06-10T14:00:01.400+02:00"],
+  ];
+  const date = new Date("2026-06-10T12:00:01.400Z");
+  for (const [tz, str] of cases) {
+    for (const value of [str, date]) {
+      const label = `${JSON.stringify(tz)} ${String(value)}`;
+      const started = new Cron("* * * * * *", { ...tz, paused: true, startAt: value });
+      assertEquals(
+        started.nextRun(new Date("2026-06-10T12:00:00.000Z"))?.toISOString(),
+        "2026-06-10T12:00:02.000Z",
+        label,
+      );
+      const stopped = new Cron("* * * * * *", { ...tz, paused: true, stopAt: value });
+      assertEquals(
+        stopped.nextRuns(3, new Date("2026-06-10T11:59:59.500Z")).map((d) => d.toISOString()),
+        ["2026-06-10T12:00:00.000Z", "2026-06-10T12:00:01.000Z"],
+        label,
+      );
+    }
+  }
+});
+
+test("Date strings with milliseconds are the same instant as Dates", function () {
+  const str = "2030-01-01T00:00:00.500Z";
+  const date = new Date(str);
+
+  // One-off job
+  assertEquals(new Cron(str, { paused: true }).getOnce()?.toISOString(), str);
+  assertEquals(new Cron(str, { paused: true }).nextRun()?.toISOString(), str);
+  const tokyo = { paused: true, timezone: "Asia/Tokyo" };
+  assertEquals(
+    new Cron("2030-01-01T09:00:00.500", tokyo).getOnce()?.toISOString(),
+    new Cron(date, tokyo).getOnce()?.toISOString(),
+  );
+
+  // References
+  const job = new Cron("* * * * * *", { paused: true });
+  assertEquals(job.msToNext(str), job.msToNext(date));
+  assertEquals(job.msToNext(str), 500);
+  assertEquals(job.nextRun(str)?.toISOString(), "2030-01-01T00:00:01.000Z");
+  assertEquals(
+    job.previousRuns(1, str).map((d) => d.toISOString()),
+    job.previousRuns(1, date).map((d) => d.toISOString()),
+  );
+  const utc = new Cron("* * * * * *", { paused: true, utcOffset: 0 });
+  assertEquals(utc.msToNext("2030-01-01T00:00:00.500"), 500);
+});
+
+test("A one-off date in the same second as startAt runs unless it is before startAt", function () {
+  const reference = new Date("2026-06-10T00:00:00Z");
+  for (const tz of [{}, { utcOffset: 60 }]) {
+    for (const startAt of ["2026-06-10T12:00:00.300Z", new Date("2026-06-10T12:00:00.300Z")]) {
+      const label = `${JSON.stringify(tz)} ${String(startAt)}`;
+      const after = new Cron("2026-06-10T12:00:00.700Z", { ...tz, paused: true, startAt });
+      assertEquals(after.nextRun(reference)?.toISOString(), "2026-06-10T12:00:00.700Z", label);
+      const at = new Cron("2026-06-10T12:00:00.300Z", { ...tz, paused: true, startAt });
+      assertEquals(at.nextRun(reference)?.toISOString(), "2026-06-10T12:00:00.300Z", label);
+      const before = new Cron("2026-06-10T12:00:00.299Z", { ...tz, paused: true, startAt });
+      assertEquals(before.nextRun(reference), null, label);
+    }
+  }
 });
 
 test(
