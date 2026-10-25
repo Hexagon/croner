@@ -90,6 +90,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Updated workflow and packaging metadata around publish/test setup.
 - Switched declaration bundling from esbuild to rollup with rollup-plugin-dts, restoring dist
   parity with previous releases.
+- Development is now Node.js-first: `package.json` is committed and is the source of truth for
+  version, scripts and dev dependencies, the build script runs on Node.js (`npm run build`), and
+  tests run with `npm test`. Deno is still supported (`deno task test`, fmt/lint, JSR publishing),
+  and `npm version` keeps `deno.json` in sync.
 
 ## [10.0.1] - 2026-02-01
 

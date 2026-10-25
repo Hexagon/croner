@@ -3,35 +3,45 @@
   "version": "11.0.0-dev.8",
   "exports": "./src/croner.ts",
   "lint": {
-    "include": ["src", "build"]
+    "include": [
+      "src",
+      "build"
+    ]
   },
   "fmt": {
-    "include": ["src", "test", "build"],
+    "include": [
+      "src",
+      "test",
+      "build"
+    ],
     "lineWidth": 100
+  },
+  "test": {
+    "include": [
+      "test"
+    ]
   },
   "tasks": {
     "pre-commit": "deno fmt --check && deno lint && deno check src/croner.ts",
-    "test": "deno task build:prep && deno test --allow-read",
-    "build:prep": "deno install",
-    "build:clean": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-ffi build/build.ts -- clean",
-    "build:npm": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-ffi build/build.ts -- package",
-    "build:esbuild": "deno run --allow-read --allow-write --allow-env --allow-run --allow-sys --allow-ffi build/build.ts -- build",
-    "build": "deno task build:clean && deno task build:prep && deno test --allow-read && deno task build:esbuild  && deno task build:npm",
+    "test": "deno test --allow-read",
     "check-deps": "deno run -A jsr:@check/deps"
   },
-  "nodeModulesDir": "auto",
   "imports": {
-    "@cross/fs": "jsr:@cross/fs@~0.1.11",
     "@cross/test": "jsr:@cross/test@~0.0.14",
-    "@std/assert": "jsr:@std/assert@~1.0.6",
-    "@std/path": "jsr:@std/path@~1.1.2",
-    "@typescript/typescript6": "npm:@typescript/typescript6@~6.0.2",
-    "esbuild": "npm:esbuild@0.28.2",
-    "rollup": "npm:rollup@~4.65.0",
-    "rollup-plugin-dts": "npm:rollup-plugin-dts@~6.5.1",
-    "typescript": "npm:typescript@~7.0.0"
+    "@std/assert": "jsr:@std/assert@~1.0.6"
   },
   "publish": {
-    "exclude": ["build", "docs", "test", ".github", ".gitattributes", "croner.png", "SECURITY.md"]
+    "exclude": [
+      "build",
+      "docs",
+      "test",
+      ".github",
+      ".gitattributes",
+      ".npmrc",
+      "croner.png",
+      "package.json",
+      "SECURITY.md",
+      "tsconfig.json"
+    ]
   }
 }
