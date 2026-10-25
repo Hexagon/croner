@@ -35,7 +35,8 @@ test("CronDate reflects a changed timezone", () => {
 test("CronDate copied after a field change keeps the change", () => {
   const date = new CronDate(new Date("2026-03-10T10:00:00Z"), "Europe/Stockholm");
   date.day = 20;
-  assertEquals(new CronDate(date, "Europe/Stockholm").getDate().toISOString(), "2026-03-20T10:00:00.000Z");
+  const copy = new CronDate(date, "Europe/Stockholm");
+  assertEquals(copy.getDate().toISOString(), "2026-03-20T10:00:00.000Z");
 });
 
 test("CronDate keeps the second DST occurrence when fields are changed back", () => {
@@ -53,7 +54,7 @@ test("nextRun and msToNext use a changed CronDate with timezone", () => {
   date.day = 20;
   assertEquals(job.nextRun(date)?.toISOString(), "2026-03-20T11:00:00.000Z");
   assertEquals(job.msToNext(date), 60 * 60 * 1000);
-  assertEquals(job.nextRuns(1, date)[0].toISOString(), "2026-03-20T11:00:00.000Z");
+  assertEquals(job.nextRuns(1, date.getDate())[0].toISOString(), "2026-03-20T11:00:00.000Z");
 });
 
 test("nextRun and msToNext use a changed CronDate without timezone", () => {
@@ -68,5 +69,6 @@ test("startAt uses a changed CronDate", () => {
   const startAt = new CronDate(new Date("2026-03-10T10:00:00Z"), "Europe/Stockholm");
   startAt.day = 20;
   const job = new Cron("0 0 12 * * *", { paused: true, timezone: "Europe/Stockholm", startAt });
-  assertEquals(job.nextRun(new Date("2026-03-01T00:00:00Z"))?.toISOString(), "2026-03-20T11:00:00.000Z");
+  const next = job.nextRun(new Date("2026-03-01T00:00:00Z"));
+  assertEquals(next?.toISOString(), "2026-03-20T11:00:00.000Z");
 });

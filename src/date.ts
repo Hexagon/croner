@@ -33,6 +33,8 @@ const DaysOfMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 type RecursionTarget = "month" | "day" | "hour" | "minute" | "second";
 type RecursionTargetNext = RecursionTarget | "year";
 type RecursionStep = [RecursionTarget, RecursionTargetNext, number];
+// year, month, day, hour, minute, second and tz
+type InstantFields = [number, number, number, number, number, number, string | number | undefined];
 const RecursionSteps: RecursionStep[] = [
   ["month", "year", 0],
   ["day", "month", -1],
@@ -60,7 +62,7 @@ class CronDate<T = undefined> {
    * The fields (and timezone) `instantMs` was cached for. The fields are public and can be changed
    * directly, so `instantMs` is only used while they still match.
    */
-  private instantFields?: [number, number, number, number, number, number, string | number | undefined];
+  private instantFields?: InstantFields;
 
   /**
    * Current milliseconds
@@ -309,21 +311,18 @@ class CronDate<T = undefined> {
    */
   private cacheInstant(instantMs: number) {
     this.instantMs = instantMs;
-    this.instantFields = [this.year, this.month, this.day, this.hour, this.minute, this.second, this.tz];
+    const { year, month, day, hour, minute, second } = this;
+    this.instantFields = [year, month, day, hour, minute, second, this.tz];
   }
 
   /**
-   * The cached instant, or undefined if there is none or the fields have changed since it was cached
+   * The cached instant, or undefined if there is none or the fields have changed since caching
    */
   private cachedInstant(): number | undefined {
     const f = this.instantFields;
-    if (
-      f === undefined ||
-      f[5] !== this.second || f[4] !== this.minute || f[3] !== this.hour ||
-      f[2] !== this.day || f[1] !== this.month || f[0] !== this.year || f[6] !== this.tz
-    ) {
-      return undefined;
-    }
+    if (f === undefined || f[6] !== this.tz) return undefined;
+    if (f[5] !== this.second || f[4] !== this.minute || f[3] !== this.hour) return undefined;
+    if (f[2] !== this.day || f[1] !== this.month || f[0] !== this.year) return undefined;
     return this.instantMs;
   }
 
@@ -1042,7 +1041,9 @@ class CronDate<T = undefined> {
     // Keep the occurrence this CronDate was created from
     if (!internal && typeof this.tz !== "number") {
       const instantMs = this.cachedInstant();
-      if (instantMs !== undefined) return new Date(instantMs + (this.tz === void 0 ? this.ms : 0));
+      if (instantMs !== undefined) {
+        return new Date(instantMs + (this.tz === void 0 ? this.ms : 0));
+      }
     }
 
     // If this is an internal call, return the date as is
