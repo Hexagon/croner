@@ -51,10 +51,10 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 
 **Run a function at a specific date/time using a non-local timezone**
 
-Time is ISO 8601 local time, this will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
+Time is ISO 8601 local time, this will run 2030-01-23 00:00:00 according to the time in Asia/Kolkata
 
 ```ts
-new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+new Cron('2030-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 ```
 
 More examples at [usage/examples.md](usage/examples.md)

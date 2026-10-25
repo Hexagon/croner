@@ -62,7 +62,7 @@ The version number is stored in two files, which must always match: `package.jso
 -   The easiest way is `npm version <new-version> --no-git-tag-version`, which updates both files.
 -   If you edit `package.json` by hand, run `npx tsx build/build.ts sync-version` to copy the version to `deno.json`.
 -   `npm run check-version` verifies that the files match. It also runs in CI and as part of `npm run build`.
--   Remember to update version references in `README.md` (the JSR import and the CDN link) and `CHANGELOG.md`.
+-   Remember to update version references in `README.md` (the JSR import and the CDN link), `$CRONER_VERSION` in `docs/src/_data.json`, and `CHANGELOG.md`.
 
 Then, commit the changes once you are happy with them. 
 

@@ -14,8 +14,8 @@ nav_order: 3
 | maxRuns      | Infinite       | Number         |                                       |
 | catch        | false          | Boolean\|Function        | Catch unhandled errors in triggered function. Passing `true` will silently ignore errors. Passing a callback function will trigger this callback on error. |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
-| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Inclusive, a run exactly at startAt is included |
-| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Exclusive, a run exactly at stopAt is not included |
+| startAt      | undefined      | String\|Date   | Date, or ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Inclusive, a run exactly at startAt is included (except when `interval` is set) |
+| stopAt       | undefined      | String\|Date   | Date, or ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Exclusive, a run exactly at stopAt is not included |
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
