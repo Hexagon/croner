@@ -84,6 +84,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which
   could silently accept out-of-range hours.
 - Fixed the `@deprecated` JSDoc tag being on `dayOffset` instead of `legacyMode`.
+- Fixed `CronDate` ignoring changes to its fields (e.g. `date.day = 20`) in `getDate()`, `getTime()`,
+  `nextRun()`, `msToNext()` and `startAt`, a regression in the 11.0.0-dev prereleases.
 
 ### CI / Build
 
