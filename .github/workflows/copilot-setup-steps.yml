@@ -30,7 +30,6 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-          cache: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

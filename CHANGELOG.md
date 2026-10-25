@@ -14,17 +14,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - A fixed-time job in a DST gap (spring forward) runs at the first valid time after the gap. In
     10.x it ran as much later as the gap was long (`0 30 2 * * *` ran at 3:30 AM, now 3:00 AM).
   - An interval job runs on both occurrences of a time repeated by a DST overlap (fall back), so
-    `* * * * *` keeps running through the repeated hour (#343). Patterns with more than one
+    `* * * * *` keeps running through the repeated hour (#343, #407). Patterns with more than one
     hour, minute or second, like `0 30 1,2 * * *`, are interval jobs.
   - Fixed-time jobs still run once, at the first occurrence, in a DST overlap.
 - **`startAt` is inclusive**: a pattern match exactly at `startAt` now runs. Previously the first
-  run was the following match. This does not apply with `interval` set, where the first run is
-  still `interval` seconds after `startAt`. A `startAt` between two whole seconds counts from the
-  next whole second, and a `stopAt` between two whole seconds still includes the second before it.
+  run was the following match. This does not apply with `interval` set, which works as in 10.x.
+  A `startAt` between two whole seconds counts from the next whole second, and a run in the same
+  second before a fractional `stopAt` (00:00:00 with `stopAt` 00:00:00.500) now runs. 10.x
+  excluded it.
 - **With `dayOffset`, `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()`
   return actual run times**, searched from the reference, the same way the scheduler and
   `isRunning()` do. Previously they shifted the next pattern match after the reference, so a
   negative offset could return a time before the reference, and `msToNext()` ignored the offset.
+  `startAt` and `stopAt` also apply to the shifted run time. In 10.x they applied to the unshifted
+  pattern match, so a job could run before `startAt` or after `stopAt`.
 - **`previousRun()` returns when the previous run started**, as documented. Previously it returned
   when the run finished.
 
@@ -35,15 +38,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (#365). The `CronIterator` class is exported.
 - `allowPast` option for explicitly allowing date-based jobs scheduled more than 1 second in the
   past to fire immediately (#349).
-- New public type exports: `CatchCallbackFn`, `CronMode`, and `ProtectCallbackFn`.
+- `CatchCallbackFn`, `CronMode` and `ProtectCallbackFn` are exported from the source entry point
+  (JSR). The npm type declarations already exposed them.
 
 ### Changed
 
 - Cached `Intl.DateTimeFormat` instances per timezone, making timezone-aware scheduling noticeably
-  faster.
+  faster (based on #389).
 - Date-based jobs dated up to 1 second in the past now fire immediately, so a job created for
   "now" is not lost to the time it took to create it. Older dates fire only with `allowPast: true`.
-  Previously a date-based job in the past never fired (#348).
+  Previously a date-based job in the past never fired (#348, #349).
 - Clarified `dayOffset` JSDoc and completed missing option documentation, including iterator usage,
   `allowPast`, and DST behavior.
 - Updated the copyright year to 2026.
@@ -55,7 +59,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   inside the repeated hour, and searches move in real time in both directions.
 - Fixed `nextRuns()` going backwards or repeating times around a DST spring forward.
 - Fixed DST handling in timezones with a 30-minute overlap (Australia/Lord_Howe) (#404).
-- Fixed scheduling gaps after a DST fall back when the reference had fractional seconds (#407).
 - Fixed `msToNext()` returning a wrong (often negative) value when passed an ISO 8601 string on a
   job with `timezone` set. The string was read in system local time (#401, #402).
 - Fixed ISO 8601 strings being read in system local time on jobs with `utcOffset`, in `nextRun()`,
@@ -69,28 +72,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `0 0 30 2 *`, and `nextRun()`, `nextRuns()` and `previousRuns()` threw `Maximum call stack size
   exceeded` for `0 0 16 * 5#L` with `domAndDow: true`. They now return `null` and an empty list.
 - Fixed scheduling after system clock changes: occurrences silently skipped after forward clock
-  steps (#393), timer and target disagreeing after backward clock steps (#417), and timer targets
-  for `dayOffset` schedules and protected jobs (#395).
+  steps (#388, #393), timer and target disagreeing after backward clock steps (#417), and timer
+  targets for `dayOffset` schedules and protected jobs (#395).
 - Fixed `isRunning()`, `nextRun()` and `msToNext()` disagreeing with the scheduler when
   `dayOffset` is set.
-- Fixed negative timer delays overflowing in some runtimes, blocking expected catch-up execution
-  (#370, #369).
-- Fixed date-based run-once edge cases around creation-time races, paused-resume catch-up flows,
-  and catch-up within the current second in a named timezone (#348, #349).
+- Fixed `TimeoutNegativeWarning` when a timer delay was negative. Negative delays are now clamped
+  to 0 (#370, #369).
 - Fixed `?` in day-of-month or day-of-week behaving differently from `*`: `0 0 ? * MON` ran every
   day instead of every Monday (#392).
-- Fixed exhausted schedules with `startAt` and `interval` (#390).
+- Fixed `nextRun()`, `nextRuns()`, `msToNext()` and scheduling throwing a `TypeError` when a
+  schedule with `startAt` and `interval` has no runs left (#390).
 - Fixed `RangeError` when using stepping with year field wildcard. `*/2` in the year field matches
   even years (#373, #374).
-- Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which
-  could silently accept out-of-range hours.
 - Fixed the `@deprecated` JSDoc tag being on `dayOffset` instead of `legacyMode`.
-- Fixed `CronDate` ignoring changes to its fields (e.g. `date.day = 20`) in `getDate()`,
-  `getTime()`, `nextRun()`, `msToNext()` and `startAt`, a regression in the 11.0.0-dev prereleases.
-- Fixed ISO 8601 strings losing their milliseconds, so a `startAt` string like
-  `2030-01-01T00:00:00.500Z` gave a first run before `startAt`, and strings and `Date`s differed in
-  `stopAt`, one-off dates, `nextRun()` and `msToNext()`. Also fixed a one-off date later in the same
-  second as `startAt` never running.
+- Fixed ISO 8601 strings losing their milliseconds on jobs without `timezone`: a one-off date like
+  `2030-01-01T00:00:00.700Z` ran at `.000`, and strings and `Date`s could differ in `stopAt`,
+  one-off dates, `nextRun()` and `msToNext()`. Also fixed a one-off date given as a string, later
+  in the same second as `startAt`, never running. Jobs with a named `timezone` still work in whole
+  seconds, as in 10.x.
 
 ### CI / Build
 

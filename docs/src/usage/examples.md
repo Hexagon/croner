@@ -182,8 +182,8 @@ new Cron('*/5 * * * * *', { context: data }, (self, context) => {
 ```ts
 // A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
 // Always specify which timezone the ISO 8601 time string has with the timezone option.
-let job = new Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
-	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
+let job = new Cron("2030-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
+	console.log('This will run at 2030-01-01 23:00:00 in timezone Europe/Stockholm');
 });
 
 if (job.nextRun() === null) {

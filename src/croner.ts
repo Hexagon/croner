@@ -957,7 +957,7 @@ class CronIterator<T = undefined> implements Iterator<Date, undefined>, Iterable
    */
   constructor(cron: Cron<T>, startAt?: Date | string | null) {
     this.cron = cron;
-    this.initialMaxRuns = cron.options.maxRuns ?? Infinity;
+    this.initialMaxRuns = cron.runsLeft() ?? Infinity;
     this.reset(startAt);
   }
 
