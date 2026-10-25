@@ -62,6 +62,9 @@ if (command === "clean") {
     bundle: true,
     minify: true,
     sourcemap: false,
+    // Don't let esbuild pick up the root tsconfig.json (used for type checking only).
+    // Its "target" would change how class fields are emitted, breaking dist parity.
+    tsconfigRaw: {},
   }, [
     {
       outdir: resolvedDistPath,
