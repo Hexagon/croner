@@ -1,15 +1,28 @@
-import esbuild from "esbuild";
-import { rollup } from "rollup";
-import { dts } from "rollup-plugin-dts";
-import { cp, readFile, writeFile } from "@cross/fs";
+/**
+ * Build script for croner (Node.js).
+ *
+ * Usage: tsx build/build.ts <command>
+ *
+ * Commands:
+ *   clean          Remove build artifacts (dist)
+ *   build          Transpile src/ to dist/ (cjs, esm, umd) and generate typings
+ *   sync-version   Copy the version from package.json to deno.json (JSR)
+ *   check-version  Fail if package.json and deno.json versions differ
+ */
+import type { BuildOptions } from "esbuild";
+import { copyFile, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import process from "node:process";
 
 /**
  * Build helpers
  */
 export async function build(
-  baseConfig: esbuild.BuildOptions,
-  configs?: esbuild.BuildOptions[],
+  baseConfig: BuildOptions,
+  configs?: BuildOptions[],
 ): Promise<void> {
+  const { default: esbuild } = await import("esbuild");
   const buildConfigs = configs?.map((config) => ({ ...baseConfig, ...config })) || [baseConfig];
   try {
     await Promise.all(buildConfigs.map((config) => esbuild.build(config)));
@@ -19,39 +32,31 @@ export async function build(
     throw error;
   }
 }
+
 async function readJson<T>(filePath: string): Promise<T> {
-  const jsonData = await readFile(filePath);
-  return JSON.parse(new TextDecoder().decode(jsonData)) as T;
+  return JSON.parse(await readFile(filePath, "utf8")) as T;
 }
 
 /**
  * Now the actual build script
  */
-import { dirname, fromFileUrl, resolve } from "@std/path";
 
 /* Preparations - Work out paths */
 const baseRelativeProjectRoot = "../"; // Where is this script located relative to the project root
-const currentScriptDir = dirname(fromFileUrl(import.meta.url));
+const currentScriptDir = dirname(fileURLToPath(import.meta.url));
 const relativeProjectRoot = resolve(currentScriptDir, baseRelativeProjectRoot);
 const resolvedDistPath = resolve(relativeProjectRoot, "dist");
+const packageJsonPath = resolve(relativeProjectRoot, "package.json");
+const denoJsonPath = resolve(relativeProjectRoot, "deno.json");
+
+const command = process.argv[2];
 
 /* Handle argument `clean`: Rimraf build artifacts */
-if (Deno.args[1] === "clean") {
-  for (
-    const filePath of [
-      "package.json",
-      "tsconfig.json",
-      "node_modules",
-      "dist",
-    ]
-  ) {
-    try {
-      await Deno.remove(filePath, { recursive: true });
-    } catch (_e) { /* No-op */ }
-  }
+if (command === "clean") {
+  await rm(resolvedDistPath, { recursive: true, force: true });
 
   /* Handle argument `build`: Transpile and generate typings */
-} else if (Deno.args[1] === "build") {
+} else if (command === "build") {
   await build({
     entryPoints: [resolve(relativeProjectRoot, "src/croner.ts")],
     bundle: true,
@@ -73,7 +78,7 @@ if (Deno.args[1] === "clean") {
       entryPoints: [],
       stdin: {
         contents: 'import { Cron } from "./croner.ts";module.exports = Cron;',
-        resolveDir: "./src/",
+        resolveDir: resolve(relativeProjectRoot, "src"),
       },
       outfile: resolve(resolvedDistPath, "croner.umd.js"),
       platform: "browser",
@@ -82,6 +87,8 @@ if (Deno.args[1] === "clean") {
     },
   ]);
 
+  const { rollup } = await import("rollup");
+  const { dts } = await import("rollup-plugin-dts");
   const declarations = await rollup({
     input: resolve(relativeProjectRoot, "src/croner.ts"),
     plugins: [dts({
@@ -98,26 +105,38 @@ if (Deno.args[1] === "clean") {
   await declarations.close();
 
   // Just re-use the .d.ts for commonjs, as .d.cts
-  await cp(
+  await copyFile(
     resolve(resolvedDistPath, "croner.d.ts"),
     resolve(resolvedDistPath, "croner.d.cts"),
   );
 
-  /* Handle argument `package`: Generate package.json based on a base config and values from deno,json */
-} else if (Deno.args[1] === "package") {
-  // Read version from deno.json
-  const denoConfig = await readJson<{ version: string }>(resolve(relativeProjectRoot, "deno.json"));
+  /* Handle argument `sync-version`: Copy version from package.json (source of truth) to deno.json */
+} else if (command === "sync-version") {
+  const { version } = await readJson<{ version: string }>(packageJsonPath);
+  const denoConfig = await readJson<Record<string, unknown>>(denoJsonPath);
+  if (denoConfig.version !== version) {
+    denoConfig.version = version;
+    await writeFile(denoJsonPath, JSON.stringify(denoConfig, null, 2) + "\n");
+    console.log(`deno.json version updated to ${version}`);
+  } else {
+    console.log(`deno.json version already ${version}`);
+  }
 
-  // Write package.json
-  await writeFile(
-    resolve(relativeProjectRoot, "package.json"),
-    new TextEncoder().encode(JSON.stringify(
-      {
-        ...await readJson<object>(resolve(relativeProjectRoot, "build/package.template.json")),
-        version: denoConfig.version,
-      },
-      null,
-      2,
-    )),
+  /* Handle argument `check-version`: Make sure npm and JSR versions are in sync */
+} else if (command === "check-version") {
+  const { version: npmVersion } = await readJson<{ version: string }>(packageJsonPath);
+  const { version: jsrVersion } = await readJson<{ version: string }>(denoJsonPath);
+  if (npmVersion !== jsrVersion) {
+    console.error(
+      `Version mismatch: package.json has ${npmVersion}, deno.json has ${jsrVersion}. ` +
+        "Run `tsx build/build.ts sync-version`.",
+    );
+    process.exit(1);
+  }
+  console.log(`Versions in sync (${npmVersion}).`);
+} else {
+  console.error(
+    `Unknown command "${command}". Use one of: clean, build, sync-version, check-version`,
   );
+  process.exit(1);
 }

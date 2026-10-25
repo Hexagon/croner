@@ -32,9 +32,6 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 
-# NPM registry indicator
-.npmrc
-
 # Built docs
 dist-docs
 
@@ -52,8 +49,6 @@ _site
 
 # Built NPM package
 dist
-package.json
-package-lock.json
 
-# TypeScript configuration is added on-demand
-tsconfig.json
+# Lock files are not committed (library project)
+package-lock.json

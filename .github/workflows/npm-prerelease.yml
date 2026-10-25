@@ -14,16 +14,13 @@ jobs:
           # Build exactly what is being released (the prerelease tag)
           ref: ${{ github.event.release.tag_name }}
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: "2.x"
-
       - uses: actions/setup-node@v7
         with:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: deno task build
+      - run: npm install
+
+      - run: npm run build
 
       - run: npm publish --tag dev

@@ -1,5 +1,6 @@
 {
   "name": "croner",
+  "version": "11.0.0-dev.8",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://croner.56k.guru",
@@ -11,10 +12,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Hexagon/croner.git"
+    "url": "https://github.com/hexagon/croner"
   },
   "bugs": {
-    "url": "https://github.com/Hexagon/croner/issues"
+    "url": "https://github.com/hexagon/croner/issues"
   },
   "funding": [
     {
@@ -23,7 +24,7 @@
     },
     {
       "type": "github",
-      "url": "https://github.com/sponsors/Hexagon"
+      "url": "https://github.com/sponsors/hexagon"
     }
   ],
   "files": [
@@ -67,6 +68,26 @@
       },
       "browser": "./dist/croner.umd.js"
     }
+  },
+  "scripts": {
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "pre-commit": "npm run typecheck && npm test",
+    "build:clean": "tsx build/build.ts clean",
+    "build:dist": "tsx build/build.ts build",
+    "build": "npm run build:clean && npm run check-version && npm run typecheck && npm test && npm run build:dist",
+    "check-version": "tsx build/build.ts check-version",
+    "version": "tsx build/build.ts sync-version && git add deno.json"
+  },
+  "devDependencies": {
+    "@cross/test": "npm:@jsr/cross__test@~0.0.14",
+    "@std/assert": "npm:@jsr/std__assert@~1.0.6",
+    "@typescript/typescript6": "~6.0.2",
+    "esbuild": "0.28.2",
+    "rollup": "~4.65.0",
+    "rollup-plugin-dts": "~6.5.1",
+    "tsx": "^4.20.0",
+    "typescript": "~7.0.0"
   },
   "license": "MIT"
 }

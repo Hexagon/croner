@@ -45,15 +45,17 @@ We recommend using VS Code with eslint extensions, which will automatically chec
 
 ### Testing your changes
 
-Make sure you add test cases for your changes. While developing, use `deno task test` to run run quick tests against `/src/*`. 
+Run `npm install` to install the development dependencies.
+
+Make sure you add test cases for your changes. While developing, use `npm test` to run quick tests against `/src/*`. Deno and Bun are supported as well, using `deno task test` and `bun test`.
 
 ### Commit your update
 
-Please run `deno task build` before committing, to update the dist-files, and to make sure every test and check passes. When using this command, both source code, and all generated code will be tested, so it can take a while. 
+Please run `npm run build` before committing, to build the dist-files, and to make sure every test and check passes.
 
-If you make changes to any function Interface, or to JSDoc in general, you should also run `deno task build:docs` to update the generated documentation.
+If you have Deno installed, also run `deno task pre-commit` to check formatting and linting (`deno fmt` fixes formatting). These checks also run in CI.
 
-See [package.json](https://github.com/Hexagon/croner/blob/master/package.json) scripts section for all available scripts.
+See [package.json](https://github.com/Hexagon/croner/blob/dev/package.json) scripts section for all available scripts.
 
 Then, commit the changes once you are happy with them. 
 

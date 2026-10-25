@@ -21,9 +21,11 @@ croner/
 │   ├── range.test.ts
 │   ├── stepping.test.ts
 │   └── timezone.test.ts
-├── build/               # Build scripts
-├── docs/                # Documentation
-└── deno.json            # Deno configuration and tasks
+├── build/               # Build scripts (Node.js, run with tsx)
+├── docs/                # Documentation (Lume site, built with Deno)
+├── package.json         # npm package, scripts and dev dependencies (source of truth for version)
+├── tsconfig.json        # TypeScript configuration used for type checking
+└── deno.json            # Deno/JSR configuration and tasks
 ```
 
 ## Standards Compliance
@@ -32,60 +34,69 @@ This project aims to follow the **OCPS (Open Cron Pattern Standard)** 1.0 final 
 
 ## Development Environment
 
-The project uses **Deno** as the primary development runtime, with cross-runtime support for Node.js and Bun.
+The project uses **Node.js** (>=18) as the primary development runtime, with cross-runtime support for Deno, Bun and browsers. Deno is still fully supported, and is used for formatting, linting and publishing to JSR.
 
 ### Setup
 ```bash
-# Install Deno dependencies
-deno install
+npm install
 ```
+
+The test dependencies (`@cross/test`, `@std/assert`) are installed from JSR's npm compatibility registry, configured in `.npmrc`.
 
 ## Contribution Guidelines
 
 ### Pre-commit Checks
 
-Before committing changes, always run:
+Before committing changes, run:
+```bash
+npm run pre-commit
+```
+
+This executes:
+- **Type checking**: `tsc -p tsconfig.json`
+- **Tests**: `npm test`
+
+If you have Deno installed, also run the formatting and lint checks (these are enforced in CI):
 ```bash
 deno task pre-commit
 ```
 
-This executes:
-- **Formatting check**: `deno fmt --check` - ensures code follows style guidelines
-- **Linting**: `deno lint` - checks for code quality issues
-- **Type checking**: `deno check src/croner.ts` - validates TypeScript types
+This executes `deno fmt --check`, `deno lint` and `deno check src/croner.ts`. Use `deno fmt` to fix formatting.
 
 ### Testing
 
 Run tests during development:
 ```bash
-deno task test
+npm test
 ```
 
-**Note**: The project uses CI workflows from `@cross-org/workflows` for cross-runtime testing (Node.js, Deno, and Bun). These workflows are imported from:
-- `.github/workflows/node-ci.yml`
-- `.github/workflows/deno-ci.yml`
-- `.github/workflows/bun-ci.yml`
+CI (`.github/workflows/test.yml`) runs the test suite on Node.js 18/20/22/24/26, Deno and Bun, plus a non-UTC timezone run on Node.js and Deno.
+
+### Deno testing equivalent to CI
+
+- test: `deno task test`
 
 ### Bun testing equivalent to CI
 
-- prereq: `bun x jsr add  @cross/test @std/assert`
+- prereq: `bun install`
 - test: `bun test`
 
-### Node testing equivalent to CI
+### Versioning
 
-package.json must be created with `"type": "module"`
+`package.json` is the source of truth for the version. `deno.json` (used for JSR) must carry the same version:
 
-- prereq: `npx jsr add @cross/test @std/assert`
-- test: `npx --yes tsx --test test/*.test.ts`
+- `npm version <new-version>` updates both files automatically (via the `version` script).
+- If editing manually, run `npx tsx build/build.ts sync-version` afterwards.
+- `npm run check-version` fails if the two are out of sync (run in CI and in `npm run build`).
 
 ### Full Build
 
 Before submitting a PR, run the full build to ensure all checks pass:
 ```bash
-deno task build
+npm run build
 ```
 
-This runs all tests, builds distribution files, and validates the entire codebase.
+This cleans `dist/`, checks versions, type checks, runs all tests, and builds the distribution files (CJS, ESM, UMD and type declarations).
 
 ### Key Points
 
