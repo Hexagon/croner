@@ -97,7 +97,7 @@ Cron takes three arguments
 // - First: Cron pattern, js date object (fire once), or ISO 8601 time string (fire once)
 // - Second: Options (optional)
 // - Third: Function run trigger (optional)
-const job = new Cron("* * * * * *", { maxRuns: 1 }, () => {} );
+const job = new Cron("* * * * * *", { maxRuns: 1 });
 
 // If function is omitted in constructor, it can be scheduled later
 job.schedule((job, /* optional */ context) => {});

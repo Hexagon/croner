@@ -168,13 +168,13 @@ The croner package has a different API compared to the cron package. Here's an e
 const { Cron } = require('croner');
 
 // If you have a lot of code using the CrobJob constructor, you can re-use the name like this
-// const { Cron as CronJob } = require('croner');
+// const { Cron: CronJob } = require('croner');
 
 const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
     console.log('This job will run at 12:00 PM every day.');
 });
 
-job.start();
+// No job.start() needed, the job is scheduled immediately (use { paused: true } and job.resume() to start it later)
 ```
 
 ### Step 3: Update your tests
