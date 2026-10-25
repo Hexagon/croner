@@ -33,6 +33,8 @@ const DaysOfMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 type RecursionTarget = "month" | "day" | "hour" | "minute" | "second";
 type RecursionTargetNext = RecursionTarget | "year";
 type RecursionStep = [RecursionTarget, RecursionTargetNext, number];
+// year, month, day, hour, minute, second and tz
+type InstantFields = [number, number, number, number, number, number, string | number | undefined];
 const RecursionSteps: RecursionStep[] = [
   ["month", "year", 0],
   ["day", "month", -1],
@@ -55,6 +57,12 @@ class CronDate<T = undefined> {
    * A local time that occurs twice (DST fall back) then keeps the occurrence it was created from.
    */
   private instantMs?: number;
+
+  /**
+   * The fields (and timezone) `instantMs` was cached for. The fields are public and can be changed
+   * directly, so `instantMs` is only used while they still match.
+   */
+  private instantFields?: InstantFields;
 
   /**
    * Current milliseconds
@@ -277,7 +285,7 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
-          this.instantMs = inDate.getTime() - this.ms;
+          this.cacheInstant(inDate.getTime() - this.ms);
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
@@ -294,8 +302,28 @@ class CronDate<T = undefined> {
       this.day = inDate.getDate();
       this.month = inDate.getMonth();
       this.year = inDate.getFullYear();
-      this.instantMs = inDate.getTime() - this.ms;
+      this.cacheInstant(inDate.getTime() - this.ms);
     }
+  }
+
+  /**
+   * Remember the instant the current fields were created from
+   */
+  private cacheInstant(instantMs: number) {
+    this.instantMs = instantMs;
+    const { year, month, day, hour, minute, second } = this;
+    this.instantFields = [year, month, day, hour, minute, second, this.tz];
+  }
+
+  /**
+   * The cached instant, or undefined if there is none or the fields have changed since caching
+   */
+  private cachedInstant(): number | undefined {
+    const f = this.instantFields;
+    if (f === undefined || f[6] !== this.tz) return undefined;
+    if (f[5] !== this.second || f[4] !== this.minute || f[3] !== this.hour) return undefined;
+    if (f[2] !== this.day || f[1] !== this.month || f[0] !== this.year) return undefined;
+    return this.instantMs;
   }
 
   /**
@@ -313,6 +341,7 @@ class CronDate<T = undefined> {
     this.second = d.second;
     this.ms = d.ms;
     this.instantMs = d.instantMs;
+    this.instantFields = d.instantFields;
   }
 
   /**
@@ -683,6 +712,7 @@ class CronDate<T = undefined> {
     hasPreviousRun: boolean,
   ): CronDate<T> | null {
     this.instantMs = undefined;
+    this.instantFields = undefined;
 
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
@@ -712,6 +742,7 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
   ): CronDate<T> | null {
     this.instantMs = undefined;
+    this.instantFields = undefined;
 
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
     this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
@@ -1008,8 +1039,11 @@ class CronDate<T = undefined> {
    */
   public getDate(internal?: boolean): Date {
     // Keep the occurrence this CronDate was created from
-    if (!internal && this.instantMs !== undefined && typeof this.tz !== "number") {
-      return new Date(this.instantMs + (this.tz === void 0 ? this.ms : 0));
+    if (!internal && typeof this.tz !== "number") {
+      const instantMs = this.cachedInstant();
+      if (instantMs !== undefined) {
+        return new Date(instantMs + (this.tz === void 0 ? this.ms : 0));
+      }
     }
 
     // If this is an internal call, return the date as is
