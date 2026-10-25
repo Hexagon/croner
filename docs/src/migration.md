@@ -92,13 +92,16 @@ croner-rust, and tightens `startAt` and `dayOffset` behavior.
 #### Breaking changes
 
 * **`startAt` is inclusive.** A pattern match exactly at `startAt` now runs. In `10.x`, the first
-  run was the following match. With `interval` set, the first run is still `interval` seconds
-  after `startAt`.
+  run was the following match. This does not apply with `interval` set, which works as in `10.x`.
+  A `startAt` between two whole seconds counts from the next whole second. A run in the same
+  second before a fractional `stopAt` is now included.
 * **With `dayOffset`, `nextRun()` and friends return actual run times.** `nextRun()`,
   `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()` find the first run after (or
   before) the reference, as the scheduler does. In `10.x` they shifted the next pattern match
   after the reference, so `dayOffset: -1` could return a time before the reference, and
-  `msToNext()` ignored the offset.
+  `msToNext()` ignored the offset. `startAt` and `stopAt` also apply to the shifted run time. In
+  `10.x` they applied to the unshifted pattern match, so a job could run before `startAt` or
+  after `stopAt`.
 * **`previousRun()` returns when the previous run started**, as documented. In `10.x` it returned
   when the run finished.
 * **DST transitions are handled as in croner-rust**, see

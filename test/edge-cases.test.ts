@@ -339,7 +339,7 @@ test("29W in February should only match leap years", function () {
 });
 
 /**
- * Negative setTimeout delay regression test (GitHub issue #368)
+ * Negative setTimeout delay regression test (GitHub issue #370)
  *
  * When msToNext() returns a value very close to 0 or slightly negative
  * (due to timing between calculating next run and creating the timer),

@@ -33,6 +33,17 @@ test("enumerate() honors maxRuns without mutating the parent and reset restores 
   assertEquals(job.runsLeft(), 2);
 });
 
+test("enumerate() is limited by the runs left, like nextRuns()", function () {
+  const start = new Date("2024-01-01T00:00:00.000Z");
+  const job = new Cron("* * * * * *", { maxRuns: 3, timezone: "UTC" }, () => {});
+  // Use up one run
+  (job as unknown as { _checkTrigger: (target: Date) => void })._checkTrigger(new Date(0));
+  assertEquals(job.runsLeft(), 2);
+  assertEquals(job.nextRuns(5, start).length, 2);
+  assertEquals(Array.from(job.enumerate(start)).length, 2);
+  job.stop();
+});
+
 // Iterator protocol — next()
 
 test("enumerate() next() returns dates in ascending order", function () {
