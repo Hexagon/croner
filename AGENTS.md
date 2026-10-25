@@ -83,11 +83,12 @@ CI (`.github/workflows/test.yml`) runs the test suite on Node.js 18/20/22/24/26,
 
 ### Versioning
 
-`package.json` is the source of truth for the version. `deno.json` (used for JSR) must carry the same version:
+**The version lives in two files and must always be identical:** `package.json` (npm, source of truth) and `deno.json` (JSR). Never change the version in only one of them.
 
-- `npm version <new-version>` updates both files automatically (via the `version` script).
-- If editing manually, run `npx tsx build/build.ts sync-version` afterwards.
-- `npm run check-version` fails if the two are out of sync (run in CI and in `npm run build`).
+- Preferred: `npm version <new-version> --no-git-tag-version` updates both files (the `version` script syncs `deno.json`).
+- If you edit `package.json` by hand, run `npx tsx build/build.ts sync-version` afterwards (or edit `deno.json` to the same value).
+- Verify with `npm run check-version`. It fails on mismatch, and runs in CI and in `npm run build`.
+- When bumping the version, also update version references in `README.md` (the JSR import and the jsDelivr CDN URL) and add/adjust the entry in `CHANGELOG.md`.
 
 ### Full Build
 
@@ -105,5 +106,6 @@ This cleans `dist/`, checks versions, type checks, runs all tests, and builds th
 - Zero dependencies - do not add external dependencies
 - Follow existing code style and patterns
 - Update documentation if changing public APIs
+- Keep the version in `package.json` and `deno.json` in sync (see Versioning)
 
 For detailed contribution guidelines, see [docs/src/contributing.md](docs/src/contributing.md).
