@@ -12,10 +12,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/hexagon/croner"
+    "url": "git+https://github.com/Hexagon/croner.git"
   },
   "bugs": {
-    "url": "https://github.com/hexagon/croner/issues"
+    "url": "https://github.com/Hexagon/croner/issues"
   },
   "funding": [
     {
