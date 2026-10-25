@@ -17,12 +17,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     `* * * * *` keeps running through the repeated hour (#343). Patterns with more than one
     hour, minute or second, like `0 30 1,2 * * *`, are interval jobs.
   - Fixed-time jobs still run once, at the first occurrence, in a DST overlap.
-- **Date-based jobs scheduled in the past are now strict by default**: one-off jobs more than 1
-  second in the past no longer auto-fire unless `allowPast: true` is set (#348).
-- **One-off jobs dated before `startAt` never run**: previously a date-based job could still
-  trigger when its date was before `startAt`.
 - **`startAt` is inclusive**: a pattern match exactly at `startAt` now runs. Previously the first
-  run was the following match.
+  run was the following match. This does not apply with `interval` set, where the first run is
+  still `interval` seconds after `startAt`. A `startAt` between two whole seconds counts from the
+  next whole second, and a `stopAt` between two whole seconds still includes the second before it.
 - **With `dayOffset`, `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()`
   return actual run times**, searched from the reference, the same way the scheduler and
   `isRunning()` do. Previously they shifted the next pattern match after the reference, so a
@@ -35,14 +33,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `enumerate(startAt?)` method returning a stateful `CronIterator` that supports iterator/iterable
   protocols (`for...of`, destructuring, `next()`, `peek()`, `reset()`) and honors `maxRuns`
   (#365). The `CronIterator` class is exported.
-- `allowPast` option for explicitly allowing date-based jobs scheduled in the past to fire
-  immediately (#349).
+- `allowPast` option for explicitly allowing date-based jobs scheduled more than 1 second in the
+  past to fire immediately (#349).
 - New public type exports: `CatchCallbackFn`, `CronMode`, and `ProtectCallbackFn`.
 
 ### Changed
 
 - Cached `Intl.DateTimeFormat` instances per timezone, making timezone-aware scheduling noticeably
-  faster (#389).
+  faster.
+- Date-based jobs dated up to 1 second in the past now fire immediately, so a job created for
+  "now" is not lost to the time it took to create it. Older dates fire only with `allowPast: true`.
+  Previously a date-based job in the past never fired (#348).
 - Clarified `dayOffset` JSDoc and completed missing option documentation, including iterator usage,
   `allowPast`, and DST behavior.
 - Updated the copyright year to 2026.
@@ -64,9 +65,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed `previousRuns()` throwing for patterns with month-specific wildcards (e.g., `0 9 * 4 *`)
   when the reference date falls outside allowed months, and for leap-day patterns (`0 0 29 2 *`)
   in leap years (#408, #409).
-- Fixed `nextRun()` and `previousRuns()` throwing `Maximum call stack size exceeded` for patterns
-  that can never match, like `0 0 30 2 *` or `0 0 16 * 5#L` with `domAndDow: true`. They return
-  `null` and an empty list.
+- Fixed patterns that can never match: `previousRuns()` threw a `TypeError` for patterns like
+  `0 0 30 2 *`, and `nextRun()`, `nextRuns()` and `previousRuns()` threw `Maximum call stack size
+  exceeded` for `0 0 16 * 5#L` with `domAndDow: true`. They now return `null` and an empty list.
 - Fixed scheduling after system clock changes: occurrences silently skipped after forward clock
   steps (#393), timer and target disagreeing after backward clock steps (#417), and timer targets
   for `dayOffset` schedules and protected jobs (#395).
@@ -87,7 +88,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### CI / Build
 
-- Updated workflow and packaging metadata around publish/test setup.
+- Updated workflow and packaging metadata around publish/test setup. The published package
+  metadata now comes from the committed `package.json`; `build/package.template.json` is removed.
 - Switched declaration bundling from esbuild to rollup with rollup-plugin-dts, restoring dist
   parity with previous releases.
 - Development is now Node.js-first: `package.json` is committed and is the source of truth for
