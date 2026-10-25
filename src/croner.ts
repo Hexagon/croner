@@ -125,6 +125,11 @@ class Cron<T = undefined> {
   private _states: CronState<T>;
   private fn?: CronCallback<T>;
   /**
+   * How far startAt was moved forward to a whole second, in milliseconds. A one-off date is an
+   * exact instant, so it is compared with startAt as given.
+   */
+  private _startAtRoundingMs = 0;
+  /**
    * Internal helper to get the timezone or UTC offset for date operations.
    * Reduces duplication of `this.options.timezone || this.options.utcOffset` throughout the codebase.
    *
@@ -235,7 +240,12 @@ class Cron<T = undefined> {
     }
 
     this.name = options?.name;
+    const startAtIn = options?.startAt;
     this.options = CronOptionsHandler<T>(options);
+    if (startAtIn && this._startAt) {
+      this._startAtRoundingMs = this._startAt.getTime() -
+        new CronDate<T>(startAtIn, this.getTz()).getTime();
+    }
 
     this._states = {
       kill: false,
@@ -717,7 +727,7 @@ class Cron<T = undefined> {
       const onceMs = this._states.once.getTime();
       const pastMs = referenceMs - onceMs;
       if (
-        (startAt && onceMs < startAt.getTime()) ||
+        (startAt && onceMs < startAt.getTime() - this._startAtRoundingMs) ||
         (this._states.currentRun &&
           this.applyDayOffset(this._states.once.getDate()).getTime() <=
             this._states.currentRun.getTime()) ||

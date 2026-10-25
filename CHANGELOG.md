@@ -84,6 +84,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed `CronDate` validation using incorrect max value for the hour field (59 instead of 23), which
   could silently accept out-of-range hours.
 - Fixed the `@deprecated` JSDoc tag being on `dayOffset` instead of `legacyMode`.
+- Fixed ISO 8601 strings losing their milliseconds, so a `startAt` string like
+  `2030-01-01T00:00:00.500Z` gave a first run before `startAt`, and strings and `Date`s differed in
+  `stopAt`, one-off dates, `nextRun()` and `msToNext()`. Also fixed a one-off date later in the same
+  second as `startAt` never running.
 
 ### CI / Build
 

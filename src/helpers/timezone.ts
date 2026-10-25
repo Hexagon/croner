@@ -41,14 +41,6 @@ function timePointsMatch(tp1: TimePoint, tp2: TimePoint): boolean {
 }
 
 /**
- * Helper function that takes an ISO8601 local date time string and creates a TimePoint.
- * Throws on failure. Throws on invalid date or time.
- *
- * @param dtStr - an ISO 8601 format date and time string with all components, e.g. 2015-11-24T19:40:00
- * @param tz - Optional timezone
- * @returns TimePoint instance from parsing the string
- */
-/**
  * Whether an ISO 8601 string specifies UTC or a UTC offset, and so is an exact instant
  *
  * @param dtStr - an ISO 8601 format date and time string
@@ -59,7 +51,15 @@ export function hasUtcDesignator(dtStr: string): boolean {
   return stringEnd.includes("Z") || stringEnd.includes("+") || stringEnd.includes("-");
 }
 
-function parseISOLocal(dtStr: string, tz?: string): TimePoint {
+/**
+ * Helper function that takes an ISO8601 local date time string and creates a TimePoint.
+ * Throws on failure. Throws on invalid date or time.
+ *
+ * @param dtStr - an ISO 8601 format date and time string with all components, e.g. 2015-11-24T19:40:00
+ * @param tz - Optional timezone
+ * @returns TimePoint (whole seconds) and milliseconds from parsing the string
+ */
+function parseISOLocal(dtStr: string, tz?: string): { tp: TimePoint; ms: number } {
   // Parse date using built in Date.parse
   const pd = new Date(Date.parse(dtStr));
 
@@ -69,27 +69,34 @@ function parseISOLocal(dtStr: string, tz?: string): TimePoint {
   }
 
   // If date/time is specified in UTC or with a UTC offset, return time in UTC,
-  // else return local time and include timezone identifier
+  // else return local time and include timezone identifier.
+  // A TimePoint holds whole seconds, so the milliseconds are returned separately.
   if (hasUtcDesignator(dtStr)) {
-    return createTimePoint(
-      pd.getUTCFullYear(),
-      pd.getUTCMonth() + 1,
-      pd.getUTCDate(),
-      pd.getUTCHours(),
-      pd.getUTCMinutes(),
-      pd.getUTCSeconds(),
-      "Etc/UTC",
-    );
+    return {
+      tp: createTimePoint(
+        pd.getUTCFullYear(),
+        pd.getUTCMonth() + 1,
+        pd.getUTCDate(),
+        pd.getUTCHours(),
+        pd.getUTCMinutes(),
+        pd.getUTCSeconds(),
+        "Etc/UTC",
+      ),
+      ms: pd.getUTCMilliseconds(),
+    };
   } else {
-    return createTimePoint(
-      pd.getFullYear(),
-      pd.getMonth() + 1,
-      pd.getDate(),
-      pd.getHours(),
-      pd.getMinutes(),
-      pd.getSeconds(),
-      tz,
-    );
+    return {
+      tp: createTimePoint(
+        pd.getFullYear(),
+        pd.getMonth() + 1,
+        pd.getDate(),
+        pd.getHours(),
+        pd.getMinutes(),
+        pd.getSeconds(),
+        tz,
+      ),
+      ms: pd.getMilliseconds(),
+    };
   }
 }
 
@@ -128,7 +135,9 @@ export function fromTimezone(
  * @returns Normal date object
  */
 export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: boolean): Date {
-  return fromTZ(parseISOLocal(localTimeStr, tz), throwOnInvalid);
+  const { tp, ms } = parseISOLocal(localTimeStr, tz);
+  // Keep the milliseconds of the string, so it is the same instant as the equivalent Date
+  return new Date(fromTZ(tp, throwOnInvalid).getTime() + ms);
 }
 
 /**
