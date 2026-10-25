@@ -258,7 +258,7 @@ setTimeout(() => {
 
 ```ts
 // Start a job firing once each 5th second, run at most 3 times
-const job = new Cron("0/5 * * * * *", { maxRuns: 3 }, (job) => {
+const job = new Cron("*/5 * * * * *", { maxRuns: 3 }, (job) => {
     
     // Do work
     console.log('Job Running');

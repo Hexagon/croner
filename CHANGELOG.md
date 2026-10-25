@@ -86,6 +86,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed the `@deprecated` JSDoc tag being on `dayOffset` instead of `legacyMode`.
 - Fixed `CronDate` ignoring changes to its fields (e.g. `date.day = 20`) in `getDate()`,
   `getTime()`, `nextRun()`, `msToNext()` and `startAt`, a regression in the 11.0.0-dev prereleases.
+- Fixed ISO 8601 strings losing their milliseconds, so a `startAt` string like
+  `2030-01-01T00:00:00.500Z` gave a first run before `startAt`, and strings and `Date`s differed in
+  `stopAt`, one-off dates, `nextRun()` and `msToNext()`. Also fixed a one-off date later in the same
+  second as `startAt` never running.
 
 ### CI / Build
 
