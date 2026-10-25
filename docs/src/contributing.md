@@ -31,7 +31,7 @@ Scan through our [existing issues](https://github.com/hexagon/croner/issues) to 
 
 #### Setting up the environment
 
-We recommend using VS Code with eslint extensions, which will automatically check your code against the defined rules as you write it.
+Formatting and linting are handled by `deno fmt` and `deno lint`. If you use VS Code, the Deno extension can check and format your code as you write it.
 
 1.  Fork the repository.
 -   Using GitHub Desktop:
@@ -39,13 +39,11 @@ We recommend using VS Code with eslint extensions, which will automatically chec
   -   Once Desktop is set up, you can use it to [fork the repo](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/cloning-and-forking-repositories-from-github-desktop)!
 -   Using the command line:
   -   [Fork the repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo#fork-an-example-repository) so that you can make your changes without affecting the original project until you're ready to merge them.
-2.  Install or update to **Node.js v18** or later. 
+2.  Install or update to **Node.js v18** or later, and run `npm install`. Optionally install [Deno](https://deno.com) v2 or later for formatting and linting.
 3.  Base your work on the `dev` branch.
 4.  Create a working branch `feature/my-cool-feature` or `bugfix/issue-14` and start with your changes!
 
 ### Testing your changes
-
-Run `npm install` to install the development dependencies.
 
 Make sure you add test cases for your changes. While developing, use `npm test` to run quick tests against `/src/*`. Deno and Bun are supported as well, using `deno task test` and `bun test`.
 
