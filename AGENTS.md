@@ -32,6 +32,8 @@ croner/
 
 This project aims to follow the **OCPS (Open Cron Pattern Standard)** 1.0 final and subsequent drafts (1.1-1.4) available at [github.com/open-source-cron/ocps](https://github.com/open-source-cron/ocps).
 
+Deliberate deviation: DST handling follows Vixie cron and croner-rust rather than OCPS 1.4 §4.3.1 (fixed-time jobs in a DST gap run at the first valid time after it; interval jobs run on both occurrences of a repeated time). See the "Deviation from OCPS 1.4" note in `README.md` and keep this behavior unless explicitly asked to change it.
+
 ## Development Environment
 
 The project uses **Node.js** (>=18) as the primary development runtime, with cross-runtime support for Deno, Bun and browsers. Deno is still fully supported, and is used for formatting, linting and publishing to JSR.
@@ -88,7 +90,7 @@ CI (`.github/workflows/test.yml`) runs the test suite on Node.js 18/20/22/24/26,
 - Preferred: `npm version <new-version> --no-git-tag-version` updates both files (the `version` script syncs `deno.json`).
 - If you edit `package.json` by hand, run `npx tsx build/build.ts sync-version` afterwards (or edit `deno.json` to the same value).
 - Verify with `npm run check-version`. It fails on mismatch, and runs in CI and in `npm run build`.
-- When bumping the version, also update version references in `README.md` (the JSR import and the jsDelivr CDN URL) and add/adjust the entry in `CHANGELOG.md`.
+- When bumping the version, also update version references in `README.md` (the JSR import and the jsDelivr CDN URL), `$CRONER_VERSION` in `docs/src/_data.json` (used by the docs site), and add/adjust the entry in `CHANGELOG.md`.
 
 ### Full Build
 

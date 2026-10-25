@@ -330,7 +330,10 @@ class Cron<T = undefined> {
    * Returns a {@link CronIterator} that implements both the ECMAScript Iterator and
    * Iterable protocols, enabling `for...of` loops and destructuring assignment.
    *
-   * @param startAt - Optional. The date to start iterating from. Defaults to current time.
+   * The iterator yields runs strictly after the given start date. A run exactly at the start date
+   * is not included, unlike the inclusive `startAt` option.
+   *
+   * @param startAt - Optional. The date to start iterating from (exclusive). Defaults to now.
    * @returns A new CronIterator instance
    */
   public enumerate(startAt?: Date | string | null): CronIterator<T> {

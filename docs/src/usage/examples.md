@@ -51,7 +51,8 @@ previousRuns.forEach((run, i) => {
 
 `enumerate()` returns a `CronIterator` that implements the ECMAScript Iterator and
 Iterable protocols. Use it with `for...of` loops, destructuring, or any other construct
-that consumes iterables.
+that consumes iterables. The iterator yields runs strictly after the start date it is given, so
+a run exactly at that date is not included (unlike the inclusive `startAt` option).
 
 ```ts
 // for...of — collect the next 3 daily runs starting from a reference date
@@ -140,12 +141,12 @@ import { Cron } from "./dist/croner.js";
 const job = new Cron(
 	'* * * * *', 
 	{
-		startAt: "2023-11-01T00:00:00", 
-		stopAt: "2023-12-01T00:00:00",
+		startAt: "2030-11-01T00:00:00", 
+		stopAt: "2030-12-01T00:00:00",
 		timezone: "Europe/Stockholm"
 	},
 	function() {
-		console.log('This will run every minute, from 2023-11-01 to 2023-12-01 00:00:00');
+		console.log('This will run every minute, from 2030-11-01 to 2030-12-01 00:00:00');
 	}
 );
 

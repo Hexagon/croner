@@ -51,7 +51,7 @@ interface CronOptions<T = undefined> {
 
   /**
    * The minimum interval between job executions, in seconds.
-   * @default 1
+   * @default 0
    */
   interval?: number;
 
@@ -64,7 +64,8 @@ interface CronOptions<T = undefined> {
 
   /**
    * The date and time at which the job should start running. Inclusive, a run exactly at startAt
-   * is included. Strings are read in the timezone or UTC offset of the job.
+   * is included, except when `interval` is set. Strings are read in the timezone or UTC offset of
+   * the job.
    */
   startAt?: string | Date | CronDate<T>;
 

@@ -87,17 +87,13 @@ By default, Croner now follows strict range parsing rules as used by vixie cron 
 ### Upgrading from 10.x to 11.x
 
 Version `11.x` adds iterator-based schedule traversal (`enumerate()`), aligns DST handling with
-croner-rust, and tightens `startAt`, `dayOffset` and past date-based job behavior.
+croner-rust, and tightens `startAt` and `dayOffset` behavior.
 
 #### Breaking changes
 
-* **Past date-based jobs are no longer auto-fired by default if older than 1 second.**
-  * In `10.x`, some past run-once jobs could still fire immediately depending on timing/runtime behavior.
-  * In `11.x`, run-once jobs older than 1 second are skipped unless `allowPast: true` is explicitly set.
 * **`startAt` is inclusive.** A pattern match exactly at `startAt` now runs. In `10.x`, the first
-  run was the following match.
-* **One-off jobs dated before `startAt` never run.** In `10.x`, a date-based job could still
-  trigger when its date was before `startAt`.
+  run was the following match. With `interval` set, the first run is still `interval` seconds
+  after `startAt`.
 * **With `dayOffset`, `nextRun()` and friends return actual run times.** `nextRun()`,
   `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()` find the first run after (or
   before) the reference, as the scheduler does. In `10.x` they shifted the next pattern match
@@ -108,9 +104,21 @@ croner-rust, and tightens `startAt`, `dayOffset` and past date-based job behavio
 * **DST transitions are handled as in croner-rust**, see
   [DST behavior](#dst-behavior-aligned-with-croner-rust) below.
 
-#### How to keep previous catch-up behavior
+#### Other behavior changes
 
-If you rely on firing missed date-based jobs, enable `allowPast`:
+* **ISO 8601 strings are read in the job's `timezone` or `utcOffset`**, in `msToNext()`,
+  `nextRun()`, `match()`, `startAt`, `stopAt` and one-off dates. In `10.x` some of these were read
+  in system local time. Strings with `Z` or an offset, like `2026-01-01T00:00:00Z`, are read as
+  that exact instant.
+* **Patterns that can never match**, like `0 0 30 2 *` or `0 0 16 * 5#L` with `domAndDow: true`,
+  make `nextRun()` return `null` and `nextRuns()` / `previousRuns()` return `[]`. In `10.x`,
+  `previousRuns()` could throw a `TypeError` and the `5#L` case overflowed the stack.
+
+#### Past date-based jobs
+
+In `10.x`, a date-based job whose date had already passed never fired. In `11.x`, a date-based
+job dated up to 1 second in the past fires immediately, so a job created for "now" is not lost.
+To also fire older dates, enable `allowPast`:
 
 ```ts
 new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
@@ -123,6 +131,10 @@ new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
 * `enumerate(startAt?)` returns a stateful `CronIterator` for sequential traversal:
   * Works with `for...of` and destructuring.
   * Supports `next()`, `peek()`, and `reset()`.
+  * Yields runs strictly after the given start date, unlike the inclusive `startAt` option.
+  * Honors `maxRuns`. The `CronIterator` class is exported.
+* `allowPast` option to fire date-based jobs more than 1 second in the past.
+* New type exports: `CatchCallbackFn`, `CronMode` and `ProtectCallbackFn`.
 
 #### DST behavior aligned with croner-rust
 
