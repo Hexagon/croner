@@ -1,4 +1,4 @@
-import { createTimePoint, fromTZ, fromTZISO, toTZ } from "./helpers/timezone.ts";
+import { createTimePoint, fromTZ, fromTZISO, hasUtcDesignator, toTZ } from "./helpers/timezone.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
 import {
@@ -33,6 +33,8 @@ const DaysOfMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 type RecursionTarget = "month" | "day" | "hour" | "minute" | "second";
 type RecursionTargetNext = RecursionTarget | "year";
 type RecursionStep = [RecursionTarget, RecursionTargetNext, number];
+// year, month, day, hour, minute, second and tz
+type InstantFields = [number, number, number, number, number, number, string | number | undefined];
 const RecursionSteps: RecursionStep[] = [
   ["month", "year", 0],
   ["day", "month", -1],
@@ -49,6 +51,18 @@ const RecursionSteps: RecursionStep[] = [
  */
 class CronDate<T = undefined> {
   tz: string | number | undefined;
+
+  /**
+   * The instant (whole seconds) this CronDate was created from, if its time has not changed since.
+   * A local time that occurs twice (DST fall back) then keeps the occurrence it was created from.
+   */
+  private instantMs?: number;
+
+  /**
+   * The fields (and timezone) `instantMs` was cached for. The fields are public and can be changed
+   * directly, so `instantMs` is only used while they still match.
+   */
+  private instantFields?: InstantFields;
 
   /**
    * Current milliseconds
@@ -81,7 +95,7 @@ class CronDate<T = undefined> {
   day!: number;
 
   /**
-   * Current month (1-12), in local time or target timezone specified by `this.tz`
+   * Current month (0-11), in local time or target timezone specified by `this.tz`
    * @type {number}
    */
   month!: number;
@@ -271,6 +285,7 @@ class CronDate<T = undefined> {
           this.day = d.d;
           this.month = d.m - 1;
           this.year = d.y;
+          this.cacheInstant(inDate.getTime() - this.ms);
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
           throw new TypeError(
@@ -287,7 +302,28 @@ class CronDate<T = undefined> {
       this.day = inDate.getDate();
       this.month = inDate.getMonth();
       this.year = inDate.getFullYear();
+      this.cacheInstant(inDate.getTime() - this.ms);
     }
+  }
+
+  /**
+   * Remember the instant the current fields were created from
+   */
+  private cacheInstant(instantMs: number) {
+    this.instantMs = instantMs;
+    const { year, month, day, hour, minute, second } = this;
+    this.instantFields = [year, month, day, hour, minute, second, this.tz];
+  }
+
+  /**
+   * The cached instant, or undefined if there is none or the fields have changed since caching
+   */
+  private cachedInstant(): number | undefined {
+    const f = this.instantFields;
+    if (f === undefined || f[6] !== this.tz) return undefined;
+    if (f[5] !== this.second || f[4] !== this.minute || f[3] !== this.hour) return undefined;
+    if (f[2] !== this.day || f[1] !== this.month || f[0] !== this.year) return undefined;
+    return this.instantMs;
   }
 
   /**
@@ -304,6 +340,8 @@ class CronDate<T = undefined> {
     this.minute = d.minute;
     this.second = d.second;
     this.ms = d.ms;
+    this.instantMs = d.instantMs;
+    this.instantFields = d.instantFields;
   }
 
   /**
@@ -314,14 +352,16 @@ class CronDate<T = undefined> {
   private apply() {
     // If any value could be out of bounds, apply
     if (
-      this.month > 11 || this.month < 0 || this.day > DaysOfMonth[this.month] || this.day < 1 ||
-      this.hour > 59 ||
+      this.month > 11 || this.month < 0 ||
+      this.day > this.getLastDayOfMonth(this.year, this.month) || this.day < 1 ||
+      this.hour > 23 ||
       this.minute > 59 ||
       this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0
     ) {
-      const d = new Date(
-        Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms),
-      );
+      // setUTCFullYear, unlike Date.UTC, doesn't read years 0-99 as 1900-1999
+      const d = new Date(0);
+      d.setUTCFullYear(this.year, this.month, this.day);
+      d.setUTCHours(this.hour, this.minute, this.second, this.ms);
       this.ms = d.getUTCMilliseconds();
       this.second = d.getUTCSeconds();
       this.minute = d.getUTCMinutes();
@@ -340,8 +380,13 @@ class CronDate<T = undefined> {
    */
   private fromString(str: string) {
     if (typeof this.tz === "number") {
-      // Parse without timezone
-      const inDate = fromTZISO(str);
+      // A string with Z or an offset is an exact instant
+      if (hasUtcDesignator(str)) {
+        return this.fromDate(fromTZISO(str));
+      }
+
+      // Otherwise it is wall clock time at the UTC offset of the job
+      const inDate = fromTZISO(str, "Etc/UTC");
       this.ms = inDate.getUTCMilliseconds();
       this.second = inDate.getUTCSeconds();
       this.minute = inDate.getUTCMinutes();
@@ -365,6 +410,92 @@ class CronDate<T = undefined> {
     offset: number,
   ): number {
     return this._findMatch(options, target, pattern, offset, 1);
+  }
+
+  /**
+   * Evaluate whether a specific day value matches, applying all day-specific
+   * special-case logic (W, LW, L modifiers and DOW AND/OR combination).
+   *
+   * Used by both `_findMatch` (iterative search) and `match` (static check).
+   *
+   * @param initialMatch - The match value from the pattern array for this day index
+   * @param dayValue - The actual day of month (1-31)
+   * @param pattern - The cron pattern to match against
+   * @param options - The cron options that influence matching behavior
+   * @returns 1 if the day matches, 0 otherwise
+   * @private
+   */
+  private _matchDayValue(
+    initialMatch: number,
+    dayValue: number,
+    pattern: CronPattern,
+    options: CronOptions<T>,
+  ): number {
+    let match = initialMatch;
+
+    // Special case for nearest weekday (W modifier)
+    if (!match) {
+      for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
+        if (pattern.nearestWeekdays[dayWithW]) {
+          const executionDay = this.getNearestWeekday(
+            this.year,
+            this.month,
+            dayWithW + 1, // pattern.nearestWeekdays uses -1 offset; dayWithW + 1 = actual day
+          );
+          if (executionDay !== -1 && executionDay === dayValue) {
+            match = 1;
+            break;
+          }
+        }
+      }
+    }
+
+    // Special case for last weekday of month (LW modifier)
+    if (pattern.lastWeekday) {
+      const lastWeekday = this.getLastWeekday(this.year, this.month);
+      if (dayValue === lastWeekday) {
+        match = 1;
+      }
+    }
+
+    // Special case for last day of month (L modifier)
+    if (pattern.lastDayOfMonth) {
+      const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
+      if (dayValue === lastDayOfMonth) {
+        match = 1;
+      }
+    }
+
+    // Special case for day of week
+    if (!pattern.starDOW) {
+      const fDomWeekDay = new Date(
+        Date.UTC(this.year, this.month, 1, 0, 0, 0, 0),
+      ).getUTCDay();
+      let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (dayValue - 1)) % 7];
+
+      // Extra check for nth weekday of month
+      if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
+        dowMatch = this.isNthWeekdayOfMonth(
+            this.year,
+            this.month,
+            dayValue,
+            dowMatch,
+          )
+          ? 1
+          : 0;
+      }
+
+      // Combine day of month and day of week using AND/OR logic
+      if (pattern.useAndLogic) {
+        match = match && dowMatch;
+      } else if (!options.domAndDow && !pattern.starDOM) {
+        match = match || dowMatch;
+      } else {
+        match = match && dowMatch;
+      }
+    }
+
+    return match;
   }
 
   /**
@@ -393,18 +524,6 @@ class CronDate<T = undefined> {
     // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster
     // than new Date(y,m,d). We use the UTC functions to set/get date parts.
 
-    // Pre-calculate last day of month if needed
-    let lastDayOfMonth;
-    if (pattern.lastDayOfMonth) {
-      lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-    }
-
-    // Pre-calculate weekday if needed
-    // Calculate offset weekday by ((fDomWeekDay + (targetDate - 1)) % 7)
-    const fDomWeekDay = (!pattern.starDOW && target == "day")
-      ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay()
-      : undefined;
-
     // Determine loop bounds based on direction
     const startIdx = this[target] + offset;
     const endCondition = direction === 1
@@ -415,65 +534,9 @@ class CronDate<T = undefined> {
       // this applies to all "levels"
       let match: number = pattern[target][i];
 
-      // Special case for nearest weekday
-      if (target === "day" && !match) {
-        // Iterate through all possible 'W' days in the pattern
-        for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
-          // Check if the pattern specifies the 'W' modifier for this day
-          if (pattern.nearestWeekdays[dayWithW]) {
-            // Calculate the actual execution day for this 'W' day
-            const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
-
-            // Skip if the day doesn't exist in this month (executionDay === -1)
-            if (executionDay === -1) {
-              continue;
-            }
-
-            // Check if the day currently being evaluated by the outer loop is that execution day
-            if (executionDay === (i - offset)) {
-              match = 1;
-              break; // Match found, no need to check other 'W' days
-            }
-          }
-        }
-      }
-
-      // Special case for last weekday of month
-      if (target === "day" && pattern.lastWeekday) {
-        const lastWeekday = this.getLastWeekday(this.year, this.month);
-        if (i - offset === lastWeekday) {
-          match = 1;
-        }
-      }
-
-      // Special case for last day of month
-      if (target === "day" && pattern.lastDayOfMonth && i - offset == lastDayOfMonth) {
-        match = 1;
-      }
-
-      // Special case for day of week
-      if (target === "day" && !pattern.starDOW) {
-        let dowMatch = pattern.dayOfWeek[(fDomWeekDay! + ((i - offset) - 1)) % 7];
-
-        // Extra check for nth weekday of month
-        // 0b011111 === All occurences of weekday in month
-        // 0b100000 === Last occurence of weekday in month
-        if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
-          dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, i - offset, dowMatch) ? 1 : 0;
-        } else if (dowMatch) {
-          throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${dowMatch}`);
-        }
-
-        // OCPS 1.4: If + modifier is used (useAndLogic), always use AND logic
-        // Otherwise: If domAndDow is false (legacy OR mode), and dayOfMonth is specified - use "OR" to combine day of week with day of month
-        // In all other cases use "AND"
-        if (pattern.useAndLogic) {
-          match = match && dowMatch;
-        } else if (!options.domAndDow && !pattern.starDOM) {
-          match = match || dowMatch;
-        } else {
-          match = match && dowMatch;
-        }
+      // Apply day-specific special cases (W, LW, L, DOW modifiers)
+      if (target === "day") {
+        match = this._matchDayValue(match, i - offset, pattern, options);
       }
 
       if (match) {
@@ -515,6 +578,27 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     doing: number,
   ): CronDate<T> | null {
+    // Step in a loop rather than recursing, so that a long search can't overflow the stack
+    // Without a year field, the pattern repeats with the calendar every 400 years
+    const startYear = this.year;
+    let next: CronDate<T> | number | null = doing;
+    while (typeof next === "number") {
+      if (pattern.starYear && Math.abs(this.year - startYear) > 400) return null;
+      next = this.recurseStep(pattern, options, next);
+    }
+    return next;
+  }
+
+  /**
+   * One step of recurse(). Returns the level to continue at, or the result.
+   *
+   * @private
+   */
+  private recurseStep(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | number | null {
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -590,9 +674,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurse(pattern, options, 0);
+        return 0;
       } else if (this.apply()) {
-        return this.recurse(pattern, options, doing - 1);
+        return doing - 1;
       }
     }
 
@@ -610,7 +694,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurse(pattern, options, doing);
+      return doing;
     }
   }
 
@@ -627,6 +711,9 @@ class CronDate<T = undefined> {
     options: CronOptions<T>,
     hasPreviousRun: boolean,
   ): CronDate<T> | null {
+    this.instantMs = undefined;
+    this.instantFields = undefined;
+
     // Move to next second, or increment according to minimum interval indicated by option `interval: x`
     // Do not increment a full interval if this is the very first run
     this.second += (options.interval !== undefined && options.interval > 1 && hasPreviousRun)
@@ -654,6 +741,9 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
   ): CronDate<T> | null {
+    this.instantMs = undefined;
+    this.instantFields = undefined;
+
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
     this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
 
@@ -664,7 +754,7 @@ class CronDate<T = undefined> {
     this.apply();
 
     // Recursively change each part (y, m, d ...) until previous match is found, return null on failure
-    return this.recurseBackward(pattern, options, 0, 0);
+    return this.recurseBackward(pattern, options, 0);
   }
 
   /**
@@ -687,13 +777,28 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     options: CronOptions<T>,
     doing: number,
-    depth: number = 0,
   ): CronDate<T> | null {
-    // Safety: prevent infinite recursion
-    if (depth > 10000) {
-      return null;
+    // Step in a loop rather than recursing, so that a long search can't overflow the stack
+    // Without a year field, the pattern repeats with the calendar every 400 years
+    const startYear = this.year;
+    let next: CronDate<T> | number | null = doing;
+    while (typeof next === "number") {
+      if (pattern.starYear && Math.abs(this.year - startYear) > 400) return null;
+      next = this.recurseBackwardStep(pattern, options, next);
     }
+    return next;
+  }
 
+  /**
+   * One step of recurseBackward(). Returns the level to continue at, or the result.
+   *
+   * @private
+   */
+  private recurseBackwardStep(
+    pattern: CronPattern,
+    options: CronOptions<T>,
+    doing: number,
+  ): CronDate<T> | number | null {
     // OCPS 1.2: Check if current year matches the year pattern at the start
     // Only check when year constraints exist and we're at month level
     if (doing === 0 && !pattern.starYear) {
@@ -794,9 +899,7 @@ class CronDate<T = undefined> {
             }
 
             // Get the last day of the normalized month
-            const lastDayOfMonth = tempMonth !== 1
-              ? DaysOfMonth[tempMonth]
-              : new Date(Date.UTC(tempYear, tempMonth + 1, 0)).getUTCDate();
+            const lastDayOfMonth = this.getLastDayOfMonth(tempYear, tempMonth);
 
             // If current day exceeds the last day of the new month, cap it
             if (this.day > lastDayOfMonth) {
@@ -811,15 +914,7 @@ class CronDate<T = undefined> {
         // Now reset current level to max based on the normalized date
         const target = RecursionSteps[doing][0];
         const offset = RecursionSteps[doing][2];
-        const maxValue = this.getMaxPatternValue(target, pattern, offset);
-
-        // For day patterns, cap at the actual last day of the current month
-        if (target === "day") {
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          this[target] = Math.min(maxValue, lastDayOfMonth);
-        } else {
-          this[target] = maxValue;
-        }
+        this[target] = this.getMaxPatternValue(target, pattern, offset);
 
         // Apply again to ensure the date is valid
         this.apply();
@@ -830,9 +925,7 @@ class CronDate<T = undefined> {
         if (doing === 0) {
           // We just reset month - check if day needs to be reset based on the new month
           const dayOffset = RecursionSteps[1][2]; // offset for day
-          const dayMaxValue = this.getMaxPatternValue("day", pattern, dayOffset);
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          const newDay = Math.min(dayMaxValue, lastDayOfMonth);
+          const newDay = this.getMaxPatternValue("day", pattern, dayOffset);
           if (newDay !== this.day) {
             this.day = newDay;
             // Reset hour/minute/second as well since day changed
@@ -860,9 +953,9 @@ class CronDate<T = undefined> {
         }
 
         // Restart
-        return this.recurseBackward(pattern, options, 0, depth + 1);
+        return 0;
       } else if (this.apply()) {
-        return this.recurseBackward(pattern, options, doing - 1, depth + 1);
+        return doing - 1;
       }
     }
 
@@ -879,7 +972,7 @@ class CronDate<T = undefined> {
 
       // ... oh, go to next part then
     } else {
-      return this.recurseBackward(pattern, options, doing, depth + 1);
+      return doing;
     }
   }
 
@@ -899,29 +992,23 @@ class CronDate<T = undefined> {
     pattern: CronPattern,
     offset: number,
   ): number {
-    // Special handling for day when lastDayOfMonth is set
-    if (target === "day" && pattern.lastDayOfMonth) {
-      // Return the actual last day of the current month
-      return this.getLastDayOfMonth(this.year, this.month);
-    }
-
-    // Special handling for day with day-of-week patterns
-    if (target === "day" && !pattern.starDOW) {
-      // Get the actual last day of the current month as we need to check all days
-      const lastDay = this.getLastDayOfMonth(this.year, this.month);
-      return lastDay;
-    }
-
     // Find the highest value in the pattern array that equals 1
+    // Fallback: the pattern length minus offset, a reasonable upper bound to search from
+    let maxValue = pattern[target].length - 1 - offset;
     for (let i = pattern[target].length - 1; i >= 0; i--) {
       if (pattern[target][i]) {
-        return i - offset;
+        maxValue = i - offset;
+        break;
       }
     }
 
-    // Fallback: return the pattern length minus offset
-    // This ensures we at least try searching from a reasonable upper bound
-    return pattern[target].length - 1 - offset;
+    // A day can't be after the last day of the month, so that e.g. April 31 doesn't roll
+    // over into May. L and day-of-week patterns search from the last day of the month.
+    if (target === "day") {
+      const lastDay = this.getLastDayOfMonth(this.year, this.month);
+      return pattern.lastDayOfMonth || !pattern.starDOW ? lastDay : Math.min(maxValue, lastDay);
+    }
+    return maxValue;
   }
 
   /**
@@ -951,6 +1038,14 @@ class CronDate<T = undefined> {
    * @param internal If this is an internal call
    */
   public getDate(internal?: boolean): Date {
+    // Keep the occurrence this CronDate was created from
+    if (!internal && typeof this.tz !== "number") {
+      const instantMs = this.cachedInstant();
+      if (instantMs !== undefined) {
+        return new Date(instantMs + (this.tz === void 0 ? this.ms : 0));
+      }
+    }
+
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
@@ -1038,59 +1133,9 @@ class CronDate<T = undefined> {
 
       let match: number = pattern[target][targetValue + offset];
 
-      // Apply the same special cases as in findNext
+      // Apply day-specific special cases (W, LW, L, DOW modifiers)
       if (target === "day") {
-        // Special case for nearest weekday (W modifier)
-        if (!match) {
-          for (let dayWithW = 0; dayWithW < pattern.nearestWeekdays.length; dayWithW++) {
-            if (pattern.nearestWeekdays[dayWithW]) {
-              const executionDay = this.getNearestWeekday(this.year, this.month, dayWithW - offset);
-              // Skip if the day doesn't exist in this month
-              if (executionDay !== -1 && executionDay === targetValue) {
-                match = 1;
-                break;
-              }
-            }
-          }
-        }
-
-        // Special case for last weekday of month (LW modifier)
-        if (pattern.lastWeekday) {
-          const lastWeekday = this.getLastWeekday(this.year, this.month);
-          if (targetValue === lastWeekday) {
-            match = 1;
-          }
-        }
-
-        // Special case for last day of month (L modifier)
-        if (pattern.lastDayOfMonth) {
-          const lastDayOfMonth = this.getLastDayOfMonth(this.year, this.month);
-          if (targetValue === lastDayOfMonth) {
-            match = 1;
-          }
-        }
-
-        // Special case for day of week
-        if (!pattern.starDOW) {
-          const fDomWeekDay = new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay();
-          let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (targetValue - 1)) % 7];
-
-          // Extra check for nth weekday of month
-          if (dowMatch && (dowMatch & ANY_OCCURRENCE)) {
-            dowMatch = this.isNthWeekdayOfMonth(this.year, this.month, targetValue, dowMatch)
-              ? 1
-              : 0;
-          }
-
-          // Apply same logic as in findNext for combining day of month and day of week
-          if (pattern.useAndLogic) {
-            match = match && dowMatch;
-          } else if (!options.domAndDow && !pattern.starDOM) {
-            match = match || dowMatch;
-          } else {
-            match = match && dowMatch;
-          }
-        }
+        match = this._matchDayValue(match, targetValue, pattern, options);
       }
 
       // If this component doesn't match, the date doesn't match the pattern

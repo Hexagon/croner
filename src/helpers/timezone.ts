@@ -41,14 +41,25 @@ function timePointsMatch(tp1: TimePoint, tp2: TimePoint): boolean {
 }
 
 /**
+ * Whether an ISO 8601 string specifies UTC or a UTC offset, and so is an exact instant
+ *
+ * @param dtStr - an ISO 8601 format date and time string
+ */
+export function hasUtcDesignator(dtStr: string): boolean {
+  // Z-flag included, or + or - included after character 9 (20200101 or 2020-01-0)
+  const stringEnd = dtStr.substring(9);
+  return stringEnd.includes("Z") || stringEnd.includes("+") || stringEnd.includes("-");
+}
+
+/**
  * Helper function that takes an ISO8601 local date time string and creates a TimePoint.
  * Throws on failure. Throws on invalid date or time.
  *
  * @param dtStr - an ISO 8601 format date and time string with all components, e.g. 2015-11-24T19:40:00
  * @param tz - Optional timezone
- * @returns TimePoint instance from parsing the string
+ * @returns TimePoint (whole seconds) and milliseconds from parsing the string
  */
-function parseISOLocal(dtStr: string, tz?: string): TimePoint {
+function parseISOLocal(dtStr: string, tz?: string): { tp: TimePoint; ms: number } {
   // Parse date using built in Date.parse
   const pd = new Date(Date.parse(dtStr));
 
@@ -57,30 +68,35 @@ function parseISOLocal(dtStr: string, tz?: string): TimePoint {
     throw new Error("Invalid ISO8601 passed to timezone parser.");
   }
 
-  // If date/time is specified in UTC (Z-flag included) or UTC offset is specified
-  // (+ or - included after character 9 (20200101 or 2020-01-0))
-  // Return time in UTC, else return local time and include timezone identifier
-  const stringEnd = dtStr.substring(9);
-  if (stringEnd.includes("Z") || stringEnd.includes("+") || stringEnd.includes("-")) {
-    return createTimePoint(
-      pd.getUTCFullYear(),
-      pd.getUTCMonth() + 1,
-      pd.getUTCDate(),
-      pd.getUTCHours(),
-      pd.getUTCMinutes(),
-      pd.getUTCSeconds(),
-      "Etc/UTC",
-    );
+  // If date/time is specified in UTC or with a UTC offset, return time in UTC,
+  // else return local time and include timezone identifier.
+  // A TimePoint holds whole seconds, so the milliseconds are returned separately.
+  if (hasUtcDesignator(dtStr)) {
+    return {
+      tp: createTimePoint(
+        pd.getUTCFullYear(),
+        pd.getUTCMonth() + 1,
+        pd.getUTCDate(),
+        pd.getUTCHours(),
+        pd.getUTCMinutes(),
+        pd.getUTCSeconds(),
+        "Etc/UTC",
+      ),
+      ms: pd.getUTCMilliseconds(),
+    };
   } else {
-    return createTimePoint(
-      pd.getFullYear(),
-      pd.getMonth() + 1,
-      pd.getDate(),
-      pd.getHours(),
-      pd.getMinutes(),
-      pd.getSeconds(),
-      tz,
-    );
+    return {
+      tp: createTimePoint(
+        pd.getFullYear(),
+        pd.getMonth() + 1,
+        pd.getDate(),
+        pd.getHours(),
+        pd.getMinutes(),
+        pd.getSeconds(),
+        tz,
+      ),
+      ms: pd.getMilliseconds(),
+    };
   }
 }
 
@@ -119,7 +135,9 @@ export function fromTimezone(
  * @returns Normal date object
  */
 export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: boolean): Date {
-  return fromTZ(parseISOLocal(localTimeStr, tz), throwOnInvalid);
+  const { tp, ms } = parseISOLocal(localTimeStr, tz);
+  // Keep the milliseconds of the string, so it is the same instant as the equivalent Date
+  return new Date(fromTZ(tp, throwOnInvalid).getTime() + ms);
 }
 
 /**
@@ -127,58 +145,121 @@ export function fromTZISO(localTimeStr: string, tz?: string, throwOnInvalid?: bo
  *
  * @param tp - TimePoint with specified timezone
  * @param throwOnInvalid - Default is to return the adjusted time if the call happens during a DST switch
- * @returns Normal date object
+ * @returns Normal date object, the first occurrence if the time occurs twice
  */
 export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
-  // Construct a Date object with UTC components matching the target local time
-  const inDate = new Date(timePointToMs(tp));
-
-  // See what this UTC time looks like when formatted in the target timezone
-  const check0 = toTZ(inDate, tp.tz!);
-
-  // Calculate the difference between target and actual local time components
-  const targetMs = timePointToMs(tp);
-  const actualMs = timePointToMs(check0);
-  const diffMs = targetMs - actualMs;
-
-  // First guess: adjust by the calculated difference
-  const dateGuess = new Date(inDate.getTime() + diffMs);
-  const check1 = toTZ(dateGuess, tp.tz!);
-
-  // Check if the first guess produces the target local time
-  if (timePointsMatch(check1, tp)) {
-    // Even if it matches, we might be in a DST overlap (fall back)
-    // Check if there's another valid time 1 hour earlier
-    const altGuess = new Date(dateGuess.getTime() - 3600000); // 1 hour earlier
-    const altCheck = toTZ(altGuess, tp.tz!);
-
-    // If the earlier time also produces the same local time, we're in a DST overlap
-    if (timePointsMatch(altCheck, tp)) {
-      // Return the earlier time (first occurrence per OCPS 1.4)
-      return altGuess;
-    }
-
-    return dateGuess;
-  }
-
-  // First guess didn't match, refine with a second iteration
-  const dateGuess2 = new Date(dateGuess.getTime() + timePointToMs(tp) - timePointToMs(check1));
-  const check2 = toTZ(dateGuess2, tp.tz!);
-
-  if (timePointsMatch(check2, tp)) {
-    // Second guess matches
-    return dateGuess2;
-  }
-
-  if (!throwOnInvalid) {
-    // Neither guess matches exactly - we're in a DST gap (spring forward)
-    // Return the time after the gap (the later of the two)
-    return dateGuess.getTime() > dateGuess2.getTime() ? dateGuess : dateGuess2;
-  } else {
-    // Input time is invalid, and the library is instructed to throw
-    throw new Error("Invalid date passed to fromTZ()");
-  }
+  const resolved = resolveLocal(tp);
+  if (resolved.kind === "single") return resolved.date;
+  if (resolved.kind === "ambiguous") return resolved.earlier;
+  if (throwOnInvalid) throw new Error("Invalid date passed to fromTZ()");
+  return resolved.after;
 }
+
+/**
+ * The real instants of a local time:
+ * - single: the time occurs once
+ * - ambiguous: the time occurs twice, as the clock goes back (DST fall back)
+ * - gap: the time does not exist, as the clock jumps forward (DST spring forward).
+ *   The clock change happens between `before` and `after`, and `after` is the
+ *   instant the time would have had with the offset from before the change.
+ */
+export type LocalResolution =
+  | { kind: "single"; date: Date }
+  | { kind: "ambiguous"; earlier: Date; later: Date }
+  | { kind: "gap"; before: Date; after: Date };
+
+/**
+ * Resolves a local time in a timezone to its real instants
+ *
+ * @param tp - TimePoint with specified timezone, or without timezone for system local time
+ */
+export function resolveLocal(tp: TimePoint): LocalResolution {
+  const targetMs = timePointToMs(tp);
+  const offsetAt = (ms: number) => utcOffsetMs(new Date(ms), tp.tz);
+
+  // First guess: the target local time, adjusted by the offset at the target time read as UTC
+  const guessMs = targetMs - offsetAt(targetMs);
+  const guessLocal = toTZ(new Date(guessMs), tp.tz);
+
+  if (timePointsMatch(guessLocal, tp)) {
+    // The time exists. It occurs twice if the offset drops within a few hours,
+    // and the same local time is found one offset change earlier or later.
+    const offset = timePointToMs(guessLocal) - guessMs;
+    const earlierMs = guessMs - (offsetAt(guessMs - DST_PROBE_MS) - offset);
+    if (earlierMs < guessMs && timePointsMatch(toTZ(new Date(earlierMs), tp.tz), tp)) {
+      return { kind: "ambiguous", earlier: new Date(earlierMs), later: new Date(guessMs) };
+    }
+    const laterMs = guessMs + (offset - offsetAt(guessMs + DST_PROBE_MS));
+    if (laterMs > guessMs && timePointsMatch(toTZ(new Date(laterMs), tp.tz), tp)) {
+      return { kind: "ambiguous", earlier: new Date(guessMs), later: new Date(laterMs) };
+    }
+    return { kind: "single", date: new Date(guessMs) };
+  }
+
+  // First guess didn't match, refine with the offset at the first guess
+  const guess2Ms = targetMs - (timePointToMs(guessLocal) - guessMs);
+  if (timePointsMatch(toTZ(new Date(guess2Ms), tp.tz), tp)) {
+    return { kind: "single", date: new Date(guess2Ms) };
+  }
+
+  // Neither guess matches - we're in a DST gap (spring forward)
+  return {
+    kind: "gap",
+    before: new Date(Math.min(guessMs, guess2Ms)),
+    after: new Date(Math.max(guessMs, guess2Ms)),
+  };
+}
+
+/**
+ * No DST transition moves the clock more than this, so it is far enough to look for one
+ */
+const DST_PROBE_MS = 3 * 3600000;
+
+/**
+ * Helper function to get the UTC offset of a timezone at an instant
+ *
+ * @returns Offset in milliseconds, local time minus UTC
+ */
+function utcOffsetMs(date: Date, tz?: string): number {
+  return timePointToMs(toTZ(date, tz)) - (date.getTime() - date.getUTCMilliseconds());
+}
+
+/**
+ * Finds the instant the UTC offset changes, between two instants with different offsets
+ *
+ * @param fromMs - Instant before the change, whole seconds
+ * @param toMs - Instant after the change, whole seconds
+ * @param tz - Timezone, or undefined for system local time
+ * @returns The first whole second with the new offset
+ */
+export function findOffsetChange(fromMs: number, toMs: number, tz?: string): number {
+  const fromOffset = utcOffsetMs(new Date(fromMs), tz);
+  while (toMs - fromMs > 1000) {
+    const middle = fromMs + Math.floor((toMs - fromMs) / 2000) * 1000;
+    if (utcOffsetMs(new Date(middle), tz) === fromOffset) {
+      fromMs = middle;
+    } else {
+      toMs = middle;
+    }
+  }
+  return toMs;
+}
+
+/**
+ * Which pass of a repeated local time an instant is on, as the clock goes back (DST fall back)
+ *
+ * @returns "earlier" or "later", or undefined if the local time of the instant occurs only once
+ */
+export function foldOf(ms: number, tz?: string): "earlier" | "later" | undefined {
+  const resolved = resolveLocal(toTZ(new Date(ms), tz));
+  if (resolved.kind !== "ambiguous") return undefined;
+  return ms < resolved.later.getTime() ? "earlier" : "later";
+}
+
+/**
+ * Creating an Intl.DateTimeFormat is expensive, so keep one per timezone
+ */
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
 
 /**
  * Converts a date object to a TimePoint in the specified timezone
@@ -187,23 +268,38 @@ export function fromTZ(tp: TimePoint, throwOnInvalid?: boolean): Date {
  * @param tzStr - Target timezone in IANA database format
  * @returns TimePoint representing the date in the target timezone
  */
-export function toTZ(d: Date, tzStr: string): TimePoint {
+export function toTZ(d: Date, tzStr?: string): TimePoint {
+  // System local time
+  if (tzStr === undefined) {
+    return createTimePoint(
+      d.getFullYear(),
+      d.getMonth() + 1,
+      d.getDate(),
+      d.getHours(),
+      d.getMinutes(),
+      d.getSeconds(),
+    );
+  }
+
   // Use Intl.DateTimeFormat.formatToParts to extract date components in the target timezone
   // This avoids DST-related bugs that occur when parsing date strings in the local timezone
-  let formatter: Intl.DateTimeFormat;
+  let formatter: Intl.DateTimeFormat | undefined = formatterCache.get(tzStr);
   let parts: Intl.DateTimeFormatPart[];
 
   try {
-    formatter = new Intl.DateTimeFormat("en-US", {
-      timeZone: tzStr,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: false,
-    });
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: tzStr,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+      });
+      formatterCache.set(tzStr, formatter);
+    }
     parts = formatter.formatToParts(d);
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);

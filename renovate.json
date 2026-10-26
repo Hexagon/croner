@@ -21,14 +21,14 @@
       ]
     },
     {
-      "description": "NPM build dependencies in deno.json",
+      "description": "NPM dev dependencies in package.json",
       "matchManagers": [
-        "deno"
-      ],
-      "matchDepTypes": [
         "npm"
       ],
-      "groupName": "NPM build dependencies",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "groupName": "NPM dev dependencies",
       "schedule": [
         "* 0-2 * * 1"
       ]

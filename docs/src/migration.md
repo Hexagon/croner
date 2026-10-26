@@ -84,6 +84,84 @@ By default, Croner now follows strict range parsing rules as used by vixie cron 
 * ❌ Invalid: `/10`, `0/10`, `30/30` (missing prefix or numeric prefix with stepping)
 * To allow the old behavior, use `sloppyRanges: true` option: `new Cron("/10 * * * * *", { sloppyRanges: true })`
 
+### Upgrading from 10.x to 11.x
+
+Version `11.x` adds iterator-based schedule traversal (`enumerate()`), aligns DST handling with
+croner-rust, and tightens `startAt` and `dayOffset` behavior.
+
+#### Breaking changes
+
+* **`startAt` is inclusive.** A pattern match exactly at `startAt` now runs. In `10.x`, the first
+  run was the following match. This does not apply with `interval` set, which works as in `10.x`.
+  A `startAt` between two whole seconds counts from the next whole second. A run in the same
+  second before a fractional `stopAt` is now included.
+* **With `dayOffset`, `nextRun()` and friends return actual run times.** `nextRun()`,
+  `nextRuns()`, `previousRuns()`, `msToNext()` and `enumerate()` find the first run after (or
+  before) the reference, as the scheduler does. In `10.x` they shifted the next pattern match
+  after the reference, so `dayOffset: -1` could return a time before the reference, and
+  `msToNext()` ignored the offset. `startAt` and `stopAt` also apply to the shifted run time. In
+  `10.x` they applied to the unshifted pattern match, so a job could run before `startAt` or
+  after `stopAt`.
+* **`previousRun()` returns when the previous run started**, as documented. In `10.x` it returned
+  when the run finished.
+* **DST transitions are handled as in croner-rust**, see
+  [DST behavior](#dst-behavior-aligned-with-croner-rust) below.
+
+#### Other behavior changes
+
+* **ISO 8601 strings are read in the job's `timezone` or `utcOffset`**, in `msToNext()`,
+  `nextRun()`, `match()`, `startAt`, `stopAt` and one-off dates. In `10.x` some of these were read
+  in system local time. Strings with `Z` or an offset, like `2026-01-01T00:00:00Z`, are read as
+  that exact instant.
+* **Patterns that can never match**, like `0 0 30 2 *` or `0 0 16 * 5#L` with `domAndDow: true`,
+  make `nextRun()` return `null` and `nextRuns()` / `previousRuns()` return `[]`. In `10.x`,
+  `previousRuns()` could throw a `TypeError` and the `5#L` case overflowed the stack.
+
+#### Past date-based jobs
+
+In `10.x`, a date-based job whose date had already passed never fired. In `11.x`, a date-based
+job dated up to 1 second in the past fires immediately, so a job created for "now" is not lost.
+To also fire older dates, enable `allowPast`:
+
+```ts
+new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
+  // explicit catch-up behavior
+});
+```
+
+#### New API in 11.x
+
+* `enumerate(startAt?)` returns a stateful `CronIterator` for sequential traversal:
+  * Works with `for...of` and destructuring.
+  * Supports `next()`, `peek()`, and `reset()`.
+  * Yields runs strictly after the given start date, unlike the inclusive `startAt` option.
+  * Honors `maxRuns`. The `CronIterator` class is exported.
+* `allowPast` option to fire date-based jobs more than 1 second in the past.
+* New type exports: `CatchCallbackFn`, `CronMode` and `ProtectCallbackFn`.
+
+#### DST behavior aligned with croner-rust
+
+Croner now handles DST transitions the same way as croner-rust and Vixie cron. This deviates from
+the recommendation in OCPS 1.4 §4.3.1, see [Pattern](usage/pattern.md). Jobs are either
+*fixed-time* (one value each for seconds, minutes and hours) or *interval* jobs (anything else).
+
+* **Fixed-time jobs in a DST gap** (spring forward) run at the first valid time after the gap. In
+  10.x they ran as much later as the gap was long: `0 30 2 * * *` ran at 3:30 AM, now at 3:00 AM.
+* **Interval jobs in a DST overlap** (fall back) run on both occurrences of a repeated time, so
+  `* * * * *` keeps running through the repeated hour. In 10.x the second pass was skipped, and
+  timers could be re-armed with negative delays throughout it (#399).
+* **Interval jobs in a DST gap** skip the times that don't exist. In 10.x, `nextRuns()` could go
+  backwards or repeat times around the gap.
+* Patterns with more than one hour, minute or second, like `0 30 1,2 * * *`, are interval jobs, so
+  1:30 AM runs twice on the day the clock goes back, where 1:00-2:00 repeats (as in
+  America/New_York).
+* Fixed-time jobs in a DST overlap run once, at the first occurrence, as in 10.x.
+* `nextRun()`, `previousRuns()` and `enumerate()` move in real time, also when started from inside
+  a repeated hour.
+* `dayOffset` shifts the run time by whole days of 24 hours, also when that run time was moved by a
+  DST gap. In America/New_York, `0 30 2 * * *` with `dayOffset: -1` moves the March 8 2026 match
+  to 3:00 AM EDT, after the gap, and runs 24 hours earlier: 2:00 AM EST on March 7, not 2:30 AM.
+
 ## Switching from Cron
 
 If you're currently using the cron package and want to migrate to Croner, the following steps can guide you:
@@ -105,13 +183,13 @@ The croner package has a different API compared to the cron package. Here's an e
 const { Cron } = require('croner');
 
 // If you have a lot of code using the CrobJob constructor, you can re-use the name like this
-// const { Cron as CronJob } = require('croner');
+// const { Cron: CronJob } = require('croner');
 
 const job = new Cron('0 0 12 * * *', { /* options */ }, () => {
     console.log('This job will run at 12:00 PM every day.');
 });
 
-job.start();
+// No job.start() needed, the job is scheduled immediately (use { paused: true } and job.resume() to start it later)
 ```
 
 ### Step 3: Update your tests

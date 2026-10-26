@@ -14,8 +14,8 @@ nav_order: 3
 | maxRuns      | Infinite       | Number         |                                       |
 | catch        | false          | Boolean\|Function        | Catch unhandled errors in triggered function. Passing `true` will silently ignore errors. Passing a callback function will trigger this callback on error. |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
-| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
-| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
+| startAt      | undefined      | String\|Date   | Date, or ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Inclusive, a run exactly at startAt is included (except when `interval` is set) |
+| stopAt       | undefined      | String\|Date   | Date, or ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Exclusive, a run exactly at stopAt is not included |
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
@@ -25,6 +25,10 @@ nav_order: 3
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
 | alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
+| allowPast    | false          | boolean        | If true, date-based jobs scheduled in the past will fire immediately. If false, only jobs scheduled within the past second will fire (to handle timing edge cases). |
+| dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()`, `enumerate()`, `startAt` and `stopAt` all refer to the shifted run time. |
+| mode         | "auto"         | string         | Controls how the cron pattern field count is interpreted. Options: `"auto"` (detect automatically), `"5-part"` (minute-level), `"6-part"` (second-level), `"7-part"` (second+year), `"5-or-6-parts"`, `"6-or-7-parts"`. |
+| sloppyRanges | false          | boolean        | If true, allows non-standard stepping formats for backward compatibility (e.g. `/10`, `5/5`, `30/30`). When false (default), only `*/step` or `min-max/step` formats are allowed. |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 

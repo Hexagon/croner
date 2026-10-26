@@ -3,31 +3,34 @@ import { test } from "@cross/test";
 import { Cron } from "../src/croner.ts";
 
 test("dayOffset should default to 0 if not specified", function () {
-  const scheduler = new Cron("0 0 12 * * *");
+  const scheduler = new Cron("0 0 12 * * *", { utcOffset: 0 });
   const now = new Date("2025-01-15T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   assertEquals(next?.toISOString(), "2025-01-15T12:00:00.000Z");
 });
 
 test("dayOffset -1 should schedule one day before pattern match", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -1 });
-  const now = new Date("2025-01-15T00:00:00.000Z");
+  // Every Wednesday, so that the run day shows the offset
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: -1, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-15T12:00:00.000Z, offset by -1 day = 2025-01-14T12:00:00.000Z
   assertEquals(next?.toISOString(), "2025-01-14T12:00:00.000Z");
 });
 
 test("dayOffset +1 should schedule one day after pattern match", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: 1 });
-  const now = new Date("2025-01-15T00:00:00.000Z");
+  // Every Wednesday, so that the run day shows the offset
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: 1, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-15T12:00:00.000Z, offset by +1 day = 2025-01-16T12:00:00.000Z
   assertEquals(next?.toISOString(), "2025-01-16T12:00:00.000Z");
 });
 
 test("dayOffset -2 should schedule two days before pattern match", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -2 });
-  const now = new Date("2025-01-15T00:00:00.000Z");
+  // Every Wednesday, so that the run day shows the offset
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: -2, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-15T12:00:00.000Z, offset by -2 days = 2025-01-13T12:00:00.000Z
   assertEquals(next?.toISOString(), "2025-01-13T12:00:00.000Z");
@@ -35,7 +38,7 @@ test("dayOffset -2 should schedule two days before pattern match", function () {
 
 test("dayOffset with first Saturday of month (issue #276 example)", function () {
   // Event on first Saturday at 8 AM
-  const scheduler = new Cron("0 8 * * 6#1", { dayOffset: -1, legacyMode: false });
+  const scheduler = new Cron("0 8 * * 6#1", { dayOffset: -1, legacyMode: false, utcOffset: 0 });
   const now = new Date("2025-01-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
 
@@ -46,15 +49,15 @@ test("dayOffset with first Saturday of month (issue #276 example)", function () 
 });
 
 test("dayOffset should work across month boundaries (backward)", function () {
-  const scheduler = new Cron("0 0 12 1 * *", { dayOffset: -1 }); // First day of month at noon
-  const now = new Date("2025-01-01T00:00:00.000Z");
+  const scheduler = new Cron("0 0 12 1 * *", { dayOffset: -1, utcOffset: 0 }); // First day of month at noon
+  const now = new Date("2024-12-31T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-01T12:00:00.000Z, offset by -1 day = 2024-12-31T12:00:00.000Z
   assertEquals(next?.toISOString(), "2024-12-31T12:00:00.000Z");
 });
 
 test("dayOffset should work across month boundaries (forward)", function () {
-  const scheduler = new Cron("0 0 12 31 1 *", { dayOffset: 1 }); // January 31st at noon
+  const scheduler = new Cron("0 0 12 31 1 *", { dayOffset: 1, utcOffset: 0 }); // January 31st at noon
   const now = new Date("2025-01-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-31T12:00:00.000Z, offset by +1 day = 2025-02-01T12:00:00.000Z
@@ -62,15 +65,15 @@ test("dayOffset should work across month boundaries (forward)", function () {
 });
 
 test("dayOffset should work across year boundaries (backward)", function () {
-  const scheduler = new Cron("0 0 12 1 1 *", { dayOffset: -1 }); // January 1st at noon
-  const now = new Date("2025-01-01T00:00:00.000Z");
+  const scheduler = new Cron("0 0 12 1 1 *", { dayOffset: -1, utcOffset: 0 }); // January 1st at noon
+  const now = new Date("2024-12-31T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-01-01T12:00:00.000Z, offset by -1 day = 2024-12-31T12:00:00.000Z
   assertEquals(next?.toISOString(), "2024-12-31T12:00:00.000Z");
 });
 
 test("dayOffset should work across year boundaries (forward)", function () {
-  const scheduler = new Cron("0 0 12 31 12 *", { dayOffset: 1 }); // December 31st at noon
+  const scheduler = new Cron("0 0 12 31 12 *", { dayOffset: 1, utcOffset: 0 }); // December 31st at noon
   const now = new Date("2025-12-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
   // Pattern matches at 2025-12-31T12:00:00.000Z, offset by +1 day = 2026-01-01T12:00:00.000Z
@@ -78,19 +81,19 @@ test("dayOffset should work across year boundaries (forward)", function () {
 });
 
 test("dayOffset with multiple runs should maintain offset", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -1 });
-  const now = new Date("2025-01-15T00:00:00.000Z");
+  const scheduler = new Cron("0 0 12 * * WED", { dayOffset: -1, utcOffset: 0 });
+  const now = new Date("2025-01-13T00:00:00.000Z");
   const runs = scheduler.nextRuns(3, now);
 
   assertEquals(runs.length, 3);
-  // Pattern matches at noon each day, offset by -1 day
+  // Pattern matches at noon each Wednesday, offset by -1 day to Tuesday
   assertEquals(runs[0]?.toISOString(), "2025-01-14T12:00:00.000Z");
-  assertEquals(runs[1]?.toISOString(), "2025-01-15T12:00:00.000Z");
-  assertEquals(runs[2]?.toISOString(), "2025-01-16T12:00:00.000Z");
+  assertEquals(runs[1]?.toISOString(), "2025-01-21T12:00:00.000Z");
+  assertEquals(runs[2]?.toISOString(), "2025-01-28T12:00:00.000Z");
 });
 
 test("dayOffset should work with weekly patterns", function () {
-  const scheduler = new Cron("0 0 12 * * 1", { dayOffset: -1 }); // Every Monday at noon
+  const scheduler = new Cron("0 0 12 * * 1", { dayOffset: -1, utcOffset: 0 }); // Every Monday at noon
   const now = new Date("2025-01-01T00:00:00.000Z"); // Wednesday
   const next = scheduler.nextRun(now);
 
@@ -100,7 +103,7 @@ test("dayOffset should work with weekly patterns", function () {
 });
 
 test("dayOffset should work with last day of month", function () {
-  const scheduler = new Cron("0 0 12 L * *", { dayOffset: -1 }); // Last day of month at noon
+  const scheduler = new Cron("0 0 12 L * *", { dayOffset: -1, utcOffset: 0 }); // Last day of month at noon
   const now = new Date("2025-01-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
 
@@ -109,7 +112,7 @@ test("dayOffset should work with last day of month", function () {
 });
 
 test("dayOffset with 0 should not change the schedule", function () {
-  const scheduler = new Cron("0 0 12 15 * *", { dayOffset: 0 });
+  const scheduler = new Cron("0 0 12 15 * *", { dayOffset: 0, utcOffset: 0 });
   const now = new Date("2025-01-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
 
@@ -127,8 +130,11 @@ test("dayOffset should throw on invalid (NaN) value", function () {
 });
 
 test("dayOffset should work with timezone option", function () {
-  const scheduler = new Cron("0 0 12 * * *", { dayOffset: -1, timezone: "America/New_York" });
-  const now = new Date("2025-01-15T05:00:00.000Z"); // 00:00 EST
+  const scheduler = new Cron("0 0 12 * * WED", {
+    dayOffset: -1,
+    timezone: "America/New_York",
+  });
+  const now = new Date("2025-01-13T05:00:00.000Z"); // Monday 00:00 EST
   const next = scheduler.nextRun(now);
 
   // Pattern matches at 2025-01-15 12:00 EST (17:00 UTC), offset by -1 day = 2025-01-14 12:00 EST (17:00 UTC)
@@ -136,7 +142,7 @@ test("dayOffset should work with timezone option", function () {
 });
 
 test("dayOffset large positive value should work", function () {
-  const scheduler = new Cron("0 0 12 1 * *", { dayOffset: 10 }); // First day of month at noon, offset by 10 days
+  const scheduler = new Cron("0 0 12 1 * *", { dayOffset: 10, utcOffset: 0 }); // First day of month at noon, offset by 10 days
   const now = new Date("2025-01-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
 
@@ -145,7 +151,7 @@ test("dayOffset large positive value should work", function () {
 });
 
 test("dayOffset large negative value should work", function () {
-  const scheduler = new Cron("0 0 12 15 * *", { dayOffset: -10 }); // 15th of month at noon, offset by -10 days
+  const scheduler = new Cron("0 0 12 15 * *", { dayOffset: -10, utcOffset: 0 }); // 15th of month at noon, offset by -10 days
   const now = new Date("2025-01-01T00:00:00.000Z");
   const next = scheduler.nextRun(now);
 
@@ -158,15 +164,15 @@ test("dayOffset should work across DST Spring Forward transition (America/New_Yo
   // Pattern: Daily at 2:30 AM (which doesn't exist on March 9)
   const scheduler = new Cron("0 30 2 * * *", { dayOffset: -1, timezone: "America/New_York" });
 
-  // Start from March 8, 2025
-  const march8 = new Date("2025-03-08T00:00:00Z");
-  const runs = scheduler.nextRuns(3, march8);
+  // Start from March 7, 2025
+  const march7 = new Date("2025-03-07T00:00:00Z");
+  const runs = scheduler.nextRuns(3, march7);
 
   // March 8 pattern match at 2:30 AM EST (07:30 UTC), offset -1 day = March 7 at 07:30 UTC
   assertEquals(runs[0]?.toISOString(), "2025-03-07T07:30:00.000Z");
 
-  // March 9 pattern would be at 2:30 AM (skipped, becomes 3:30 AM EDT = 07:30 UTC), offset -1 day = March 8 at 07:30 UTC
-  assertEquals(runs[1]?.toISOString(), "2025-03-08T07:30:00.000Z");
+  // March 9 pattern would be at 2:30 AM (doesn't exist, runs after the gap at 3:00 AM EDT = 07:00 UTC), offset -1 day = March 8 at 07:00 UTC
+  assertEquals(runs[1]?.toISOString(), "2025-03-08T07:00:00.000Z");
 
   // March 10 pattern at 2:30 AM EDT (06:30 UTC), offset -1 day = March 9 at 06:30 UTC
   assertEquals(runs[2]?.toISOString(), "2025-03-09T06:30:00.000Z");
@@ -177,9 +183,9 @@ test("dayOffset should work across DST Fall Back transition (America/New_York)",
   // Pattern: Daily at 1:30 AM (which occurs twice on November 2)
   const scheduler = new Cron("0 30 1 * * *", { dayOffset: -1, timezone: "America/New_York" });
 
-  // Start from November 1, 2025
-  const nov1 = new Date("2025-11-01T00:00:00Z");
-  const runs = scheduler.nextRuns(3, nov1);
+  // Start from October 31, 2025
+  const oct31 = new Date("2025-10-31T00:00:00Z");
+  const runs = scheduler.nextRuns(3, oct31);
 
   // November 1 pattern at 1:30 AM EDT (05:30 UTC), offset -1 day = October 31 at 05:30 UTC
   assertEquals(runs[0]?.toISOString(), "2025-10-31T05:30:00.000Z");
@@ -195,8 +201,8 @@ test("dayOffset should work across DST Spring Forward with positive offset", fun
   // Europe/London: DST begins March 30, 2025 at 1:00 AM GMT -> 2:00 AM BST
   const scheduler = new Cron("0 0 1 * * *", { dayOffset: 1, timezone: "Europe/London" });
 
-  // Start from March 28, 2025
-  const march28 = new Date("2025-03-28T00:00:00Z");
+  // Start from March 28, 2025, after the run from the March 27 pattern match
+  const march28 = new Date("2025-03-28T12:00:00Z");
   const runs = scheduler.nextRuns(3, march28);
 
   // March 28 pattern at 1:00 AM GMT (01:00 UTC), offset +1 day = March 29 at 01:00 UTC
@@ -214,9 +220,9 @@ test("dayOffset should work across DST Fall Back with positive offset", function
   // Europe/London: DST ends October 26, 2025 at 2:00 AM BST -> 1:00 AM GMT
   const scheduler = new Cron("0 0 1 * * *", { dayOffset: 1, timezone: "Europe/London" });
 
-  // Start from October 24, 2025
-  const oct24 = new Date("2025-10-24T00:00:00Z");
-  const runs = scheduler.nextRuns(3, oct24);
+  // Start from October 25, 2025, after the run from the October 24 pattern match
+  const oct25 = new Date("2025-10-25T00:00:00Z");
+  const runs = scheduler.nextRuns(3, oct25);
 
   // October 25 pattern at 1:00 AM BST (00:00 UTC), offset +1 day = October 26 at 00:00 UTC
   assertEquals(runs[0]?.toISOString(), "2025-10-26T00:00:00.000Z");
@@ -233,9 +239,9 @@ test("dayOffset multiple days across DST transition", function () {
   // America/Los_Angeles: DST begins March 9, 2025 at 2:00 AM -> 3:00 AM
   const scheduler = new Cron("0 0 15 * * *", { dayOffset: -3, timezone: "America/Los_Angeles" });
 
-  // Start from March 11, 2025
-  const march11 = new Date("2025-03-11T00:00:00Z");
-  const next = scheduler.nextRun(march11);
+  // Start from March 8, 2025
+  const march8 = new Date("2025-03-08T00:00:00Z");
+  const next = scheduler.nextRun(march8);
 
   // March 11 pattern at 3:00 PM PDT (22:00 UTC), offset -3 days = March 8 at 22:00 UTC (2:00 PM PST)
   assertEquals(next?.toISOString(), "2025-03-08T22:00:00.000Z");
@@ -260,4 +266,57 @@ test("dayOffset should maintain consistency across multiple DST transitions", fu
       `Run ${i} spacing should be 23-25 hours, got ${diffHours}`,
     );
   }
+});
+
+test("isRunning agrees with the scheduler when dayOffset moves the last run past the pattern", () => {
+  const RealDate = Date;
+  const now = RealDate.parse("2027-01-01T00:00:00.000Z");
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+
+  // Last pattern match is 2026-12-31 12:00, which dayOffset moves to 2027-01-01 12:00
+  const job = new Cron("0 0 12 31 12 * 2026", { timezone: "UTC", dayOffset: 1 }, () => {});
+  try {
+    assertEquals(job.isRunning(), true);
+  } finally {
+    job.stop();
+    globalThis.Date = RealDate;
+  }
+});
+
+test("dayOffset: run times are searched by the actual run time, never before the reference", function () {
+  // First of the month at noon, run one day before: the last day of the previous month
+  const job = new Cron("0 0 12 1 * *", { dayOffset: -1, utcOffset: 0 });
+  const reference = new Date("2025-01-15T00:00:00.000Z");
+
+  // The January 1 match runs December 31, which has passed, so the next run is January 31
+  assertEquals(job.nextRun(reference)?.toISOString(), "2025-01-31T12:00:00.000Z");
+  assertEquals(
+    job.msToNext(reference),
+    Date.parse("2025-01-31T12:00:00.000Z") - reference.getTime(),
+  );
+  assertEquals(job.enumerate(reference).next().value?.toISOString(), "2025-01-31T12:00:00.000Z");
+  assertEquals(
+    job.previousRuns(2, reference).map((d) => d.toISOString()),
+    ["2024-12-31T12:00:00.000Z", "2024-11-30T12:00:00.000Z"],
+  );
+});
+
+test("dayOffset: startAt and stopAt limit the actual run time", function () {
+  const job = new Cron("0 0 12 1 * *", {
+    dayOffset: -1,
+    utcOffset: 0,
+    startAt: "2025-01-31T12:00:00Z",
+    stopAt: "2025-03-31T12:00:00Z",
+  });
+  assertEquals(
+    job.nextRuns(5, new Date("2025-01-01T00:00:00Z")).map((d) => d.toISOString()),
+    ["2025-01-31T12:00:00.000Z", "2025-02-28T12:00:00.000Z"],
+  );
 });

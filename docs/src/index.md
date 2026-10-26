@@ -12,7 +12,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
-*   **OCPS 1.0-1.4 compliant**: Fully supports the [Open Cron Pattern Specification](https://github.com/open-source-cron/ocps) including advanced features like seconds/year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic).
+*   **OCPS 1.0-1.4 compliant**: Fully supports the [Open Cron Pattern Specification](https://github.com/open-source-cron/ocps) including advanced features like seconds/year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic). DST handling follows Vixie cron and croner-rust instead of the OCPS 1.4 recommendation, see [Pattern](usage/pattern.md).
 *   Works in Node.js >=18.0 (both require and import), Deno >=2.0 and Bun >=1.0.0.
 *   Works in browsers as standalone, UMD or ES-module.
 *   Target different [time zones](usage/examples.md#time-zone).
@@ -51,13 +51,13 @@ console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve"
 
 **Run a function at a specific date/time using a non-local timezone**
 
-Time is ISO 8601 local time, this will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
+Time is ISO 8601 local time, this will run 2030-01-23 00:00:00 according to the time in Asia/Kolkata
 
 ```ts
-new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+new Cron('2030-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 ```
 
-More examples at [usage/examples.md]([usage/examples.md])
+More examples at [usage/examples.md](usage/examples.md)
 
 ## Feature comparison
 

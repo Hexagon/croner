@@ -18,7 +18,7 @@ const nextMonth = new Cron("@monthly").nextRun(),
 	nextSunday = new Cron("@weekly").nextRun(),
 	nextSat29feb = new Cron("0 0 0 29 2 6", { domAndDow: true }).nextRun(),
 	nextSunLastOfMonth = new Cron("0 0 0 L * 7", { domAndDow: true }).nextRun(),
-    nextLastSundayOfMonth = new Cron("0 0 0 * * L7").nextRun();
+    nextLastSundayOfMonth = new Cron("0 0 0 * * 7L").nextRun();
 
 console.log("First day of next month: " +  nextMonth.toLocaleDateString());
 console.log("Next sunday: " +  nextSunday.toLocaleDateString());
@@ -47,6 +47,46 @@ previousRuns.forEach((run, i) => {
 //   5. 2024-01-11T00:00:00.000Z
 ```
 
+### Stateful iterator (enumerate)
+
+`enumerate()` returns a `CronIterator` that implements the ECMAScript Iterator and
+Iterable protocols. Use it with `for...of` loops, destructuring, or any other construct
+that consumes iterables. The iterator yields runs strictly after the start date it is given, so
+a run exactly at that date is not included (unlike the inclusive `startAt` option).
+
+```ts
+// for...of — collect the next 3 daily runs starting from a reference date
+const job = new Cron("0 0 0 * * *");
+const start = new Date("2024-06-01T00:00:00");
+
+let count = 0;
+for (const date of job.enumerate(start)) {
+    console.log(date.toISOString());
+    // Stop after printing 3 dates
+    if (++count >= 3) break;
+}
+
+// Destructuring — capture the next two occurrences
+const [next1, next2] = job.enumerate(start);
+console.log("Next:       ", next1.toISOString());
+console.log("After that: ", next2.toISOString());
+
+// peek() — look at the upcoming date without advancing
+const iter = job.enumerate(start);
+console.log("Upcoming:", iter.peek()?.toISOString()); // does not advance
+console.log("First:   ", iter.next().value?.toISOString()); // same date
+
+// reset() — restart from a new point
+iter.reset(new Date("2024-07-01T00:00:00"));
+console.log("After reset:", iter.next().value?.toISOString()); // 2024-07-02
+
+// Finite schedule — iterator signals done automatically when stopAt is reached
+const finite = new Cron("0 0 0 * * *", { stopAt: "2024-06-03T00:00:00" });
+for (const date of finite.enumerate(start)) {
+    console.log(date.toISOString()); // prints 2024-06-02 only (stopAt is exclusive)
+}
+```
+
 ### Get run-once date
 
 ```ts
@@ -59,6 +99,25 @@ if (onceDate) {
 } else {
     console.log("This is a pattern-based recurring job");
 }
+```
+
+### Allow jobs scheduled in the past
+
+```ts
+// By default, jobs scheduled more than 1 second in the past will not run
+const pastJob = new Cron("2020-01-01T00:00:00", () => {
+    console.log("This will NOT run");
+});
+
+// Use allowPast option to fire immediately for past dates
+const pastJobAllowed = new Cron("2020-01-01T00:00:00", { allowPast: true }, () => {
+    console.log("This WILL fire immediately");
+});
+
+// Useful for catch-up jobs or handling missed schedules
+const missedJob = new Cron(new Date(Date.now() - 60000), { allowPast: true }, () => {
+    console.log("This job was scheduled 1 minute ago but will fire now");
+});
 ```
 
 ### Job controls
@@ -82,12 +141,12 @@ import { Cron } from "./dist/croner.js";
 const job = new Cron(
 	'* * * * *', 
 	{
-		startAt: "2023-11-01T00:00:00", 
-		stopAt: "2023-12-01T00:00:00",
+		startAt: "2030-11-01T00:00:00", 
+		stopAt: "2030-12-01T00:00:00",
 		timezone: "Europe/Stockholm"
 	},
 	function() {
-		console.log('This will run every minute, from 2023-11-01 to 2023-12-01 00:00:00');
+		console.log('This will run every minute, from 2030-11-01 to 2030-12-01 00:00:00');
 	}
 );
 
@@ -123,8 +182,8 @@ new Cron('*/5 * * * * *', { context: data }, (self, context) => {
 ```ts
 // A javascript date, or a ISO 8601 local time string can be passed, to fire a function once. 
 // Always specify which timezone the ISO 8601 time string has with the timezone option.
-let job = new Cron("2025-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
-	console.log('This will run at 2025-01-01 23:00:00 in timezone Europe/Stockholm');
+let job = new Cron("2030-01-01T23:00:00",{timezone: "Europe/Stockholm"},() => {
+	console.log('This will run at 2030-01-01 23:00:00 in timezone Europe/Stockholm');
 });
 
 if (job.nextRun() === null) {
@@ -200,7 +259,7 @@ setTimeout(() => {
 
 ```ts
 // Start a job firing once each 5th second, run at most 3 times
-const job = new Cron("0/5 * * * * *", { maxRuns: 3 }, (job) => {
+const job = new Cron("*/5 * * * * *", { maxRuns: 3 }, (job) => {
     
     // Do work
     console.log('Job Running');

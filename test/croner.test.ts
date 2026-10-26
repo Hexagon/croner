@@ -653,7 +653,10 @@ test("Weekday pattern should return correct weekdays", function () {
 });
 
 test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-  let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
+  let nextRuns = new Cron("0 0 0 * * 5,6", { legacyMode: true }).nextRuns(
+    10,
+    "2022-02-17T00:00:00",
+  );
   assertEquals(nextRuns[0].getFullYear(), 2022);
   assertEquals(nextRuns[0].getMonth(), 1);
   assertEquals(nextRuns[0].getDate(), 18);
@@ -676,19 +679,6 @@ test("Weekday pattern should return correct combined with day of month (croner m
   assertEquals(nextRuns[1].getFullYear(), 2022);
   assertEquals(nextRuns[1].getMonth(), 6);
   assertEquals(nextRuns[1].getDate(), 2);
-});
-
-test("Weekday pattern should return correct weekdays (legacy mode)", function () {
-  let nextRuns = new Cron("0 0 0 * * 5,6").nextRuns(10, "2022-02-17T00:00:00");
-  assertEquals(nextRuns[0].getFullYear(), 2022);
-  assertEquals(nextRuns[0].getMonth(), 1);
-  assertEquals(nextRuns[0].getDate(), 18);
-  assertEquals(nextRuns[1].getDate(), 19);
-  assertEquals(nextRuns[2].getDate(), 25);
-  assertEquals(nextRuns[3].getDate(), 26);
-  assertEquals(nextRuns[4].getMonth(), 2);
-  assertEquals(nextRuns[4].getDate(), 4);
-  assertEquals(nextRuns[5].getDate(), 5);
 });
 
 test("Weekday pattern should return correct combined with day of month (legacy mode)", function () {
@@ -868,22 +858,21 @@ test(
 );
 
 test(
-  "Job should not be working after 1500 ms",
+  "Job should not be working after 3000 ms",
   (context, done) => {
-    let sleepPromise;
+    let callbackDone = false;
     const job = new Cron("* * * * * *", async () => {
       job.stop();
-      sleepPromise = sleep(2000);
-      await sleepPromise;
+      await sleep(1000);
+      callbackDone = true;
     });
-    setTimeout(async () => {
-      if (job.isBusy()) {
+    setTimeout(() => {
+      if (job.isBusy() || !callbackDone) {
         /* Let it time out */
       } else {
-        await sleepPromise!;
         done();
       }
-    }, 3500);
+    }, 3000);
   },
   { waitForCallback: true, timeout: 6000 },
 );
@@ -1020,4 +1009,276 @@ test("getOnce() should return the original date when created with ISO 8601 UTC s
   assertEquals(onceDate?.getUTCMonth(), 0);
   assertEquals(onceDate?.getUTCDate(), 1);
   assertEquals(onceDate?.getUTCHours(), 0);
+});
+
+test(
+  "Fire-once job scheduled in the recent past (< 1s) should fire immediately",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled 500ms in the past - should still fire
+    const pastTime = new Date(Date.now() - 500);
+    const job = new Cron(pastTime, () => {
+      job.stop();
+      resolve();
+    });
+    // Verify it's scheduled
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test(
+  "Fire-once job scheduled at current time should fire",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled for very near future (10ms) - should fire
+    const nearFuture = new Date(Date.now() + 10);
+    const job = new Cron(nearFuture, () => {
+      job.stop();
+      resolve();
+    });
+    // Verify it's scheduled
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test("Fire-once job scheduled significantly in past (> 1s) should not fire", function () {
+  // Create a job scheduled 2 seconds in the past - should NOT fire
+  const pastTime = new Date(Date.now() - 2000);
+  const job = new Cron(pastTime);
+  // Should return null for nextRun
+  assertEquals(job.nextRun(), null);
+  assertEquals(job.isRunning(), false);
+  job.stop();
+});
+
+test(
+  "Fire-once job with allowPast: true should fire even if significantly in past",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Create a job scheduled 2 seconds in the past with allowPast option
+    const pastTime = new Date(Date.now() - 2000);
+    const job = new Cron(pastTime, { allowPast: true }, () => {
+      job.stop();
+      resolve();
+    });
+    // Should be scheduled even though it's in the past
+    assertEquals(job.nextRun() !== null, true);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true should work for very old dates",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    let fired = false;
+    const veryOldDate = new Date("2020-01-01T00:00:00");
+    const job = new Cron(veryOldDate, { allowPast: true }, () => {
+      fired = true;
+    });
+
+    // Should be scheduled
+    assertEquals(job.nextRun() !== null, true);
+
+    // Give it a moment to fire
+    setTimeout(() => {
+      assertEquals(fired, true);
+      job.stop();
+      resolve();
+    }, 100);
+  }),
+);
+
+test("nextRuns(10) returns exactly 1 item for job scheduled slightly in the past", function () {
+  // Job scheduled less than 1 second in the past should still yield a single next run
+  const slightlyPast = new Date(Date.now() - 500);
+  const job = new Cron(slightlyPast);
+  const runs = job.nextRuns(10) as Date[];
+
+  assertEquals(runs.length, 1);
+  job.stop();
+});
+
+test("nextRuns(10) returns exactly 1 item for allowPast job scheduled far in the past", function () {
+  // Job scheduled significantly in the past with allowPast: true should still yield a single next run
+  const farPast = new Date(Date.now() - 60000); // 60 seconds in the past
+  const job = new Cron(farPast, { allowPast: true });
+  const runs = job.nextRuns(10) as Date[];
+
+  assertEquals(runs.length, 1);
+  job.stop();
+});
+
+test(
+  "Fire-once job with allowPast: true and timezone should fire immediately (issue #348 scenario)",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    // Simulates the scenario from issue #348: a once-job scheduled with a past time
+    // and a timezone, which previously caused the job to not fire
+    const pastTime = new Date(Date.now() - 5000); // 5 seconds in the past
+    let fired = false;
+    const job = new Cron(pastTime, { allowPast: true, timezone: "America/New_York" }, () => {
+      fired = true;
+      job.stop();
+    });
+
+    // Should be scheduled to fire even though it's in the past
+    assertEquals(job.nextRun() !== null, true);
+
+    setTimeout(() => {
+      assertEquals(fired, true);
+      resolve();
+    }, 200);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true should have correct previousRun after firing",
+  //@ts-ignore
+  timeout(2000, (resolve) => {
+    const pastTime = new Date(Date.now() - 3000); // 3 seconds in the past
+    const job = new Cron(pastTime, { allowPast: true }, () => {});
+
+    setTimeout(() => {
+      // After firing, previousRun should be set and nextRun should be null
+      assertEquals(job.previousRun() !== null, true);
+      assertEquals(job.nextRun(), null);
+      job.stop();
+      resolve();
+    }, 200);
+  }),
+);
+
+test(
+  "Fire-once job with allowPast: true, paused: true, and far-past date should fire after resume",
+  //@ts-ignore
+  timeout(4000, (resolve) => {
+    let fired = false;
+    let resumed = false;
+    let settled = false;
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    const veryOldDate = new Date("2020-01-01T00:00:00");
+    const job = new Cron(veryOldDate, { allowPast: true, paused: true }, () => {
+      fired = true;
+
+      if (!resumed || settled) return;
+
+      settled = true;
+      if (watchdog) clearTimeout(watchdog);
+      job.stop();
+      assertEquals(fired, true);
+      resolve();
+    });
+
+    // Should not fire while paused
+    setTimeout(() => {
+      assertEquals(fired, false);
+      resumed = true;
+      job.resume();
+
+      watchdog = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        job.stop();
+        assertEquals(fired, true);
+      }, 2000);
+    }, 100);
+  }),
+);
+
+test("Fire-once job with no allowPast and date > 1s in past should have null nextRun and not be running", function () {
+  // A once-job 3 seconds in the past without allowPast should silently not schedule
+  const pastTime = new Date(Date.now() - 3000);
+  const job = new Cron(pastTime);
+
+  assertEquals(job.nextRun(), null);
+  assertEquals(job.isRunning(), false);
+  job.stop();
+});
+
+test("one-off allowPast catches up within the current second in a named timezone", () => {
+  const RealDate = Date;
+  let now = RealDate.parse("2026-01-01T00:00:00.500Z");
+  const fireAt = new RealDate("2026-01-01T00:00:00.100Z");
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+
+  try {
+    const job = new Cron(fireAt, { timezone: "UTC", allowPast: true });
+    assertEquals(job.nextRun()?.toISOString(), "2026-01-01T00:00:00.000Z");
+  } finally {
+    globalThis.Date = RealDate;
+  }
+});
+
+test("a one-off job created for the current millisecond is scheduled", function () {
+  const RealDate = Date;
+  const now = RealDate.parse("2026-01-01T12:00:00.000Z");
+  const realSetTimeout = globalThis.setTimeout;
+  const delays: number[] = [];
+  globalThis.Date = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      return property === "now" ? () => now : Reflect.get(target, property, receiver);
+    },
+  });
+  globalThis.setTimeout = ((_callback: () => void, delay: number) => {
+    delays.push(delay);
+    return 0;
+  }) as unknown as typeof setTimeout;
+
+  try {
+    for (const options of [{}, { timezone: "UTC" }]) {
+      delays.length = 0;
+      const job = new Cron(new Date(now), options, () => {});
+      assertEquals(delays, [0]);
+      assertEquals(job.nextRun()?.getTime(), now);
+      // Enumerating from the once time has already returned it
+      assertEquals(job.nextRun(new Date(now)), null);
+      job.stop();
+    }
+  } finally {
+    globalThis.setTimeout = realSetTimeout;
+    globalThis.Date = RealDate;
+  }
+});
+
+test("A one-off job has no next run after an explicit reference at or after it", function () {
+  const job = new Cron("2026-06-10T12:00:00Z", { paused: true });
+  assertEquals(
+    job.nextRun(new Date("2026-06-10T11:59:59Z"))?.toISOString(),
+    "2026-06-10T12:00:00.000Z",
+  );
+  assertEquals(job.nextRun(new Date("2026-06-10T12:00:00Z")), null);
+  assertEquals(job.nextRun(new Date("2026-06-10T12:00:00.500Z")), null);
+
+  const allowPast = new Cron("2026-06-10T12:00:00Z", { paused: true, allowPast: true });
+  assertEquals(allowPast.nextRuns(2, new Date("2026-07-01T00:00:00Z")), []);
+});
+
+test("previousRun() is the start of a manually triggered run", async function () {
+  const job = new Cron("* * * * *", { paused: true }, async () => {
+    await sleep(300);
+  });
+  const before = Date.now();
+  await job.trigger();
+  assertEquals(job.previousRun()!.getTime() - before < 200, true);
+  job.stop();
+});
+
+test("Searches in different timezones don't affect each other", function () {
+  const ref = new Date("2026-01-01T00:00:00Z");
+  const tokyo = new Cron("0 0 12 * * *", { timezone: "Asia/Tokyo" });
+  const newYork = new Cron("0 0 12 * * *", { timezone: "America/New_York" });
+  for (let i = 0; i < 3; i++) {
+    assertEquals(tokyo.nextRun(ref)?.toISOString(), "2026-01-01T03:00:00.000Z");
+    assertEquals(newYork.nextRun(ref)?.toISOString(), "2026-01-01T17:00:00.000Z");
+  }
 });

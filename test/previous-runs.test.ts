@@ -41,7 +41,7 @@ test("previousRuns() should work with hourly pattern", () => {
 
 test("previousRuns() should work with daily pattern", () => {
   // Create a job that runs at 9:00 AM every day
-  const job = new Cron("0 9 * * *");
+  const job = new Cron("0 9 * * *", { utcOffset: 0 });
 
   const referenceDate = new Date("2024-01-05T15:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
@@ -54,7 +54,7 @@ test("previousRuns() should work with daily pattern", () => {
 
 test("previousRuns() should work with weekly pattern", () => {
   // Create a job that runs every Monday at 10:00 AM
-  const job = new Cron("0 10 * * 1");
+  const job = new Cron("0 10 * * 1", { utcOffset: 0 });
 
   // Reference is Wednesday, Jan 10, 2024
   const referenceDate = new Date("2024-01-10T15:00:00Z");
@@ -96,7 +96,7 @@ test("previousRuns() should work with interval option", () => {
 
 test("previousRuns() should work with day of month patterns", () => {
   // Run on the 1st and 15th of every month at noon
-  const job = new Cron("0 12 1,15 * *");
+  const job = new Cron("0 12 1,15 * *", { utcOffset: 0 });
 
   const referenceDate = new Date("2024-02-20T15:00:00Z");
   const runs = job.previousRuns(4, referenceDate);
@@ -110,7 +110,7 @@ test("previousRuns() should work with day of month patterns", () => {
 
 test("previousRuns() should work with last day of month (L)", () => {
   // Run on the last day of every month
-  const job = new Cron("0 0 L * *");
+  const job = new Cron("0 0 L * *", { utcOffset: 0 });
 
   const referenceDate = new Date("2024-03-15T12:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
@@ -123,7 +123,7 @@ test("previousRuns() should work with last day of month (L)", () => {
 
 test("previousRuns() should work with nth weekday patterns", () => {
   // Run on the 2nd Monday of every month
-  const job = new Cron("0 0 * * 1#2");
+  const job = new Cron("0 0 * * 1#2", { utcOffset: 0 });
 
   const referenceDate = new Date("2024-02-20T12:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
@@ -136,7 +136,7 @@ test("previousRuns() should work with nth weekday patterns", () => {
 
 test("previousRuns() should work with last weekday of month (L)", () => {
   // Run on the last Friday of every month
-  const job = new Cron("0 0 * * 5L");
+  const job = new Cron("0 0 * * 5L", { utcOffset: 0 });
 
   const referenceDate = new Date("2024-03-01T12:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
@@ -177,7 +177,7 @@ test("previousRuns() with stopAt should not return runs after stopAt", () => {
 
 test("previousRuns() should work with dayOffset option", () => {
   // Run on the 1st of every month, but offset by +1 day
-  const job = new Cron("0 0 1 * *", { dayOffset: 1 });
+  const job = new Cron("0 0 1 * *", { dayOffset: 1, utcOffset: 0 });
 
   const referenceDate = new Date("2024-03-15T12:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
@@ -190,7 +190,7 @@ test("previousRuns() should work with dayOffset option", () => {
 });
 
 test("previousRuns() should handle patterns spanning year boundaries", () => {
-  const job = new Cron("0 0 31 12 *"); // December 31st
+  const job = new Cron("0 0 31 12 *", { utcOffset: 0 }); // December 31st
   const referenceDate = new Date("2024-01-15T12:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
   assertEquals(runs.length, 3);
@@ -201,7 +201,7 @@ test("previousRuns() should handle patterns spanning year boundaries", () => {
 
 test("previousRuns() works independently of job execution", () => {
   // Create a paused job that never executes
-  const job = new Cron("0 0 * * *", { paused: true });
+  const job = new Cron("0 0 * * *", { paused: true, utcOffset: 0 });
 
   const referenceDate = new Date("2024-01-05T12:00:00Z");
   const runs = job.previousRuns(3, referenceDate);
@@ -234,4 +234,27 @@ test("previousRuns() with one-off schedule returns nothing if after reference", 
 
   // Should return nothing since scheduled time is in the future
   assertEquals(runs.length, 0);
+});
+
+test("previousRuns() should work when the matching months are shorter than 31 days", () => {
+  const referenceDate = new Date("2026-10-16T12:00:00Z");
+
+  const april = new Cron("0 9 * 4 *", { timezone: "UTC" }).previousRuns(2, referenceDate);
+  assertEquals(april.map((d) => d.toISOString()), [
+    "2026-04-30T09:00:00.000Z",
+    "2026-04-29T09:00:00.000Z",
+  ]);
+
+  const november = new Cron("0 0 * 11 *", { timezone: "UTC" }).previousRuns(1, referenceDate);
+  assertEquals(november[0].toISOString(), "2025-11-30T00:00:00.000Z");
+});
+
+test("previousRuns() should find previous leap days", () => {
+  const job = new Cron("0 0 29 2 *", { timezone: "UTC" });
+  const runs = job.previousRuns(2, new Date("2026-10-16T12:00:00Z"));
+
+  assertEquals(runs.map((d) => d.toISOString()), [
+    "2024-02-29T00:00:00.000Z",
+    "2020-02-29T00:00:00.000Z",
+  ]);
 });

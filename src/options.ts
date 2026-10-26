@@ -51,7 +51,7 @@ interface CronOptions<T = undefined> {
 
   /**
    * The minimum interval between job executions, in seconds.
-   * @default 1
+   * @default 0
    */
   interval?: number;
 
@@ -63,12 +63,15 @@ interface CronOptions<T = undefined> {
   protect?: boolean | ProtectCallbackFn;
 
   /**
-   * The date and time at which the job should start running.
+   * The date and time at which the job should start running. Inclusive, a run exactly at startAt
+   * is included, except when `interval` is set. Strings are read in the timezone or UTC offset of
+   * the job.
    */
   startAt?: string | Date | CronDate<T>;
 
   /**
-   * The date and time at which the job should stop running.
+   * The date and time at which the job should stop running. Exclusive, a run exactly at stopAt
+   * is not included. Strings are read in the timezone or UTC offset of the job.
    */
   stopAt?: string | Date | CronDate<T>;
 
@@ -90,17 +93,18 @@ interface CronOptions<T = undefined> {
   domAndDow?: boolean;
 
   /**
-   * @deprecated Use domAndDow instead. This option will be removed in a future version.
-   * If true, enables legacy mode (OR logic) for compatibility with older cron implementations.
    * Offset the scheduled date by a number of days.
    * Positive values shift the date forward, negative values shift it backward.
    * For example, dayOffset: -1 schedules the job one day before the pattern match.
+   * nextRun(), nextRuns(), previousRuns(), msToNext(), enumerate(), startAt and stopAt all
+   * refer to the shifted run time.
    * @default 0
    */
   dayOffset?: number;
 
   /**
-   * If true, enables legacy mode for compatibility with older cron implementations.
+   * @deprecated Use domAndDow instead. This option will be removed in a future version.
+   * If true, enables legacy mode (OR logic) for compatibility with older cron implementations.
    * @default true
    */
   legacyMode?: boolean;
@@ -139,6 +143,14 @@ interface CronOptions<T = undefined> {
    * @default false
    */
   sloppyRanges?: boolean;
+
+  /**
+   * If true, date-based jobs scheduled in the past will fire immediately.
+   * If false, only jobs scheduled within the past second will fire immediately (to handle timing edge cases).
+   * Jobs scheduled more than 1 second in the past will be rejected unless this is true.
+   * @default false
+   */
+  allowPast?: boolean;
 }
 
 /**
@@ -156,33 +168,31 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   delete options.name;
 
   // Handle backward compatibility: legacyMode is deprecated in favor of domAndDow
-  // domAndDow: true means AND logic, false means OR logic (legacy behavior)
-  // legacyMode: true means OR logic, false means AND logic
-  // Therefore: domAndDow = !legacyMode
+  // domAndDow: true = AND logic, false = OR logic (legacy behavior)
+  // legacyMode is the inverse
   if (options.legacyMode !== void 0 && options.domAndDow === void 0) {
-    // If only legacyMode is provided, invert it for domAndDow
     options.domAndDow = !options.legacyMode;
   } else if (options.domAndDow === void 0) {
-    // If neither is provided, default to false (OR logic, legacy behavior)
     options.domAndDow = false;
   }
-  // Keep legacyMode in sync with domAndDow for backward compatibility (inverted)
   options.legacyMode = !options.domAndDow;
 
-  options.paused = options.paused === void 0 ? false : options.paused;
-  options.maxRuns = options.maxRuns === void 0 ? Infinity : options.maxRuns;
-  options.catch = options.catch === void 0 ? false : options.catch;
+  // Apply simple defaults using a helper for readability
+  const d = <T>(v: T | undefined, fallback: T): T => v === void 0 ? fallback : v;
+  options.paused = d(options.paused, false);
+  options.maxRuns = d(options.maxRuns, Infinity);
+  options.catch = d(options.catch, false);
+  options.unref = d(options.unref, false);
+  options.mode = d(options.mode, "auto");
+  options.alternativeWeekdays = d(options.alternativeWeekdays, false);
+  options.sloppyRanges = d(options.sloppyRanges, false);
+  options.allowPast = d(options.allowPast, false);
+
   options.interval = options.interval === void 0 ? 0 : parseInt(options.interval.toString(), 10);
   options.utcOffset = options.utcOffset === void 0
     ? void 0
     : parseInt(options.utcOffset.toString(), 10);
   options.dayOffset = options.dayOffset === void 0 ? 0 : parseInt(options.dayOffset.toString(), 10);
-  options.unref = options.unref === void 0 ? false : options.unref;
-  options.mode = options.mode === void 0 ? "auto" : options.mode;
-  options.alternativeWeekdays = options.alternativeWeekdays === void 0
-    ? false
-    : options.alternativeWeekdays;
-  options.sloppyRanges = options.sloppyRanges === void 0 ? false : options.sloppyRanges;
 
   // Validate mode option
   if (
@@ -193,11 +203,18 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     );
   }
 
+  // An empty timezone is the same as no timezone
+  if (options.timezone === "") {
+    options.timezone = void 0;
+  }
+
+  // Read startAt and stopAt in the timezone (or UTC offset) of the job
+  const tz = options.timezone ?? options.utcOffset;
   if (options.startAt) {
-    options.startAt = new CronDate(options.startAt, options.timezone);
+    options.startAt = toWholeSecond(new CronDate(options.startAt, tz));
   }
   if (options.stopAt) {
-    options.stopAt = new CronDate(options.stopAt, options.timezone);
+    options.stopAt = toWholeSecond(new CronDate(options.stopAt, tz));
   }
 
   if (options.interval !== null) {
@@ -237,4 +254,13 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   return options;
 }
 
-export { type CronOptions, CronOptionsHandler };
+/**
+ * Runs are on whole seconds, so a time between two seconds counts as the next second
+ */
+function toWholeSecond<T>(date: CronDate<T>): CronDate<T> {
+  if (!date.ms) return date;
+  date.ms = 0;
+  return new CronDate<T>(new Date(date.getTime() + 1000), date.tz);
+}
+
+export { type CatchCallbackFn, type CronOptions, CronOptionsHandler, type ProtectCallbackFn };

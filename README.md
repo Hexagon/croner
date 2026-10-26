@@ -39,8 +39,8 @@ const msLeft = new Cron('59 59 23 24 DEC *').nextRun() - new Date();
 console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
 
 // Run a function at a specific date/time using a non-local timezone (time is ISO 8601 local time)
-// This will run 2024-01-23 00:00:00 according to the time in Asia/Kolkata
-new Cron('2024-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
+// This will run 2030-01-23 00:00:00 according to the time in Asia/Kolkata
+new Cron('2030-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
 
 // Check if a date matches a cron pattern
 const mondayCheck = new Cron('0 0 0 * * MON');
@@ -73,17 +73,13 @@ const { Cron } = require("croner");
 Using Deno
 
 ```typescript
-// From deno.land/x
-import { Cron } from "https://deno.land/x/croner@10.0.1/dist/croner.js";
-
-// ... or jsr.io
-import { Cron } from "jsr:@hexagon/croner@10.0.1";
+import { Cron } from "jsr:@hexagon/croner@11.0.0";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@10/dist/croner.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0/dist/croner.umd.js"></script>
 ```
 
 ## Documentation
@@ -101,10 +97,10 @@ Cron takes three arguments
 // - First: Cron pattern, js date object (fire once), or ISO 8601 time string (fire once)
 // - Second: Options (optional)
 // - Third: Function run trigger (optional)
-const job = new Cron("* * * * * *", { maxRuns: 1 }, () => {} );
+const job = new Cron("* * * * * *", { maxRuns: 1 });
 
 // If function is omitted in constructor, it can be scheduled later
-job.schedule(job, /* optional */ context) => {});
+job.schedule((job, /* optional */ context) => {});
 ```
 
 The job will be sceduled to run at next matching time unless you supply option `{ paused: true }`. The `new Cron(...)` constructor will return a Cron instance, later called `job`, which have a couple of methods and properties listed below.
@@ -115,6 +111,7 @@ The job will be sceduled to run at next matching time unless you supply option `
 job.nextRun( /*optional*/ startFromDate );	// Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
 job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
+job.enumerate( /*optional*/ startFromDate ); // Get a stateful CronIterator for use in for...of / destructuring.
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun(); 		// Get a Date object showing when the current (or last) run was started.
 job.previousRun( ); 		// Get a Date object showing when the previous job was started.
@@ -153,8 +150,8 @@ job.name 			// Optional job name, populated if a name were passed to options
 | maxRuns      | Infinite       | Number         |                                       |
 | catch	       | false          | Boolean\|Function        | Catch unhandled errors in triggered function. Passing `true` will silently ignore errors. Passing a callback function will trigger this callback on error. |
 | timezone     | undefined      | String         | Timezone in Europe/Stockholm format   |
-| startAt      | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
-| stopAt       | undefined      | String         | ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to timezone parameter if passed) |
+| startAt      | undefined      | String\|Date   | Date, or ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Inclusive, a run exactly at startAt is included (except when `interval` is set) |
+| stopAt       | undefined      | String\|Date   | Date, or ISO 8601 formatted datetime (2021-10-17T23:43:00)<br>in local time (according to the timezone or utcOffset option if passed). Exclusive, a run exactly at stopAt is not included |
 | interval     | 0              | Number         | Minimum number of seconds between triggers. |
 | paused       | false          | Boolean        | If the job should be paused from start. |
 | context      | undefined      | Any            | Passed as the second parameter to triggered function |
@@ -164,6 +161,10 @@ job.name 			// Optional job name, populated if a name were passed to options
 | utcOffset    | undefined      | number        | Schedule using a specific utc offset in minutes. This does not take care of daylight savings time, you probably want to use option `timezone` instead. |
 | protect      | undefined      | boolean\|Function | Enabled over-run protection. Will block new triggers as long as an old trigger is in progress. Pass either `true` or a callback function to enable |
 | alternativeWeekdays | false   | boolean        | Enable Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday). When false (default), uses standard cron format (0=Sunday, 1=Monday, ..., 6=Saturday). |
+| allowPast    | false          | boolean        | If true, date-based jobs scheduled in the past will fire immediately. If false, only jobs scheduled within the past second will fire (to handle timing edge cases). |
+| dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()`, `enumerate()`, `startAt` and `stopAt` all refer to the shifted run time. |
+| mode         | "auto"         | string         | Controls how the cron pattern field count is interpreted. Options: `"auto"` (detect automatically), `"5-part"` (minute-level), `"6-part"` (second-level), `"7-part"` (second+year), `"5-or-6-parts"`, `"6-or-7-parts"`. |
+| sloppyRanges | false          | boolean        | If true, allows non-standard stepping formats for backward compatibility (e.g. `/10`, `5/5`, `30/30`). When false (default), only `*/step` or `min-max/step` formats are allowed. |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
@@ -199,7 +200,12 @@ Croner uses [Vixie Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) bas
 *   **Enhanced logical control**:
 	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
 	-   *?*: Wildcard alias (behaves identically to `*`). **Non-portable**: Its use is discouraged in patterns intended for cross-system use. Supported in all fields for compatibility, but primarily meaningful in day-of-month and day-of-week fields.
-	-   Proper DST handling: Jobs scheduled during DST gaps are skipped; jobs in DST overlaps run once at first occurrence.
+	-   DST handling, the same as [croner-rust](https://github.com/Hexagon/croner-rust) and Vixie cron, which deviates from OCPS 1.4 §4.3.1 (see below):
+		-   **Fixed-time jobs**, with a single value in each of seconds, minutes and hours (e.g. `0 30 2 * * *`): A time that occurs twice (DST fall back) runs once, at the first occurrence. A time that doesn't exist (DST spring forward) runs at the first valid time after the gap, on the same day.
+		-   **Interval jobs**, with a wildcard, step, range or list in seconds, minutes or hours (e.g. `*/5 * * * *` or `0 30 1,2 * * *`): A time that occurs twice runs on both occurrences, so the job keeps running through the repeated hour. A time that doesn't exist is skipped.
+		-   `nextRun()`, `nextRuns()`, `previousRuns()` and `enumerate()` move in real time. They never return a time they have passed, and cover the first pass through a repeated hour before the second.
+
+> **Deviation from OCPS 1.4:** OCPS 1.4 §4.3.1 recommends that every job skips times in a DST gap, and runs only once when a time occurs twice. The same section asks implementations to align with Vixie cron, which runs interval jobs on both occurrences and runs fixed-time jobs after a gap. Croner follows Vixie cron, as croner-rust does, so that both libraries schedule the same.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
@@ -232,6 +238,7 @@ Croner uses [Vixie Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) bas
 | \@weekly | Run once a week, i.e.  "0 0 * * 0". |
 | \@daily / \@midnight | Run once a day, i.e.   "0 0 * * *". |
 | \@hourly | Run once an hour, i.e. "0 * * * *". |
+| \@reboot | Recognized but not supported. Throws an error as Croner cannot detect system reboot events. |
 
 ## Why another JavaScript cron implementation
 
@@ -301,7 +308,7 @@ For example, some popular alternatives include large datetime libraries as depen
 
 ### Master branch
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=master) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=master) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=master) 
+![Cross Runtime Tests](https://github.com/Hexagon/croner/actions/workflows/test.yml/badge.svg?branch=master)
 
 This branch contains the latest stable code, released on npm's default channel `latest`. You can install the latest stable revision by running the command below.
 
@@ -311,7 +318,7 @@ npm install croner --save
 
 ### Dev branch
 
-![Node.js CI](https://github.com/Hexagon/croner/workflows/Node.js%20CI/badge.svg?branch=dev) ![Deno CI](https://github.com/Hexagon/croner/workflows/Deno%20CI/badge.svg?branch=dev) ![Bun CI](https://github.com/Hexagon/croner/workflows/Bun%20CI/badge.svg?branch=dev) 
+![Cross Runtime Tests](https://github.com/Hexagon/croner/actions/workflows/test.yml/badge.svg?branch=dev)
 
 This branch contains code currently being tested, and is released at channel `dev` on npm. You can install the latest revision of the development branch by running the command below.
 

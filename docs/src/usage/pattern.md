@@ -8,7 +8,7 @@ nav_order: 2
 
 ---
 
-Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](https://github.com/open-source-cron/ocps) versions 1.0 through 1.4. The expressions are based on Vixie Cron with powerful extensions:
+Croner is compliant with the [Open Cron Pattern Specification (OCPS)](https://github.com/open-source-cron/ocps) versions 1.0 through 1.4, with one documented deviation in the recommended DST handling (see below). The expressions are based on Vixie Cron with powerful extensions:
 
 ```ts
 // ┌──────────────── (optional) second (0 - 59)
@@ -35,7 +35,12 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 *   **OCPS 1.4**: Enhanced logical control:
 	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
 	-   *?*: Wildcard alias (behaves identically to `*`). **Non-portable**: Its use is discouraged in patterns intended for cross-system use. Supported in all fields for compatibility, but primarily meaningful in day-of-month and day-of-week fields.
-	-   Proper DST handling: Jobs scheduled during DST gaps are skipped; jobs in DST overlaps run once at first occurrence.
+	-   DST handling, the same as [croner-rust](https://github.com/Hexagon/croner-rust) and Vixie cron, which deviates from OCPS 1.4 §4.3.1 (see below):
+		-   **Fixed-time jobs**, with a single value in each of seconds, minutes and hours (e.g. `0 30 2 * * *`): A time that occurs twice (DST fall back) runs once, at the first occurrence. A time that doesn't exist (DST spring forward) runs at the first valid time after the gap, on the same day.
+		-   **Interval jobs**, with a wildcard, step, range or list in seconds, minutes or hours (e.g. `*/5 * * * *` or `0 30 1,2 * * *`): A time that occurs twice runs on both occurrences, so the job keeps running through the repeated hour. A time that doesn't exist is skipped.
+		-   `nextRun()`, `nextRuns()`, `previousRuns()` and `enumerate()` move in real time. They never return a time they have passed, and cover the first pass through a repeated hour before the second.
+
+> **Deviation from OCPS 1.4:** OCPS 1.4 §4.3.1 recommends that every job skips times in a DST gap, and runs only once when a time occurs twice. The same section asks implementations to align with Vixie cron, which runs interval jobs on both occurrences and runs fixed-time jobs after a gap. Croner follows Vixie cron, as croner-rust does, so that both libraries schedule the same.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 
@@ -69,3 +74,4 @@ Croner is fully compliant with the [Open Cron Pattern Specification (OCPS)](http
 | \@weekly | Run once a week, i.e.  "0 0 * * 0". |
 | \@daily / \@midnight | Run once a day, i.e.   "0 0 * * *". |
 | \@hourly | Run once an hour, i.e. "0 * * * *". |
+| \@reboot | Recognized but not supported. Throws an error as Croner cannot detect system reboot events. |

@@ -61,6 +61,11 @@ class CronPattern {
   starDOW: boolean;
   starYear: boolean;
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
+  /**
+   * True if seconds, minutes and hours each have a single value, without wildcard or step.
+   * Fixed-time and interval jobs handle DST transitions differently, as in croner-rust.
+   */
+  isFixedTime: boolean;
 
   constructor(
     pattern: string,
@@ -89,6 +94,7 @@ class CronPattern {
     this.starDOW = false; // Asterisk used for dayOfWeek
     this.starYear = false; // Asterisk used for year
     this.useAndLogic = false; // OCPS 1.4: Default is OR logic
+    this.isFixedTime = false;
 
     this.parse();
   }
@@ -170,6 +176,14 @@ class CronPattern {
       parts.push("*");
     }
 
+    // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
+    // Note: ? is non-portable and should behave as an alias for * (wildcard)
+    if (this.pattern.indexOf("?") >= 0) {
+      for (let i = 0; i < parts.length; i++) {
+        parts[i] = parts[i].replace(/\?/g, "*");
+      }
+    }
+
     // Convert 'L' to lastDayOfMonth flag in day-of-month field
     // Check for 'LW' combination first (last weekday of month)
     if (parts[3].toUpperCase() === "LW") {
@@ -191,11 +205,11 @@ class CronPattern {
     }
 
     // Replace alpha representations
-    if (parts[4].length >= 3) parts[4] = this.replaceAlphaMonths(parts[4]);
+    if (parts[4].length >= 3) parts[4] = this.replaceAlpha(parts[4], CronPattern.MONTH_NAMES);
     if (parts[5].length >= 3) {
       parts[5] = this.alternativeWeekdays
-        ? this.replaceAlphaDaysQuartz(parts[5])
-        : this.replaceAlphaDays(parts[5]);
+        ? this.replaceAlpha(parts[5], CronPattern.DAY_NAMES_QUARTZ)
+        : this.replaceAlpha(parts[5], CronPattern.DAY_NAMES);
     }
 
     // OCPS 1.4: Check for + modifier in day-of-week field for explicit AND logic
@@ -214,18 +228,6 @@ class CronPattern {
     // Check for starDOW
     if (parts[5] == "*") {
       this.starDOW = true;
-    }
-
-    // OCPS 1.4: Implement '?' as wildcard alias - replace ? with *, before further processing
-    // Note: ? is non-portable and should behave as an alias for * (wildcard)
-    if (this.pattern.indexOf("?") >= 0) {
-      parts[0] = parts[0].replace(/\?/g, "*");
-      parts[1] = parts[1].replace(/\?/g, "*");
-      parts[2] = parts[2].replace(/\?/g, "*");
-      parts[3] = parts[3].replace(/\?/g, "*");
-      parts[4] = parts[4].replace(/\?/g, "*");
-      parts[5] = parts[5].replace(/\?/g, "*");
-      if (parts[6]) parts[6] = parts[6].replace(/\?/g, "*");
     }
 
     // Apply mode-specific overrides
@@ -281,6 +283,12 @@ class CronPattern {
     if (!this.alternativeWeekdays && this.dayOfWeek[7]) {
       this.dayOfWeek[0] = this.dayOfWeek[7];
     }
+
+    // A fixed-time job has exactly one second, minute and hour, not from a wildcard or step
+    const isFixed = (part: string, values: number[]) =>
+      !part.includes("*") && !part.includes("/") && values.filter((v) => v).length === 1;
+    this.isFixedTime = isFixed(parts[0], this.second) && isFixed(parts[1], this.minute) &&
+      isFixed(parts[2], this.hour);
   }
 
   /**
@@ -294,10 +302,8 @@ class CronPattern {
   ) {
     const arr = this[type];
 
-    // Error on empty part
-    const lastDayOfMonth = type === "day" && this.lastDayOfMonth;
-    const lastWeekday = type === "day" && this.lastWeekday;
-    if (conf === "" && !lastDayOfMonth && !lastWeekday) {
+    // Error on empty part (unless L/LW modifier is set on day field)
+    if (conf === "" && !(type === "day" && (this.lastDayOfMonth || this.lastWeekday))) {
       throw new TypeError(
         "CronPattern: configuration entry " + type + " (" + conf +
           ") is empty, check for trailing spaces.",
@@ -310,23 +316,15 @@ class CronPattern {
     // Handle separated entries (,) by recursion
     const split = conf.split(",");
     if (split.length > 1) {
-      for (let i = 0; i < split.length; i++) {
-        this.partToArray(type, split[i], valueIndexOffset, defaultValue);
+      for (const part of split) {
+        this.partToArray(type, part, valueIndexOffset, defaultValue);
       }
-
-      // Handle range with stepping (x-y/z)
-    } else if (conf.indexOf("-") !== -1 && conf.indexOf("/") !== -1) {
+    } else if (conf.includes("-") && conf.includes("/")) {
       this.handleRangeWithStepping(conf, type, valueIndexOffset, defaultValue);
-
-      // Handle range
-    } else if (conf.indexOf("-") !== -1) {
+    } else if (conf.includes("-")) {
       this.handleRange(conf, type, valueIndexOffset, defaultValue);
-
-      // Handle stepping
-    } else if (conf.indexOf("/") !== -1) {
+    } else if (conf.includes("/")) {
       this.handleStepping(conf, type, valueIndexOffset, defaultValue);
-
-      // Anything left should be a number, potentially with a modifier
     } else if (conf !== "") {
       this.handleNumber(conf, type, valueIndexOffset, defaultValue);
     }
@@ -363,10 +361,10 @@ class CronPattern {
     valueIndexOffset: number,
     defaultValue: number,
   ) {
-    // Check for existance of a nth-modifier
+    // Check for existence of a nth-modifier
     const result = this.extractNth(conf, type);
 
-    // Check for existance of a nearest weekday modifier
+    // Check for existence of a nearest weekday modifier
     const nearestWeekdayModifier = conf.toUpperCase().includes("W");
     if (type !== "day" && nearestWeekdayModifier) {
       throw new TypeError(
@@ -655,70 +653,80 @@ class CronPattern {
     this.validateRange(0, this[type].length - 1, steps, type, conf);
 
     for (let i = start; i < this[type].length; i += steps) {
+      if (type === "year" && i === 0) continue; // There is no year 0 (OCPS 1.2: years 1-9999)
       this.setPart(type, i, result[1] || defaultValue);
     }
   }
 
   /**
-   * Replace day name with day numbers
+   * Replace alpha names (day/month) with numeric values using a mapping.
    *
-   * @param conf Current part, expected to be a string that might contain sun,mon etc.
-   *
-   * @returns Conf with 0 instead of sun etc.
+   * @param conf Current part, expected to be a string that might contain alpha names.
+   * @param mapping Object mapping names to their numeric string replacements.
+   * @returns Conf with alpha names replaced by numbers.
    */
-  private replaceAlphaDays(conf: string): string {
-    return conf
-      .replace(/-sun/gi, "-7") // choose 7 if sunday is the upper value of a range because the upper value must not be smaller than the lower value
-      .replace(/sun/gi, "0")
-      .replace(/mon/gi, "1")
-      .replace(/tue/gi, "2")
-      .replace(/wed/gi, "3")
-      .replace(/thu/gi, "4")
-      .replace(/fri/gi, "5")
-      .replace(/sat/gi, "6");
+  private replaceAlpha(conf: string, mapping: Record<string, string>): string {
+    let result = conf;
+    for (const [name, value] of Object.entries(mapping)) {
+      result = result.replace(new RegExp(name, "gi"), value);
+    }
+    return result;
   }
 
   /**
-   * Replace day name with day numbers (Quartz mode)
-   * In Quartz mode: Sunday=1, Monday=2, ..., Saturday=7
-   *
-   * @param conf Current part, expected to be a string that might contain sun,mon etc.
-   *
-   * @returns Conf with Quartz-style numbering
+   * Day names to day-of-week numbers. Names are replaced in this order, so "-sun" must come
+   * before "sun".
+   * @private
    */
-  private replaceAlphaDaysQuartz(conf: string): string {
-    return conf
-      .replace(/sun/gi, "1")
-      .replace(/mon/gi, "2")
-      .replace(/tue/gi, "3")
-      .replace(/wed/gi, "4")
-      .replace(/thu/gi, "5")
-      .replace(/fri/gi, "6")
-      .replace(/sat/gi, "7");
-  }
+  private static DAY_NAMES: Record<string, string> = {
+    "-sun": "-7", // choose 7 if sunday is the upper value of a range because the upper value must not be smaller than the lower value; preserve the hyphen
+    "sun": "0",
+    "mon": "1",
+    "tue": "2",
+    "wed": "3",
+    "thu": "4",
+    "fri": "5",
+    "sat": "6",
+  };
+
+  private static DAY_NAMES_QUARTZ: Record<string, string> = {
+    "sun": "1",
+    "mon": "2",
+    "tue": "3",
+    "wed": "4",
+    "thu": "5",
+    "fri": "6",
+    "sat": "7",
+  };
+
+  private static MONTH_NAMES: Record<string, string> = {
+    "jan": "1",
+    "feb": "2",
+    "mar": "3",
+    "apr": "4",
+    "may": "5",
+    "jun": "6",
+    "jul": "7",
+    "aug": "8",
+    "sep": "9",
+    "oct": "10",
+    "nov": "11",
+    "dec": "12",
+  };
 
   /**
-   * Replace month name with month numbers
-   *
-   * @param conf Current part, expected to be a string that might contain jan,feb etc.
-   *
-   * @returns conf with 0 instead of sun etc.
+   * Map of cron nickname patterns to their equivalent cron expressions.
+   * @private
    */
-  private replaceAlphaMonths(conf: string): string {
-    return conf
-      .replace(/jan/gi, "1")
-      .replace(/feb/gi, "2")
-      .replace(/mar/gi, "3")
-      .replace(/apr/gi, "4")
-      .replace(/may/gi, "5")
-      .replace(/jun/gi, "6")
-      .replace(/jul/gi, "7")
-      .replace(/aug/gi, "8")
-      .replace(/sep/gi, "9")
-      .replace(/oct/gi, "10")
-      .replace(/nov/gi, "11")
-      .replace(/dec/gi, "12");
-  }
+  private static NICKNAME_MAP: Record<string, string> = {
+    "@yearly": "0 0 1 1 *",
+    "@annually": "0 0 1 1 *",
+    "@monthly": "0 0 1 * *",
+    "@weekly": "0 0 * * 0",
+    "@daily": "0 0 * * *",
+    "@midnight": "0 0 * * *",
+    "@hourly": "0 * * * *",
+  };
 
   /**
    * Replace nicknames with actual cron patterns
@@ -730,26 +738,15 @@ class CronPattern {
   private handleNicknames(pattern: string): string {
     // Replace textual representations of pattern
     const cleanPattern = pattern.trim().toLowerCase();
-    if (cleanPattern === "@yearly" || cleanPattern === "@annually") {
-      return "0 0 1 1 *";
-    } else if (cleanPattern === "@monthly") {
-      return "0 0 1 * *";
-    } else if (cleanPattern === "@weekly") {
-      return "0 0 * * 0";
-    } else if (cleanPattern === "@daily" || cleanPattern === "@midnight") {
-      return "0 0 * * *";
-    } else if (cleanPattern === "@hourly") {
-      return "0 * * * *";
-    } else if (cleanPattern === "@reboot") {
+    if (cleanPattern === "@reboot") {
       // OCPS 1.1: @reboot is event-based, not time-based
       // It should be parsed successfully but handled specially at runtime
       throw new TypeError(
         "CronPattern: @reboot is not supported in this environment. " +
           "This is an event-based trigger that requires system startup detection.",
       );
-    } else {
-      return pattern;
     }
+    return CronPattern.NICKNAME_MAP[cleanPattern] || pattern;
   }
 
   /**

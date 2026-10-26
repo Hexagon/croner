@@ -5,7 +5,7 @@ name: "Copilot Setup Steps"
 on:
   workflow_dispatch:
   pull_request:
-    branches: [main, dev]
+    branches: [master, dev]
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
@@ -24,16 +24,15 @@ jobs:
     # If you do not check out your code, Copilot will do this for you.
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-          cache: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "lts/*"
 
@@ -42,5 +41,5 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
-        run: deno install
+      - name: Install dependencies
+        run: npm install

@@ -1,59 +1,133 @@
 name: Cross Runtime Tests
 
-on: 
+on:
   push:
-    branches: [main, dev, dev-9]
+    branches: [master, dev, dev-9]
   pull_request:
-    branches: [main, dev, dev-9]
+    branches: [master, dev, dev-9]
+
+permissions:
+  contents: read
 
 jobs:
-  deno_ci:
-    uses: cross-org/workflows/.github/workflows/deno-ci.yml@main
-    with:
-      entrypoint: src/croner.ts
-      lint_docs: false
-  bun_ci:
-    uses: cross-org/workflows/.github/workflows/bun-ci.yml@main
-    with:
-      jsr_dependencies: "@cross/test @std/assert"
   node_ci:
-    uses: cross-org/workflows/.github/workflows/node-ci.yml@main
-    with:
-      test_target: "test/*.test.ts"
-      jsr_dependencies: "@cross/test @std/assert"
+    name: Node.js ${{ matrix.node-version }} Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x, 24.x, 26.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
 
-  node_24_compatibility:
-    name: Node.js 24 Compatibility Test
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  node_checks:
+    name: Node.js typecheck, version check and build (GA parity)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
         with:
           node-version: "24.x"
 
       - name: Install dependencies
-        run: |
-          echo '{ "type": "module" }' > package.json
-          npx jsr add @cross/test @std/assert
+        run: npm install
+
+      - name: Check package.json / deno.json versions
+        run: npm run check-version
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Mirror the critical prerelease build step (esbuild + d.ts)
+      - name: Build (esbuild + d.ts)
+        run: npm run build:dist
+
+  node_non_utc_test:
+    name: Node.js tests (non-UTC TZ)
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24.x"
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Run tests
-        run: npx --yes tsx --test test/*.test.ts
+        run: npm test
 
-  prerelease_build_check:
-    name: Esbuild + DTS check (GA parity)
+  deno_ci:
+    name: Deno fmt, lint, check and test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: "2.x"
 
-      # Mirror the critical prerelease build step that failed on GA
-      - name: Build (esbuild + d.ts)
-        run: deno task build:esbuild
+      - name: Format, lint and type check
+        run: deno task pre-commit
+
+      - name: Run tests
+        run: deno task test
+
+      - name: Dry-run JSR publish
+        run: deno publish --dry-run
+
+  deno_non_utc_test:
+    name: Deno tests (non-UTC TZ)
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: "2.x"
+
+      - name: Run tests
+        run: deno task test
+
+  bun_ci:
+    name: Bun test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test

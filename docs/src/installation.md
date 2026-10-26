@@ -26,13 +26,9 @@ const { Cron } = require("croner");
 
 ### Importing with Deno
 
-For Deno, import Croner from the provided URL:
+For Deno, import Croner from JSR:
 
 ```ts
-// From deno.land/x
-import { Cron } from "https://deno.land/x/croner@$CRONER_VERSION/dist/croner.js";
-
-// ... or jsr.io
 import { Cron } from "jsr:@hexagon/croner@$CRONER_VERSION";
 ```
 
@@ -42,4 +38,4 @@ Make sure to replace `$CRONER_VERSION` with the latest version.
 
 To use Croner in a webpage, you can load it as a UMD module from a CDN:
 
-`<script src="https://cdn.jsdelivr.net/npm/croner@10/dist/croner.umd.js"></script>`
+`<script src="https://cdn.jsdelivr.net/npm/croner@11/dist/croner.umd.js"></script>`

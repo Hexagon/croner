@@ -6,7 +6,7 @@
       "description": "Cron for JavaScript and TypeScript"
     },
     "substitute": {
-      "$CRONER_VERSION": "10.0.0"
+      "$CRONER_VERSION": "11.0.0"
     },
     "top_links": [
       {
@@ -16,8 +16,8 @@
       },
       {
         "icon": "fas fa-cube",
-        "title": "Deno.land/x",
-        "url": "https://deno.land/x/croner"
+        "title": "JSR Package",
+        "url": "https://jsr.io/@hexagon/croner"
       },
       {
         "icon": "fab fa-npm",
@@ -31,8 +31,8 @@
         "url": "https://github.com/hexagon/croner"
       },
       {
-        "title": "Deno.land/x",
-        "url": "https://deno.land/x/croner"
+        "title": "JSR Package",
+        "url": "https://jsr.io/@hexagon/croner"
       },
       {       
         "title": "NPM Library",

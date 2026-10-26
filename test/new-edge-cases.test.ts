@@ -7,7 +7,7 @@
 
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { test } from "@cross/test";
-import { Cron } from "../src/croner.ts";
+import { Cron, CronDate } from "../src/croner.ts";
 
 /**
  * Year field edge cases
@@ -32,10 +32,14 @@ test("Comma-separated years should work correctly", function () {
   assertEquals(runs[2]?.getFullYear(), 2028);
 });
 
-test("*/2 year stepping should throw (starts from 0 which is invalid)", function () {
-  assertThrows(() => {
-    new Cron("0 0 0 1 1 * */2");
-  });
+test("*/2 year stepping should work (every other year, even)", function () {
+  const cron = new Cron("0 0 0 1 1 * */2");
+  const runs = cron.nextRuns(3, "2024-12-31T00:00:00Z");
+
+  // */2 steps from 0 by 2 (skipping invalid year 0), matching even years: 2026, 2028, 2030
+  assertEquals(runs[0]?.getFullYear(), 2026);
+  assertEquals(runs[1]?.getFullYear(), 2028);
+  assertEquals(runs[2]?.getFullYear(), 2030);
 });
 
 test("Year range 1-9999/2 should work for odd years", function () {
@@ -146,14 +150,14 @@ test("L (last day of month) AND specific weekday using + modifier", function () 
  * Mixed weekday notation edge cases
  */
 test("Mixed alpha and numeric weekdays should work", function () {
-  const cron = new Cron("0 0 * * MON,3,FRI");
+  const cron = new Cron("0 0 * * MON,3,FRI", { utcOffset: 0 });
   const runs = cron.nextRuns(6, "2024-01-01T00:00:00Z");
 
   // Should match Monday (1), Wednesday (3), Friday (5)
   // Jan 1, 2024 is Monday but pattern starts after that, so first match is Wed Jan 3
   const expectedDays = [3, 5, 1, 3, 5, 1]; // Wed, Fri, Mon, Wed, Fri, Mon
   for (let i = 0; i < runs.length; i++) {
-    assertEquals(runs[i].getDay(), expectedDays[i]);
+    assertEquals(runs[i].getUTCDay(), expectedDays[i]);
   }
 });
 
@@ -209,6 +213,7 @@ test("stopAt exactly at pattern match time should return null", function () {
 test("stopAt one second after pattern match should include the match", function () {
   const cron = new Cron("0 0 * * *", {
     stopAt: "2024-01-15T00:00:01Z",
+    utcOffset: 0,
   });
   const next = cron.nextRun("2024-01-14T23:59:00Z");
 
@@ -233,9 +238,9 @@ test("Interval of 1 day (86400 seconds) should work", function () {
   const runs = cron.nextRuns(3, "2024-01-01T00:00:00Z");
 
   // Each run should be 1 day apart, starting from day after reference
-  assertEquals(runs[0].getDate(), 2);
-  assertEquals(runs[1].getDate(), 3);
-  assertEquals(runs[2].getDate(), 4);
+  assertEquals(runs[0].getUTCDate(), 2);
+  assertEquals(runs[1].getUTCDate(), 3);
+  assertEquals(runs[2].getUTCDate(), 4);
 });
 
 /**
@@ -296,7 +301,7 @@ test("msToNext should handle milliseconds correctly", function () {
  * Starting at exact match time edge cases
  */
 test("nextRun when starting at exact pattern match should skip to next occurrence", function () {
-  const cron = new Cron("0 0 12 * * *");
+  const cron = new Cron("0 0 12 * * *", { utcOffset: 0 });
   const next = cron.nextRun("2024-01-15T12:00:00Z");
 
   // Should skip to the next day since we're at exactly the match time
@@ -304,8 +309,16 @@ test("nextRun when starting at exact pattern match should skip to next occurrenc
 });
 
 test("nextRun one second after pattern match should go to next occurrence", function () {
-  const cron = new Cron("0 0 12 * * *");
+  const cron = new Cron("0 0 12 * * *", { utcOffset: 0 });
   const next = cron.nextRun("2024-01-15T12:00:01Z");
 
   assertEquals(next?.toISOString(), "2024-01-16T12:00:00.000Z");
+});
+
+test("CronDate moves hours above 23 to the next day", function () {
+  const date = new CronDate(new Date(Date.UTC(2026, 0, 1, 0, 0, 0)), 0);
+  date.hour = 25;
+  // deno-lint-ignore no-explicit-any
+  (date as any).apply();
+  assertEquals([date.day, date.hour], [2, 1]);
 });

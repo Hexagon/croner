@@ -278,3 +278,22 @@ test("? character: OCPS 1.4 compliance - should match wildcard behavior exactly"
     );
   }
 });
+
+test("? character: day-of-month ? with a day-of-week value should match only that weekday", function () {
+  const patterns = [
+    ["0 0 12 ? * MON", "0 0 12 * * MON"],
+    ["0 0 12 ? * 1#2", "0 0 12 * * 1#2"],
+    ["0 0 12 15 * ?", "0 0 12 15 * *"],
+  ];
+
+  for (const [questionPattern, starPattern] of patterns) {
+    const runs1 = new Cron(questionPattern).nextRuns(5, "2026-10-01T00:00:00");
+    const runs2 = new Cron(starPattern).nextRuns(5, "2026-10-01T00:00:00");
+
+    assertEquals(
+      runs1.map((d) => d.getTime()),
+      runs2.map((d) => d.getTime()),
+      `Pattern ${questionPattern} should match ${starPattern}`,
+    );
+  }
+});

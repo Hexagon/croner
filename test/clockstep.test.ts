@@ -1,0 +1,301 @@
+import { assertEquals } from "@std/assert";
+import { test } from "@cross/test";
+import { Cron } from "../src/croner.ts";
+
+function useClock(initialTime: number) {
+  const RealDate = Date;
+  const realSetTimeout = globalThis.setTimeout;
+  let now = initialTime;
+  const delays: number[] = [];
+  const timeouts: { callback: () => void; delay: number }[] = [];
+  const PatchedDate = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      return Reflect.construct(target, args.length === 0 ? [now] : args, newTarget);
+    },
+    get(target, property, receiver) {
+      if (property === "now") {
+        return () => now;
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+
+  globalThis.Date = PatchedDate;
+  globalThis.setTimeout = ((...args: unknown[]) => {
+    const delay = Number(args[1] ?? 0);
+    delays.push(delay);
+    timeouts.push({ callback: args[0] as () => void, delay });
+    return 0;
+  }) as unknown as typeof setTimeout;
+
+  return {
+    delays,
+    timeouts,
+    setNow(time: number) {
+      now = time;
+    },
+    restore() {
+      globalThis.Date = RealDate;
+      globalThis.setTimeout = realSetTimeout;
+    },
+  };
+}
+
+test("a forward clock step while arming must not skip the scheduled occurrence", async () => {
+  const RealDate = Date;
+  const target = new RealDate();
+  target.setSeconds(target.getSeconds() + 2, 0);
+  const targetMs = target.getTime();
+
+  let clockReads = 0;
+  let offsetMs = 0;
+  const PatchedDate = new Proxy(RealDate, {
+    construct(target, args, newTarget) {
+      if (args.length === 0) {
+        clockReads++;
+        if (clockReads === 2) {
+          const now = RealDate.now() + offsetMs;
+          offsetMs += Math.max(targetMs - now, 0) + 5_000;
+        }
+        return Reflect.construct(target, [RealDate.now() + offsetMs], newTarget);
+      }
+      return Reflect.construct(target, args, newTarget);
+    },
+  });
+
+  let fired = 0;
+  const job = new Cron(`${target.getSeconds()} * * * * *`);
+  globalThis.Date = PatchedDate;
+  try {
+    job.schedule(() => {
+      fired++;
+    });
+
+    const deadline = targetMs + 1_200;
+    while (RealDate.now() < deadline && fired === 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 20));
+    }
+    assertEquals(fired, 1, "the stepped-over occurrence should fire once");
+  } finally {
+    globalThis.Date = RealDate;
+    job.stop();
+  }
+});
+
+test("rearming uses a fresh clock after a synchronous callback", () => {
+  const target = new Date();
+  target.setSeconds(target.getSeconds() + 2, 0);
+  const targetMs = target.getTime();
+  const clock = useClock(targetMs - 1000);
+  const job = new Cron("* * * * * *");
+
+  try {
+    job.schedule(() => {
+      clock.setNow(targetMs + 2500);
+    });
+    clock.setNow(targetMs);
+    (job as unknown as { _checkTrigger: (target: Date) => void })._checkTrigger(target);
+
+    assertEquals(clock.delays.at(-1), 500);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});
+
+test("rearming selects the interval cursor using the fresh clock", () => {
+  const startAt = new Date();
+  startAt.setSeconds(startAt.getSeconds() + 2, 0);
+  const startAtMs = startAt.getTime();
+  const clock = useClock(startAtMs - 1000);
+  const job = new Cron("* * * * * *", {
+    interval: 5,
+    startAt,
+  });
+
+  try {
+    job.schedule(() => {
+      clock.setNow(startAtMs + 12_000);
+    });
+    clock.setNow(startAtMs);
+    (job as unknown as { _checkTrigger: (target: Date) => void })._checkTrigger(startAt);
+
+    assertEquals(clock.delays.at(-1), 3000);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});
+
+/**
+ * Schedules a job on a fake clock starting at `startTime`, follows the armed timers, and
+ * returns when the job first runs, or null if it doesn't run before `untilTime`.
+ */
+function firstRunAt(job: Cron, startTime: number, untilTime: number): number | null {
+  const clock = useClock(startTime);
+  let now = startTime;
+  let firedAt: number | null = null;
+  try {
+    job.schedule(() => {
+      firedAt ??= now;
+    });
+    let handled = 0;
+    while (firedAt === null && now <= untilTime && clock.timeouts.length > handled) {
+      const timer = clock.timeouts[handled++];
+      now += timer.delay;
+      clock.setNow(now);
+      timer.callback();
+    }
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+  return firedAt;
+}
+
+for (
+  const { dayOffset, initialTime, occurrenceTime } of [
+    {
+      dayOffset: -1,
+      initialTime: Date.UTC(2025, 0, 13),
+      occurrenceTime: Date.UTC(2025, 0, 19, 12),
+    },
+    { dayOffset: 1, initialTime: Date.UTC(2025, 0, 14), occurrenceTime: Date.UTC(2025, 0, 14, 12) },
+  ]
+) {
+  test(`dayOffset ${dayOffset} schedules the next shifted occurrence`, () => {
+    const clock = useClock(initialTime);
+    const job = new Cron("0 0 12 * * 1", { dayOffset, timezone: "UTC" });
+    let fired = 0;
+
+    try {
+      job.schedule(() => {
+        fired++;
+      });
+
+      // Delays are capped (see maxDelay in src/croner.ts), so the first armed
+      // timeout re-arms without firing early, but the captured target always
+      // stays the shifted occurrence.
+      clock.setNow(initialTime + clock.timeouts[0].delay);
+      clock.timeouts[0].callback();
+      assertEquals(fired, 0);
+
+      clock.setNow(occurrenceTime);
+      clock.timeouts.at(-1)!.callback();
+      assertEquals(fired, 1);
+    } finally {
+      clock.restore();
+      job.stop();
+    }
+  });
+}
+
+test("dayOffset keeps scheduled targets within the execution window", () => {
+  // The first base match after the clock is Jan 11, but its target Jan 9 is before startAt
+  const startAt = Date.UTC(2025, 0, 15, 12);
+  const negativeOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: -2,
+    startAt: new Date(startAt),
+    timezone: "UTC",
+  });
+  assertEquals(
+    firstRunAt(negativeOffsetJob, Date.UTC(2025, 0, 10, 12), Date.UTC(2025, 0, 20)),
+    startAt,
+  );
+
+  // The next target, Jan 16 12:00, is not before stopAt
+  const positiveOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: 1,
+    stopAt: new Date(Date.UTC(2025, 0, 16, 12)),
+    timezone: "UTC",
+  });
+  assertEquals(
+    firstRunAt(positiveOffsetJob, Date.UTC(2025, 0, 15, 12), Date.UTC(2025, 0, 20)),
+    null,
+  );
+});
+
+test("dayOffset shifts search bounds to include valid edge occurrences", () => {
+  // Target Jan 15 12:00 is exactly startAt, from the base match on Jan 14
+  const positiveOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: 1,
+    startAt: new Date(Date.UTC(2025, 0, 15, 12)),
+    timezone: "UTC",
+  });
+  assertEquals(
+    firstRunAt(positiveOffsetJob, Date.UTC(2025, 0, 13, 12), Date.UTC(2025, 0, 20)),
+    Date.UTC(2025, 0, 15, 12),
+  );
+
+  // Target Jan 15 12:00 is before stopAt, although its base match on Jan 16 is not
+  const negativeOffsetJob = new Cron("0 0 12 * * *", {
+    dayOffset: -1,
+    stopAt: new Date(Date.UTC(2025, 0, 16, 12)),
+    timezone: "UTC",
+  });
+  assertEquals(
+    firstRunAt(negativeOffsetJob, Date.UTC(2025, 0, 14, 12), Date.UTC(2025, 0, 20)),
+    Date.UTC(2025, 0, 15, 12),
+  );
+});
+
+test("a protected job re-arms from the current clock after a backward step", async () => {
+  const initialTime = Date.UTC(2025, 0, 1);
+  const clock = useClock(initialTime);
+  let finishRun!: () => void;
+  const runDone = new Promise<void>((resolve) => {
+    finishRun = resolve;
+  });
+  let protectCalls = 0;
+  const job = new Cron("* * * * * *", { protect: () => protectCalls++ });
+
+  try {
+    job.schedule(async () => await runDone);
+    clock.setNow(initialTime + 1000);
+    clock.timeouts[0].callback();
+
+    clock.setNow(initialTime);
+    clock.timeouts.at(-1)!.callback();
+    clock.setNow(initialTime + 1000);
+    clock.timeouts.at(-1)!.callback();
+    clock.timeouts.findLast((timeout) => timeout.delay === 0)?.callback();
+
+    assertEquals(protectCalls, 1);
+  } finally {
+    finishRun();
+    await runDone;
+    clock.restore();
+    job.stop();
+  }
+});
+
+test("a non-protected job uses consistent timer and target after a backward clock step", () => {
+  const initialTime = Date.UTC(2025, 0, 1, 0, 0, 0); // 00:00:00
+  const clock = useClock(initialTime);
+  const job = new Cron("* * * * * *"); // every second, no protect
+
+  try {
+    let fired = 0;
+    job.schedule(() => {
+      fired++;
+    });
+
+    // Advance 1s and fire → currentRun = 00:00:01
+    clock.setNow(initialTime + 1000);
+    clock.timeouts[0].callback();
+    assertEquals(fired, 1);
+
+    // Step backward and re-arm from the current clock.
+    clock.setNow(initialTime);
+    clock.timeouts.at(-1)!.callback();
+    assertEquals(clock.delays.at(-1), 1000);
+
+    // The timer must target 00:00:01, not the stale 00:00:02.
+    clock.setNow(initialTime + 1000);
+    clock.timeouts.at(-1)!.callback();
+    assertEquals(fired, 2);
+  } finally {
+    clock.restore();
+    job.stop();
+  }
+});

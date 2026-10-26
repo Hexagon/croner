@@ -7,12 +7,8 @@ import type { CronCallback } from "./croner.ts";
  * @returns True if the variable is a function, false otherwise.
  * @private
  */
-function isFunction(v: unknown) {
-  return (
-    Object.prototype.toString.call(v) === "[object Function]" ||
-    "function" === typeof v ||
-    v instanceof Function
-  );
+function isFunction(v: unknown): v is (...args: unknown[]) => unknown {
+  return typeof v === "function";
 }
 
 /**

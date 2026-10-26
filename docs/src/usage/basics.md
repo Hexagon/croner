@@ -24,7 +24,7 @@ const job = new Cron(
 If the function is omitted in the constructor, it can be scheduled later:
 
 ```ts
-job.schedule(job, /* optional */ context) => {});
+job.schedule((job, context) => {});
 ```
 
 The job will be scheduled to run at the next matching time unless you supply the option `{ paused: true }`. The `Cron(...)` constructor will return a Cron instance, later referred to as `job`, which have a few methods and properties.
@@ -37,6 +37,7 @@ Check the status of the job using the following methods:
 job.nextRun( /*optional*/ startFromDate );    // Get a Date object representing the next run.
 job.nextRuns(10, /*optional*/ startFromDate ); // Get an array of Dates, containing the next n runs.
 job.previousRuns(10, /*optional*/ referenceDate ); // Get an array of Dates, containing previous n scheduled runs.
+job.enumerate( /*optional*/ startFromDate );  // Get a stateful CronIterator for use in for...of / destructuring.
 job.msToNext( /*optional*/ startFromDate ); // Get the milliseconds left until the next execution.
 job.currentRun();         // Get a Date object showing when the current (or last) run was started.
 job.previousRun( );         // Get a Date object showing when the previous job was started.
