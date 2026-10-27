@@ -614,7 +614,9 @@ class Cron<T = undefined> {
         } catch (_e) {
           if (isFunction(this.options.catch)) {
             try {
-              (this.options.catch as Function)(_e, this);
+              Promise.resolve((this.options.catch as Function)(_e, this)).catch(() => {
+                // Ignore asynchronous callback errors without waiting for the callback to finish.
+              });
             } catch (_catchError) {
               // Silently ignore errors thrown by the catch callback so they do not disrupt the job execution flow or leave the blocking state stuck (including when protect is enabled).
             }
