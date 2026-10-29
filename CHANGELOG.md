@@ -13,6 +13,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   causes an unhandled rejection. The callback is still not awaited, so a pending callback does not
   delay `trigger()` or keep a `protect`ed job busy. Thrown errors were ignored since #337, but only
   when thrown synchronously (#427).
+- `previousRuns()` no longer skips nearest weekday (`W`) days that fall after the highest plain
+  day-of-month in the pattern. With `0 0 0 15,30W * *`, only the 15th was found when going
+  backwards into a new month.
 
 ## [11.0.0] - 2026-10-25
 
