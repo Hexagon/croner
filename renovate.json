@@ -32,6 +32,16 @@
       "schedule": [
         "* 0-2 * * 1"
       ]
+    },
+    {
+      "description": "deno.land/x imports in docs/deno.json are tracked through GitHub tags by the custom manager below",
+      "matchManagers": [
+        "deno"
+      ],
+      "matchFileNames": [
+        "docs/deno.json"
+      ],
+      "enabled": false
     }
   ],
   "prConcurrentLimit": 10,
@@ -42,5 +52,33 @@
     "dependencies"
   ],
   "assignees": [],
-  "reviewers": []
+  "reviewers": [],
+  "customManagers": [
+    {
+      "description": "Track Lume (deno.land/x) in docs/deno.json via GitHub tags",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^docs/deno\\.json$/"
+      ],
+      "matchStrings": [
+        "\"https://deno\\.land/x/lume@(?<currentValue>[^/\"]+)/\""
+      ],
+      "depNameTemplate": "lume",
+      "packageNameTemplate": "lumeland/lume",
+      "datasourceTemplate": "github-tags"
+    },
+    {
+      "description": "Track Lumocs (deno.land/x) in docs/deno.json via GitHub tags",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^docs/deno\\.json$/"
+      ],
+      "matchStrings": [
+        "\"https://deno\\.land/x/lumocs@(?<currentValue>[^/\"]+)/\""
+      ],
+      "depNameTemplate": "lumocs",
+      "packageNameTemplate": "hexagon/lumocs",
+      "datasourceTemplate": "github-tags"
+    }
+  ]
 }
