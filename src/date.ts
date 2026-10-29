@@ -1003,9 +1003,10 @@ class CronDate<T = undefined> {
     }
 
     // A day can't be after the last day of the month, so that e.g. April 31 doesn't roll
-    // over into May. L and day-of-week patterns search from the last day of the month.
+    // over into May. L, W and day-of-week patterns search from the last day of the month.
     if (target === "day") {
       const lastDay = this.getLastDayOfMonth(this.year, this.month);
+      if (pattern.lastWeekday || pattern.nearestWeekdays.some((v) => v)) return lastDay;
       return pattern.lastDayOfMonth || !pattern.starDOW ? lastDay : Math.min(maxValue, lastDay);
     }
     return maxValue;
