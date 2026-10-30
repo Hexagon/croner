@@ -1,4 +1,5 @@
 import { createTimePoint, fromTZ, fromTZISO, hasUtcDesignator, toTZ } from "./helpers/timezone.ts";
+import { utcTime } from "./helpers/calendar.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
 import {
@@ -145,7 +146,7 @@ class CronDate<T = undefined> {
     if (month !== 1) {
       return DaysOfMonth[month];
     } else {
-      return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      return new Date(utcTime(year, month + 1, 0)).getUTCDate();
     }
   }
 
@@ -159,7 +160,7 @@ class CronDate<T = undefined> {
    */
   private getLastWeekday(year: number, month: number): number {
     const lastDay = this.getLastDayOfMonth(year, month);
-    const lastDate = new Date(Date.UTC(year, month, lastDay));
+    const lastDate = new Date(utcTime(year, month, lastDay));
     const weekday = lastDate.getUTCDay(); // 0=Sun, 6=Sat
 
     if (weekday === 0) { // Sunday
@@ -188,7 +189,7 @@ class CronDate<T = undefined> {
       return -1; // Day doesn't exist in this month
     }
 
-    const date = new Date(Date.UTC(year, month, day));
+    const date = new Date(utcTime(year, month, day));
     const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
 
     if (weekday === 0) { // Sunday
@@ -224,13 +225,13 @@ class CronDate<T = undefined> {
    * @return True if the date is the nth occurrence of its weekday, false otherwise.
    */
   private isNthWeekdayOfMonth(year: number, month: number, day: number, nth: number): boolean {
-    const date = new Date(Date.UTC(year, month, day));
+    const date = new Date(utcTime(year, month, day));
     const weekday = date.getUTCDay();
 
     // Count occurrences of the weekday up to and including the current date
     let count = 0;
     for (let d = 1; d <= day; d++) {
-      if (new Date(Date.UTC(year, month, d)).getUTCDay() === weekday) {
+      if (new Date(utcTime(year, month, d)).getUTCDay() === weekday) {
         count++;
       }
     }
@@ -244,7 +245,7 @@ class CronDate<T = undefined> {
     if (nth & LAST_OCCURRENCE) {
       const daysInMonth = this.getLastDayOfMonth(year, month);
       for (let d = day + 1; d <= daysInMonth; d++) {
-        if (new Date(Date.UTC(year, month, d)).getUTCDay() === weekday) {
+        if (new Date(utcTime(year, month, d)).getUTCDay() === weekday) {
           return false; // There's another occurrence of the same weekday later in the month
         }
       }
@@ -469,7 +470,7 @@ class CronDate<T = undefined> {
     // Special case for day of week
     if (!pattern.starDOW) {
       const fDomWeekDay = new Date(
-        Date.UTC(this.year, this.month, 1, 0, 0, 0, 0),
+        utcTime(this.year, this.month, 1, 0, 0, 0, 0),
       ).getUTCDay();
       let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (dayValue - 1)) % 7];
 
@@ -1050,6 +1051,12 @@ class CronDate<T = undefined> {
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
+      if (this.year >= 0 && this.year < 100) {
+        const date = new Date(0);
+        date.setFullYear(this.year, this.month, this.day);
+        date.setHours(this.hour, this.minute, this.second, this.ms);
+        return date;
+      }
       return new Date(
         this.year,
         this.month,
@@ -1064,7 +1071,7 @@ class CronDate<T = undefined> {
       // Restore this, and return a date object with correct time set.
       if (typeof this.tz === "number") {
         return new Date(
-          Date.UTC(
+          utcTime(
             this.year,
             this.month,
             this.day,
