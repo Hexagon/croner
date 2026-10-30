@@ -9,6 +9,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
+  weekday modifiers, leap days, local dates and timezone conversion.
 - A `catch` callback that returns a rejected promise (an `async` callback that throws) no longer
   causes an unhandled rejection. The callback is still not awaited, so a pending callback does not
   delay `trigger()` or keep a `protect`ed job busy. Thrown errors were ignored since #337, but only

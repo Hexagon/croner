@@ -1,3 +1,5 @@
+import { utcTime } from "./calendar.ts";
+
 /**
  * Timezone conversion utilities for Croner
  *
@@ -25,7 +27,7 @@ export interface TimePoint {
  * @returns Milliseconds since epoch (UTC)
  */
 function timePointToMs(tp: TimePoint): number {
-  return Date.UTC(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
+  return utcTime(tp.y, tp.m - 1, tp.d, tp.h, tp.i, tp.s);
 }
 
 /**
