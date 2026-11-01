@@ -33,6 +33,8 @@
   "publish": {
     "exclude": [
       "build",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md",
       "docs",
       "test",
       ".github",
