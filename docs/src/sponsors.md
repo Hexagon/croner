@@ -7,7 +7,7 @@ nav_order: 7
 
 ---
 
-Croner is MIT licensed, has zero dependencies, and runs in production in projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [Dockge](https://github.com/louislam/dockge), [Z-Wave JS UI](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
+Croner is MIT licensed, has zero dependencies, and runs in production in projects such as [OpenClaw](https://github.com/openclaw/openclaw), [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [Dockge](https://github.com/louislam/dockge), [Z-Wave JS UI](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
 
 It was founded and is maintained by [Hexagon](https://github.com/Hexagon), together with a community of [contributors](https://github.com/Hexagon/croner/graphs/contributors). Ongoing work such as standards compliance ([OCPS](https://github.com/open-source-cron/ocps)), time zone and DST correctness, cross-runtime testing on Node.js, Deno, Bun and browsers, and security fixes is sustained by sponsors.
 

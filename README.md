@@ -21,7 +21,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Pause, resume, or stop execution after a task is scheduled.
 *   Operates in-memory, with no need for a database or configuration files.
 *   Zero dependencies.
-*   Thoroughly tested and relied upon by well-known projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [Dockge](https://github.com/louislam/dockge), [Z-Wave JS UI](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
+*   Thoroughly tested and relied upon by well-known projects such as [OpenClaw](https://github.com/openclaw/openclaw), [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [Dockge](https://github.com/louislam/dockge), [Z-Wave JS UI](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
 
 Quick examples:
 
