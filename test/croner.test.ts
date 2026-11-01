@@ -748,7 +748,7 @@ test(
     }, () => {
       const now = new Date(),
         nextParsed = new Date(cron.nextRun()!),
-        nowParsed = new Date(now.toLocaleString());
+        nowParsed = new Date(Math.floor(now.getTime() / 1000) * 1000);
       if (run === 1) {
         try {
           assertEquals(nowParsed.getTime(), nextParsed.getTime() - 1000);
@@ -757,7 +757,7 @@ test(
           reject(e);
         }
       } else {
-        const prevParsed = new Date(cron.previousRun()!.toLocaleString());
+        const prevParsed = new Date(Math.floor(cron.previousRun()!.getTime() / 1000) * 1000);
         try {
           assertEquals(nowParsed.getTime(), nextParsed.getTime() - 1000);
           assertEquals(nowParsed.getTime(), prevParsed.getTime() + 1000);
