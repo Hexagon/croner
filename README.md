@@ -21,6 +21,7 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 *   Pause, resume, or stop execution after a task is scheduled.
 *   Operates in-memory, with no need for a database or configuration files.
 *   Zero dependencies.
+*   Thoroughly tested and relied upon by well-known projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [Dockge](https://github.com/louislam/dockge), [Z-Wave JS UI](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
 
 Quick examples:
 
@@ -333,13 +334,11 @@ A list of fixes and features currently released in the `dev` branch is available
 
 ## Contributing & Support
 
-Croner is founded and actively maintained by Hexagon. If you find value in Croner and want to contribute:
+Croner is founded and actively maintained by [Hexagon](https://github.com/Hexagon), together with a community of [contributors](https://github.com/Hexagon/croner/graphs/contributors).
 
-- Code Contributions: See our [Contribution Guide](https://croner.56k.guru/contributing/) for details on how to contribute code.
-
-- Sponsorship and Donations: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
-
-Your trust, support, and contributions drive the project. Every bit, irrespective of its size, is deeply appreciated.
+- **Code contributions:** See the [Contribution Guide](https://croner.56k.guru/contributing/).
+- **Sponsors:** Croner's development is sustained by [GitHub Sponsors](https://github.com/sponsors/hexagon). Organization tiers include logo placement here and on [croner.56k.guru](https://croner.56k.guru/sponsors/), and can be invoiced to a company. See [croner.56k.guru/sponsors](https://croner.56k.guru/sponsors/) for details.
+- **Consulting:** Need help with scheduling, migrating from another cron library, or moving a codebase to ESM/TypeScript for Node, Deno and Bun? The maintainer is available for paid work, reach out via [GitHub](https://github.com/Hexagon).
 
 ## License
 

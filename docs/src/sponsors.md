@@ -1,22 +1,34 @@
 ---
-title: "Donations"
+title: "Sponsors"
 nav_order: 7
 ---
 
-# Supporting Croner through Sponsorship
+# Sponsors
 
 ---
 
-Croner was founded and is actively maintained by [Hexagon](https://github.com/Hexagon). While I've poured my heart and soul into the project, I'm deeply grateful to the broader community of [contributors](https://github.com/Hexagon/croner/graphs/contributors) who have collaborated to make Croner what it is today.
+Croner is MIT licensed, has zero dependencies, and runs in production in projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [Dockge](https://github.com/louislam/dockge), [Z-Wave JS UI](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
 
-## Why Sponsor?
+It was founded and is maintained by [Hexagon](https://github.com/Hexagon), together with a community of [contributors](https://github.com/Hexagon/croner/graphs/contributors). Ongoing work such as standards compliance ([OCPS](https://github.com/open-source-cron/ocps)), time zone and DST correctness, cross-runtime testing on Node.js, Deno, Bun and browsers, and security fixes is sustained by sponsors.
 
-Your sponsorship directly supports my ongoing efforts to enhance and improve Croner. By becoming a sponsor, you're fostering a broader open-source ecosystem and ensuring it remains free and accessible to all.
+## For organizations
 
-## Sponsorship
+If your product or infrastructure depends on Croner, sponsoring is a straightforward way to keep it maintained. Organization tiers on [GitHub Sponsors](https://github.com/sponsors/Hexagon) include:
 
-You can support by **monthly** and **one-time** sponsorship tiers at [github.com/sponsors/Hexagon](https://github.com/sponsors/Hexagon?frequency=one-time&sponsor=Hexagon)
+- **Visibility:** your logo in the Croner README and on this site.
+- **Acknowledgement:** a mention in release notes.
+- **Direct access:** higher tiers include a set amount of maintainer time for questions, integration review or upgrade help.
 
-- **Monthly Tiers**: These tiers offer benefits such listing in Croner's README, priority issue resolution, and more.
+GitHub Sponsors can be paid by an organization account and invoiced, so it can go through normal procurement instead of a personal card.
 
-- **One-Time Contributions**: More relaxed option with buying Hexagon anything from a coffe and up. Each contribution, no matter the size, ensures continued dedication to the project.
+## For individuals
+
+Monthly and [one-time](https://github.com/sponsors/Hexagon?frequency=one-time&sponsor=Hexagon) sponsorships are available from a few dollars and up.
+
+## Consulting
+
+The maintainer is available for paid work related to scheduling, cron and time zone handling, and migrating packages to ESM/TypeScript for Node.js, Deno and Bun. Reach out via [GitHub](https://github.com/Hexagon).
+
+## Other ways to help
+
+Contributions, bug reports and well-written issues are just as valuable. See the [Contribution Guide](contributing.md).

@@ -15,7 +15,7 @@ To get an overview of the project, read the [README](https://github.com/Hexagon/
 -   [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
 -   [Collaborating with pull requests](https://docs.github.com/en/github/collaborating-with-pull-requests)
 
-If you're looking to support Croner financially, consider checking out our [Sponsorship page](/sponsors).
+Organizations that rely on Croner can sponsor its development, see [Sponsors](/sponsors).
 
 ### Issues
 
