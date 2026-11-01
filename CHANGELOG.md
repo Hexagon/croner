@@ -7,6 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The JSR package no longer includes repository-only files (`AGENTS.md`, `CODE_OF_CONDUCT.md`,
+  `CONTRIBUTING.md` and `renovate.json`).
+
 ### Fixed
 
 - Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
