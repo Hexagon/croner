@@ -32,6 +32,7 @@
   },
   "publish": {
     "exclude": [
+      "AGENTS.md",
       "build",
       "CODE_OF_CONDUCT.md",
       "CONTRIBUTING.md",
@@ -42,6 +43,7 @@
       ".npmrc",
       "croner.png",
       "package.json",
+      "renovate.json",
       "SECURITY.md",
       "tsconfig.json"
     ]
