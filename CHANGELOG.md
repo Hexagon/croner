@@ -9,8 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The JSR package no longer includes repository-only files (`AGENTS.md`, `CODE_OF_CONDUCT.md`,
-  `CONTRIBUTING.md` and `renovate.json`).
+- The JSR package no longer includes repository-only files (`AGENTS.md` and `renovate.json`).
 
 ### Fixed
 
