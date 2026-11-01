@@ -7,10 +7,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
-
-- Updated the copyright year in `LICENSE` to 2015-2026.
-
 ### Fixed
 
 - Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
