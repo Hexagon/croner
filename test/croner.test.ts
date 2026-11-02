@@ -1292,3 +1292,23 @@ test("nextRun() should not match a weekday on a day past the end of the month", 
     ["2023-03-01T00:00:00.000Z", "2023-03-03T00:00:00.000Z", "2023-03-10T00:00:00.000Z"],
   );
 });
+
+test("previousRuns() should stay within calendar days across a short month", function () {
+  const job = new Cron("0 0 1 * 5", { timezone: "UTC" });
+  assertEquals(
+    job.previousRuns(3, new Date("2023-03-02T12:00:00Z")).map((d) => d.toISOString()),
+    ["2023-03-01T00:00:00.000Z", "2023-02-24T00:00:00.000Z", "2023-02-17T00:00:00.000Z"],
+  );
+});
+
+test("AND day matching should cross a short month in both directions", function () {
+  const job = new Cron("0 0 1 * 5", { timezone: "UTC", legacyMode: false });
+  assertEquals(
+    job.nextRun(new Date("2023-02-27T12:00:00Z"))?.toISOString(),
+    "2023-09-01T00:00:00.000Z",
+  );
+  assertEquals(
+    job.previousRuns(1, new Date("2023-03-02T12:00:00Z")).map((d) => d.toISOString()),
+    ["2022-07-01T00:00:00.000Z"],
+  );
+});

@@ -520,6 +520,7 @@ class CronDate<T = undefined> {
     direction: 1 | -1,
   ): number {
     const originalTarget = this[target];
+    const lastDay = target === "day" ? this.getLastDayOfMonth(this.year, this.month) : 0;
 
     // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster
     // than new Date(y,m,d). We use the UTC functions to set/get date parts.
@@ -536,9 +537,9 @@ class CronDate<T = undefined> {
 
       // Apply day-specific special cases (W, LW, L, DOW modifiers)
       if (target === "day") {
-        // Days past the end of the month do not exist, so a weekday must not match them
-        if (i - offset > this.getLastDayOfMonth(this.year, this.month)) {
-          break;
+        // Only real calendar days may match day-of-month, weekday, or special modifiers.
+        if (i - offset > lastDay) {
+          continue;
         }
         match = this._matchDayValue(match, i - offset, pattern, options);
       }
