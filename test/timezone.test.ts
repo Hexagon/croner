@@ -84,13 +84,15 @@ test("Should return expected time, date and weekday different timezones", functi
 });
 
 test("getTime should return expected difference with different timezones (next 1st november)", function () {
-  let timeStockholm = new Cron("0 0 12 1 11 *", { timezone: "Europe/Stockholm" }).nextRun()
+  const reference = new Date("2026-01-01T00:00:00Z");
+  let timeStockholm = new Cron("0 0 12 1 11 *", { timezone: "Europe/Stockholm" }).nextRun(reference)
       ?.getTime(),
-    timeNewYork = new Cron("0 0 12 1 11 *", { timezone: "America/New_York" }).nextRun()?.getTime(),
+    timeNewYork = new Cron("0 0 12 1 11 *", { timezone: "America/New_York" }).nextRun(reference)
+      ?.getTime(),
     diff = ((timeNewYork || 0) - (timeStockholm || 0)) / 1000 / 3600;
 
-  // The time when next 1st november occurs should be with 6 hours difference (seen from utc)
-  // Stockholm is UTC+1 (CET - DST ended Oct 26), New York is UTC-5 (EST - DST ended Nov 1/2)
+  // November 1, 2026 has a 6-hour difference between Stockholm and New York.
+  // Stockholm is UTC+1 (CET), New York is UTC-5 (EST after the November 1 transition).
   // 12:00 CET (11:00 UTC) vs 12:00 EST (17:00 UTC) = 6 hours
   assertEquals(diff, 6);
 });
