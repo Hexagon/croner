@@ -536,6 +536,10 @@ class CronDate<T = undefined> {
 
       // Apply day-specific special cases (W, LW, L, DOW modifiers)
       if (target === "day") {
+        // Days past the end of the month do not exist, so a weekday must not match them
+        if (i - offset > this.getLastDayOfMonth(this.year, this.month)) {
+          break;
+        }
         match = this._matchDayValue(match, i - offset, pattern, options);
       }
 
