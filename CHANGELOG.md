@@ -7,7 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `fixedTimeRule` option, which selects which jobs are fixed-time jobs in DST handling (#438). The
+  default, `"single-value"`, is unchanged and the same as croner-rust. With `"no-wildcard"`, a job
+  without a wildcard (`*` or `?`) or step in seconds, minutes and hours is a fixed-time job, so
+  `30 2,14 * * *` runs at the end of a DST gap and once in a DST overlap, close to Vixie cron.
+
 ### Fixed
+
+- The docs no longer say that DST handling is the same as Vixie cron for lists and ranges. Vixie
+  cron treats them as fixed-time jobs, Croner treats them as interval jobs by default (#438).
 
 - Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
   weekday modifiers, leap days, local dates and timezone conversion.

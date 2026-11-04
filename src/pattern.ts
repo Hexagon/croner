@@ -17,6 +17,11 @@ type CronPatternPart =
 type CronMode = "auto" | "5-part" | "6-part" | "7-part" | "5-or-6-parts" | "6-or-7-parts";
 
 /**
+ * Rule for which jobs count as fixed-time jobs in DST handling, see CronOptions.fixedTimeRule
+ */
+type CronFixedTimeRule = "single-value" | "no-wildcard";
+
+/**
  * Offset, 0 or -1.
  *
  * 0 offset is used for seconds, minutes, and hours as they start on 1.
@@ -47,6 +52,7 @@ class CronPattern {
   mode: CronMode;
   alternativeWeekdays: boolean;
   sloppyRanges: boolean;
+  fixedTimeRule: CronFixedTimeRule;
   second: number[];
   minute: number[];
   hour: number[];
@@ -63,20 +69,27 @@ class CronPattern {
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
   /**
    * True if seconds, minutes and hours each have a single value, without wildcard or step.
-   * Fixed-time and interval jobs handle DST transitions differently, as in croner-rust.
+   * With fixedTimeRule "no-wildcard", true if they have no wildcard or step, so lists and
+   * ranges count too. Fixed-time and interval jobs handle DST transitions differently.
    */
   isFixedTime: boolean;
 
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { mode?: CronMode; alternativeWeekdays?: boolean; sloppyRanges?: boolean },
+    options?: {
+      mode?: CronMode;
+      alternativeWeekdays?: boolean;
+      sloppyRanges?: boolean;
+      fixedTimeRule?: CronFixedTimeRule;
+    },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
     this.mode = options?.mode ?? "auto";
     this.alternativeWeekdays = options?.alternativeWeekdays ?? false;
     this.sloppyRanges = options?.sloppyRanges ?? false;
+    this.fixedTimeRule = options?.fixedTimeRule ?? "single-value";
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -284,9 +297,13 @@ class CronPattern {
       this.dayOfWeek[0] = this.dayOfWeek[7];
     }
 
-    // A fixed-time job has exactly one second, minute and hour, not from a wildcard or step
+    // A fixed-time job has no wildcard or step in seconds, minutes and hours. By default it
+    // also has exactly one value in each, as in croner-rust. With "no-wildcard", lists and
+    // ranges count too, close to Vixie cron.
+    const singleValue = this.fixedTimeRule === "single-value";
     const isFixed = (part: string, values: number[]) =>
-      !part.includes("*") && !part.includes("/") && values.filter((v) => v).length === 1;
+      !part.includes("*") && !part.includes("/") &&
+      (!singleValue || values.filter((v) => v).length === 1);
     this.isFixedTime = isFixed(parts[0], this.second) && isFixed(parts[1], this.minute) &&
       isFixed(parts[2], this.hour);
   }
@@ -771,4 +788,4 @@ class CronPattern {
   }
 }
 
-export { type CronMode, CronPattern };
+export { type CronFixedTimeRule, type CronMode, CronPattern };

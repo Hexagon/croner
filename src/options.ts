@@ -1,5 +1,5 @@
 import { CronDate } from "./date.ts";
-import type { CronMode } from "./pattern.ts";
+import type { CronFixedTimeRule, CronMode } from "./pattern.ts";
 import type { Cron } from "./croner.ts";
 
 type CatchCallbackFn = (e: unknown, job: Cron) => void;
@@ -145,6 +145,19 @@ interface CronOptions<T = undefined> {
   sloppyRanges?: boolean;
 
   /**
+   * Which jobs count as fixed-time jobs, for DST handling. A fixed-time job in a DST gap runs
+   * at the first valid time after the gap, and runs once when a time occurs twice. Other jobs
+   * are interval jobs, which skip times in a gap and run on both occurrences of a repeated time.
+   * - "single-value" (default): seconds, minutes and hours each have a single value, without
+   *   wildcard or step (e.g. `30 2 * * *`). The same rule as croner-rust.
+   * - "no-wildcard": seconds, minutes and hours have no wildcard (`*` or `?`) and no step, so a
+   *   list or range is fixed-time too (e.g. `30 2,14 * * *` or `30 2-3 * * *`). Close to Vixie
+   *   cron, which classifies a job as wild only when its minute or hour field starts with `*`.
+   * @default "single-value"
+   */
+  fixedTimeRule?: CronFixedTimeRule;
+
+  /**
    * If true, date-based jobs scheduled in the past will fire immediately.
    * If false, only jobs scheduled within the past second will fire immediately (to handle timing edge cases).
    * Jobs scheduled more than 1 second in the past will be rejected unless this is true.
@@ -186,6 +199,7 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
   options.mode = d(options.mode, "auto");
   options.alternativeWeekdays = d(options.alternativeWeekdays, false);
   options.sloppyRanges = d(options.sloppyRanges, false);
+  options.fixedTimeRule = d(options.fixedTimeRule, "single-value");
   options.allowPast = d(options.allowPast, false);
 
   options.interval = options.interval === void 0 ? 0 : parseInt(options.interval.toString(), 10);
@@ -201,6 +215,11 @@ function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOption
     throw new Error(
       "CronOptions: mode must be one of 'auto', '5-part', '6-part', '7-part', '5-or-6-parts', or '6-or-7-parts'.",
     );
+  }
+
+  // Validate fixedTimeRule option
+  if (!["single-value", "no-wildcard"].includes(options.fixedTimeRule)) {
+    throw new Error("CronOptions: fixedTimeRule must be one of 'single-value' or 'no-wildcard'.");
   }
 
   // An empty timezone is the same as no timezone
