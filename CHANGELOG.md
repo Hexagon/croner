@@ -9,6 +9,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Prevent day matching past the end of a month from skipping valid runs when day-of-month and
+  day-of-week conditions use OR logic (#437).
 - Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
   weekday modifiers, leap days, local dates and timezone conversion.
 - A `catch` callback that returns a rejected promise (an `async` callback that throws) no longer
