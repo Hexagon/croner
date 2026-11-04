@@ -29,7 +29,7 @@
 
   ------------------------------------------------------------------------------------  */
 import { CronDate } from "./date.ts";
-import { type CronMode, CronPattern } from "./pattern.ts";
+import { type CronFixedTimeRule, type CronMode, CronPattern } from "./pattern.ts";
 import {
   type CatchCallbackFn,
   type CronOptions,
@@ -274,6 +274,7 @@ class Cron<T = undefined> {
         mode: this.options.mode,
         alternativeWeekdays: this.options.alternativeWeekdays,
         sloppyRanges: this.options.sloppyRanges,
+        fixedTimeRule: this.options.fixedTimeRule,
       });
     }
 
@@ -1025,6 +1026,7 @@ export {
   type CatchCallbackFn,
   Cron,
   CronDate,
+  type CronFixedTimeRule,
   CronIterator,
   type CronMode,
   type CronOptions,
