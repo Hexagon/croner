@@ -343,6 +343,16 @@ Croner is founded and actively maintained by Hexagon. If you find value in Crone
 
 Your trust, support, and contributions drive the project. Every bit, irrespective of its size, is deeply appreciated.
 
+## Other implementations
+
+Croner is available in several languages. The implementations share pattern syntax, DST rules and test cases:
+
+- **JavaScript / TypeScript**: croner (this repository)
+- **Rust**: [croner-rust](https://github.com/Hexagon/croner-rust), on [crates.io](https://crates.io/crates/croner)
+- **Python**: [croner-py](https://github.com/Hexagon/croner-py), on [PyPI](https://pypi.org/project/croner/)
+- **.NET**: [croner-dotnet](https://github.com/Hexagon/croner-dotnet), on [NuGet](https://www.nuget.org/packages/Croner)
+- **C++**: [croner-cpp](https://github.com/Hexagon/croner-cpp), header-only, C++17
+
 ## License
 
 MIT License
