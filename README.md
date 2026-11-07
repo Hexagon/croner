@@ -8,6 +8,8 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![JSR](https://jsr.io/badges/@hexagon/croner)](https://jsr.io/@hexagon/croner) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
+Croner is available for **JavaScript/TypeScript** · [Rust](https://github.com/Hexagon/croner-rust) · [Python](https://github.com/Hexagon/croner-py) · [.NET](https://github.com/Hexagon/croner-dotnet) · [C++](https://github.com/Hexagon/croner-cpp)
+
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
 *   Supports seconds and year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic).
@@ -342,16 +344,6 @@ Croner is founded and actively maintained by Hexagon. If you find value in Crone
 - Sponsorship and Donations: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
 
 Your trust, support, and contributions drive the project. Every bit, irrespective of its size, is deeply appreciated.
-
-## Other implementations
-
-Croner is available in several languages. The implementations share pattern syntax, DST rules and test cases:
-
-- **JavaScript / TypeScript**: croner (this repository)
-- **Rust**: [croner-rust](https://github.com/Hexagon/croner-rust), on [crates.io](https://crates.io/crates/croner)
-- **Python**: [croner-py](https://github.com/Hexagon/croner-py), on [PyPI](https://pypi.org/project/croner/)
-- **.NET**: [croner-dotnet](https://github.com/Hexagon/croner-dotnet), on [NuGet](https://www.nuget.org/packages/Croner)
-- **C++**: [croner-cpp](https://github.com/Hexagon/croner-cpp), header-only, C++17
 
 ## License
 
