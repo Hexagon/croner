@@ -339,7 +339,7 @@ A list of fixes and features currently released in the `dev` branch is available
 
 Croner is founded and actively maintained by Hexagon. If you find value in Croner and want to contribute:
 
-- Code Contributions: See our [Contribution Guide](https://croner.56k.guru/contributing/) for details on how to contribute code.
+- Code Contributions: See our [Contribution Guide](CONTRIBUTING.md) for details on how to contribute code.
 
 - Sponsorship and Donations: See [github.com/sponsors/hexagon](https://github.com/sponsors/hexagon)
 

@@ -1,6 +1,6 @@
 ---
 title: "Examples"
-parent: "Usage"
+parent: "Usage (JavaScript)"
 nav_order: 3
 ---
 

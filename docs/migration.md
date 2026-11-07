@@ -1,6 +1,6 @@
 ---
-title: "Migration"
-nav_order: 4
+title: "Migration (JavaScript)"
+nav_order: 6
 ---
 
 # Migration
@@ -142,7 +142,7 @@ new Cron("2020-01-01T00:00:00Z", { allowPast: true }, () => {
 #### DST behavior aligned with croner-rust
 
 Croner now handles DST transitions the same way as croner-rust and Vixie cron. This deviates from
-the recommendation in OCPS 1.4 §4.3.1, see [Pattern](usage/pattern.md). Jobs are either
+the recommendation in OCPS 1.4 §4.3.1, see [Pattern](https://croner.56k.guru/usage/pattern/). Jobs are either
 *fixed-time* (one value each for seconds, minutes and hours) or *interval* jobs (anything else).
 
 * **Fixed-time jobs in a DST gap** (spring forward) run at the first valid time after the gap. In

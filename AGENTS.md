@@ -22,7 +22,7 @@ croner/
 │   ├── stepping.test.ts
 │   └── timezone.test.ts
 ├── build/               # Build scripts (Node.js, run with tsx)
-├── docs/                # Documentation (Lume site, built with Deno)
+├── docs/                # JavaScript documentation pages, published by github.com/Hexagon/croner-site
 ├── package.json         # npm package, scripts and dev dependencies (source of truth for version)
 ├── tsconfig.json        # TypeScript configuration used for type checking
 └── deno.json            # Deno/JSR configuration and tasks
@@ -90,7 +90,7 @@ CI (`.github/workflows/test.yml`) runs the test suite on Node.js 18/20/22/24/26,
 - Preferred: `npm version <new-version> --no-git-tag-version` updates both files (the `version` script syncs `deno.json`).
 - If you edit `package.json` by hand, run `npx tsx build/build.ts sync-version` afterwards (or edit `deno.json` to the same value).
 - Verify with `npm run check-version`. It fails on mismatch, and runs in CI and in `npm run build`.
-- When bumping the version, also update version references in `README.md` (the JSR import and the jsDelivr CDN URL), `$CRONER_VERSION` in `docs/src/_data.json` (used by the docs site), and add/adjust the entry in `CHANGELOG.md`.
+- When bumping the version, also update version references in `README.md` (the JSR import and the jsDelivr CDN URL), `$CRONER_VERSION` in `src/_data.json` in the croner-site repository (used by the docs site), and add/adjust the entry in `CHANGELOG.md`.
 
 ### Full Build
 
@@ -110,4 +110,4 @@ This cleans `dist/`, checks versions, type checks, runs all tests, and builds th
 - Update documentation if changing public APIs
 - Keep the version in `package.json` and `deno.json` in sync (see Versioning)
 
-For detailed contribution guidelines, see [docs/src/contributing.md](docs/src/contributing.md).
+For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).

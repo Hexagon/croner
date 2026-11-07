@@ -1,67 +1,13 @@
 ---
-title: "Overview"
-nav_order: 1
+title: "Comparison (JavaScript)"
+nav_order: 5
 ---
 
-<p align="center">
-<img class="logo" src="https://cdn.jsdelivr.net/gh/hexagon/croner@master/croner.png" alt="Croner" width="150" height="150"><br>
-Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. All features. Node. Deno. Bun. Browser. <br><br>Try it live on <a href="https://jsfiddle.net/hexag0n/hoa8kwsb/">jsfiddle</a>.<br>
-</p>
+# Feature comparison
 
-## Features
+---
 
-*   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
-*   Evaluate cron expressions and get a list of upcoming run times.
-*   **OCPS 1.0-1.4 compliant**: Fully supports the [Open Cron Pattern Specification](https://github.com/open-source-cron/ocps) including advanced features like seconds/year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic). DST handling follows Vixie cron and croner-rust instead of the OCPS 1.4 recommendation, see [Pattern](usage/pattern.md).
-*   Works in Node.js >=18.0 (both require and import), Deno >=2.0 and Bun >=1.0.0.
-*   Works in browsers as standalone, UMD or ES-module.
-*   Target different [time zones](usage/examples.md#time-zone).
-*   Built-in [overrun protection](usage/examples.md#overrun-protection)
-*   Built-in [error handling](usage/examples.md#error-handling)
-*   Includes [TypeScript](https://www.typescriptlang.org/) typings.
-*   Support for asynchronous functions.
-*   Pause, resume, or stop execution after a task is scheduled.
-*   Operates in-memory, with no need for a database or configuration files.
-*   Zero dependencies.
-*   Thoroughly tested and is relied upon by well-known projects such as [pm2](https://github.com/unitech/pm2), [Uptime Kuma](https://github.com/louislam/uptime-kuma), [ZWave JS](https://github.com/zwave-js/zwave-js-ui) and [TrueNAS](https://github.com/truenas/webui).
-
-## Quick examples
-
-**Run a function at the interval defined by a cron expression**
-
-```ts
-const job = new Cron('*/5 * * * * *', () => {
-	console.log('This will run every five seconds');
-});
-```
-
-**What dates do the next 100 sundays occur on?**
-
-```ts
-const nextSundays = new Cron('0 0 0 * * 7').nextRuns(100);
-console.log(nextSundays);
-```
-
-**Days left to a specific date**
-
-```ts
-const msLeft = new Cron('59 59 23 24 DEC *').nextRun() - new Date();
-console.log(Math.floor(msLeft/1000/3600/24) + " days left to next christmas eve");
-```
-
-**Run a function at a specific date/time using a non-local timezone**
-
-Time is ISO 8601 local time, this will run 2030-01-23 00:00:00 according to the time in Asia/Kolkata
-
-```ts
-new Cron('2030-01-23T00:00:00', { timezone: 'Asia/Kolkata' }, () => { console.log('Yay!') });
-```
-
-More examples at [usage/examples.md](usage/examples.md)
-
-## Feature comparison
-
-In this comparison, we outline the key differences between Croner and four other popular scheduling libraries: cronosjs, node-cron, cron, and node-schedule. The libraries are compared across various features such as platform compatibility, functionality, error handling, and Typescript support.
+In this comparison, we outline the key differences between Croner for JavaScript and four other popular scheduling libraries: cronosjs, node-cron, cron, and node-schedule. The libraries are compared across various features such as platform compatibility, functionality, error handling, and Typescript support.
 
 The table below provides a brief overview of each library's features.
 
