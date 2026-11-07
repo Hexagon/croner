@@ -33,7 +33,6 @@
   "publish": {
     "exclude": [
       "build",
-      "cpp",
       "docs",
       "test",
       ".github",
