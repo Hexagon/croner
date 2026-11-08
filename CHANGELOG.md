@@ -18,6 +18,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - The docs no longer say that DST handling is the same as Vixie cron for lists and ranges. Vixie
   cron treats them as fixed-time jobs, Croner treats them as interval jobs by default (#438).
+- `@weekly` with `alternativeWeekdays: true` threw `RangeError: CronPattern: Invalid value for
+  dayOfWeek: -1`. It now runs on Sundays, as without the option and as in croner-rust.
 
 - Prevent day matching past the end of a month from skipping valid runs when day-of-month and
   day-of-week conditions use OR logic (#437).
