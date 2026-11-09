@@ -36,6 +36,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `previousRuns()` no longer skips nearest weekday (`W`) days that fall after the highest plain
   day-of-month in the pattern. With `0 0 0 15,30W * *`, only the 15th was found when going
   backwards into a new month.
+- The `interval` option now counts elapsed time, so a DST change in between no longer shortens or
+  stretches it. Before, the interval was added to the wall clock: after a spring forward the next
+  run could come minutes after the last one instead of `interval` seconds, in a repeated hour it
+  ignored the interval, and a 24 hour interval gave 23 or 25 hours.
 
 ## [11.0.0] - 2026-10-25
 
