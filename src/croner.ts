@@ -812,6 +812,19 @@ class Cron<T = undefined> {
     direction: 1 | -1,
     hasPreviousRun = false,
   ): CronDate<T> | null {
+    // The minimum interval is elapsed time from the previous run, which is the reference. Search
+    // from the last second that is too soon, so that a DST change in between neither shortens nor
+    // stretches it. Backward searches always count the interval.
+    const interval = this.options.interval ?? 0;
+    if (interval > 1 && (direction === -1 || hasPreviousRun)) {
+      referenceMs += (interval - 1) * 1000 * direction;
+      // Years 1-9999 are supported, an interval that ends outside of them has no run
+      const year = new Date(referenceMs).getUTCFullYear();
+      if (!(year >= 1 && year <= 9999)) return null;
+      start = new CronDate<T>(new Date(referenceMs), this.getTz());
+      hasPreviousRun = false;
+    }
+
     const found = this._walk(start, referenceMs, direction, hasPreviousRun);
 
     // A fixed-time job never runs on the later pass, and a fixed UTC offset has no DST
@@ -856,7 +869,7 @@ class Cron<T = undefined> {
     const step = (date: CronDate<T>, hasPrevious: boolean) =>
       direction === 1
         ? date.increment(pattern, this.options, hasPrevious)
-        : date.decrement(pattern, this.options);
+        : date.decrement(pattern, this.options, hasPrevious);
 
     let candidate: CronDate<T> | null = new CronDate<T>(start, this.getTz());
     if (!inclusive || !candidate.match(pattern, this.options)) {
@@ -927,8 +940,7 @@ class Cron<T = undefined> {
     const intervalMs = this.options.interval! * 1000;
     let previous = startAt;
     while (previous.getTime() + intervalMs <= nowMs) {
-      const next = new CronDate<T>(previous, this.getTz())
-        .increment(this._states.pattern, this.options, true);
+      const next = this._findOccurrence(previous, previous.getTime(), 1, true);
       if (next === null) break;
       previous = next;
     }

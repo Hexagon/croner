@@ -741,17 +741,21 @@ class CronDate<T = undefined> {
    *
    * @param pattern The pattern used to decrement the current date.
    * @param options Cron options used for decrementing.
+   * @param applyInterval True to step back by the minimum interval, false to step back one second.
    * @returns This CronDate instance for chaining, or null if decrementing was not possible (e.g., reached year 0).
    */
   public decrement(
     pattern: CronPattern,
     options: CronOptions<T>,
+    applyInterval = true,
   ): CronDate<T> | null {
     this.instantMs = undefined;
     this.instantFields = undefined;
 
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
-    this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
+    this.second -= (options.interval !== undefined && options.interval > 1 && applyInterval)
+      ? options.interval
+      : 1;
 
     // Always reset milliseconds, so we are at the exact second
     this.ms = 0;
