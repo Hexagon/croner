@@ -203,7 +203,15 @@ class CronPattern {
       this.lastWeekday = true;
       parts[3] = "";
     } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
-      parts[3] = parts[3].replace(/L/gi, "");
+      // L is a value of its own: "L", "15,L" or "L,15"
+      const items = parts[3].split(",");
+      if (items.some((item) => item === "" || (item.toUpperCase() !== "L" && /l/i.test(item)))) {
+        throw new TypeError(
+          "CronPattern: Syntax error, L has to be a value of its own in day-of-month ('" +
+            parts[3] + "').",
+        );
+      }
+      parts[3] = items.filter((item) => item.toUpperCase() !== "L").join(",");
       this.lastDayOfMonth = true;
     }
 
@@ -393,7 +401,9 @@ class CronPattern {
       type = "nearestWeekdays";
     }
 
-    const i = parseInt(result[0], 10) + valueIndexOffset;
+    // Nothing but digits, and for a nearest weekday a W after them
+    const digits = nearestWeekdayModifier ? result[0].replace(/W$/i, "") : result[0];
+    const i = CronPattern.toNumber(digits) + valueIndexOffset;
 
     if (isNaN(i)) {
       throw new TypeError("CronPattern: " + type + " is not a number: '" + conf + "'");
@@ -454,6 +464,18 @@ class CronPattern {
 
     // Set the value for the specific part and index.
     this[part][index] = value as number;
+  }
+
+  /**
+   * Read a number that is nothing but digits. parseInt stops at the first other character, so it
+   * would read "15W5" as 15 and "3*" as 3.
+   *
+   * @param text - The text of the number
+   * @returns The number, or NaN if there is more than digits
+   * @private
+   */
+  private static toNumber(text: string): number {
+    return /^\d+$/.test(text) ? parseInt(text, 10) : NaN;
   }
 
   /**
@@ -559,8 +581,12 @@ class CronPattern {
       if (type !== "dayOfWeek") {
         throw new Error("CronPattern: nth (#) only allowed in day-of-week field");
       }
-      nth = rest.split("#")[1];
-      rest = rest.split("#")[0];
+      const pieces = rest.split("#");
+      if (pieces.length !== 2 || pieces[1] === "") {
+        throw new TypeError("CronPattern: Syntax error, illegal nth weekday: '" + conf + "'");
+      }
+      rest = pieces[0];
+      nth = pieces[1];
     } else if (rest.toUpperCase().endsWith("L")) {
       // Handle "L" suffix without "#" (e.g., "5L" or "FRIL")
       if (type !== "dayOfWeek") {
@@ -599,8 +625,8 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
     }
 
-    const lower = parseInt(split[0], 10) + valueIndexOffset,
-      upper = parseInt(split[1], 10) + valueIndexOffset;
+    const lower = CronPattern.toNumber(split[0]) + valueIndexOffset,
+      upper = CronPattern.toNumber(split[1]) + valueIndexOffset;
 
     this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
     this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
@@ -661,10 +687,11 @@ class CronPattern {
 
     let start = 0;
     if (split[0] !== "*") {
-      start = parseInt(split[0], 10) + _valueIndexOffset;
+      start = CronPattern.toNumber(split[0]) + _valueIndexOffset;
+      this.validateNotNaN(start, "CronPattern: Syntax error, illegal stepping start (NaN)");
     }
 
-    const steps = parseInt(split[1], 10);
+    const steps = CronPattern.toNumber(split[1]);
 
     this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
     this.validateRange(0, this[type].length - 1, steps, type, conf);
