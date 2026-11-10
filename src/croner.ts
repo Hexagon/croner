@@ -247,6 +247,11 @@ class Cron<T = undefined> {
         new CronDate<T>(startAtIn, this.getTz()).getTime();
     }
 
+    // Check if we got a date, or a pattern supplied as first argument
+    // Then set either this._states.once or this._states.pattern
+    const isDate = !!pattern &&
+      (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0));
+
     this._states = {
       kill: false,
       blocking: false,
@@ -256,26 +261,21 @@ class Cron<T = undefined> {
       currentTimeout: void 0,
       maxRuns: options ? options.maxRuns : void 0,
       paused: options ? options.paused : false,
-      // Default pattern uses "auto" mode to avoid validation issues
-      pattern: new CronPattern("* * * * *", undefined, {
-        mode: "auto",
-      }),
+      pattern: isDate
+        // Default pattern uses "auto" mode to avoid validation issues
+        ? new CronPattern("* * * * *", undefined, {
+          mode: "auto",
+        })
+        : new CronPattern(pattern as string, this.options.timezone, {
+          mode: this.options.mode,
+          alternativeWeekdays: this.options.alternativeWeekdays,
+          sloppyRanges: this.options.sloppyRanges,
+          fixedTimeRule: this.options.fixedTimeRule,
+        }),
     };
 
-    // Check if we got a date, or a pattern supplied as first argument
-    // Then set either this._states.once or this._states.pattern
-    if (
-      pattern &&
-      (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))
-    ) {
-      this._states.once = new CronDate<T>(pattern, this.getTz());
-    } else {
-      this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
-        mode: this.options.mode,
-        alternativeWeekdays: this.options.alternativeWeekdays,
-        sloppyRanges: this.options.sloppyRanges,
-        fixedTimeRule: this.options.fixedTimeRule,
-      });
+    if (isDate) {
+      this._states.once = new CronDate<T>(pattern as Date | string, this.getTz());
     }
 
     // Only store the job in scheduledJobs if a name is specified in the options.
