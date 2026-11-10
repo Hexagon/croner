@@ -97,7 +97,7 @@ class CronPattern {
     this.day = Array(31).fill(0); // 0-30 in array, 1-31 in config
     this.month = Array(12).fill(0); // 0-11 in array, 1-12 in config
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
-    this.year = Array(10000).fill(0); // OCPS 1.2: Year field (1-9999, index 0 unused)
+    this.year = []; // OCPS 1.2: Year field (1-9999, index 0 unused), allocated in parse()
 
     this.lastDayOfMonth = false;
     this.lastWeekday = false;
@@ -297,7 +297,13 @@ class CronPattern {
     this.partToArray("dayOfWeek", parts[5], dayOfWeekOffset, ANY_OCCURRENCE);
 
     // OCPS 1.2: Parse year field (no offset needed as years are absolute)
-    this.partToArray("year", parts[6], 0, 1);
+    // A wildcard fills the array directly, instead of zero filling it first
+    if (parts[6] === "*") {
+      this.year = Array(10000).fill(1);
+    } else {
+      this.year = Array(10000).fill(0);
+      this.partToArray("year", parts[6], 0, 1);
+    }
 
     // 0 = Sunday, 7 = Sunday (only in standard mode)
     // In Quartz mode, this mapping is not needed

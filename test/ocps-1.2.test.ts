@@ -161,3 +161,20 @@ test("OCPS 1.2: Very distant future year should work", function () {
   assert(next !== null, "Future year should work");
   assertEquals(next.getFullYear(), 5000, "Should run in year 5000");
 });
+
+test("OCPS 1.2: Year * should give the same runs as a pattern without a year field", function () {
+  const from = new Date(Date.UTC(2026, 0, 15, 10, 17, 23));
+  const withYear = new Cron("0 30 9 * * MON-FRI *").nextRuns(5, from);
+  const withoutYear = new Cron("0 30 9 * * MON-FRI").nextRuns(5, from);
+  assertEquals(withYear.map((d) => d.toISOString()), withoutYear.map((d) => d.toISOString()));
+});
+
+test("OCPS 1.2: Date-based job should run once at its date", function () {
+  const cron = new Cron("2030-06-01T12:00:00");
+  assertEquals(cron.getPattern(), undefined);
+  assertEquals(
+    cron.nextRun(new Date(2030, 0, 1))?.toISOString(),
+    new Date(2030, 5, 1, 12).toISOString(),
+  );
+  assertEquals(cron.nextRun(new Date(2030, 5, 2)), null);
+});
