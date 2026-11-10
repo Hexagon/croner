@@ -262,8 +262,7 @@ class Cron<T = undefined> {
       maxRuns: options ? options.maxRuns : void 0,
       paused: options ? options.paused : false,
       pattern: isDate
-        // Default pattern uses "auto" mode to avoid validation issues
-        ? new CronPattern("* * * * *", undefined, {
+        ? new CronPattern("* * * * *", undefined, { // Default pattern uses "auto" mode to avoid validation issues
           mode: "auto",
         })
         : new CronPattern(pattern as string, this.options.timezone, {
