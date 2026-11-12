@@ -193,7 +193,9 @@ class Cron<T = undefined> {
     reference: CronDate<T> | Date | string | null | undefined,
     now: Date,
   ): Date | null {
-    const previous = this._previous(this._shift(reference ?? now), {
+    // Pass the exact instant, so that a run earlier in the same second as the reference counts
+    const referenceMs = this._toMs(reference ?? now) - this._offsetMs();
+    const previous = this._previous(new Date(referenceMs), {
       startAt: this._shift(this._startAt),
       stopAt: this._shift(this._stopAt),
     });
