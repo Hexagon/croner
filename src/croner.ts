@@ -326,8 +326,8 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Find previous n runs, strictly before the supplied date. A run earlier in the same second as
-   * the reference is included.
+   * Find previous n runs before the supplied date (at least `interval` seconds before, if set). A
+   * run earlier in the same second as the reference is included.
    *
    * @param n - Number of runs to enumerate
    * @param reference - Date to start from (defaults to now)

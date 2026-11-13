@@ -1362,3 +1362,10 @@ test("previousRuns() from a fractional reference should keep interval and dayOff
     ["2025-01-01T00:00:00.000Z"],
   );
 });
+
+test("msToNext() should keep the milliseconds of a string reference", function () {
+  for (const timezone of [undefined, "UTC", "Europe/Stockholm"]) {
+    const everySecond = new Cron("* * * * * *", { timezone });
+    assertEquals(everySecond.msToNext("2025-01-02T00:00:05.500Z"), 500);
+  }
+});

@@ -26,6 +26,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   This also applies to a string reference in a named timezone, whose milliseconds were dropped.
   Without a reference, `previousRuns()` counts from now, so called from inside a callback it can
   now return the run that just started.
+- `msToNext()` from a string reference in a named timezone, such as `"2025-01-02T00:00:05.500Z"`
+  with `timezone: "UTC"`, dropped the milliseconds of the reference and returned up to 999 ms too
+  much.
 - A number in a pattern has to be digits only. What came after a number was ignored, so `3*` meant
   `3`, `15W5` meant `15W`, `5##2` and `5L#2` meant `5` and `5#2`, and an `L` anywhere in
   day-of-month was dropped, so `5L` meant the 5th and the last day. These patterns throw now. Valid
