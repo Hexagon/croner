@@ -752,10 +752,13 @@ class CronDate<T = undefined> {
     this.instantMs = undefined;
     this.instantFields = undefined;
 
-    // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
-    this.second -= (options.interval !== undefined && options.interval > 1 && applyInterval)
-      ? options.interval
-      : 1;
+    // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`.
+    // Without an interval, a reference with milliseconds is already past the start of its second,
+    // so that second is the first candidate.
+    const hasInterval = options.interval !== undefined && options.interval > 1;
+    if (this.ms === 0 || hasInterval) {
+      this.second -= (hasInterval && applyInterval) ? options.interval! : 1;
+    }
 
     // Always reset milliseconds, so we are at the exact second
     this.ms = 0;

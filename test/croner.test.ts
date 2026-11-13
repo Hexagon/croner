@@ -1315,3 +1315,20 @@ test("AND day matching should cross a short month in both directions", function 
     ["2022-07-01T00:00:00.000Z"],
   );
 });
+
+test("previousRuns() should include a run earlier in the same second as the reference", function () {
+  for (
+    const options of [{}, { timezone: "UTC" }, { timezone: "Europe/Stockholm" }, { utcOffset: 60 }]
+  ) {
+    const everySecond = new Cron("* * * * * *", options);
+    assertEquals(
+      everySecond.previousRuns(2, new Date("2025-01-02T00:00:05.500Z")).map((d) => d.toISOString()),
+      ["2025-01-02T00:00:05.000Z", "2025-01-02T00:00:04.000Z"],
+    );
+  }
+  const daily = new Cron("0 0 0 * * *", { timezone: "UTC" });
+  assertEquals(
+    daily.previousRuns(1, new Date("2025-01-02T00:00:00.001Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:00.000Z"],
+  );
+});
