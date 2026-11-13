@@ -64,10 +64,10 @@ test("getTime should return expected difference with different timezones (next 3
 
 test("Should return expected time, date and weekday different timezones", function () {
   let refTime = new Date();
-  refTime.setFullYear(2022);
-  refTime.setDate(8);
-  refTime.setMonth(1);
-  refTime.setHours(12);
+  refTime.setUTCFullYear(2022);
+  refTime.setUTCDate(8);
+  refTime.setUTCMonth(1);
+  refTime.setUTCHours(12);
 
   let timeStockholm = new Cron("0 0 23 8 2 2", { timezone: "Europe/Stockholm" }).nextRun(refTime),
     timeNewYork = new Cron("0 0 23 8 2 2", { timezone: "America/New_York" }).nextRun(refTime);
@@ -105,18 +105,18 @@ test("0 0 0 * * * with 365 iterations should return 365 days from now in America
     iterations = 365,
     compareDay = new Date(startAt.getTime());
 
-  compareDay.setDate(compareDay.getDate() + iterations);
+  compareDay.setUTCDate(compareDay.getUTCDate() + iterations);
 
   while (iterations-- > 0) {
     //@ts-ignore
     nextRun = scheduler.nextRun(prevRun), prevRun = nextRun;
   }
 
-  // Set seconds, minutes and hours to 00:00:00
-  compareDay.setMilliseconds(0);
-  compareDay.setSeconds(0);
-  compareDay.setMinutes(0);
-  compareDay.setHours(0);
+  // Set seconds, minutes and hours to 00:00:00 UTC, independent of the local timezone
+  compareDay.setUTCMilliseconds(0);
+  compareDay.setUTCSeconds(0);
+  compareDay.setUTCMinutes(0);
+  compareDay.setUTCHours(0);
 
   // Do comparison
   //@ts-ignore
@@ -131,18 +131,18 @@ test("0 30 2 * * * with 365 iterations should return 365 days from now in Americ
     iterations = 365,
     compareDay = new Date(startAt.getTime());
 
-  compareDay.setDate(compareDay.getDate() + iterations);
+  compareDay.setUTCDate(compareDay.getUTCDate() + iterations);
 
   while (iterations-- > 0) {
     //@ts-ignore
     nextRun = scheduler.nextRun(prevRun), prevRun = nextRun;
   }
 
-  // Set seconds, minutes and hours to 00:00:00
-  compareDay.setMilliseconds(0);
-  compareDay.setSeconds(0);
-  compareDay.setMinutes(0);
-  compareDay.setHours(0);
+  // Set seconds, minutes and hours to 00:00:00 UTC, independent of the local timezone
+  compareDay.setUTCMilliseconds(0);
+  compareDay.setUTCSeconds(0);
+  compareDay.setUTCMinutes(0);
+  compareDay.setUTCHours(0);
 
   // Do comparison
   //@ts-ignore
@@ -157,18 +157,18 @@ test("0 30 1 * * * with 365 iterations should return 365 days from now in Americ
     iterations = 365,
     compareDay = new Date(startAt.getTime());
 
-  compareDay.setDate(compareDay.getDate() + iterations);
+  compareDay.setUTCDate(compareDay.getUTCDate() + iterations);
 
   while (iterations-- > 0) {
     //@ts-ignore
     nextRun = scheduler.nextRun(prevRun), prevRun = nextRun;
   }
 
-  // Set seconds, minutes and hours to 00:00:00
-  compareDay.setMilliseconds(0);
-  compareDay.setSeconds(0);
-  compareDay.setMinutes(0);
-  compareDay.setHours(0);
+  // Set seconds, minutes and hours to 00:00:00 UTC, independent of the local timezone
+  compareDay.setUTCMilliseconds(0);
+  compareDay.setUTCSeconds(0);
+  compareDay.setUTCMinutes(0);
+  compareDay.setUTCHours(0);
 
   // Do comparison
   //@ts-ignore
@@ -183,7 +183,7 @@ test("0 30 2 * * * with 365 iterations should return 366 days from now in Europe
     iterations = 365,
     compareDay = new Date(startAt.getTime());
 
-  compareDay.setDate(compareDay.getDate() + iterations);
+  compareDay.setUTCDate(compareDay.getUTCDate() + iterations);
 
   while (iterations-- > 0) {
     nextRun = scheduler.nextRun(prevRun);
@@ -191,11 +191,11 @@ test("0 30 2 * * * with 365 iterations should return 366 days from now in Europe
     prevRun = nextRun;
   }
 
-  // Set seconds, minutes and hours to 00:00:00
-  compareDay.setMilliseconds(0);
-  compareDay.setSeconds(0);
-  compareDay.setMinutes(0);
-  compareDay.setHours(0);
+  // Set seconds, minutes and hours to 00:00:00 UTC, independent of the local timezone
+  compareDay.setUTCMilliseconds(0);
+  compareDay.setUTCSeconds(0);
+  compareDay.setUTCMinutes(0);
+  compareDay.setUTCHours(0);
 
   // Do comparison
   //@ts-ignore
