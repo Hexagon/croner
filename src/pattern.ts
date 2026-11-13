@@ -715,8 +715,8 @@ class CronPattern {
    * @param conf Current part, expected to be a string that might contain alpha names.
    * @param mapping Object mapping names to their numeric string replacements.
    * @returns Conf with alpha names replaced by numbers.
-   * @throws If a name is next to a letter, a digit, a slash or a hash. Only an L can follow a
-   * name, as in FRIL.
+   * @throws If a name is next to a letter or a digit, or follows a slash or a hash. Only an L, a
+   * hyphen, a comma, a slash or a hash can follow a name, as in FRIL, MON-FRI/2 or FRI#2.
    */
   private replaceAlpha(conf: string, mapping: Record<string, string>): string {
     let result = conf;
