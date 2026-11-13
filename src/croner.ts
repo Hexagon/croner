@@ -326,7 +326,8 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Find previous n runs, based on supplied date. Strips milliseconds.
+   * Find previous n runs, strictly before the supplied date. A run earlier in the same second as
+   * the reference is included.
    *
    * @param n - Number of runs to enumerate
    * @param reference - Date to start from (defaults to now)
@@ -794,9 +795,10 @@ class Cron<T = undefined> {
    * The exact instant of a reference date. Strings are read in the timezone of the job.
    */
   private _toMs(reference: CronDate<T> | Date | string): number {
-    return reference instanceof Date
-      ? reference.getTime()
-      : new CronDate<T>(reference, this.getTz()).getTime();
+    if (reference instanceof Date) return reference.getTime();
+    const date = new CronDate<T>(reference, this.getTz());
+    // CronDate.getTime() drops the milliseconds in a named timezone
+    return date.getTime() + (typeof date.tz === "string" ? date.ms : 0);
   }
 
   /**

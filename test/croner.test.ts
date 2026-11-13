@@ -1332,3 +1332,33 @@ test("previousRuns() should include a run earlier in the same second as the refe
     ["2025-01-02T00:00:00.000Z"],
   );
 });
+
+test("previousRuns() should keep the milliseconds of a string reference", function () {
+  for (const timezone of [undefined, "UTC", "Europe/Stockholm"]) {
+    const everySecond = new Cron("* * * * * *", { timezone });
+    assertEquals(
+      everySecond.previousRuns(1, "2025-01-02T00:00:05.500Z").map((d) => d.toISOString()),
+      ["2025-01-02T00:00:05.000Z"],
+    );
+  }
+  // Without Z, the string is wall clock time in the timezone of the job
+  const stockholm = new Cron("* * * * * *", { timezone: "Europe/Stockholm" });
+  assertEquals(
+    stockholm.previousRuns(1, "2025-01-02T01:00:05.500").map((d) => d.toISOString()),
+    ["2025-01-02T00:00:05.000Z"],
+  );
+});
+
+test("previousRuns() from a fractional reference should keep interval and dayOffset", function () {
+  // The run in the same second is only 0.5 seconds before the reference, less than the interval
+  const interval = new Cron("* * * * * *", { timezone: "UTC", interval: 2 });
+  assertEquals(
+    interval.previousRuns(2, new Date("2025-01-02T00:00:05.500Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:03.000Z", "2025-01-02T00:00:01.000Z"],
+  );
+  const shifted = new Cron("0 0 0 * * *", { timezone: "UTC", dayOffset: -1 });
+  assertEquals(
+    shifted.previousRuns(1, new Date("2025-01-01T00:00:00.001Z")).map((d) => d.toISOString()),
+    ["2025-01-01T00:00:00.000Z"],
+  );
+});
