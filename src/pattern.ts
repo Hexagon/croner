@@ -709,16 +709,30 @@ class CronPattern {
   }
 
   /**
-   * Replace alpha names (day/month) with numeric values using a mapping.
+   * Replace alpha names (day/month) with numeric values using a mapping. A name has to stand
+   * alone, or SUN6 would be read as 6 and JANFEB as 12.
    *
    * @param conf Current part, expected to be a string that might contain alpha names.
    * @param mapping Object mapping names to their numeric string replacements.
    * @returns Conf with alpha names replaced by numbers.
+   * @throws If a name is next to a letter, a digit, a slash or a hash. Only an L can follow a
+   * name, as in FRIL.
    */
   private replaceAlpha(conf: string, mapping: Record<string, string>): string {
     let result = conf;
     for (const [name, value] of Object.entries(mapping)) {
-      result = result.replace(new RegExp(name, "gi"), value);
+      result = result.replace(new RegExp(name, "gi"), (match, offset: number, whole: string) => {
+        // The name has three letters, the match of "-sun" also has the hyphen in front of them
+        const start = offset + match.length - 3;
+        const before = whole.charAt(start - 1);
+        const after = whole.charAt(start + 3);
+        if (/[a-z\d/#]/i.test(before) || /[a-km-z\d]/i.test(after)) {
+          throw new TypeError(
+            `CronPattern: Syntax error, a month or day name has to stand alone ('${conf}').`,
+          );
+        }
+        return value;
+      });
     }
     return result;
   }
