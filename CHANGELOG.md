@@ -5,7 +5,7 @@ All notable changes to Croner will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [11.0.1] - 2026-11-13
 
 ### Added
 
@@ -16,6 +16,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- `previousRuns()` without a reference counts from now, including the milliseconds, so called
+  from inside a callback it returns the run that just started. Before, it returned the run before
+  that. `previousRuns(2)[1]` gives the scheduled time of the run before, and `previousRun()` still
+  gives the time it started.
 - Creating a job is 55-64% faster. Each pattern filled its 10,000-entry year array two times, and
   each job also parsed a default pattern that only date-based jobs use.
 
@@ -24,8 +28,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `previousRuns()` skipped a run in the same second as the reference when the reference had
   milliseconds, so `* * * * * *` from `00:00:05.500` returned `00:00:04` instead of `00:00:05`.
   This also applies to a string reference in a named timezone, whose milliseconds were dropped.
-  Without a reference, `previousRuns()` counts from now, so called from inside a callback it can
-  now return the run that just started.
 - `msToNext()` from a string reference in a named timezone, such as `"2025-01-02T00:00:05.500Z"`
   with `timezone: "UTC"`, dropped the milliseconds of the reference and returned up to 999 ms too
   much.
@@ -40,8 +42,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   cron treats them as fixed-time jobs, Croner treats them as interval jobs by default (#438).
 - `@weekly` with `alternativeWeekdays: true` threw `RangeError: CronPattern: Invalid value for
   dayOfWeek: -1`. It now runs on Sundays, as without the option and as in croner-rust.
-
-- Prevent day matching past the end of a month from skipping valid runs when day-of-month and
+- Matching a day past the end of a month no longer skips valid runs when day-of-month and
   day-of-week conditions use OR logic (#437).
 - Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
   weekday modifiers, leap days, local dates and timezone conversion.
