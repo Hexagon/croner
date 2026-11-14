@@ -19,7 +19,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `previousRuns()` without a reference counts from now, including the milliseconds, so called
   from inside a callback it returns the run that just started. Before, it returned the run before
   that. `previousRuns(2)[1]` gives the scheduled time of the run before, and `previousRun()` still
-  gives the time it started.
+  gives the time it started. With the `interval` option, `previousRuns()` returns runs at least
+  `interval` seconds before the reference, so not the run that just started.
 - Creating a job is 55-64% faster. Each pattern filled its 10,000-entry year array two times, and
   each job also parsed a default pattern that only date-based jobs use.
 
@@ -28,6 +29,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `previousRuns()` skipped a run in the same second as the reference when the reference had
   milliseconds, so `* * * * * *` from `00:00:05.500` returned `00:00:04` instead of `00:00:05`.
   This also applies to a string reference in a named timezone, whose milliseconds were dropped.
+  With `interval: 1`, the run in the same second is less than a second before the reference and is
+  not returned, the same as with a longer interval.
 - `msToNext()` from a string reference in a named timezone, such as `"2025-01-02T00:00:05.500Z"`
   with `timezone: "UTC"`, dropped the milliseconds of the reference and returned up to 999 ms too
   much.
