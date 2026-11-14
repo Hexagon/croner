@@ -1363,6 +1363,24 @@ test("previousRuns() from a fractional reference should keep interval and dayOff
   );
 });
 
+test("previousRuns() from a fractional reference should keep an interval of one second", function () {
+  // The run in the same second is only 0.5 seconds before the reference, less than the interval
+  const job = new Cron("* * * * * *", { timezone: "UTC", interval: 1 });
+  assertEquals(
+    job.previousRuns(2, new Date("2025-01-02T00:00:05.500Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:04.000Z", "2025-01-02T00:00:03.000Z"],
+  );
+  assertEquals(
+    job.previousRuns(2, new Date("2025-01-02T00:00:05.000Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:04.000Z", "2025-01-02T00:00:03.000Z"],
+  );
+  // The next run is not affected, it counts from a run on a whole second
+  assertEquals(
+    job.nextRun(new Date("2025-01-02T00:00:05.500Z"))?.toISOString(),
+    "2025-01-02T00:00:06.000Z",
+  );
+});
+
 test("msToNext() should keep the milliseconds of a string reference", function () {
   for (const timezone of [undefined, "UTC", "Europe/Stockholm"]) {
     const everySecond = new Cron("* * * * * *", { timezone });

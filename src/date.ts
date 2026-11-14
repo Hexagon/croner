@@ -754,10 +754,11 @@ class CronDate<T = undefined> {
 
     // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`.
     // Without an interval, a reference with milliseconds is already past the start of its second,
-    // so that second is the first candidate.
+    // so that second is the first candidate. With an interval, also of one second, that second
+    // is too close to the reference.
     // This relies on the only caller, _walk(), starting at the reference and comparing each
     // candidate with the exact reference.
-    const hasInterval = options.interval !== undefined && options.interval > 1;
+    const hasInterval = options.interval !== undefined && options.interval >= 1;
     if (this.ms === 0 || hasInterval) {
       this.second -= (hasInterval && applyInterval) ? options.interval! : 1;
     }
