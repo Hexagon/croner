@@ -205,6 +205,11 @@ class CronPattern {
     } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
       // L is a value of its own: "L", "15,L" or "L,15"
       const items = parts[3].split(",");
+      if (items.length > 1 && items.some((item) => item.toUpperCase() === "LW")) {
+        throw new TypeError(
+          `CronPattern: Syntax error, LW can not be in a list in day-of-month ('${parts[3]}').`,
+        );
+      }
       if (items.some((item) => item === "" || (item.toUpperCase() !== "L" && /l/i.test(item)))) {
         throw new TypeError(
           "CronPattern: Syntax error, L has to be a value of its own in day-of-month ('" +

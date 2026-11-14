@@ -70,3 +70,16 @@ test("L, W, # and L after a weekday still work", () => {
   assertEquals(runs("0 0 1,15 * ?", 2), ["2026-11-15", "2026-12-01"]);
   assertEquals(runs("0 0 0 1 JAN * 2027-2028", 2), ["2027-01-01", "2028-01-01"]);
 });
+
+test("LW in a day-of-month list should say that LW can not be in a list", function () {
+  for (const pattern of ["0 0 1W,15W,LW * *", "0 0 lw,15 * *", "0 0 L,LW * *"]) {
+    assertThrows(
+      () => new Cron(pattern, { timezone: "UTC" }),
+      TypeError,
+      "LW can not be in a list",
+    );
+  }
+  // LW alone, and L in a list, are valid
+  new Cron("0 0 LW * *", { timezone: "UTC" });
+  new Cron("0 0 15W,L * *", { timezone: "UTC" });
+});
