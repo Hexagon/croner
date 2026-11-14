@@ -742,7 +742,7 @@ class CronDate<T = undefined> {
    * @param pattern The pattern used to decrement the current date.
    * @param options Cron options used for decrementing.
    * @param applyInterval True to step back by the minimum interval, false to step back one second.
-   * @returns This CronDate instance for chaining, or null if decrementing was not possible (e.g., reached year 0).
+   * @returns This CronDate instance for chaining, or null if decrementing was not possible (e.g., reached year 0, which is before the first supported year).
    */
   public decrement(
     pattern: CronPattern,
@@ -767,6 +767,9 @@ class CronDate<T = undefined> {
 
     // Make sure seconds has not gotten out of bounds (can be negative)
     this.apply();
+
+    // Years 1-9999 are supported, there is no run before year 1
+    if (this.year < 1) return null;
 
     // Recursively change each part (y, m, d ...) until previous match is found, return null on failure
     return this.recurseBackward(pattern, options, 0);
@@ -847,7 +850,7 @@ class CronDate<T = undefined> {
       }
 
       // Check if we've gone out of bounds
-      if (this.year < 0) {
+      if (this.year < 1) {
         return null;
       }
     }
@@ -962,7 +965,7 @@ class CronDate<T = undefined> {
           }
 
           // Check if we've gone out of bounds
-          if (this.year < 0) {
+          if (this.year < 1) {
             return null;
           }
         }
@@ -982,7 +985,7 @@ class CronDate<T = undefined> {
       return this;
 
       // ... or out of bounds ?
-    } else if (this.year < 0) {
+    } else if (this.year < 1) {
       return null;
 
       // ... oh, go to next part then

@@ -821,10 +821,12 @@ class Cron<T = undefined> {
     const interval = this.options.interval ?? 0;
     if (interval > 1 && (direction === -1 || hasPreviousRun)) {
       referenceMs += (interval - 1) * 1000 * direction;
-      // Years 1-9999 are supported, an interval that ends outside of them has no run
-      const year = new Date(referenceMs).getUTCFullYear();
-      if (!(year >= 1 && year <= 9999)) return null;
-      start = new CronDate<T>(new Date(referenceMs), this.getTz());
+      // Years 1-9999 are supported, an interval that ends outside of them has no run. The year
+      // is the one in the timezone of the job, which differs from UTC around new year.
+      const shifted = new Date(referenceMs);
+      if (isNaN(shifted.getTime())) return null;
+      start = new CronDate<T>(shifted, this.getTz());
+      if (!(start.year >= 1 && start.year <= 9999)) return null;
       hasPreviousRun = false;
     }
 
