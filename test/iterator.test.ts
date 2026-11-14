@@ -173,7 +173,7 @@ test("enumerate() reset() clears the done flag", function () {
 test("enumerate() reset(newDate) moves iteration to new start point", function () {
   const start1 = new Date("2024-01-01T00:00:00.000Z");
   const start2 = new Date("2024-01-01T01:00:00.000Z");
-  const iter = new Cron("0 0 * * * *").enumerate(start1);
+  const iter = new Cron("0 0 * * * *", { timezone: "UTC" }).enumerate(start1);
   assertEquals(iter.next().value!.toISOString(), "2024-01-01T01:00:00.000Z");
   iter.reset(start2);
   assertEquals(iter.next().value!.toISOString(), "2024-01-01T02:00:00.000Z");

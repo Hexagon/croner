@@ -72,7 +72,7 @@ Run tests during development:
 npm test
 ```
 
-CI (`.github/workflows/test.yml`) runs the test suite on Node.js 18/20/22/24/26, Deno and Bun, plus a non-UTC timezone run on Node.js and Deno.
+CI (`.github/workflows/test.yml`) runs the test suite on Node.js 18/20/22/24/26, Deno and Bun, plus non-UTC timezone runs (America/New_York, Australia/Adelaide with a half-hour offset, and Pacific/Pago_Pago at UTC-11) on Node.js and Deno.
 
 ### Deno testing equivalent to CI
 

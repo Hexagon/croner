@@ -1,6 +1,6 @@
 {
   "name": "@hexagon/croner",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "exports": "./src/croner.ts",
   "lint": {
     "include": [
@@ -32,7 +32,10 @@
   },
   "publish": {
     "exclude": [
+      "AGENTS.md",
       "build",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md",
       "docs",
       "test",
       ".github",
@@ -40,6 +43,7 @@
       ".npmrc",
       "croner.png",
       "package.json",
+      "renovate.json",
       "SECURITY.md",
       "tsconfig.json"
     ]

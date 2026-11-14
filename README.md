@@ -8,6 +8,8 @@ Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No d
 [![npm version](https://badge.fury.io/js/croner.svg)](https://badge.fury.io/js/croner) [![JSR](https://jsr.io/badges/@hexagon/croner)](https://jsr.io/@hexagon/croner) [![NPM Downloads](https://img.shields.io/npm/dw/croner.svg)](https://www.npmjs.org/package/croner)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hexagon/croner/blob/master/LICENSE)
 
+Croner is available for **JavaScript/TypeScript** · [Rust](https://github.com/Hexagon/croner-rust) · [Python](https://github.com/Hexagon/croner-py) · [.NET](https://github.com/Hexagon/croner-dotnet) · [C++](https://github.com/Hexagon/croner-cpp)
+
 *   Trigger functions in JavaScript using [Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) syntax.
 *   Evaluate cron expressions and get a list of upcoming run times.
 *   Supports seconds and year fields, `L` (last), `W` (weekday), `#` (nth occurrence), and `+` (AND logic).
@@ -73,13 +75,13 @@ const { Cron } = require("croner");
 Using Deno
 
 ```typescript
-import { Cron } from "jsr:@hexagon/croner@11.0.0";
+import { Cron } from "jsr:@hexagon/croner@11.0.1";
 ```
 
 In a webpage using the UMD-module
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/croner@11.0.0/dist/croner.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/croner@11.0.1/dist/croner.umd.js"></script>
 ```
 
 ## Documentation
@@ -165,6 +167,7 @@ job.name 			// Optional job name, populated if a name were passed to options
 | dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()`, `enumerate()`, `startAt` and `stopAt` all refer to the shifted run time. |
 | mode         | "auto"         | string         | Controls how the cron pattern field count is interpreted. Options: `"auto"` (detect automatically), `"5-part"` (minute-level), `"6-part"` (second-level), `"7-part"` (second+year), `"5-or-6-parts"`, `"6-or-7-parts"`. |
 | sloppyRanges | false          | boolean        | If true, allows non-standard stepping formats for backward compatibility (e.g. `/10`, `5/5`, `30/30`). When false (default), only `*/step` or `min-max/step` formats are allowed. |
+| fixedTimeRule | "single-value" | string       | Which jobs are fixed-time jobs in DST handling. `"single-value"` (default, as croner-rust): a single value in each of seconds, minutes and hours. `"no-wildcard"` (closer to Vixie cron): no wildcard or step in seconds, minutes and hours, so lists and ranges such as `30 2,14 * * *` count too. See [Pattern](#pattern). |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 
@@ -200,12 +203,13 @@ Croner uses [Vixie Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) bas
 *   **Enhanced logical control**:
 	-   *+*: Explicit AND logic modifier. Prefix the day-of-week field with `+` to require both day-of-month AND day-of-week to match. Example: `0 12 1 * +MON` only triggers when the 1st is also a Monday.
 	-   *?*: Wildcard alias (behaves identically to `*`). **Non-portable**: Its use is discouraged in patterns intended for cross-system use. Supported in all fields for compatibility, but primarily meaningful in day-of-month and day-of-week fields.
-	-   DST handling, the same as [croner-rust](https://github.com/Hexagon/croner-rust) and Vixie cron, which deviates from OCPS 1.4 §4.3.1 (see below):
-		-   **Fixed-time jobs**, with a single value in each of seconds, minutes and hours (e.g. `0 30 2 * * *`): A time that occurs twice (DST fall back) runs once, at the first occurrence. A time that doesn't exist (DST spring forward) runs at the first valid time after the gap, on the same day.
+	-   DST handling, the same as [croner-rust](https://github.com/Hexagon/croner-rust) and based on Vixie cron, which deviates from OCPS 1.4 §4.3.1 (see below):
+		-   **Fixed-time jobs**, with a single value in each of seconds, minutes and hours by default (e.g. `0 30 2 * * *`): A time that occurs twice (DST fall back) runs once, at the first occurrence. A time that doesn't exist (DST spring forward) runs at the first valid time after the gap, on the same day.
 		-   **Interval jobs**, with a wildcard, step, range or list in seconds, minutes or hours (e.g. `*/5 * * * *` or `0 30 1,2 * * *`): A time that occurs twice runs on both occurrences, so the job keeps running through the repeated hour. A time that doesn't exist is skipped.
+		-   Which jobs are fixed-time jobs differs from Vixie cron. Vixie cron treats a job as wild only when its minute or hour field starts with `*`, so a list or range (e.g. `30 2,14 * * *`) is a fixed-time job there, but an interval job in Croner by default. Set the option `fixedTimeRule: "no-wildcard"` to treat every job without a wildcard (`*` or `?`) or step in seconds, minutes and hours as a fixed-time job. Steps without `*` (e.g. `0 0-23/2 * * *`) are still interval jobs, and times in a gap that meet at its end run once.
 		-   `nextRun()`, `nextRuns()`, `previousRuns()` and `enumerate()` move in real time. They never return a time they have passed, and cover the first pass through a repeated hour before the second.
 
-> **Deviation from OCPS 1.4:** OCPS 1.4 §4.3.1 recommends that every job skips times in a DST gap, and runs only once when a time occurs twice. The same section asks implementations to align with Vixie cron, which runs interval jobs on both occurrences and runs fixed-time jobs after a gap. Croner follows Vixie cron, as croner-rust does, so that both libraries schedule the same.
+> **Deviation from OCPS 1.4:** OCPS 1.4 §4.3.1 recommends that every job skips times in a DST gap, and runs only once when a time occurs twice. The same section asks implementations to align with Vixie cron, which runs interval jobs on both occurrences and runs fixed-time jobs after a gap. Croner follows Vixie cron, as croner-rust does, so that both libraries schedule the same. Croner and croner-rust are stricter than Vixie cron about which jobs are fixed-time jobs, see above.
 
 *   Croner allows you to pass a JavaScript Date object or an ISO 8601 formatted string as a pattern. The scheduled function will trigger at the specified date/time and only once. If you use a timezone different from the local timezone, you should pass the ISO 8601 local time in the target location and specify the timezone using the options (2nd parameter).
 

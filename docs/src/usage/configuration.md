@@ -29,6 +29,7 @@ nav_order: 3
 | dayOffset    | 0              | number         | Offset the scheduled date by a number of days. Positive values shift forward, negative values shift backward. For example, `dayOffset: -1` schedules one day before the pattern match. `nextRun()`, `nextRuns()`, `previousRuns()`, `msToNext()`, `enumerate()`, `startAt` and `stopAt` all refer to the shifted run time. |
 | mode         | "auto"         | string         | Controls how the cron pattern field count is interpreted. Options: `"auto"` (detect automatically), `"5-part"` (minute-level), `"6-part"` (second-level), `"7-part"` (second+year), `"5-or-6-parts"`, `"6-or-7-parts"`. |
 | sloppyRanges | false          | boolean        | If true, allows non-standard stepping formats for backward compatibility (e.g. `/10`, `5/5`, `30/30`). When false (default), only `*/step` or `min-max/step` formats are allowed. |
+| fixedTimeRule | "single-value" | string       | Which jobs are fixed-time jobs in DST handling. `"single-value"` (default, as croner-rust): a single value in each of seconds, minutes and hours. `"no-wildcard"` (closer to Vixie cron): no wildcard or step in seconds, minutes and hours, so lists and ranges such as `30 2,14 * * *` count too. See [Pattern](pattern.md). |
 
 > **Warning**
 > Unreferencing timers (option `unref`) is only supported by Node.js and Deno. 

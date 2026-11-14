@@ -259,3 +259,19 @@ test("alternativeWeekdays: standard mode 1 vs Quartz mode 1 should give differen
   // Quartz: 1 = Sunday (day 0)
   assertEquals(quartzNext.getDay(), 0);
 });
+
+test("alternativeWeekdays: true - @weekly should run on Sundays", function () {
+  const reference = new Date("2024-01-01T00:00:00Z"); // A Monday
+  for (const nickname of ["@weekly", "@WEEKLY"]) {
+    const job = new Cron(nickname, { timezone: "UTC", alternativeWeekdays: true });
+    assertEquals(job.nextRuns(2, reference).map((d) => d.toISOString()), [
+      "2024-01-07T00:00:00.000Z",
+      "2024-01-14T00:00:00.000Z",
+    ]);
+  }
+  // Unchanged in standard mode
+  assertEquals(
+    new Cron("@weekly", { timezone: "UTC" }).nextRuns(2, reference).map((d) => d.toISOString()),
+    ["2024-01-07T00:00:00.000Z", "2024-01-14T00:00:00.000Z"],
+  );
+});

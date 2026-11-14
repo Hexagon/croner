@@ -28,7 +28,7 @@ test("previousRuns() should return previous scheduled times", () => {
 
 test("previousRuns() should work with hourly pattern", () => {
   // Create a job that runs at minute 30 of every hour
-  const job = new Cron("30 * * * *");
+  const job = new Cron("30 * * * *", { timezone: "UTC" });
 
   const referenceDate = new Date("2024-01-01T12:45:00Z");
   const runs = job.previousRuns(3, referenceDate);

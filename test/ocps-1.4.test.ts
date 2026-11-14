@@ -109,10 +109,10 @@ test("DST Gap (Spring Forward) - fixed-time job runs after the gap", function ()
   const run = cron.nextRun(startDate);
 
   assert(run !== null, "Should find a next run");
-  // The job should run on March 12, 2023
-  assertEquals(run.getFullYear(), 2023, "Should run in 2023");
-  assertEquals(run.getMonth(), 2, "Should run in March (month 2)");
-  assertEquals(run.getDate(), 12, "Should run on the 12th");
+  // The job should run on March 12, 2023 (UTC, as the expected time below)
+  assertEquals(run.getUTCFullYear(), 2023, "Should run in 2023");
+  assertEquals(run.getUTCMonth(), 2, "Should run in March (month 2)");
+  assertEquals(run.getUTCDate(), 12, "Should run on the 12th");
 
   // The time 2:30 AM doesn't exist, so it runs at 3:00 AM EDT = 07:00 UTC
   assertEquals(run.toISOString(), "2023-03-12T07:00:00.000Z", "Should run at 3:00 AM EDT");

@@ -244,3 +244,17 @@ test("OCPS 1.3: L with day-of-week numeric should work", function () {
     assert(nextWeek.getMonth() !== month, "Should be the last Friday");
   }
 });
+
+test("OCPS 1.3: previousRuns should find W days later than the highest plain day", function () {
+  // 2026-08-30 is a Sunday, so 30W runs on Monday 2026-08-31
+  const cron = new Cron("0 0 0 15,30W * *", { timezone: "Etc/UTC" });
+  const runs = cron.previousRuns(6, new Date("2026-11-05T00:00:00Z"));
+  assertEquals(runs.map((r) => r.toISOString()), [
+    "2026-10-30T00:00:00.000Z",
+    "2026-10-15T00:00:00.000Z",
+    "2026-09-30T00:00:00.000Z",
+    "2026-09-15T00:00:00.000Z",
+    "2026-08-31T00:00:00.000Z",
+    "2026-08-15T00:00:00.000Z",
+  ]);
+});

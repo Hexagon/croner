@@ -105,7 +105,7 @@ test("OCPS 1.0: List separator (,) should specify multiple values", function () 
   const cron = new Cron("0,15,30,45 * * * *");
   // Use a fixed starting time to ensure deterministic results
   // Start at 10:59 so the next run will be at 11:00 (minute 0)
-  const startTime = new Date("2025-01-01T10:59:00Z");
+  const startTime = new Date(2025, 0, 1, 10, 59); // Local time, as the job and getMinutes() are
   const runs = cron.nextRuns(4, startTime);
   assertEquals(runs.length, 4, "Should return 4 runs");
   assertEquals(runs[0].getMinutes(), 0, "First should be at minute 0");
