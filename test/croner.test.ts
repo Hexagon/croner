@@ -748,7 +748,7 @@ test(
     }, () => {
       const now = new Date(),
         nextParsed = new Date(cron.nextRun()!),
-        nowParsed = new Date(now.toLocaleString());
+        nowParsed = new Date(Math.floor(now.getTime() / 1000) * 1000);
       if (run === 1) {
         try {
           assertEquals(nowParsed.getTime(), nextParsed.getTime() - 1000);
@@ -757,7 +757,7 @@ test(
           reject(e);
         }
       } else {
-        const prevParsed = new Date(cron.previousRun()!.toLocaleString());
+        const prevParsed = new Date(Math.floor(cron.previousRun()!.getTime() / 1000) * 1000);
         try {
           assertEquals(nowParsed.getTime(), nextParsed.getTime() - 1000);
           assertEquals(nowParsed.getTime(), prevParsed.getTime() + 1000);
@@ -1280,5 +1280,110 @@ test("Searches in different timezones don't affect each other", function () {
   for (let i = 0; i < 3; i++) {
     assertEquals(tokyo.nextRun(ref)?.toISOString(), "2026-01-01T03:00:00.000Z");
     assertEquals(newYork.nextRun(ref)?.toISOString(), "2026-01-01T17:00:00.000Z");
+  }
+});
+
+test("nextRun() should not match a weekday on a day past the end of the month", function () {
+  // With the default OR logic, 2023-02-31 used to be treated as Friday 2023-03-03
+  const job = new Cron("0 0 1 * 5", { timezone: "UTC" });
+  assertEquals(
+    job.nextRun(new Date("2023-02-27T12:00:00Z"))?.toISOString(),
+    "2023-03-01T00:00:00.000Z",
+  );
+  assertEquals(
+    job.nextRuns(3, new Date("2023-02-27T12:00:00Z")).map((d) => d.toISOString()),
+    ["2023-03-01T00:00:00.000Z", "2023-03-03T00:00:00.000Z", "2023-03-10T00:00:00.000Z"],
+  );
+});
+
+test("previousRuns() should stay within calendar days across a short month", function () {
+  const job = new Cron("0 0 1 * 5", { timezone: "UTC" });
+  assertEquals(
+    job.previousRuns(3, new Date("2023-03-02T12:00:00Z")).map((d) => d.toISOString()),
+    ["2023-03-01T00:00:00.000Z", "2023-02-24T00:00:00.000Z", "2023-02-17T00:00:00.000Z"],
+  );
+});
+
+test("AND day matching should cross a short month in both directions", function () {
+  const job = new Cron("0 0 1 * 5", { timezone: "UTC", legacyMode: false });
+  assertEquals(
+    job.nextRun(new Date("2023-02-27T12:00:00Z"))?.toISOString(),
+    "2023-09-01T00:00:00.000Z",
+  );
+  assertEquals(
+    job.previousRuns(1, new Date("2023-03-02T12:00:00Z")).map((d) => d.toISOString()),
+    ["2022-07-01T00:00:00.000Z"],
+  );
+});
+
+test("previousRuns() should include a run earlier in the same second as the reference", function () {
+  for (
+    const options of [{}, { timezone: "UTC" }, { timezone: "Europe/Stockholm" }, { utcOffset: 60 }]
+  ) {
+    const everySecond = new Cron("* * * * * *", options);
+    assertEquals(
+      everySecond.previousRuns(2, new Date("2025-01-02T00:00:05.500Z")).map((d) => d.toISOString()),
+      ["2025-01-02T00:00:05.000Z", "2025-01-02T00:00:04.000Z"],
+    );
+  }
+  const daily = new Cron("0 0 0 * * *", { timezone: "UTC" });
+  assertEquals(
+    daily.previousRuns(1, new Date("2025-01-02T00:00:00.001Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:00.000Z"],
+  );
+});
+
+test("previousRuns() should keep the milliseconds of a string reference", function () {
+  for (const timezone of [undefined, "UTC", "Europe/Stockholm"]) {
+    const everySecond = new Cron("* * * * * *", { timezone });
+    assertEquals(
+      everySecond.previousRuns(1, "2025-01-02T00:00:05.500Z").map((d) => d.toISOString()),
+      ["2025-01-02T00:00:05.000Z"],
+    );
+  }
+  // Without Z, the string is wall clock time in the timezone of the job
+  const stockholm = new Cron("* * * * * *", { timezone: "Europe/Stockholm" });
+  assertEquals(
+    stockholm.previousRuns(1, "2025-01-02T01:00:05.500").map((d) => d.toISOString()),
+    ["2025-01-02T00:00:05.000Z"],
+  );
+});
+
+test("previousRuns() from a fractional reference should keep interval and dayOffset", function () {
+  // The run in the same second is only 0.5 seconds before the reference, less than the interval
+  const interval = new Cron("* * * * * *", { timezone: "UTC", interval: 2 });
+  assertEquals(
+    interval.previousRuns(2, new Date("2025-01-02T00:00:05.500Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:03.000Z", "2025-01-02T00:00:01.000Z"],
+  );
+  const shifted = new Cron("0 0 0 * * *", { timezone: "UTC", dayOffset: -1 });
+  assertEquals(
+    shifted.previousRuns(1, new Date("2025-01-01T00:00:00.001Z")).map((d) => d.toISOString()),
+    ["2025-01-01T00:00:00.000Z"],
+  );
+});
+
+test("previousRuns() from a fractional reference should keep an interval of one second", function () {
+  // The run in the same second is only 0.5 seconds before the reference, less than the interval
+  const job = new Cron("* * * * * *", { timezone: "UTC", interval: 1 });
+  assertEquals(
+    job.previousRuns(2, new Date("2025-01-02T00:00:05.500Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:04.000Z", "2025-01-02T00:00:03.000Z"],
+  );
+  assertEquals(
+    job.previousRuns(2, new Date("2025-01-02T00:00:05.000Z")).map((d) => d.toISOString()),
+    ["2025-01-02T00:00:04.000Z", "2025-01-02T00:00:03.000Z"],
+  );
+  // The next run is not affected, it counts from a run on a whole second
+  assertEquals(
+    job.nextRun(new Date("2025-01-02T00:00:05.500Z"))?.toISOString(),
+    "2025-01-02T00:00:06.000Z",
+  );
+});
+
+test("msToNext() should keep the milliseconds of a string reference", function () {
+  for (const timezone of [undefined, "UTC", "Europe/Stockholm"]) {
+    const everySecond = new Cron("* * * * * *", { timezone });
+    assertEquals(everySecond.msToNext("2025-01-02T00:00:05.500Z"), 500);
   }
 });

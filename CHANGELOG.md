@@ -5,6 +5,67 @@ All notable changes to Croner will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.0.1] - 2026-11-13
+
+### Added
+
+- `fixedTimeRule` option, which selects which jobs are fixed-time jobs in DST handling (#438). The
+  default, `"single-value"`, is unchanged and the same as croner-rust. With `"no-wildcard"`, a job
+  without a wildcard (`*` or `?`) or step in seconds, minutes and hours is a fixed-time job, so
+  `30 2,14 * * *` runs at the end of a DST gap and once in a DST overlap, close to Vixie cron.
+
+### Changed
+
+- `previousRuns()` without a reference counts from now, including the milliseconds, so called
+  from inside a callback it returns the run that just started. Before, it returned the run before
+  that. `previousRuns(2)[1]` gives the scheduled time of the run before, and `previousRun()` still
+  gives the time it started. With the `interval` option, `previousRuns()` returns runs at least
+  `interval` seconds before the reference, so not the run that just started.
+- Creating a job is 55-64% faster. Each pattern filled its 10,000-entry year array two times, and
+  each job also parsed a default pattern that only date-based jobs use.
+
+### Fixed
+
+- `previousRuns()` skipped a run in the same second as the reference when the reference had
+  milliseconds, so `* * * * * *` from `00:00:05.500` returned `00:00:04` instead of `00:00:05`.
+  This also applies to a string reference in a named timezone, whose milliseconds were dropped.
+  With `interval: 1`, the run in the same second is less than a second before the reference and is
+  not returned, the same as with a longer interval.
+- `msToNext()` from a string reference in a named timezone, such as `"2025-01-02T00:00:05.500Z"`
+  with `timezone: "UTC"`, dropped the milliseconds of the reference and returned up to 999 ms too
+  much.
+- A number in a pattern has to be digits only. What came after a number was ignored, so `3*` meant
+  `3`, `15W5` meant `15W`, `5##2` and `5L#2` meant `5` and `5#2`, and an `L` anywhere in
+  day-of-month was dropped, so `5L` meant the 5th and the last day. These patterns throw now. Valid
+  patterns are not affected.
+- A month or day name has to stand alone in a pattern. It was replaced by its number wherever it
+  was, so `SUN6` meant `6`, `JANFEB` meant `12` and `*/FRI` meant `*/5`. These patterns throw now.
+  Valid patterns are not affected.
+- The docs no longer say that DST handling is the same as Vixie cron for lists and ranges. Vixie
+  cron treats them as fixed-time jobs, Croner treats them as interval jobs by default (#438).
+- `@weekly` with `alternativeWeekdays: true` threw `RangeError: CronPattern: Invalid value for
+  dayOfWeek: -1`. It now runs on Sundays, as without the option and as in croner-rust.
+- Matching a day past the end of a month no longer skips valid runs when day-of-month and
+  day-of-week conditions use OR logic (#437).
+- Calendar traversal preserves years 1-99 instead of interpreting them as 1901-1999, including
+  weekday modifiers, leap days, local dates and timezone conversion.
+- A `catch` callback that returns a rejected promise (an `async` callback that throws) no longer
+  causes an unhandled rejection. The callback is still not awaited, so a pending callback does not
+  delay `trigger()` or keep a `protect`ed job busy. Thrown errors were ignored since #337, but only
+  when thrown synchronously (#427).
+- `previousRuns()` no longer skips nearest weekday (`W`) days that fall after the highest plain
+  day-of-month in the pattern. With `0 0 0 15,30W * *`, only the 15th was found when going
+  backwards into a new month.
+- The `interval` option now counts elapsed time, so a DST change in between no longer shortens or
+  stretches it. Before, the interval was added to the wall clock: after a spring forward the next
+  run could come minutes after the last one instead of `interval` seconds, in a repeated hour it
+  ignored the interval, and a 24 hour interval gave 23 or 25 hours.
+- `previousRuns()` stops at year 1, the first supported year. With a named timezone, a search that
+  reached year 0 took minutes for a job that runs every second, and without one it returned runs
+  in year 0.
+- The `interval` option near year 1 or year 9999 uses the year in the timezone of the job. The
+  year in UTC was used, so `nextRun()` could return `null` in the hours around new year.
+
 ## [11.0.0] - 2026-10-25
 
 ### Breaking changes

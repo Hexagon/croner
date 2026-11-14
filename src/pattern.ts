@@ -17,6 +17,11 @@ type CronPatternPart =
 type CronMode = "auto" | "5-part" | "6-part" | "7-part" | "5-or-6-parts" | "6-or-7-parts";
 
 /**
+ * Rule for which jobs count as fixed-time jobs in DST handling, see CronOptions.fixedTimeRule
+ */
+type CronFixedTimeRule = "single-value" | "no-wildcard";
+
+/**
  * Offset, 0 or -1.
  *
  * 0 offset is used for seconds, minutes, and hours as they start on 1.
@@ -47,6 +52,7 @@ class CronPattern {
   mode: CronMode;
   alternativeWeekdays: boolean;
   sloppyRanges: boolean;
+  fixedTimeRule: CronFixedTimeRule;
   second: number[];
   minute: number[];
   hour: number[];
@@ -63,20 +69,27 @@ class CronPattern {
   useAndLogic: boolean; // OCPS 1.4: + modifier for explicit AND logic
   /**
    * True if seconds, minutes and hours each have a single value, without wildcard or step.
-   * Fixed-time and interval jobs handle DST transitions differently, as in croner-rust.
+   * With fixedTimeRule "no-wildcard", true if they have no wildcard or step, so lists and
+   * ranges count too. Fixed-time and interval jobs handle DST transitions differently.
    */
   isFixedTime: boolean;
 
   constructor(
     pattern: string,
     timezone?: string,
-    options?: { mode?: CronMode; alternativeWeekdays?: boolean; sloppyRanges?: boolean },
+    options?: {
+      mode?: CronMode;
+      alternativeWeekdays?: boolean;
+      sloppyRanges?: boolean;
+      fixedTimeRule?: CronFixedTimeRule;
+    },
   ) {
     this.pattern = pattern;
     this.timezone = timezone;
     this.mode = options?.mode ?? "auto";
     this.alternativeWeekdays = options?.alternativeWeekdays ?? false;
     this.sloppyRanges = options?.sloppyRanges ?? false;
+    this.fixedTimeRule = options?.fixedTimeRule ?? "single-value";
 
     this.second = Array(60).fill(0); // 0-59
     this.minute = Array(60).fill(0); // 0-59
@@ -84,7 +97,7 @@ class CronPattern {
     this.day = Array(31).fill(0); // 0-30 in array, 1-31 in config
     this.month = Array(12).fill(0); // 0-11 in array, 1-12 in config
     this.dayOfWeek = Array(7).fill(0); // 0-7 Where 0 = Sunday and 7=Sunday; Value is a bitmask
-    this.year = Array(10000).fill(0); // OCPS 1.2: Year field (1-9999, index 0 unused)
+    this.year = []; // OCPS 1.2: Year field (1-9999, index 0 unused), allocated in parse()
 
     this.lastDayOfMonth = false;
     this.lastWeekday = false;
@@ -190,7 +203,15 @@ class CronPattern {
       this.lastWeekday = true;
       parts[3] = "";
     } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
-      parts[3] = parts[3].replace(/L/gi, "");
+      // L is a value of its own: "L", "15,L" or "L,15"
+      const items = parts[3].split(",");
+      if (items.some((item) => item === "" || (item.toUpperCase() !== "L" && /l/i.test(item)))) {
+        throw new TypeError(
+          "CronPattern: Syntax error, L has to be a value of its own in day-of-month ('" +
+            parts[3] + "').",
+        );
+      }
+      parts[3] = items.filter((item) => item.toUpperCase() !== "L").join(",");
       this.lastDayOfMonth = true;
     }
 
@@ -276,7 +297,13 @@ class CronPattern {
     this.partToArray("dayOfWeek", parts[5], dayOfWeekOffset, ANY_OCCURRENCE);
 
     // OCPS 1.2: Parse year field (no offset needed as years are absolute)
-    this.partToArray("year", parts[6], 0, 1);
+    // A wildcard fills the array directly, instead of zero filling it first
+    if (parts[6] === "*") {
+      this.year = Array(10000).fill(1);
+    } else {
+      this.year = Array(10000).fill(0);
+      this.partToArray("year", parts[6], 0, 1);
+    }
 
     // 0 = Sunday, 7 = Sunday (only in standard mode)
     // In Quartz mode, this mapping is not needed
@@ -284,9 +311,13 @@ class CronPattern {
       this.dayOfWeek[0] = this.dayOfWeek[7];
     }
 
-    // A fixed-time job has exactly one second, minute and hour, not from a wildcard or step
+    // A fixed-time job has no wildcard or step in seconds, minutes and hours. By default it
+    // also has exactly one value in each, as in croner-rust. With "no-wildcard", lists and
+    // ranges count too, close to Vixie cron.
+    const singleValue = this.fixedTimeRule === "single-value";
     const isFixed = (part: string, values: number[]) =>
-      !part.includes("*") && !part.includes("/") && values.filter((v) => v).length === 1;
+      !part.includes("*") && !part.includes("/") &&
+      (!singleValue || values.filter((v) => v).length === 1);
     this.isFixedTime = isFixed(parts[0], this.second) && isFixed(parts[1], this.minute) &&
       isFixed(parts[2], this.hour);
   }
@@ -376,7 +407,9 @@ class CronPattern {
       type = "nearestWeekdays";
     }
 
-    const i = parseInt(result[0], 10) + valueIndexOffset;
+    // Nothing but digits, and for a nearest weekday a W after them
+    const digits = nearestWeekdayModifier ? result[0].replace(/W$/i, "") : result[0];
+    const i = CronPattern.toNumber(digits) + valueIndexOffset;
 
     if (isNaN(i)) {
       throw new TypeError("CronPattern: " + type + " is not a number: '" + conf + "'");
@@ -437,6 +470,18 @@ class CronPattern {
 
     // Set the value for the specific part and index.
     this[part][index] = value as number;
+  }
+
+  /**
+   * Read a number that is nothing but digits. parseInt stops at the first other character, so it
+   * would read "15W5" as 15 and "3*" as 3.
+   *
+   * @param text - The text of the number
+   * @returns The number, or NaN if there is more than digits
+   * @private
+   */
+  private static toNumber(text: string): number {
+    return /^\d+$/.test(text) ? parseInt(text, 10) : NaN;
   }
 
   /**
@@ -542,8 +587,12 @@ class CronPattern {
       if (type !== "dayOfWeek") {
         throw new Error("CronPattern: nth (#) only allowed in day-of-week field");
       }
-      nth = rest.split("#")[1];
-      rest = rest.split("#")[0];
+      const pieces = rest.split("#");
+      if (pieces.length !== 2 || pieces[1] === "") {
+        throw new TypeError("CronPattern: Syntax error, illegal nth weekday: '" + conf + "'");
+      }
+      rest = pieces[0];
+      nth = pieces[1];
     } else if (rest.toUpperCase().endsWith("L")) {
       // Handle "L" suffix without "#" (e.g., "5L" or "FRIL")
       if (type !== "dayOfWeek") {
@@ -582,8 +631,8 @@ class CronPattern {
       throw new TypeError("CronPattern: Syntax error, illegal range: '" + conf + "'");
     }
 
-    const lower = parseInt(split[0], 10) + valueIndexOffset,
-      upper = parseInt(split[1], 10) + valueIndexOffset;
+    const lower = CronPattern.toNumber(split[0]) + valueIndexOffset,
+      upper = CronPattern.toNumber(split[1]) + valueIndexOffset;
 
     this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
     this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
@@ -644,10 +693,11 @@ class CronPattern {
 
     let start = 0;
     if (split[0] !== "*") {
-      start = parseInt(split[0], 10) + _valueIndexOffset;
+      start = CronPattern.toNumber(split[0]) + _valueIndexOffset;
+      this.validateNotNaN(start, "CronPattern: Syntax error, illegal stepping start (NaN)");
     }
 
-    const steps = parseInt(split[1], 10);
+    const steps = CronPattern.toNumber(split[1]);
 
     this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
     this.validateRange(0, this[type].length - 1, steps, type, conf);
@@ -659,16 +709,30 @@ class CronPattern {
   }
 
   /**
-   * Replace alpha names (day/month) with numeric values using a mapping.
+   * Replace alpha names (day/month) with numeric values using a mapping. A name has to stand
+   * alone, or SUN6 would be read as 6 and JANFEB as 12.
    *
    * @param conf Current part, expected to be a string that might contain alpha names.
    * @param mapping Object mapping names to their numeric string replacements.
    * @returns Conf with alpha names replaced by numbers.
+   * @throws If a name is next to a letter or a digit, or follows a slash or a hash. Only an L, a
+   * hyphen, a comma, a slash or a hash can follow a name, as in FRIL, MON-FRI/2 or FRI#2.
    */
   private replaceAlpha(conf: string, mapping: Record<string, string>): string {
     let result = conf;
     for (const [name, value] of Object.entries(mapping)) {
-      result = result.replace(new RegExp(name, "gi"), value);
+      result = result.replace(new RegExp(name, "gi"), (match, offset: number, whole: string) => {
+        // The name has three letters, the match of "-sun" also has the hyphen in front of them
+        const start = offset + match.length - 3;
+        const before = whole.charAt(start - 1);
+        const after = whole.charAt(start + 3);
+        if (/[a-z\d/#]/i.test(before) || /[a-km-z\d]/i.test(after)) {
+          throw new TypeError(
+            `CronPattern: Syntax error, a month or day name has to stand alone ('${conf}').`,
+          );
+        }
+        return value;
+      });
     }
     return result;
   }
@@ -722,7 +786,7 @@ class CronPattern {
     "@yearly": "0 0 1 1 *",
     "@annually": "0 0 1 1 *",
     "@monthly": "0 0 1 * *",
-    "@weekly": "0 0 * * 0",
+    "@weekly": "0 0 * * SUN",
     "@daily": "0 0 * * *",
     "@midnight": "0 0 * * *",
     "@hourly": "0 * * * *",
@@ -771,4 +835,4 @@ class CronPattern {
   }
 }
 
-export { type CronMode, CronPattern };
+export { type CronFixedTimeRule, type CronMode, CronPattern };

@@ -1,6 +1,6 @@
 {
   "name": "croner",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Trigger functions and/or evaluate cron expressions in JavaScript. No dependencies. Most features. All environments.",
   "author": "Hexagon <github.com/hexagon>",
   "homepage": "https://croner.56k.guru",
@@ -84,7 +84,7 @@
     "@std/assert": "npm:@jsr/std__assert@~1.0.6",
     "@typescript/typescript6": "~6.0.2",
     "esbuild": "0.28.2",
-    "rollup": "~4.65.0",
+    "rollup": "~4.68.0",
     "rollup-plugin-dts": "~6.5.1",
     "tsx": "^4.20.0",
     "typescript": "~7.0.0"

@@ -29,7 +29,7 @@
 
   ------------------------------------------------------------------------------------  */
 import { CronDate } from "./date.ts";
-import { type CronMode, CronPattern } from "./pattern.ts";
+import { type CronFixedTimeRule, type CronMode, CronPattern } from "./pattern.ts";
 import {
   type CatchCallbackFn,
   type CronOptions,
@@ -193,7 +193,9 @@ class Cron<T = undefined> {
     reference: CronDate<T> | Date | string | null | undefined,
     now: Date,
   ): Date | null {
-    const previous = this._previous(this._shift(reference ?? now), {
+    // Pass the exact instant, so that a run earlier in the same second as the reference counts
+    const referenceMs = this._toMs(reference ?? now) - this._offsetMs();
+    const previous = this._previous(new Date(referenceMs), {
       startAt: this._shift(this._startAt),
       stopAt: this._shift(this._stopAt),
     });
@@ -247,6 +249,11 @@ class Cron<T = undefined> {
         new CronDate<T>(startAtIn, this.getTz()).getTime();
     }
 
+    // Check if we got a date, or a pattern supplied as first argument
+    // Then set either this._states.once or this._states.pattern
+    const isDate = !!pattern &&
+      (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0));
+
     this._states = {
       kill: false,
       blocking: false,
@@ -256,25 +263,20 @@ class Cron<T = undefined> {
       currentTimeout: void 0,
       maxRuns: options ? options.maxRuns : void 0,
       paused: options ? options.paused : false,
-      // Default pattern uses "auto" mode to avoid validation issues
-      pattern: new CronPattern("* * * * *", undefined, {
-        mode: "auto",
-      }),
+      pattern: isDate
+        ? new CronPattern("* * * * *", undefined, { // Default pattern uses "auto" mode to avoid validation issues
+          mode: "auto",
+        })
+        : new CronPattern(pattern as string, this.options.timezone, {
+          mode: this.options.mode,
+          alternativeWeekdays: this.options.alternativeWeekdays,
+          sloppyRanges: this.options.sloppyRanges,
+          fixedTimeRule: this.options.fixedTimeRule,
+        }),
     };
 
-    // Check if we got a date, or a pattern supplied as first argument
-    // Then set either this._states.once or this._states.pattern
-    if (
-      pattern &&
-      (pattern instanceof Date || ((typeof pattern === "string") && pattern.indexOf(":") > 0))
-    ) {
-      this._states.once = new CronDate<T>(pattern, this.getTz());
-    } else {
-      this._states.pattern = new CronPattern(pattern as string, this.options.timezone, {
-        mode: this.options.mode,
-        alternativeWeekdays: this.options.alternativeWeekdays,
-        sloppyRanges: this.options.sloppyRanges,
-      });
+    if (isDate) {
+      this._states.once = new CronDate<T>(pattern as Date | string, this.getTz());
     }
 
     // Only store the job in scheduledJobs if a name is specified in the options.
@@ -324,7 +326,8 @@ class Cron<T = undefined> {
   }
 
   /**
-   * Find previous n runs, based on supplied date. Strips milliseconds.
+   * Find previous n runs before the supplied date (at least `interval` seconds before, if set). A
+   * run earlier in the same second as the reference is included.
    *
    * @param n - Number of runs to enumerate
    * @param reference - Date to start from (defaults to now)
@@ -614,7 +617,9 @@ class Cron<T = undefined> {
         } catch (_e) {
           if (isFunction(this.options.catch)) {
             try {
-              (this.options.catch as Function)(_e, this);
+              Promise.resolve((this.options.catch as Function)(_e, this)).catch(() => {
+                // Ignore asynchronous callback errors without waiting for the callback to finish.
+              });
             } catch (_catchError) {
               // Silently ignore errors thrown by the catch callback so they do not disrupt the job execution flow or leave the blocking state stuck (including when protect is enabled).
             }
@@ -790,9 +795,10 @@ class Cron<T = undefined> {
    * The exact instant of a reference date. Strings are read in the timezone of the job.
    */
   private _toMs(reference: CronDate<T> | Date | string): number {
-    return reference instanceof Date
-      ? reference.getTime()
-      : new CronDate<T>(reference, this.getTz()).getTime();
+    if (reference instanceof Date) return reference.getTime();
+    const date = new CronDate<T>(reference, this.getTz());
+    // CronDate.getTime() drops the milliseconds in a named timezone
+    return date.getTime() + (typeof date.tz === "string" ? date.ms : 0);
   }
 
   /**
@@ -809,6 +815,21 @@ class Cron<T = undefined> {
     direction: 1 | -1,
     hasPreviousRun = false,
   ): CronDate<T> | null {
+    // The minimum interval is elapsed time from the previous run, which is the reference. Search
+    // from the last second that is too soon, so that a DST change in between neither shortens nor
+    // stretches it. Backward searches always count the interval.
+    const interval = this.options.interval ?? 0;
+    if (interval > 1 && (direction === -1 || hasPreviousRun)) {
+      referenceMs += (interval - 1) * 1000 * direction;
+      // Years 1-9999 are supported, an interval that ends outside of them has no run. The year
+      // is the one in the timezone of the job, which differs from UTC around new year.
+      const shifted = new Date(referenceMs);
+      if (isNaN(shifted.getTime())) return null;
+      start = new CronDate<T>(shifted, this.getTz());
+      if (!(start.year >= 1 && start.year <= 9999)) return null;
+      hasPreviousRun = false;
+    }
+
     const found = this._walk(start, referenceMs, direction, hasPreviousRun);
 
     // A fixed-time job never runs on the later pass, and a fixed UTC offset has no DST
@@ -853,7 +874,7 @@ class Cron<T = undefined> {
     const step = (date: CronDate<T>, hasPrevious: boolean) =>
       direction === 1
         ? date.increment(pattern, this.options, hasPrevious)
-        : date.decrement(pattern, this.options);
+        : date.decrement(pattern, this.options, hasPrevious);
 
     let candidate: CronDate<T> | null = new CronDate<T>(start, this.getTz());
     if (!inclusive || !candidate.match(pattern, this.options)) {
@@ -924,8 +945,7 @@ class Cron<T = undefined> {
     const intervalMs = this.options.interval! * 1000;
     let previous = startAt;
     while (previous.getTime() + intervalMs <= nowMs) {
-      const next = new CronDate<T>(previous, this.getTz())
-        .increment(this._states.pattern, this.options, true);
+      const next = this._findOccurrence(previous, previous.getTime(), 1, true);
       if (next === null) break;
       previous = next;
     }
@@ -1023,6 +1043,7 @@ export {
   type CatchCallbackFn,
   Cron,
   CronDate,
+  type CronFixedTimeRule,
   CronIterator,
   type CronMode,
   type CronOptions,

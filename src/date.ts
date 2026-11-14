@@ -1,4 +1,5 @@
 import { createTimePoint, fromTZ, fromTZISO, hasUtcDesignator, toTZ } from "./helpers/timezone.ts";
+import { utcTime } from "./helpers/calendar.ts";
 
 import type { CronOptions as CronOptions } from "./options.ts";
 import {
@@ -145,7 +146,7 @@ class CronDate<T = undefined> {
     if (month !== 1) {
       return DaysOfMonth[month];
     } else {
-      return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      return new Date(utcTime(year, month + 1, 0)).getUTCDate();
     }
   }
 
@@ -159,7 +160,7 @@ class CronDate<T = undefined> {
    */
   private getLastWeekday(year: number, month: number): number {
     const lastDay = this.getLastDayOfMonth(year, month);
-    const lastDate = new Date(Date.UTC(year, month, lastDay));
+    const lastDate = new Date(utcTime(year, month, lastDay));
     const weekday = lastDate.getUTCDay(); // 0=Sun, 6=Sat
 
     if (weekday === 0) { // Sunday
@@ -188,7 +189,7 @@ class CronDate<T = undefined> {
       return -1; // Day doesn't exist in this month
     }
 
-    const date = new Date(Date.UTC(year, month, day));
+    const date = new Date(utcTime(year, month, day));
     const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
 
     if (weekday === 0) { // Sunday
@@ -224,13 +225,13 @@ class CronDate<T = undefined> {
    * @return True if the date is the nth occurrence of its weekday, false otherwise.
    */
   private isNthWeekdayOfMonth(year: number, month: number, day: number, nth: number): boolean {
-    const date = new Date(Date.UTC(year, month, day));
+    const date = new Date(utcTime(year, month, day));
     const weekday = date.getUTCDay();
 
     // Count occurrences of the weekday up to and including the current date
     let count = 0;
     for (let d = 1; d <= day; d++) {
-      if (new Date(Date.UTC(year, month, d)).getUTCDay() === weekday) {
+      if (new Date(utcTime(year, month, d)).getUTCDay() === weekday) {
         count++;
       }
     }
@@ -244,7 +245,7 @@ class CronDate<T = undefined> {
     if (nth & LAST_OCCURRENCE) {
       const daysInMonth = this.getLastDayOfMonth(year, month);
       for (let d = day + 1; d <= daysInMonth; d++) {
-        if (new Date(Date.UTC(year, month, d)).getUTCDay() === weekday) {
+        if (new Date(utcTime(year, month, d)).getUTCDay() === weekday) {
           return false; // There's another occurrence of the same weekday later in the month
         }
       }
@@ -469,7 +470,7 @@ class CronDate<T = undefined> {
     // Special case for day of week
     if (!pattern.starDOW) {
       const fDomWeekDay = new Date(
-        Date.UTC(this.year, this.month, 1, 0, 0, 0, 0),
+        utcTime(this.year, this.month, 1, 0, 0, 0, 0),
       ).getUTCDay();
       let dowMatch = pattern.dayOfWeek[(fDomWeekDay + (dayValue - 1)) % 7];
 
@@ -520,6 +521,7 @@ class CronDate<T = undefined> {
     direction: 1 | -1,
   ): number {
     const originalTarget = this[target];
+    const lastDay = target === "day" ? this.getLastDayOfMonth(this.year, this.month) : 0;
 
     // In the conditions below, local time is not relevant. And as new Date(Date.UTC(y,m,d)) is way faster
     // than new Date(y,m,d). We use the UTC functions to set/get date parts.
@@ -536,6 +538,10 @@ class CronDate<T = undefined> {
 
       // Apply day-specific special cases (W, LW, L, DOW modifiers)
       if (target === "day") {
+        // Only real calendar days may match day-of-month, weekday, or special modifiers.
+        if (i - offset > lastDay) {
+          continue;
+        }
         match = this._matchDayValue(match, i - offset, pattern, options);
       }
 
@@ -735,23 +741,36 @@ class CronDate<T = undefined> {
    *
    * @param pattern The pattern used to decrement the current date.
    * @param options Cron options used for decrementing.
-   * @returns This CronDate instance for chaining, or null if decrementing was not possible (e.g., reached year 0).
+   * @param applyInterval True to step back by the minimum interval, false to step back one second.
+   * @returns This CronDate instance for chaining, or null if decrementing was not possible (e.g., reached year 0, which is before the first supported year).
    */
   public decrement(
     pattern: CronPattern,
     options: CronOptions<T>,
+    applyInterval = true,
   ): CronDate<T> | null {
     this.instantMs = undefined;
     this.instantFields = undefined;
 
-    // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`
-    this.second -= (options.interval !== undefined && options.interval > 1) ? options.interval : 1;
+    // Move to previous second, or decrement according to minimum interval indicated by option `interval: x`.
+    // Without an interval, a reference with milliseconds is already past the start of its second,
+    // so that second is the first candidate. With an interval, also of one second, that second
+    // is too close to the reference.
+    // This relies on the only caller, _walk(), starting at the reference and comparing each
+    // candidate with the exact reference.
+    const hasInterval = options.interval !== undefined && options.interval >= 1;
+    if (this.ms === 0 || hasInterval) {
+      this.second -= (hasInterval && applyInterval) ? options.interval! : 1;
+    }
 
     // Always reset milliseconds, so we are at the exact second
     this.ms = 0;
 
     // Make sure seconds has not gotten out of bounds (can be negative)
     this.apply();
+
+    // Years 1-9999 are supported, there is no run before year 1
+    if (this.year < 1) return null;
 
     // Recursively change each part (y, m, d ...) until previous match is found, return null on failure
     return this.recurseBackward(pattern, options, 0);
@@ -832,7 +851,7 @@ class CronDate<T = undefined> {
       }
 
       // Check if we've gone out of bounds
-      if (this.year < 0) {
+      if (this.year < 1) {
         return null;
       }
     }
@@ -947,7 +966,7 @@ class CronDate<T = undefined> {
           }
 
           // Check if we've gone out of bounds
-          if (this.year < 0) {
+          if (this.year < 1) {
             return null;
           }
         }
@@ -967,7 +986,7 @@ class CronDate<T = undefined> {
       return this;
 
       // ... or out of bounds ?
-    } else if (this.year < 0) {
+    } else if (this.year < 1) {
       return null;
 
       // ... oh, go to next part then
@@ -1003,9 +1022,10 @@ class CronDate<T = undefined> {
     }
 
     // A day can't be after the last day of the month, so that e.g. April 31 doesn't roll
-    // over into May. L and day-of-week patterns search from the last day of the month.
+    // over into May. L, W and day-of-week patterns search from the last day of the month.
     if (target === "day") {
       const lastDay = this.getLastDayOfMonth(this.year, this.month);
+      if (pattern.lastWeekday || pattern.nearestWeekdays.some((v) => v)) return lastDay;
       return pattern.lastDayOfMonth || !pattern.starDOW ? lastDay : Math.min(maxValue, lastDay);
     }
     return maxValue;
@@ -1049,6 +1069,12 @@ class CronDate<T = undefined> {
     // If this is an internal call, return the date as is
     // Also use this option when no timezone or utcOffset is set
     if (internal || this.tz === void 0) {
+      if (this.year >= 0 && this.year < 100) {
+        const date = new Date(0);
+        date.setFullYear(this.year, this.month, this.day);
+        date.setHours(this.hour, this.minute, this.second, this.ms);
+        return date;
+      }
       return new Date(
         this.year,
         this.month,
@@ -1063,7 +1089,7 @@ class CronDate<T = undefined> {
       // Restore this, and return a date object with correct time set.
       if (typeof this.tz === "number") {
         return new Date(
-          Date.UTC(
+          utcTime(
             this.year,
             this.month,
             this.day,
