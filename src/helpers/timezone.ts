@@ -258,6 +258,10 @@ export function foldOf(ms: number, tz?: string): "earlier" | "later" | undefined
   return ms < resolved.later.getTime() ? "earlier" : "later";
 }
 
+/** The start of year 1 in UTC, and the length of a day */
+const YEAR_ONE_MS = utcTime(1, 0, 1);
+const DAY_MS = 86400000;
+
 /**
  * Creating an Intl.DateTimeFormat is expensive, so keep one per timezone
  */
@@ -342,6 +346,13 @@ export function toTZ(d: Date, tzStr?: string): TimePoint {
         `This may indicate an invalid date or timezone configuration. ` +
         `Parsed components: ${JSON.stringify(dateComponents)}`,
     );
+  }
+
+  // Intl gives a year before year 1 as a year BC without a sign, where 1 BC is year 0. A timezone
+  // is less than a day from UTC, so within a day of the start of year 1 the month tells the era.
+  const sinceYearOne = d.getTime() - YEAR_ONE_MS;
+  if (sinceYearOne < -DAY_MS || (sinceYearOne < DAY_MS && dateComponents.month === 12)) {
+    dateComponents.year = 1 - dateComponents.year;
   }
 
   // Node.js may return hour 24 for midnight (24:00 = 00:00 of same day in this context)

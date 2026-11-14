@@ -57,6 +57,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stretches it. Before, the interval was added to the wall clock: after a spring forward the next
   run could come minutes after the last one instead of `interval` seconds, in a repeated hour it
   ignored the interval, and a 24 hour interval gave 23 or 25 hours.
+- `previousRuns()` stops at year 1, the first supported year. With a named timezone, a search that
+  reached year 0 took minutes for a job that runs every second, and without one it returned runs
+  in year 0.
+- The `interval` option near year 1 or year 9999 uses the year in the timezone of the job. The
+  year in UTC was used, so `nextRun()` could return `null` in the hours around new year.
 
 ## [11.0.0] - 2026-10-25
 
