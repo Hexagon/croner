@@ -65,6 +65,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   in year 0.
 - The `interval` option near year 1 or year 9999 uses the year in the timezone of the job. The
   year in UTC was used, so `nextRun()` could return `null` in the hours around new year.
+- `LW` in a day-of-month list, such as `1W,15W,LW`, throws an error that says `LW` can not be in a
+  list. The error said that `L` has to be a value of its own.
 
 ## [11.0.0] - 2026-10-25
 
