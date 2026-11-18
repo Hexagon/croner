@@ -5,6 +5,14 @@ All notable changes to Croner will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With `alternativeWeekdays: true`, day-of-week `8` was read as Sunday, so `0 0 * * 8` ran on
+  Sundays and `0 0 * * 1-8` was accepted. Quartz weekdays are 1-7, and `8` throws now, as `0`
+  already did. Standard mode, where `7` is Sunday, is not affected.
+
 ## [11.0.1] - 2026-11-14
 
 ### Added
