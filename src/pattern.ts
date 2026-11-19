@@ -438,8 +438,9 @@ class CronPattern {
 
     //  Special handling for dayOfWeek
     if (part === "dayOfWeek") {
-      // SUN can both be 7 and 0, normalize to 0 here
-      if (index === 7) index = 0;
+      // SUN can both be 7 and 0, normalize to 0 here. Not in Quartz mode, where 7 is SAT and
+      // index 7 comes from an 8.
+      if (index === 7 && !this.alternativeWeekdays) index = 0;
       if (index < 0 || index > 6) {
         throw new RangeError("CronPattern: Invalid value for dayOfWeek: " + index);
       }

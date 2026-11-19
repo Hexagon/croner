@@ -275,3 +275,13 @@ test("alternativeWeekdays: true - @weekly should run on Sundays", function () {
     ["2024-01-07T00:00:00.000Z", "2024-01-14T00:00:00.000Z"],
   );
 });
+
+test("alternativeWeekdays: true - 8 is out of range and throws", function () {
+  for (const pattern of ["0 0 0 * * 8", "0 0 0 * * 1-8", "0 0 0 * * 8#1", "0 0 0 * * 8L"]) {
+    assertThrows(() => new Cron(pattern, { alternativeWeekdays: true }));
+  }
+  // 1-7 still covers the whole week
+  const job = new Cron("0 0 0 * * 1-7", { timezone: "UTC", alternativeWeekdays: true });
+  const days = job.nextRuns(7, "2024-01-01T00:00:00Z").map((d) => d.getUTCDay());
+  assertEquals(days, [2, 3, 4, 5, 6, 0, 1]);
+});
