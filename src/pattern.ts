@@ -737,6 +737,10 @@ class CronPattern {
             `CronPattern: Syntax error, a month or day name has to stand alone ('${conf}').`,
           );
         }
+        // SUN-SUN is Sunday only, not 0-7
+        if (match.charAt(0) === "-" && /(^|[^a-z\d])sun$/i.test(whole.slice(0, offset))) {
+          return "-0";
+        }
         return value;
       });
     }
@@ -745,7 +749,7 @@ class CronPattern {
 
   /**
    * Day names to day-of-week numbers. Names are replaced in this order, so "-sun" must come
-   * before "sun".
+   * before "sun". replaceAlpha turns SUN-SUN into 0-0 only while the first SUN is still text.
    * @private
    */
   private static DAY_NAMES: Record<string, string> = {

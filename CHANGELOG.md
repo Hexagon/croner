@@ -12,6 +12,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - With `alternativeWeekdays: true`, day-of-week `8` was read as Sunday, so `0 0 * * 8` ran on
   Sundays and `0 0 * * 1-8` was accepted. Quartz weekdays are 1-7, and `8` throws now, as `0`
   already did. Standard mode, where `7` is Sunday, is not affected.
+- `SUN-SUN` was read as `0-7`, so `0 0 * * SUN-SUN` ran every day. It is Sunday only now, the same
+  as `0-0` and `7-7`. Ranges that end in `SUN`, such as `SAT-SUN`, are not affected.
 
 ## [11.0.1] - 2026-11-14
 
