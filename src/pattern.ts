@@ -749,7 +749,7 @@ class CronPattern {
 
   /**
    * Day names to day-of-week numbers. Names are replaced in this order, so "-sun" must come
-   * before "sun".
+   * before "sun". replaceAlpha turns SUN-SUN into 0-0 only while the first SUN is still text.
    * @private
    */
   private static DAY_NAMES: Record<string, string> = {
