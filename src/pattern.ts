@@ -737,6 +737,10 @@ class CronPattern {
             `CronPattern: Syntax error, a month or day name has to stand alone ('${conf}').`,
           );
         }
+        // SUN-SUN is Sunday only, not 0-7
+        if (match.charAt(0) === "-" && /(^|[^a-z\d])sun$/i.test(whole.slice(0, offset))) {
+          return "-0";
+        }
         return value;
       });
     }
