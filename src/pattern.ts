@@ -538,6 +538,27 @@ class CronPattern {
   }
 
   /**
+   * With alternativeWeekdays, a day-of-week range whose end is before its start wraps around the
+   * week, as in Quartz and croner-rust: SAT-SUN (7-1) is Saturday and Sunday, FRI-MON is Friday
+   * to Monday. Standard mode does not wrap, and such a range throws there.
+   *
+   * @param lower - Lower bound of range, after the offset (0-6 for weekdays)
+   * @param upper - Upper bound of range, after the offset
+   * @param type - The type of pattern part
+   * @returns The upper bound to step to: upper + 7 for a range that wraps, else upper
+   * @private
+   */
+  private rangeEnd(lower: number, upper: number, type: CronPatternPart): number {
+    if (
+      type === "dayOfWeek" && this.alternativeWeekdays && lower > upper &&
+      lower >= 0 && lower <= 6 && upper >= 0 && upper <= 6
+    ) {
+      return upper + 7;
+    }
+    return upper;
+  }
+
+  /**
    * Take care of ranges with stepping (e.g. 3-23/5)
    *
    * @param conf Current part, expected to be a string like 3-23/5
@@ -572,10 +593,11 @@ class CronPattern {
     this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
     this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
 
-    this.validateRange(lower, upper, steps, type, conf);
+    const end = this.rangeEnd(lower, upper, type);
+    this.validateRange(lower, end, steps, type, conf);
 
-    for (let i = lower; i <= upper; i += steps) {
-      this.setPart(type, i, result[1] || defaultValue);
+    for (let i = lower; i <= end; i += steps) {
+      this.setPart(type, end > upper ? i % 7 : i, result[1] || defaultValue);
     }
   }
 
@@ -640,10 +662,11 @@ class CronPattern {
     this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
     this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
 
-    this.validateRange(lower, upper, undefined, type, conf);
+    const end = this.rangeEnd(lower, upper, type);
+    this.validateRange(lower, end, undefined, type, conf);
 
-    for (let i = lower; i <= upper; i++) {
-      this.setPart(type, i, result[1] || defaultValue);
+    for (let i = lower; i <= end; i++) {
+      this.setPart(type, end > upper ? i % 7 : i, result[1] || defaultValue);
     }
   }
 
