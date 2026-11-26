@@ -11,6 +11,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - The README and docs say that a fixed-time job in a DST gap that ends at midnight (e.g.
   America/Nuuk on 30 March 2024) does not run that day, as no valid time is left on it (#466).
+### Added
+
+- `LW` can be an item in a day-of-month list, as in croner-rust, so `0 0 L,LW * *` runs on the last day
+  and the last weekday of the month, and `0 0 1W,15W,LW * *` on the weekdays nearest the 1st and
+  the 15th and the last weekday. `L` and `LW` still have to be values of their own, so `5L` and
+  `LW-5` throw. Since 11.0.1, `LW` in a list threw an error (#473).
+
+### Changed
+
+- Reusing a named options object for a second job now throws that the name is taken. Before, the
+  second job was created without a name.
+- `job.options` is a copy now, so changing the object passed to `new Cron()` after the job is
+  created (for example `context`, `catch` or `protect`) no longer affects the job.
+
+### Fixed
+
+- With `alternativeWeekdays: true`, day-of-week ranges that end before they start threw, so
+  `SAT-SUN`, `MON-SUN` and `FRI-MON` could not be used. As in Quartz and croner-rust, they wrap
+  around the week now: `SAT-SUN` (`7-1`) is Saturday and Sunday, `MON-SUN` is every day, `FRI-MON`
+  is Friday to Monday and `FRI-TUE/2` is Friday, Sunday and Tuesday. Standard mode is unchanged:
+  `SUN` at the end of a range is 7, and a numeric range like `5-1` still throws (#472).
+- With `alternativeWeekdays: true`, day-of-week `8` was read as Sunday, so `0 0 * * 8` ran on
+  Sundays and `0 0 * * 1-8` was accepted. Quartz weekdays are 1-7, and `8` throws now, as `0`
+  already did. Standard mode, where `7` is Sunday, is not affected.
+- `SUN-SUN` was read as `0-7`, so `0 0 * * SUN-SUN` ran every day. It is Sunday only now, the same
+  as `0-0` and `7-7`. Ranges that end in `SUN`, such as `SAT-SUN`, are not affected.
+- A new job changed the options object passed to it: it removed `name`, added the defaults and
+  replaced `startAt` and `stopAt` with CronDates. Frozen options threw a TypeError, and a second
+  job created with the same object could be scheduled differently, as a one-off date in the same
+  second as a `startAt` with milliseconds was dropped. The job now works on a copy, see Changed.
 
 ## [11.0.1] - 2026-11-14
 

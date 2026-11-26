@@ -197,27 +197,24 @@ class CronPattern {
       }
     }
 
-    // Convert 'L' to lastDayOfMonth flag in day-of-month field
-    // Check for 'LW' combination first (last weekday of month)
-    if (parts[3].toUpperCase() === "LW") {
-      this.lastWeekday = true;
-      parts[3] = "";
-    } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
-      // L is a value of its own: "L", "15,L" or "L,15"
+    // Convert 'L' to the lastDayOfMonth flag and 'LW' to the lastWeekday flag in day-of-month.
+    // Both are values of their own, and can be items in a list: "L", "LW", "15,L", "1W,15W,LW", "L,LW"
+    if (parts[3].toUpperCase().indexOf("L") >= 0) {
       const items = parts[3].split(",");
-      if (items.length > 1 && items.some((item) => item.toUpperCase() === "LW")) {
+      if (
+        items.some((item) =>
+          item === "" ||
+          (item.toUpperCase() !== "L" && item.toUpperCase() !== "LW" && /l/i.test(item))
+        )
+      ) {
         throw new TypeError(
-          `CronPattern: Syntax error, LW can not be in a list in day-of-month ('${parts[3]}').`,
-        );
-      }
-      if (items.some((item) => item === "" || (item.toUpperCase() !== "L" && /l/i.test(item)))) {
-        throw new TypeError(
-          "CronPattern: Syntax error, L has to be a value of its own in day-of-month ('" +
+          "CronPattern: Syntax error, L and LW have to be values of their own in day-of-month ('" +
             parts[3] + "').",
         );
       }
-      parts[3] = items.filter((item) => item.toUpperCase() !== "L").join(",");
-      this.lastDayOfMonth = true;
+      if (items.some((item) => item.toUpperCase() === "L")) this.lastDayOfMonth = true;
+      if (items.some((item) => item.toUpperCase() === "LW")) this.lastWeekday = true;
+      parts[3] = items.filter((item) => !/^LW?$/i.test(item)).join(",");
     }
 
     // Check for starDOM
@@ -438,8 +435,9 @@ class CronPattern {
 
     //  Special handling for dayOfWeek
     if (part === "dayOfWeek") {
-      // SUN can both be 7 and 0, normalize to 0 here
-      if (index === 7) index = 0;
+      // SUN can both be 7 and 0, normalize to 0 here. Not in Quartz mode, where 7 is SAT and
+      // index 7 comes from an 8.
+      if (index === 7 && !this.alternativeWeekdays) index = 0;
       if (index < 0 || index > 6) {
         throw new RangeError("CronPattern: Invalid value for dayOfWeek: " + index);
       }
@@ -540,6 +538,27 @@ class CronPattern {
   }
 
   /**
+   * With alternativeWeekdays, a day-of-week range whose end is before its start wraps around the
+   * week, as in Quartz and croner-rust: SAT-SUN (7-1) is Saturday and Sunday, FRI-MON is Friday
+   * to Monday. Standard mode does not wrap, and such a range throws there.
+   *
+   * @param lower - Lower bound of range, after the offset (0-6 for weekdays)
+   * @param upper - Upper bound of range, after the offset
+   * @param type - The type of pattern part
+   * @returns The upper bound to step to: upper + 7 for a range that wraps, else upper
+   * @private
+   */
+  private rangeEnd(lower: number, upper: number, type: CronPatternPart): number {
+    if (
+      type === "dayOfWeek" && this.alternativeWeekdays && lower > upper &&
+      lower >= 0 && lower <= 6 && upper >= 0 && upper <= 6
+    ) {
+      return upper + 7;
+    }
+    return upper;
+  }
+
+  /**
    * Take care of ranges with stepping (e.g. 3-23/5)
    *
    * @param conf Current part, expected to be a string like 3-23/5
@@ -574,10 +593,11 @@ class CronPattern {
     this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
     this.validateNotNaN(steps, "CronPattern: Syntax error, illegal stepping: (NaN)");
 
-    this.validateRange(lower, upper, steps, type, conf);
+    const end = this.rangeEnd(lower, upper, type);
+    this.validateRange(lower, end, steps, type, conf);
 
-    for (let i = lower; i <= upper; i += steps) {
-      this.setPart(type, i, result[1] || defaultValue);
+    for (let i = lower; i <= end; i += steps) {
+      this.setPart(type, end > upper ? i % 7 : i, result[1] || defaultValue);
     }
   }
 
@@ -642,10 +662,11 @@ class CronPattern {
     this.validateNotNaN(lower, "CronPattern: Syntax error, illegal lower range (NaN)");
     this.validateNotNaN(upper, "CronPattern: Syntax error, illegal upper range (NaN)");
 
-    this.validateRange(lower, upper, undefined, type, conf);
+    const end = this.rangeEnd(lower, upper, type);
+    this.validateRange(lower, end, undefined, type, conf);
 
-    for (let i = lower; i <= upper; i++) {
-      this.setPart(type, i, result[1] || defaultValue);
+    for (let i = lower; i <= end; i++) {
+      this.setPart(type, end > upper ? i % 7 : i, result[1] || defaultValue);
     }
   }
 
@@ -736,6 +757,10 @@ class CronPattern {
             `CronPattern: Syntax error, a month or day name has to stand alone ('${conf}').`,
           );
         }
+        // SUN-SUN is Sunday only, not 0-7
+        if (match.charAt(0) === "-" && /(^|[^a-z\d])sun$/i.test(whole.slice(0, offset))) {
+          return "-0";
+        }
         return value;
       });
     }
@@ -744,7 +769,7 @@ class CronPattern {
 
   /**
    * Day names to day-of-week numbers. Names are replaced in this order, so "-sun" must come
-   * before "sun".
+   * before "sun". replaceAlpha turns SUN-SUN into 0-0 only while the first SUN is still text.
    * @private
    */
   private static DAY_NAMES: Record<string, string> = {

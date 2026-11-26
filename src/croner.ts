@@ -261,8 +261,8 @@ class Cron<T = undefined> {
       currentRun: void 0,
       once: void 0,
       currentTimeout: void 0,
-      maxRuns: options ? options.maxRuns : void 0,
-      paused: options ? options.paused : false,
+      maxRuns: options ? this.options.maxRuns : void 0,
+      paused: this.options.paused,
       pattern: isDate
         ? new CronPattern("* * * * *", undefined, { // Default pattern uses "auto" mode to avoid validation issues
           mode: "auto",
