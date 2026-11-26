@@ -197,27 +197,24 @@ class CronPattern {
       }
     }
 
-    // Convert 'L' to lastDayOfMonth flag in day-of-month field
-    // Check for 'LW' combination first (last weekday of month)
-    if (parts[3].toUpperCase() === "LW") {
-      this.lastWeekday = true;
-      parts[3] = "";
-    } else if (parts[3].toUpperCase().indexOf("L") >= 0) {
-      // L is a value of its own: "L", "15,L" or "L,15"
+    // Convert 'L' to the lastDayOfMonth flag and 'LW' to the lastWeekday flag in day-of-month.
+    // Both are values of their own, and can be items in a list: "L", "LW", "15,L", "1W,15W,LW", "L,LW"
+    if (parts[3].toUpperCase().indexOf("L") >= 0) {
       const items = parts[3].split(",");
-      if (items.length > 1 && items.some((item) => item.toUpperCase() === "LW")) {
+      if (
+        items.some((item) =>
+          item === "" ||
+          (item.toUpperCase() !== "L" && item.toUpperCase() !== "LW" && /l/i.test(item))
+        )
+      ) {
         throw new TypeError(
-          `CronPattern: Syntax error, LW can not be in a list in day-of-month ('${parts[3]}').`,
-        );
-      }
-      if (items.some((item) => item === "" || (item.toUpperCase() !== "L" && /l/i.test(item)))) {
-        throw new TypeError(
-          "CronPattern: Syntax error, L has to be a value of its own in day-of-month ('" +
+          "CronPattern: Syntax error, L and LW have to be values of their own in day-of-month ('" +
             parts[3] + "').",
         );
       }
-      parts[3] = items.filter((item) => item.toUpperCase() !== "L").join(",");
-      this.lastDayOfMonth = true;
+      if (items.some((item) => item.toUpperCase() === "L")) this.lastDayOfMonth = true;
+      if (items.some((item) => item.toUpperCase() === "LW")) this.lastWeekday = true;
+      parts[3] = items.filter((item) => !/^LW?$/i.test(item)).join(",");
     }
 
     // Check for starDOM
