@@ -286,6 +286,19 @@ test("DST Gap (Spring Forward) - fixed-time job runs when the clock has jumped f
   nyJob.stop();
 });
 
+test("DST Gap (Spring Forward) - fixed-time job is skipped when the gap ends at midnight", function () {
+  // America/Nuuk: March 30, 2024 at 23:00 -02:00 -> 00:00 -01:00 (March 31)
+  // 23:30 doesn't exist and no valid time is left on March 30, so that day has no run (#466)
+  const job = new Cron("30 23 * * *", { paused: true, timezone: "America/Nuuk" });
+  const runs = job.nextRuns(3, "2024-03-30T01:00:00Z").map((d) => d.toISOString());
+  assertEquals(runs, [
+    "2024-03-30T01:30:00.000Z", // March 29 23:30 -02:00
+    "2024-04-01T00:30:00.000Z", // March 31 23:30 -01:00
+    "2024-04-02T00:30:00.000Z", // April 1 23:30 -01:00
+  ]);
+  job.stop();
+});
+
 test("OCPS 1.4 compliance: DST Overlap (Fall Back) - job should run once at first occurrence", function () {
   // OCPS 1.4 Section 4.3.1: When a scheduled time occurs twice due to DST overlap,
   // the job SHOULD run only once, at the first occurrence

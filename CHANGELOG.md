@@ -7,6 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The README and docs say that a fixed-time job in a DST gap that ends at midnight (e.g.
+  America/Nuuk on 30 March 2024) does not run that day, as no valid time is left on it (#466).
 ### Added
 
 - `LW` can be an item in a day-of-month list, as in croner-rust, so `0 0 L,LW * *` runs on the last day
