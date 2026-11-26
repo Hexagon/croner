@@ -14,6 +14,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   already did. Standard mode, where `7` is Sunday, is not affected.
 - `SUN-SUN` was read as `0-7`, so `0 0 * * SUN-SUN` ran every day. It is Sunday only now, the same
   as `0-0` and `7-7`. Ranges that end in `SUN`, such as `SAT-SUN`, are not affected.
+- A new job changed the options object passed to it: it removed `name`, added the defaults and
+  replaced `startAt` and `stopAt` with CronDates. Frozen options threw a TypeError, and a second
+  job created with the same object could be scheduled differently, as a one-off date in the same
+  second as a `startAt` with milliseconds was dropped. The job now works on a copy, so a second
+  job created with the same named options throws that the name is taken, as other duplicate
+  names do, instead of being created without a name.
 
 ## [11.0.1] - 2026-11-14
 
