@@ -285,3 +285,73 @@ test("alternativeWeekdays: true - 8 is out of range and throws", function () {
   const days = job.nextRuns(7, "2024-01-01T00:00:00Z").map((d) => d.getUTCDay());
   assertEquals(days, [2, 3, 4, 5, 6, 0, 1]);
 });
+
+test("alternativeWeekdays: true - day-of-week ranges that end before they start wrap around the week", function () {
+  // 2024-01-01 is a Monday
+  const reference = "2024-01-01T00:00:00Z";
+  const cases: [string, number[]][] = [
+    ["SAT-SUN", [6, 0]],
+    ["7-1", [6, 0]],
+    ["MON-SUN", [1, 2, 3, 4, 5, 6, 0]],
+    ["2-1", [1, 2, 3, 4, 5, 6, 0]],
+    ["FRI-MON", [5, 6, 0, 1]],
+    ["6-2", [5, 6, 0, 1]],
+    ["FRI-TUE/2", [5, 0, 2]],
+    ["6-3/2", [5, 0, 2]],
+  ];
+  for (const [dow, expected] of cases) {
+    const job = new Cron("0 0 0 * * " + dow, { timezone: "UTC", alternativeWeekdays: true });
+    const days = new Set(job.nextRuns(14, reference).map((d) => d.getUTCDay()));
+    assertEquals([...days].sort(), [...expected].sort(), dow);
+    for (let day = 0; day < 7; day++) {
+      const date = new Date(Date.UTC(2024, 0, 7 + day)); // 2024-01-07 is a Sunday
+      assertEquals(job.match(date), expected.includes(day), dow + " on day " + day);
+    }
+  }
+});
+
+test("alternativeWeekdays: true - wrapping ranges give the expected next runs", function () {
+  const reference = "2024-01-01T00:00:00Z"; // Monday
+  const runs = (pattern: string, n: number) =>
+    new Cron(pattern, { timezone: "UTC", alternativeWeekdays: true })
+      .nextRuns(n, reference)
+      .map((d) => d.toISOString().slice(0, 10));
+  assertEquals(runs("0 0 0 * * SAT-SUN", 4), [
+    "2024-01-06",
+    "2024-01-07",
+    "2024-01-13",
+    "2024-01-14",
+  ]);
+  assertEquals(runs("0 0 0 * * MON-SUN", 3), ["2024-01-02", "2024-01-03", "2024-01-04"]);
+  assertEquals(runs("0 0 0 * * FRI-MON", 5), [
+    "2024-01-05",
+    "2024-01-06",
+    "2024-01-07",
+    "2024-01-08",
+    "2024-01-12",
+  ]);
+  assertEquals(runs("0 0 0 * * FRI-TUE/2", 4), [
+    "2024-01-02",
+    "2024-01-05",
+    "2024-01-07",
+    "2024-01-09",
+  ]);
+  // Wrapping ranges work with # too
+  assertEquals(runs("0 0 0 * * SAT-SUN#1", 2), ["2024-01-06", "2024-01-07"]);
+});
+
+test("alternativeWeekdays: true - out-of-range wrapping ranges still throw", function () {
+  for (const pattern of ["0 0 0 * * 8-1", "0 0 0 * * 7-0", "0 0 0 * * 8-1/2"]) {
+    assertThrows(() => new Cron(pattern, { alternativeWeekdays: true }));
+  }
+});
+
+test("alternativeWeekdays: false - reversed ranges do not wrap", function () {
+  for (const pattern of ["0 0 0 * * 5-1", "0 0 0 * * 6-2/2", "0 0 0 * * FRI-MON"]) {
+    assertThrows(() => new Cron(pattern), Error, undefined, pattern);
+  }
+  // SUN at the end of a range is still 7 in standard mode
+  const job = new Cron("0 0 0 * * SAT-SUN", { timezone: "UTC" });
+  const days = job.nextRuns(4, "2024-01-01T00:00:00Z").map((d) => d.getUTCDay());
+  assertEquals(days, [6, 0, 6, 0]);
+});

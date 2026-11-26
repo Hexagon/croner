@@ -62,7 +62,7 @@ Croner is compliant with the [Open Cron Pattern Specification (OCPS)](https://gi
 > The `#` character specifies the "nth" weekday of the month. For example, `5#2` = second Friday, `MON#1` = first Monday.
 > The `W` character operates within the current month and won't cross month boundaries. If the 1st is a Saturday, `1W` matches Monday the 3rd.
 > The `+` modifier (OCPS 1.4) enforces AND logic: `0 12 1 * +MON` only runs when the 1st is also a Monday.
-> **Quartz mode**: Enable `alternativeWeekdays: true` to use Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday) instead of the standard format (0=Sunday, 1=Monday, ..., 6=Saturday). This is useful for compatibility with Quartz cron expressions.
+> **Quartz mode**: Enable `alternativeWeekdays: true` to use Quartz-style weekday numbering (1=Sunday, 2=Monday, ..., 7=Saturday) instead of the standard format (0=Sunday, 1=Monday, ..., 6=Saturday). This is useful for compatibility with Quartz cron expressions. As in Quartz, a day-of-week range that ends before it starts wraps around the week in this mode: `SAT-SUN` (`7-1`) is Saturday and Sunday, `MON-SUN` is every day, `FRI-MON` is Friday to Monday and `FRI-TUE/2` is Friday, Sunday and Tuesday. In standard mode such a numeric range (e.g. `5-1`) throws.
 
 { .note }
 

@@ -16,6 +16,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- With `alternativeWeekdays: true`, day-of-week ranges that end before they start threw, so
+  `SAT-SUN`, `MON-SUN` and `FRI-MON` could not be used. As in Quartz and croner-rust, they wrap
+  around the week now: `SAT-SUN` (`7-1`) is Saturday and Sunday, `MON-SUN` is every day, `FRI-MON`
+  is Friday to Monday and `FRI-TUE/2` is Friday, Sunday and Tuesday. Standard mode is unchanged:
+  `SUN` at the end of a range is 7, and a numeric range like `5-1` still throws (#472).
 - With `alternativeWeekdays: true`, day-of-week `8` was read as Sunday, so `0 0 * * 8` ran on
   Sundays and `0 0 * * 1-8` was accepted. Quartz weekdays are 1-7, and `8` throws now, as `0`
   already did. Standard mode, where `7` is Sunday, is not affected.
