@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `LW` can be an item in a day-of-month list, as in croner-rust, so `0 0 L,LW * *` runs on the last day
+  and the last weekday of the month, and `0 0 1W,15W,LW * *` on the weekdays nearest the 1st and
+  the 15th and the last weekday. `L` and `LW` still have to be values of their own, so `5L` and
+  `LW-5` throw. Since 11.0.1, `LW` in a list threw an error (#473).
+
 ### Changed
 
 - Reusing a named options object for a second job now throws that the name is taken. Before, the

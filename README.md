@@ -198,6 +198,7 @@ Croner uses [Vixie Cron](https://en.wikipedia.org/wiki/Cron#CRON_expression) bas
 *   **Advanced calendar modifiers**:
 	-   *L*: Last day of month or last occurrence of a weekday. `L` in day-of-month = last day of month; `5#L` or `FRI#L` = last Friday of the month.
 	-	*W*: Nearest weekday. `15W` triggers on the weekday closest to the 15th (moves to Friday if 15th is Saturday, Monday if 15th is Sunday). Won't cross month boundaries.
+	-	*LW*: Last weekday (Monday to Friday) of the month, in day-of-month. `L` and `LW` are values of their own, but can be items in a list: `L,LW` = the last day and the last weekday; `1W,15W,LW` = the weekdays nearest the 1st and the 15th, and the last weekday. `5L` and `LW-5` are not valid.
 	-	*#*: Nth occurrence of a weekday. `5#2` = second Friday; `MON#1` = first Monday of the month.
 
 *   **Enhanced logical control**:
