@@ -507,3 +507,41 @@ test("An empty timezone is the same as no timezone", function () {
     "2026-01-01T12:00:00.000Z",
   );
 });
+
+test("The options object passed in is not changed", function () {
+  const options = { name: "UnchangedOptions" + Date.now(), paused: true, startAt: "2030-01-01" };
+  const copy = { ...options };
+  const job = new Cron("0 0 12 * * *", options);
+  assertEquals(options, copy);
+  assertEquals(job.name, copy.name);
+  job.stop();
+});
+
+test("Frozen options are accepted", function () {
+  const options = Object.freeze({
+    name: "FrozenOptions" + Date.now(),
+    paused: true,
+    timezone: "UTC",
+    startAt: "2030-01-01T00:00:00Z",
+    stopAt: "2030-01-03T00:00:00Z",
+    context: { id: 1 },
+  });
+  const job = new Cron("0 0 12 * * *", options);
+  assertEquals(job.name, options.name);
+  assertEquals(job.isRunning(), false);
+  assertEquals(job.options.context === options.context, true);
+  assertEquals(job.nextRuns(5).map((d) => d.toISOString()), [
+    "2030-01-01T12:00:00.000Z",
+    "2030-01-02T12:00:00.000Z",
+  ]);
+  job.stop();
+});
+
+test("Jobs created with the same options object are scheduled the same", function () {
+  const reference = new Date("2026-06-10T00:00:00Z");
+  const options = { paused: true, startAt: "2026-06-10T12:00:00.300Z" };
+  const first = new Cron("2026-06-10T12:00:00.500Z", options);
+  const second = new Cron("2026-06-10T12:00:00.500Z", options);
+  assertEquals(first.nextRun(reference)?.toISOString(), "2026-06-10T12:00:00.500Z");
+  assertEquals(second.nextRun(reference)?.toISOString(), "2026-06-10T12:00:00.500Z");
+});

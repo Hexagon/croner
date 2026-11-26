@@ -174,10 +174,8 @@ interface CronOptions<T = undefined> {
  * @throws {Error} If any of the options are invalid.
  */
 function CronOptionsHandler<T = undefined>(options?: CronOptions<T>): CronOptions<T> {
-  if (options === void 0) {
-    options = {};
-  }
-
+  // Work on a copy, so that the object passed in is not changed, and can be frozen or reused
+  options = { ...options };
   delete options.name;
 
   // Handle backward compatibility: legacyMode is deprecated in favor of domAndDow
