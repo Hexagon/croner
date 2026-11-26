@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Reusing a named options object for a second job now throws that the name is taken. Before, the
+  second job was created without a name.
+- `job.options` is a copy now, so changing the object passed to `new Cron()` after the job is
+  created (for example `context`, `catch` or `protect`) no longer affects the job.
+
 ### Fixed
 
 - With `alternativeWeekdays: true`, day-of-week `8` was read as Sunday, so `0 0 * * 8` ran on
@@ -17,9 +24,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A new job changed the options object passed to it: it removed `name`, added the defaults and
   replaced `startAt` and `stopAt` with CronDates. Frozen options threw a TypeError, and a second
   job created with the same object could be scheduled differently, as a one-off date in the same
-  second as a `startAt` with milliseconds was dropped. The job now works on a copy, so a second
-  job created with the same named options throws that the name is taken, as other duplicate
-  names do, instead of being created without a name.
+  second as a `startAt` with milliseconds was dropped. The job now works on a copy, see Changed.
 
 ## [11.0.1] - 2026-11-14
 
