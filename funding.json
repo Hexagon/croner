@@ -8,7 +8,7 @@
     "phone": "",
     "description": "Open source developer maintaining Croner, @hexagon/base64 and other libraries.",
     "webpageUrl": {
-      "url": "https://github.com/hexagon"
+      "url": "https://github.com/Hexagon"
     }
   },
   "projects": [
@@ -17,10 +17,12 @@
       "name": "Croner",
       "description": "Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. Works in Node, Deno, Bun and the browser.",
       "webpageUrl": {
-        "url": "https://github.com/hexagon/croner"
+        "url": "https://github.com/Hexagon/croner",
+        "wellKnown": "https://github.com/Hexagon/croner/blob/master/.well-known/funding-manifest-urls"
       },
       "repositoryUrl": {
-        "url": "https://github.com/hexagon/croner"
+        "url": "https://github.com/Hexagon/croner",
+        "wellKnown": "https://github.com/Hexagon/croner/blob/master/.well-known/funding-manifest-urls"
       },
       "licenses": [
         "spdx:MIT"
