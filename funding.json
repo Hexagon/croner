@@ -1,0 +1,82 @@
+{
+  "version": "v1.0.0",
+  "entity": {
+    "type": "individual",
+    "role": "owner",
+    "name": "Hexagon",
+    "email": "hexagon@56k.guru",
+    "phone": "",
+    "description": "Open source developer maintaining Croner, @hexagon/base64 and other libraries.",
+    "webpageUrl": {
+      "url": "https://github.com/hexagon"
+    }
+  },
+  "projects": [
+    {
+      "guid": "croner",
+      "name": "Croner",
+      "description": "Trigger functions or evaluate cron expressions in JavaScript or TypeScript. No dependencies. Works in Node, Deno, Bun and the browser.",
+      "webpageUrl": {
+        "url": "https://github.com/hexagon/croner"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/hexagon/croner"
+      },
+      "licenses": [
+        "spdx:MIT"
+      ],
+      "tags": [
+        "cron",
+        "crontab",
+        "scheduler",
+        "javascript",
+        "typescript",
+        "deno"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "github-sponsors",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/hexagon",
+        "description": "Sponsor via GitHub Sponsors."
+      },
+      {
+        "guid": "paypal",
+        "type": "payment-provider",
+        "address": "https://paypal.me/hexagonpp",
+        "description": "One-time donations via PayPal."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "monthly-support",
+        "status": "active",
+        "name": "Monthly support",
+        "description": "Recurring support for ongoing maintenance and development.",
+        "amount": 0,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": [
+          "github-sponsors"
+        ]
+      },
+      {
+        "guid": "one-time-support",
+        "status": "active",
+        "name": "One-time donation",
+        "description": "A one-time contribution of any amount.",
+        "amount": 0,
+        "currency": "USD",
+        "frequency": "one-time",
+        "channels": [
+          "github-sponsors",
+          "paypal"
+        ]
+      }
+    ],
+    "history": []
+  }
+}
